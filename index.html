@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>ELH – Sezóna 01</title>
+<style>
+body{font-family:Arial;padding:20px}
+
+table{
+  border-collapse:collapse;
+  width:100%;
+  max-width:1200px;
+  margin-bottom:30px;
+}
+
+th,td{
+  border:1px solid #999;
+  padding:4px 6px;
+  text-align:center;
+  white-space:nowrap;
+}
+
+th{background:#1fa9e0;color:white}
+
+td.logo{width:34px}
+td.logo img{width:26px;height:26px;object-fit:contain;display:block;margin:auto}
+
+/* ZÚŽENÍ SLOUPCE TÝM */
+th.team, td.team{
+  text-align:left;
+  max-width:260px;
+  width:260px;
+  white-space:normal;
+}
+
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<h1>ELH – Sezóna 01</h1>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>#</th>
+<th class="team">Tým</th>
+<th>B</th>
+<th>Skóre</th>
+<th>+/-</th>
+<th>Z</th>
+<th>V</th>
+<th>P</th>
+<th>VP</th>
+<th>PP</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<h2>Admin – zápis výsledku</h2>
+<div id="loginBox">
+Heslo: <input type="password" id="password">
+<button id="loginBtn">Přihlásit</button>
+</div>
+
+<form id="matchForm" class="hidden">
+Domácí:
+<select id="home"></select>
+Hosté:
+<select id="away"></select><br><br>
+Góly domácí: <input type="number" id="hg" min="0" required>
+Góly hosté: <input type="number" id="ag" min="0" required><br><br>
+Typ:
+<select id="type">
+<option value="normal">Základní doba</option>
+<option value="pp">Prodloužení / nájezdy</option>
+</select><br><br>
+<button>Uložit výsledek</button>
+</form>
+
+<h2>Historie zápasů</h2>
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Domácí</th>
+<th>Skóre</th>
+<th>Hosté</th>
+<th>Typ</th>
+</tr>
+</thead>
+<tbody id="matchesBody"></tbody>
+</table>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const ADMIN_PASSWORD = "Lokomotiva";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDXjPNrMB-NEjf_wyx0HsIBM8Qe-h4Y2Rg",
+  authDomain: "elh---blbouni.firebaseapp.com",
+  databaseURL: "https://elh---blbouni-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "elh---blbouni",
+  storageBucket: "elh---blbouni.firebasestorage.app",
+  messagingSenderId: "768832575710",
+  appId: "1:768832575710:web:41deeb7440abe1e6f0ca4f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const logos = {
+ "HC Sparta Praha":"logos/sparta.png",
+ "HC Dynamo Pardubice":"logos/pardubice.png",
+ "HC Chemopetrol Litvínov":"logos/litvinov.png",
+ "HC Geus Okna Kladno":"logos/kladno.png",
+ "HC Oceláři Třinec":"logos/trinec.png",
+ "HC Býlí Tygři Liberec":"logos/liberec.png",
+ "HC Energie Karlovy Vary":"logos/vary.png",
+ "HC Mounfield České Budějovice":"logos/budejovice.png"
+};
+
+const tableRef = ref(db,"sezona01/table");
+const matchesRef = ref(db,"sezona01/matches");
+
+function normalize(teams){
+ for(const k in teams){
+  teams[k].VP ??= 0; teams[k].PP ??= 0; teams[k].V ??= 0;
+  teams[k].P ??= 0; teams[k].Z ??= 0; teams[k].B ??= 0;
+  teams[k].GF ??= 0; teams[k].GA ??= 0;
+ }
+ return teams;
+}
+
+function renderTable(teams){
+ const body = document.getElementById("tableBody");
+ body.innerHTML="";
+ Object.values(normalize(teams))
+ .sort((a,b)=>b.B-a.B||((b.GF-b.GA)-(a.GF-a.GA)))
+ .forEach((t,i)=>{
+ body.innerHTML+=`
+ <tr>
+  <td class="logo"><img src="${logos[t.name]||""}"></td>
+  <td>${i+1}</td>
+  <td class="team">${t.name}</td>
+  <td>${t.B}</td>
+  <td>${t.GF}:${t.GA}</td>
+  <td>${t.GF-t.GA}</td>
+  <td>${t.Z}</td>
+  <td>${t.V}</td>
+  <td>${t.P}</td>
+  <td>${t.VP}</td>
+  <td>${t.PP}</td>
+ </tr>`;
+ });
+}
+
+function renderMatches(matches){
+ const body=document.getElementById("matchesBody");
+ body.innerHTML="";
+ Object.values(matches||{})
+ .sort((a,b)=>b.time-a.time)
+ .forEach(m=>{
+ body.innerHTML+=`
+ <tr>
+  <td>${new Date(m.time).toLocaleDateString()}</td>
+  <td>${m.home}</td>
+  <td><strong>${m.hg} : ${m.ag}</strong></td>
+  <td>${m.away}</td>
+  <td>${m.type==="pp"?"PP/N":"ZD"}</td>
+ </tr>`;
+ });
+}
+
+onValue(tableRef,s=>renderTable(s.val()||{}));
+onValue(matchesRef,s=>renderMatches(s.val()));
+
+loginBtn.onclick=()=>{
+ if(password.value===ADMIN_PASSWORD){
+  loginBox.classList.add("hidden");
+  matchForm.classList.remove("hidden");
+ } else alert("Špatné heslo");
+};
+</script>
+
+</body>
+</html>
