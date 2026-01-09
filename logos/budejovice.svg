@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+<rect width="32" height="32" rx="6" fill="#e31e24"/>
+<text x="16" y="22" text-anchor="middle" font-size="14" fill="white"
+ font-family="Arial" font-weight="bold">CB</text>
+</svg>
