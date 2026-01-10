@@ -79,7 +79,7 @@ Typ:
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const ADMIN_PASSWORD="Lokomotiva";
 
@@ -108,12 +108,7 @@ const logos = {
 };
 
 const teams = Object.keys(logos);
-const home=document.getElementById("home");
-const away=document.getElementById("away");
-teams.forEach(t=>{
- home.innerHTML+=`<option value="${t}">${t}</option>`;
- away.innerHTML+=`<option value="${t}">${t}</option>`;
-});
+home.innerHTML = away.innerHTML = teams.map(t=>`<option>${t}</option>`).join("");
 
 loginBtn.onclick=()=>{
  if(password.value===ADMIN_PASSWORD){
@@ -125,81 +120,80 @@ loginBtn.onclick=()=>{
 const tableRef = ref(db,"sezona01/table");
 const matchesRef = ref(db,"sezona01/matches");
 
-matchForm.onsubmit = e => {
+matchForm.onsubmit = async e => {
  e.preventDefault();
  const h=home.value, a=away.value;
- const hg=+document.getElementById("hg").value;
- const ag=+document.getElementById("ag").value;
- const type=document.getElementById("type").value;
+ const hg=+hgInput.value, ag=+agInput.value;
+ const type=typeSelect.value;
 
  if(h===a) return alert("Tým nemůže hrát sám se sebou");
 
- push(matchesRef, {
-  home:h, away:a, hg, ag, type, time:Date.now()
- });
+ // uložit zápas
+ await push(matchesRef,{home:h,away:a,hg,ag,type,time:Date.now()});
 
- const updates={};
- [h,a].forEach(t=>{
-  updates[t]=updates[t]||{name:t,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
- });
+ // načíst aktuální statistiky
+ const snap = await get(tableRef);
+ const table = snap.val() || {};
 
- updates[h].Z++; updates[a].Z++;
- updates[h].GF+=hg; updates[h].GA+=ag;
- updates[a].GF+=ag; updates[a].GA+=hg;
+ const baseTeam = name => table[name] || {name,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
+ const th = baseTeam(h);
+ const ta = baseTeam(a);
+
+ th.Z++; ta.Z++;
+ th.GF+=hg; th.GA+=ag;
+ ta.GF+=ag; ta.GA+=hg;
 
  if(hg>ag){
-  if(type==="pp"){updates[h].VP++;updates[h].B+=2;updates[a].PP++;updates[a].B+=1;}
-  else{updates[h].V++;updates[h].B+=3;updates[a].P++;}
+  if(type==="pp"){ th.VP++; th.B+=2; ta.PP++; ta.B+=1; }
+  else { th.V++; th.B+=3; ta.P++; }
  } else {
-  if(type==="pp"){updates[a].VP++;updates[a].B+=2;updates[h].PP++;updates[h].B+=1;}
-  else{updates[a].V++;updates[a].B+=3;updates[h].P++;}
+  if(type==="pp"){ ta.VP++; ta.B+=2; th.PP++; th.B+=1; }
+  else { ta.V++; ta.B+=3; th.P++; }
  }
 
- set(ref(db,"sezona01/table/"+h),updates[h]);
- set(ref(db,"sezona01/table/"+a),updates[a]);
+ await update(tableRef,{
+  [h]:th,
+  [a]:ta
+ });
 
  matchForm.reset();
 };
 
 function renderTable(data){
- const body=document.getElementById("tableBody");
- body.innerHTML="";
+ tableBody.innerHTML="";
  if(!data) return;
  Object.values(data)
  .sort((a,b)=>b.B-a.B||((b.GF-b.GA)-(a.GF-a.GA)))
  .forEach((t,i)=>{
- body.innerHTML+=`
- <tr>
-  <td class="logo"><img src="${logos[t.name]||""}"></td>
-  <td>${i+1}</td>
-  <td class="team">${t.name}</td>
-  <td>${t.B}</td>
-  <td>${t.GF}:${t.GA}</td>
-  <td>${t.GF-t.GA}</td>
-  <td>${t.Z}</td>
-  <td>${t.V}</td>
-  <td>${t.P}</td>
-  <td>${t.VP}</td>
-  <td>${t.PP}</td>
- </tr>`;
+  tableBody.innerHTML+=`
+  <tr>
+   <td class="logo"><img src="${logos[t.name]||""}"></td>
+   <td>${i+1}</td>
+   <td class="team">${t.name}</td>
+   <td>${t.B}</td>
+   <td>${t.GF}:${t.GA}</td>
+   <td>${t.GF-t.GA}</td>
+   <td>${t.Z}</td>
+   <td>${t.V}</td>
+   <td>${t.P}</td>
+   <td>${t.VP}</td>
+   <td>${t.PP}</td>
+  </tr>`;
  });
 }
 
 function renderMatches(data){
- const body=document.getElementById("matchesBody");
- body.innerHTML="";
+ matchesBody.innerHTML="";
  if(!data) return;
- Object.values(data)
- .sort((a,b)=>b.time-a.time)
- .forEach(m=>{
- body.innerHTML+=`
- <tr>
-  <td>${new Date(m.time).toLocaleDateString()}</td>
-  <td>${m.home}</td>
-  <td><strong>${m.hg}:${m.ag}</strong></td>
-  <td>${m.away}</td>
-  <td>${m.type==="pp"?"PP/N":"ZD"}</td>
- </tr>`;
+ Object.values(data).sort((a,b)=>b.time-a.time).forEach(m=>{
+  matchesBody.innerHTML+=`
+  <tr>
+   <td>${new Date(m.time).toLocaleDateString()}</td>
+   <td>${m.home}</td>
+   <td><strong>${m.hg}:${m.ag}</strong></td>
+   <td>${m.away}</td>
+   <td>${m.type==="pp"?"PP/N":"ZD"}</td>
+  </tr>`;
  });
 }
 
