@@ -77,46 +77,98 @@ Typ:
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 const ADMIN_PASSWORD="Lokomotiva";
 
-const teams=[
-"HC Chemopetrol Litvínov",
-"HC Dynamo Pardubice",
-"HC Sparta Praha",
-"HC Geus Okna Kladno",
-"HC Oceláři Třinec",
-"HC Býlí Tygři Liberec",
-"HC Energie Karlovy Vary",
-"HC Mounfield České Budějovice"
-];
+const firebaseConfig = {
+  apiKey: "AIzaSyDXjPNrMB-NEjf_wyx0HsIBM8Qe-h4Y2Rg",
+  authDomain: "elh---blbouni.firebaseapp.com",
+  databaseURL: "https://elh---blbouni-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "elh---blbouni",
+  storageBucket: "elh---blbouni.appspot.com",
+  messagingSenderId: "768832575710",
+  appId: "1:768832575710:web:41deeb7440abe1e6f0ca4f"
+};
 
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const logos = {
+ "HC Chemopetrol Litvínov":"logos/litvinov.png",
+ "HC Dynamo Pardubice":"logos/pardubice.png",
+ "HC Sparta Praha":"logos/sparta.png",
+ "HC Geus Okna Kladno":"logos/kladno.png",
+ "HC Oceláři Třinec":"logos/trinec.png",
+ "HC Býlí Tygři Liberec":"logos/liberec.png",
+ "HC Energie Karlovy Vary":"logos/vary.png",
+ "HC Mounfield České Budějovice":"logos/budejovice.png"
+};
+
+const teams = Object.keys(logos);
 const home=document.getElementById("home");
 const away=document.getElementById("away");
 teams.forEach(t=>{
- home.innerHTML+=`<option>${t}</option>`;
- away.innerHTML+=`<option>${t}</option>`;
+ home.innerHTML+=`<option value="${t}">${t}</option>`;
+ away.innerHTML+=`<option value="${t}">${t}</option>`;
 });
 
 loginBtn.onclick=()=>{
  if(password.value===ADMIN_PASSWORD){
   loginBox.classList.add("hidden");
   matchForm.classList.remove("hidden");
- }else alert("Špatné heslo");
+ } else alert("Špatné heslo");
 };
 
-// DEMO DATA – aby tabulka NIKDY nezmizela
-const tableBody=document.getElementById("tableBody");
-teams.forEach((t,i)=>{
- tableBody.innerHTML+=`
- <tr>
-  <td class="logo"></td>
-  <td>${i+1}</td>
-  <td class="team">${t}</td>
-  <td>0</td><td>0:0</td><td>0</td>
-  <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
- </tr>`;
-});
+const tableRef = ref(db,"sezona01/table");
+const matchesRef = ref(db,"sezona01/matches");
+
+function renderTable(data){
+ const body=document.getElementById("tableBody");
+ body.innerHTML="";
+ if(!data) return;
+ Object.values(data)
+ .sort((a,b)=>b.B-a.B || (b.GF-b.GA)-(a.GF-a.GA))
+ .forEach((t,i)=>{
+  body.innerHTML+=`
+  <tr>
+   <td class="logo"><img src="${logos[t.name]||""}"></td>
+   <td>${i+1}</td>
+   <td class="team">${t.name}</td>
+   <td>${t.B}</td>
+   <td>${t.GF}:${t.GA}</td>
+   <td>${t.GF-t.GA}</td>
+   <td>${t.Z}</td>
+   <td>${t.V}</td>
+   <td>${t.P}</td>
+   <td>${t.VP}</td>
+   <td>${t.PP}</td>
+  </tr>`;
+ });
+}
+
+function renderMatches(data){
+ const body=document.getElementById("matchesBody");
+ body.innerHTML="";
+ if(!data) return;
+ Object.values(data)
+ .sort((a,b)=>b.time-a.time)
+ .forEach(m=>{
+  body.innerHTML+=`
+  <tr>
+   <td>${new Date(m.time).toLocaleDateString()}</td>
+   <td>${m.home}</td>
+   <td><strong>${m.hg}:${m.ag}</strong></td>
+   <td>${m.away}</td>
+   <td>${m.type==="pp"?"PP/N":"ZD"}</td>
+  </tr>`;
+ });
+}
+
+onValue(tableRef,s=>renderTable(s.val()));
+onValue(matchesRef,s=>renderMatches(s.val()));
 </script>
 
 </body>
