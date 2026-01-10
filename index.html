@@ -35,8 +35,6 @@ button{padding:6px 10px}
 
 <h1>ELH – Sezóna 01</h1>
 
-<button id="rebuildBtn">🔄 Přepočítat tabulku z historie</button>
-
 <table>
 <thead>
 <tr>
@@ -46,6 +44,27 @@ button{padding:6px 10px}
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
+
+<h2>Admin – zápis výsledku</h2>
+<div id="loginBox">
+Heslo: <input type="password" id="password">
+<button id="loginBtn">Přihlásit</button>
+</div>
+
+<form id="matchForm" class="hidden">
+Domácí:
+<select id="home"></select>
+Hosté:
+<select id="away"></select><br><br>
+Góly domácí: <input type="number" id="hg" min="0" required>
+Góly hosté: <input type="number" id="ag" min="0" required><br><br>
+Typ:
+<select id="type">
+<option value="normal">Základní doba</option>
+<option value="pp">Prodloužení / nájezdy</option>
+</select><br><br>
+<button type="submit">Uložit výsledek</button>
+</form>
 
 <h2>Historie zápasů</h2>
 <table>
@@ -61,7 +80,9 @@ button{padding:6px 10px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const ADMIN_PASSWORD="Lokomotiva";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDXjPNrMB-NEjf_wyx0HsIBM8Qe-h4Y2Rg",
@@ -85,6 +106,56 @@ const logos = {
  "HC Býlí Tygři Liberec":"logos/liberec.png",
  "HC Energie Karlovy Vary":"logos/vary.png",
  "HC Mounfield České Budějovice":"logos/budejovice.png"
+};
+
+const teams = Object.keys(logos);
+home.innerHTML = away.innerHTML = teams.map(t=>`<option>${t}</option>`).join("");
+
+loginBtn.onclick=()=>{
+ if(password.value===ADMIN_PASSWORD){
+  loginBox.classList.add("hidden");
+  matchForm.classList.remove("hidden");
+ } else alert("Špatné heslo");
+};
+
+const matchesRef = ref(db,"sezona01/matches");
+const tableRef = ref(db,"sezona01/table");
+
+matchForm.onsubmit = async e => {
+ e.preventDefault();
+
+ await push(matchesRef,{
+  home:home.value,
+  away:away.value,
+  hg:+hg.value,
+  ag:+ag.value,
+  type:type.value,
+  time:Date.now()
+ });
+
+ // automatic rebuild
+ const snap = await get(matchesRef);
+ const matches = Object.values(snap.val()||{});
+ const table = {};
+ const base = n => table[n] ||= {name:n,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
+
+ matches.forEach(m=>{
+  const h=base(m.home), a=base(m.away);
+  h.Z++; a.Z++;
+  h.GF+=m.hg; h.GA+=m.ag;
+  a.GF+=m.ag; a.GA+=m.hg;
+
+  if(m.hg>m.ag){
+   if(m.type==="pp"){h.VP++;h.B+=2;a.PP++;a.B+=1}
+   else{h.V++;h.B+=3;a.P++}
+  } else {
+   if(m.type==="pp"){a.VP++;a.B+=2;h.PP++;h.B+=1}
+   else{a.V++;a.B+=3;h.P++}
+  }
+ });
+
+ await set(tableRef,table);
+ matchForm.reset();
 };
 
 function renderTable(data){
@@ -125,33 +196,8 @@ function renderMatches(data){
  });
 }
 
-onValue(ref(db,"sezona01/table"),s=>renderTable(s.val()));
-onValue(ref(db,"sezona01/matches"),s=>renderMatches(s.val()));
-
-rebuildBtn.onclick = async ()=>{
- const snap = await get(ref(db,"sezona01/matches"));
- const matches = Object.values(snap.val()||{});
- const table = {};
- const base = n => table[n] ||= {name:n,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
-
- matches.forEach(m=>{
-  const h=base(m.home), a=base(m.away);
-  h.Z++; a.Z++;
-  h.GF+=m.hg; h.GA+=m.ag;
-  a.GF+=m.ag; a.GA+=m.hg;
-
-  if(m.hg>m.ag){
-   if(m.type==="pp"){h.VP++;h.B+=2;a.PP++;a.B+=1}
-   else{h.V++;h.B+=3;a.P++}
-  } else {
-   if(m.type==="pp"){a.VP++;a.B+=2;h.PP++;h.B+=1}
-   else{a.V++;a.B+=3;h.P++}
-  }
- });
-
- await set(ref(db,"sezona01/table"),table);
- alert("Tabulka přepočítána");
-};
+onValue(tableRef,s=>renderTable(s.val()));
+onValue(matchesRef,s=>renderMatches(s.val()));
 </script>
 
 </body>
