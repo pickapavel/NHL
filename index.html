@@ -48,6 +48,7 @@ td.logo img{width:26px;height:26px;object-fit:contain}
 <div id="loginBox">
 Heslo: <input type="password" id="password">
 <button id="loginBtn">Přihlásit</button>
+<button id="rebuildBtn">🔄 Přepočítat tabulku</button>
 </div>
 
 <form id="matchForm" class="hidden">
@@ -79,7 +80,7 @@ Typ:
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const ADMIN_PASSWORD="Lokomotiva";
 
@@ -117,46 +118,39 @@ loginBtn.onclick=()=>{
  } else alert("Špatné heslo");
 };
 
-const tableRef = ref(db,"sezona01/table");
-const matchesRef = ref(db,"sezona01/matches");
-
 matchForm.onsubmit = async e => {
  e.preventDefault();
- const h=home.value, a=away.value;
- const hg=+hgInput.value, ag=+agInput.value;
- const type=typeSelect.value;
+ await push(ref(db,"sezona01/matches"),{
+  home:home.value, away:away.value,
+  hg:+hg.value, ag:+ag.value,
+  type:type.value, time:Date.now()
+ });
+ matchForm.reset();
+};
 
- if(h===a) return alert("Tým nemůže hrát sám se sebou");
+rebuildBtn.onclick = async () => {
+ const snap = await get(ref(db,"sezona01/matches"));
+ const matches = Object.values(snap.val()||{});
+ const table = {};
+ const base = n => table[n] ||= {name:n,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
 
- // uložit zápas
- await push(matchesRef,{home:h,away:a,hg,ag,type,time:Date.now()});
+ matches.forEach(m=>{
+  const h=base(m.home), a=base(m.away);
+  h.Z++; a.Z++;
+  h.GF+=m.hg; h.GA+=m.ag;
+  a.GF+=m.ag; a.GA+=m.hg;
 
- // načíst aktuální statistiky
- const snap = await get(tableRef);
- const table = snap.val() || {};
-
- const baseTeam = name => table[name] || {name,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
- const th = baseTeam(h);
- const ta = baseTeam(a);
-
- th.Z++; ta.Z++;
- th.GF+=hg; th.GA+=ag;
- ta.GF+=ag; ta.GA+=hg;
-
- if(hg>ag){
-  if(type==="pp"){ th.VP++; th.B+=2; ta.PP++; ta.B+=1; }
-  else { th.V++; th.B+=3; ta.P++; }
- } else {
-  if(type==="pp"){ ta.VP++; ta.B+=2; th.PP++; th.B+=1; }
-  else { ta.V++; ta.B+=3; th.P++; }
- }
-
- await update(tableRef,{
-  [h]:th,
-  [a]:ta
+  if(m.hg>m.ag){
+   if(m.type==="pp"){h.VP++;h.B+=2;a.PP++;a.B+=1}
+   else{h.V++;h.B+=3;a.P++}
+  } else {
+   if(m.type==="pp"){a.VP++;a.B+=2;h.PP++;h.B+=1}
+   else{a.V++;a.B+=3;h.P++}
+  }
  });
 
- matchForm.reset();
+ await set(ref(db,"sezona01/table"),table);
+ alert("Tabulka přepočítána z historie zápasů");
 };
 
 function renderTable(data){
@@ -197,8 +191,8 @@ function renderMatches(data){
  });
 }
 
-onValue(tableRef,s=>renderTable(s.val()));
-onValue(matchesRef,s=>renderMatches(s.val()));
+onValue(ref(db,"sezona01/table"),s=>renderTable(s.val()));
+onValue(ref(db,"sezona01/matches"),s=>renderMatches(s.val()));
 </script>
 
 </body>
