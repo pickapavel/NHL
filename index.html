@@ -24,9 +24,9 @@ td.logo img{width:26px;height:26px;object-fit:contain}
 <nav>
 <div class="menu">
 <a href="index.html" class="active">Extraliga</a>
-<a href="ms.html">Mistrovství světa</a>
-<a href="olympiada.html">Olympijský turnaj</a>
-<a href="worldcup.html">Světový pohár</a>
+<a href="#">Mistrovství světa</a>
+<a href="#">Olympijský turnaj</a>
+<a href="#">Světový pohár</a>
 </div>
 </nav>
 
@@ -79,7 +79,7 @@ Typ:
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const ADMIN_PASSWORD="Lokomotiva";
 
@@ -125,27 +125,63 @@ loginBtn.onclick=()=>{
 const tableRef = ref(db,"sezona01/table");
 const matchesRef = ref(db,"sezona01/matches");
 
+matchForm.onsubmit = e => {
+ e.preventDefault();
+ const h=home.value, a=away.value;
+ const hg=+document.getElementById("hg").value;
+ const ag=+document.getElementById("ag").value;
+ const type=document.getElementById("type").value;
+
+ if(h===a) return alert("Tým nemůže hrát sám se sebou");
+
+ push(matchesRef, {
+  home:h, away:a, hg, ag, type, time:Date.now()
+ });
+
+ const updates={};
+ [h,a].forEach(t=>{
+  updates[t]=updates[t]||{name:t,B:0,Z:0,V:0,P:0,VP:0,PP:0,GF:0,GA:0};
+ });
+
+ updates[h].Z++; updates[a].Z++;
+ updates[h].GF+=hg; updates[h].GA+=ag;
+ updates[a].GF+=ag; updates[a].GA+=hg;
+
+ if(hg>ag){
+  if(type==="pp"){updates[h].VP++;updates[h].B+=2;updates[a].PP++;updates[a].B+=1;}
+  else{updates[h].V++;updates[h].B+=3;updates[a].P++;}
+ } else {
+  if(type==="pp"){updates[a].VP++;updates[a].B+=2;updates[h].PP++;updates[h].B+=1;}
+  else{updates[a].V++;updates[a].B+=3;updates[h].P++;}
+ }
+
+ set(ref(db,"sezona01/table/"+h),updates[h]);
+ set(ref(db,"sezona01/table/"+a),updates[a]);
+
+ matchForm.reset();
+};
+
 function renderTable(data){
  const body=document.getElementById("tableBody");
  body.innerHTML="";
  if(!data) return;
  Object.values(data)
- .sort((a,b)=>b.B-a.B || (b.GF-b.GA)-(a.GF-a.GA))
+ .sort((a,b)=>b.B-a.B||((b.GF-b.GA)-(a.GF-a.GA)))
  .forEach((t,i)=>{
-  body.innerHTML+=`
-  <tr>
-   <td class="logo"><img src="${logos[t.name]||""}"></td>
-   <td>${i+1}</td>
-   <td class="team">${t.name}</td>
-   <td>${t.B}</td>
-   <td>${t.GF}:${t.GA}</td>
-   <td>${t.GF-t.GA}</td>
-   <td>${t.Z}</td>
-   <td>${t.V}</td>
-   <td>${t.P}</td>
-   <td>${t.VP}</td>
-   <td>${t.PP}</td>
-  </tr>`;
+ body.innerHTML+=`
+ <tr>
+  <td class="logo"><img src="${logos[t.name]||""}"></td>
+  <td>${i+1}</td>
+  <td class="team">${t.name}</td>
+  <td>${t.B}</td>
+  <td>${t.GF}:${t.GA}</td>
+  <td>${t.GF-t.GA}</td>
+  <td>${t.Z}</td>
+  <td>${t.V}</td>
+  <td>${t.P}</td>
+  <td>${t.VP}</td>
+  <td>${t.PP}</td>
+ </tr>`;
  });
 }
 
@@ -156,14 +192,14 @@ function renderMatches(data){
  Object.values(data)
  .sort((a,b)=>b.time-a.time)
  .forEach(m=>{
-  body.innerHTML+=`
-  <tr>
-   <td>${new Date(m.time).toLocaleDateString()}</td>
-   <td>${m.home}</td>
-   <td><strong>${m.hg}:${m.ag}</strong></td>
-   <td>${m.away}</td>
-   <td>${m.type==="pp"?"PP/N":"ZD"}</td>
-  </tr>`;
+ body.innerHTML+=`
+ <tr>
+  <td>${new Date(m.time).toLocaleDateString()}</td>
+  <td>${m.home}</td>
+  <td><strong>${m.hg}:${m.ag}</strong></td>
+  <td>${m.away}</td>
+  <td>${m.type==="pp"?"PP/N":"ZD"}</td>
+ </tr>`;
  });
 }
 
