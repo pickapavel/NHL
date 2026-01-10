@@ -5,56 +5,29 @@
 <title>ELH – Sezóna 01</title>
 <style>
 body{margin:0;font-family:Arial;background:#f4f4f4}
-
-/* NAV */
 nav{background:#1fa9e0}
-nav .menu{
- max-width:1200px;
- margin:0 auto;
- display:flex;
- gap:20px;
- padding:12px 20px;
-}
-nav a{
- color:white;
- text-decoration:none;
- font-weight:bold;
- padding:6px 12px;
- border-radius:4px;
-}
+nav .menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:12px 20px}
+nav a{color:white;text-decoration:none;font-weight:bold;padding:6px 12px;border-radius:4px}
 nav a.active{background:white;color:#1fa9e0}
-nav a:hover{background:rgba(255,255,255,0.2)}
-
-/* LAYOUT */
-.wrapper{
- max-width:1200px;
- margin:0 auto;
- background:white;
- min-height:100vh;
- padding:20px;
-}
-
-/* TABLE */
+.wrapper{max-width:1200px;margin:0 auto;background:white;min-height:100vh;padding:20px}
 table{border-collapse:collapse;width:100%;margin-bottom:30px}
 th,td{border:1px solid #999;padding:4px 6px;text-align:center}
 th{background:#1fa9e0;color:white}
 td.team{text-align:left;width:260px}
 td.logo{width:34px}
 td.logo img{width:26px;height:26px;object-fit:contain}
-
-/* ADMIN */
 .hidden{display:none}
 </style>
 </head>
 <body>
 
 <nav>
- <div class="menu">
-  <a href="index.html" class="active">Extraliga</a>
-  <a href="ms.html">Mistrovství světa</a>
-  <a href="olympiada.html">Olympijský turnaj</a>
-  <a href="worldcup.html">Světový pohár</a>
- </div>
+<div class="menu">
+<a href="index.html" class="active">Extraliga</a>
+<a href="ms.html">Mistrovství světa</a>
+<a href="olympiada.html">Olympijský turnaj</a>
+<a href="worldcup.html">Světový pohár</a>
+</div>
 </nav>
 
 <div class="wrapper">
@@ -89,18 +62,14 @@ Typ:
 <option value="normal">Základní doba</option>
 <option value="pp">Prodloužení / nájezdy</option>
 </select><br><br>
-<button>Uložit výsledek</button>
+<button type="submit">Uložit výsledek</button>
 </form>
 
 <h2>Historie zápasů</h2>
 <table>
 <thead>
 <tr>
-<th>Datum</th>
-<th>Domácí</th>
-<th>Skóre</th>
-<th>Hosté</th>
-<th>Typ</th>
+<th>Datum</th><th>Domácí</th><th>Skóre</th><th>Hosté</th><th>Typ</th>
 </tr>
 </thead>
 <tbody id="matchesBody"></tbody>
@@ -127,71 +96,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const logos = {
- "HC Sparta Praha":"logos/sparta.png",
- "HC Dynamo Pardubice":"logos/pardubice.png",
- "HC Chemopetrol Litvínov":"logos/litvinov.png",
- "HC Geus Okna Kladno":"logos/kladno.png",
- "HC Oceláři Třinec":"logos/trinec.png",
- "HC Býlí Tygři Liberec":"logos/liberec.png",
- "HC Energie Karlovy Vary":"logos/vary.png",
- "HC Mounfield České Budějovice":"logos/budejovice.png"
-};
+const teams = [
+"HC Chemopetrol Litvínov",
+"HC Dynamo Pardubice",
+"HC Sparta Praha",
+"HC Geus Okna Kladno",
+"HC Oceláři Třinec",
+"HC Býlí Tygři Liberec",
+"HC Energie Karlovy Vary",
+"HC Mounfield České Budějovice"
+];
 
-const tableRef = ref(db,"sezona01/table");
-const matchesRef = ref(db,"sezona01/matches");
+const homeSel = document.getElementById("home");
+const awaySel = document.getElementById("away");
 
-function normalize(teams){
- for(const k in teams){
-  teams[k].VP ??= 0; teams[k].PP ??= 0; teams[k].V ??= 0;
-  teams[k].P ??= 0; teams[k].Z ??= 0; teams[k].B ??= 0;
-  teams[k].GF ??= 0; teams[k].GA ??= 0;
- }
- return teams;
-}
-
-function renderTable(teams){
- const body = document.getElementById("tableBody");
- body.innerHTML="";
- Object.values(normalize(teams||{}))
- .sort((a,b)=>b.B-a.B||((b.GF-b.GA)-(a.GF-a.GA)))
- .forEach((t,i)=>{
- body.innerHTML+=`
- <tr>
-  <td class="logo"><img src="${logos[t.name]||""}"></td>
-  <td>${i+1}</td>
-  <td class="team">${t.name}</td>
-  <td>${t.B}</td>
-  <td>${t.GF}:${t.GA}</td>
-  <td>${t.GF-t.GA}</td>
-  <td>${t.Z}</td>
-  <td>${t.V}</td>
-  <td>${t.P}</td>
-  <td>${t.VP}</td>
-  <td>${t.PP}</td>
- </tr>`;
- });
-}
-
-function renderMatches(matches){
- const body=document.getElementById("matchesBody");
- body.innerHTML="";
- Object.values(matches||{})
- .sort((a,b)=>b.time-a.time)
- .forEach(m=>{
- body.innerHTML+=`
- <tr>
-  <td>${new Date(m.time).toLocaleDateString()}</td>
-  <td>${m.home}</td>
-  <td><strong>${m.hg} : ${m.ag}</strong></td>
-  <td>${m.away}</td>
-  <td>${m.type==="pp"?"PP/N":"ZD"}</td>
- </tr>`;
- });
-}
-
-onValue(tableRef,s=>renderTable(s.val()));
-onValue(matchesRef,s=>renderMatches(s.val()));
+teams.forEach(t=>{
+ homeSel.innerHTML += `<option value="${t}">${t}</option>`;
+ awaySel.innerHTML += `<option value="${t}">${t}</option>`;
+});
 
 loginBtn.onclick=()=>{
  if(password.value===ADMIN_PASSWORD){
