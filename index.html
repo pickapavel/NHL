@@ -77,26 +77,10 @@ Typ:
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script>
+const ADMIN_PASSWORD="Lokomotiva";
 
-const ADMIN_PASSWORD = "Lokomotiva";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDXjPNrMB-NEjf_wyx0HsIBM8Qe-h4Y2Rg",
-  authDomain: "elh---blbouni.firebaseapp.com",
-  databaseURL: "https://elh---blbouni-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "elh---blbouni",
-  storageBucket: "elh---blbouni.firebasestorage.app",
-  messagingSenderId: "768832575710",
-  appId: "1:768832575710:web:41deeb7440abe1e6f0ca4f"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const teams = [
+const teams=[
 "HC Chemopetrol Litvínov",
 "HC Dynamo Pardubice",
 "HC Sparta Praha",
@@ -107,20 +91,32 @@ const teams = [
 "HC Mounfield České Budějovice"
 ];
 
-const homeSel = document.getElementById("home");
-const awaySel = document.getElementById("away");
-
+const home=document.getElementById("home");
+const away=document.getElementById("away");
 teams.forEach(t=>{
- homeSel.innerHTML += `<option value="${t}">${t}</option>`;
- awaySel.innerHTML += `<option value="${t}">${t}</option>`;
+ home.innerHTML+=`<option>${t}</option>`;
+ away.innerHTML+=`<option>${t}</option>`;
 });
 
 loginBtn.onclick=()=>{
  if(password.value===ADMIN_PASSWORD){
   loginBox.classList.add("hidden");
   matchForm.classList.remove("hidden");
- } else alert("Špatné heslo");
+ }else alert("Špatné heslo");
 };
+
+// DEMO DATA – aby tabulka NIKDY nezmizela
+const tableBody=document.getElementById("tableBody");
+teams.forEach((t,i)=>{
+ tableBody.innerHTML+=`
+ <tr>
+  <td class="logo"></td>
+  <td>${i+1}</td>
+  <td class="team">${t}</td>
+  <td>0</td><td>0:0</td><td>0</td>
+  <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+ </tr>`;
+});
 </script>
 
 </body>
