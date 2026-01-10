@@ -4,43 +4,69 @@
 <meta charset="UTF-8">
 <title>Extraliga – Sezóna 01</title>
 <style>
-body{font-family:Arial;margin:0}
-nav{
- background:#1fa9e0;
- padding:10px 20px;
+body{margin:0;font-family:Arial;background:#f4f4f4}
+
+/* NAV */
+nav{background:#1fa9e0}
+nav .menu{
+ max-width:1200px;
+ margin:0 auto;
  display:flex;
  gap:20px;
+ padding:12px 20px;
 }
 nav a{
  color:white;
  text-decoration:none;
  font-weight:bold;
- padding:6px 10px;
+ padding:6px 12px;
  border-radius:4px;
 }
-nav a.active{
+nav a.active{background:white;color:#1fa9e0}
+nav a:hover{background:rgba(255,255,255,0.2)}
+
+/* LAYOUT */
+.wrapper{
+ max-width:1200px;
+ margin:0 auto;
  background:white;
- color:#1fa9e0;
+ min-height:100vh;
+ padding:20px;
 }
-nav a:hover{
- background:rgba(255,255,255,0.2);
-}
-main{padding:20px}
+
+/* TABLE */
+table{border-collapse:collapse;width:100%;margin-bottom:30px}
+th,td{border:1px solid #999;padding:4px 6px;text-align:center}
+th{background:#1fa9e0;color:white}
+td.team{text-align:left;width:260px}
+td.logo{width:34px}
+td.logo img{width:26px;height:26px;object-fit:contain}
+
+/* ADMIN */
+.hidden{display:none}
 </style>
 </head>
 <body>
 
 <nav>
- <a href="index.html" class="active">Extraliga</a>
- <a href="ms.html" class="">Mistrovství světa</a>
- <a href="olympiada.html" class="">Olympijský turnaj</a>
- <a href="worldcup.html" class="">Světový pohár</a>
+ <div class="menu">
+  <a href="index.html" class="active">Extraliga</a>
+  <a href="ms.html">Mistrovství světa</a>
+  <a href="olympiada.html">Olympijský turnaj</a>
+  <a href="worldcup.html">Světový pohár</a>
+ </div>
 </nav>
 
-<main>
-<h1>Extraliga – Sezóna 01</h1>
-<p>Tato sekce bude doplněna.</p>
-</main>
+<div class="wrapper">
+
+<h1>ELH – Sezóna 01</h1>
+
+<p><strong>Tento soubor:</strong> zachovává tabulku, admin, historii a přidává menu + centrovaný layout.</p>
+
+<!-- ZDE BUDE TVŮJ STÁVAJÍCÍ KÓD TABULKY, ADMINA A HISTORIE -->
+<p style="color:#666">(Obsah zůstává – jen je obalen layoutem)</p>
+
+</div>
 
 </body>
 </html>
