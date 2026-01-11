@@ -9,60 +9,36 @@ nav{background:#1fa9e0}
 .menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:0 20px}
 .menu-item{position:relative}
 .menu-item>a{display:block;color:white;text-decoration:none;font-weight:bold;padding:14px 12px}
-.menu-item>a.active{background:white;color:#1fa9e0;border-radius:4px}
-.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:220px;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:220px}
 .dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
-.dropdown a:hover{background:#f0f0f0}
 .menu-item:hover .dropdown{display:block}
 
 .wrapper{max-width:1200px;margin:0 auto;background:white;min-height:100vh;padding:30px}
 h1{text-align:center}
+
 .bracket{display:flex;justify-content:space-between;margin-top:40px}
 .round{width:30%}
 .match{border:2px solid #1fa9e0;border-radius:6px;padding:10px;margin-bottom:20px}
 .team{display:flex;justify-content:space-between;margin:6px 0}
-.team input{width:40px}
-.final{width:30%;margin:0 auto}
-.note{text-align:center;color:#666}
+.team input{width:50px}
+
+.admin{margin-top:50px;border-top:3px solid #1fa9e0;padding-top:30px}
+label{display:inline-block;width:140px}
+input,select{padding:4px}
+button{padding:6px 12px}
 </style>
 </head>
 <body>
 
 <nav>
 <div class="menu">
-
-<div class="menu-item">
-<a>Extraliga</a>
-<div class="dropdown">
-<a href="index.html">Extraliga – základní část</a>
-<a href="playoff.html" class="active">Extraliga – play off</a>
-</div>
-</div>
-
-<div class="menu-item">
-<a>Mistrovství světa</a>
-<div class="dropdown">
-<a href="#">MS – základní skupiny</a>
-<a href="#">MS – play off</a>
-</div>
-</div>
-
-<div class="menu-item">
-<a>Olympijský turnaj</a>
-<div class="dropdown">
-<a href="#">OH – skupiny</a>
-<a href="#">OH – play off</a>
-</div>
-</div>
-
-<div class="menu-item">
-<a>Světový pohár</a>
-<div class="dropdown">
-<a href="#">SP – skupiny</a>
-<a href="#">SP – play off</a>
-</div>
-</div>
-
+  <div class="menu-item">
+    <a>Extraliga</a>
+    <div class="dropdown">
+      <a href="index.html">Extraliga – základní část</a>
+      <a href="playoff.html">Extraliga – play off</a>
+    </div>
+  </div>
 </div>
 </nav>
 
@@ -73,16 +49,16 @@ h1{text-align:center}
 <div class="round">
 <h2>Semifinále</h2>
 <div class="match">
-<div class="team"><span>Tým A</span><input type="number"></div>
-<div class="team"><span>Tým B</span><input type="number"></div>
+<div class="team"><span>Semifinále 1 – tým A</span><input type="number"></div>
+<div class="team"><span>Semifinále 1 – tým B</span><input type="number"></div>
 </div>
 <div class="match">
-<div class="team"><span>Tým C</span><input type="number"></div>
-<div class="team"><span>Tým D</span><input type="number"></div>
+<div class="team"><span>Semifinále 2 – tým C</span><input type="number"></div>
+<div class="team"><span>Semifinále 2 – tým D</span><input type="number"></div>
 </div>
 </div>
 
-<div class="round final">
+<div class="round">
 <h2>Finále</h2>
 <div class="match">
 <div class="team"><span>Vítěz SF1</span><input type="number"></div>
@@ -91,7 +67,33 @@ h1{text-align:center}
 </div>
 </div>
 
-<p class="note">Zatím nejsou definované týmy – pavouk je připraven.</p>
+<div class="admin">
+<h2>Admin – zápis výsledku (play off)</h2>
+
+<label>Fáze:</label>
+<select>
+<option>Semifinále 1</option>
+<option>Semifinále 2</option>
+<option>Finále</option>
+</select><br><br>
+
+<label>Tým domácí:</label>
+<input placeholder="zatím neurčeno"><br><br>
+
+<label>Tým hosté:</label>
+<input placeholder="zatím neurčeno"><br><br>
+
+<label>Skóre:</label>
+<input type="number" style="width:60px"> :
+<input type="number" style="width:60px"><br><br>
+
+<button>Uložit výsledek</button>
+
+<p style="color:#666;margin-top:10px">
+Zatím bez logiky – pouze příprava rozhraní.
+</p>
+</div>
+
 </div>
 
 </body>
