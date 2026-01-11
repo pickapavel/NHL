@@ -7,25 +7,20 @@
 body{margin:0;font-family:Arial;background:#f4f4f4}
 nav{background:#1fa9e0}
 .menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:0 20px}
-.menu-item{position:relative}
 .menu-item>a{display:block;color:white;text-decoration:none;font-weight:bold;padding:14px 12px}
-.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:220px}
-.dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
-.menu-item:hover .dropdown{display:block}
 
-.wrapper{max-width:1200px;margin:0 auto;background:white;min-height:100vh;padding:30px}
-h1{text-align:center}
+.wrapper{max-width:1400px;margin:0 auto;background:white;min-height:100vh;padding:30px}
+h1{text-align:center;margin-bottom:40px}
 
-.bracket{display:flex;justify-content:space-between;margin-top:40px}
-.round{width:30%}
-.match{border:2px solid #1fa9e0;border-radius:6px;padding:10px;margin-bottom:20px}
-.team{display:flex;justify-content:space-between;margin:6px 0}
-.team input{width:50px}
+.bracket{display:flex;justify-content:space-between;align-items:flex-start}
+.column{width:32%}
+.title{font-weight:bold;margin-bottom:10px}
 
-.admin{margin-top:50px;border-top:3px solid #1fa9e0;padding-top:30px}
-label{display:inline-block;width:140px}
-input,select{padding:4px}
-button{padding:6px 12px}
+table{border-collapse:collapse;width:100%;margin-bottom:30px}
+th,td{border:1px solid #999;padding:6px;text-align:center}
+th{background:#b7d7f0}
+.team{text-align:left}
+.series{font-weight:bold}
 </style>
 </head>
 <body>
@@ -33,11 +28,7 @@ button{padding:6px 12px}
 <nav>
 <div class="menu">
   <div class="menu-item">
-    <a>Extraliga</a>
-    <div class="dropdown">
-      <a href="index.html">Extraliga – základní část</a>
-      <a href="playoff.html">Extraliga – play off</a>
-    </div>
+    <a href="index.html">Extraliga – základní část</a>
   </div>
 </div>
 </nav>
@@ -46,55 +37,38 @@ button{padding:6px 12px}
 <h1>Extraliga – Play off</h1>
 
 <div class="bracket">
-<div class="round">
-<h2>Semifinále</h2>
-<div class="match">
-<div class="team"><span>Semifinále 1 – tým A</span><input type="number"></div>
-<div class="team"><span>Semifinále 1 – tým B</span><input type="number"></div>
-</div>
-<div class="match">
-<div class="team"><span>Semifinále 2 – tým C</span><input type="number"></div>
-<div class="team"><span>Semifinále 2 – tým D</span><input type="number"></div>
-</div>
-</div>
 
-<div class="round">
-<h2>Finále</h2>
-<div class="match">
-<div class="team"><span>Vítěz SF1</span><input type="number"></div>
-<div class="team"><span>Vítěz SF2</span><input type="number"></div>
-</div>
-</div>
+<div class="column">
+<div class="title">1. Semifinále</div>
+<table>
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td class="team">Tým 1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+<tr><td class="team">Tým 2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+</table>
+
+<div class="title">2. Semifinále</div>
+<table>
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td class="team">Tým 3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+<tr><td class="team">Tým 4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+</table>
 </div>
 
-<div class="admin">
-<h2>Admin – zápis výsledku (play off)</h2>
+<div class="column">
+<div class="title">Finále</div>
+<table>
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td class="team">Vítěz SF1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+<tr><td class="team">Vítěz SF2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="series"></td></tr>
+</table>
+</div>
 
-<label>Fáze:</label>
-<select>
-<option>Semifinále 1</option>
-<option>Semifinále 2</option>
-<option>Finále</option>
-</select><br><br>
+</div>
 
-<label>Tým domácí:</label>
-<input placeholder="zatím neurčeno"><br><br>
-
-<label>Tým hosté:</label>
-<input placeholder="zatím neurčeno"><br><br>
-
-<label>Skóre:</label>
-<input type="number" style="width:60px"> :
-<input type="number" style="width:60px"><br><br>
-
-<button>Uložit výsledek</button>
-
-<p style="color:#666;margin-top:10px">
-Zatím bez logiky – pouze příprava rozhraní.
+<p style="margin-top:40px;color:#666">
+Zatím pouze struktura pavouka (bez logiky). Automatika doplněna později.
 </p>
-</div>
 
 </div>
-
 </body>
 </html>
