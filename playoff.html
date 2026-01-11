@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Extraliga – Play off</title>
+<style>
+body{margin:0;font-family:Arial;background:#f4f4f4}
+nav{background:#1fa9e0}
+.menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:0 20px}
+.menu-item{position:relative}
+.menu-item>a{display:block;color:white;text-decoration:none;font-weight:bold;padding:14px 12px}
+.menu-item>a.active{background:white;color:#1fa9e0;border-radius:4px}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:220px;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
+.dropdown a:hover{background:#f0f0f0}
+.menu-item:hover .dropdown{display:block}
+
+.wrapper{max-width:1200px;margin:0 auto;background:white;min-height:100vh;padding:30px}
+
+h1{text-align:center}
+
+.bracket{display:flex;justify-content:space-between;margin-top:40px}
+.round{width:30%}
+.match{border:2px solid #1fa9e0;border-radius:6px;padding:10px;margin-bottom:20px}
+.team{display:flex;justify-content:space-between;margin:6px 0}
+.team input{width:40px}
+
+.final{width:30%;margin:0 auto}
+
+.note{color:#666;text-align:center;margin-top:20px}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="menu">
+
+<div class="menu-item">
+<a class="active">Extraliga</a>
+<div class="dropdown">
+<a href="index.html">Extraliga – základní část</a>
+<a href="#">Extraliga – play off</a>
+</div>
+</div>
+
+<div class="menu-item">
+<a>Mistrovství světa</a>
+<div class="dropdown">
+<a href="#">MS – základní skupiny</a>
+<a href="#">MS – play off</a>
+</div>
+</div>
+
+<div class="menu-item">
+<a>Olympijský turnaj</a>
+<div class="dropdown">
+<a href="#">OH – skupiny</a>
+<a href="#">OH – play off</a>
+</div>
+</div>
+
+<div class="menu-item">
+<a>Světový pohár</a>
+<div class="dropdown">
+<a href="#">SP – skupiny</a>
+<a href="#">SP – play off</a>
+</div>
+</div>
+
+</div>
+</nav>
+
+<div class="wrapper">
+
+<h1>Extraliga – Play off</h1>
+
+<div class="bracket">
+
+<div class="round">
+<h2>Semifinále</h2>
+
+<div class="match">
+<div class="team">
+<span>Tým A</span>
+<input type="number">
+</div>
+<div class="team">
+<span>Tým B</span>
+<input type="number">
+</div>
+</div>
+
+<div class="match">
+<div class="team">
+<span>Tým C</span>
+<input type="number">
+</div>
+<div class="team">
+<span>Tým D</span>
+<input type="number">
+</div>
+</div>
+</div>
+
+<div class="round final">
+<h2>Finále</h2>
+
+<div class="match">
+<div class="team">
+<span>Vítěz SF1</span>
+<input type="number">
+</div>
+<div class="team">
+<span>Vítěz SF2</span>
+<input type="number">
+</div>
+</div>
+</div>
+
+</div>
+
+<p class="note">
+Zatím nejsou definovány týmy – pavouk je připraven pro budoucí napojení na tabulku.
+</p>
+
+</div>
+
+</body>
+</html>
