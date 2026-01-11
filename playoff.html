@@ -16,18 +16,14 @@ nav{background:#1fa9e0}
 .menu-item:hover .dropdown{display:block}
 
 .wrapper{max-width:1200px;margin:0 auto;background:white;min-height:100vh;padding:30px}
-
 h1{text-align:center}
-
 .bracket{display:flex;justify-content:space-between;margin-top:40px}
 .round{width:30%}
 .match{border:2px solid #1fa9e0;border-radius:6px;padding:10px;margin-bottom:20px}
 .team{display:flex;justify-content:space-between;margin:6px 0}
 .team input{width:40px}
-
 .final{width:30%;margin:0 auto}
-
-.note{color:#666;text-align:center;margin-top:20px}
+.note{text-align:center;color:#666}
 </style>
 </head>
 <body>
@@ -36,10 +32,10 @@ h1{text-align:center}
 <div class="menu">
 
 <div class="menu-item">
-<a class="active">Extraliga</a>
+<a>Extraliga</a>
 <div class="dropdown">
 <a href="index.html">Extraliga – základní část</a>
-<a href="#">Extraliga – play off</a>
+<a href="playoff.html" class="active">Extraliga – play off</a>
 </div>
 </div>
 
@@ -71,58 +67,31 @@ h1{text-align:center}
 </nav>
 
 <div class="wrapper">
-
 <h1>Extraliga – Play off</h1>
 
 <div class="bracket">
-
 <div class="round">
 <h2>Semifinále</h2>
-
 <div class="match">
-<div class="team">
-<span>Tým A</span>
-<input type="number">
+<div class="team"><span>Tým A</span><input type="number"></div>
+<div class="team"><span>Tým B</span><input type="number"></div>
 </div>
-<div class="team">
-<span>Tým B</span>
-<input type="number">
-</div>
-</div>
-
 <div class="match">
-<div class="team">
-<span>Tým C</span>
-<input type="number">
-</div>
-<div class="team">
-<span>Tým D</span>
-<input type="number">
-</div>
+<div class="team"><span>Tým C</span><input type="number"></div>
+<div class="team"><span>Tým D</span><input type="number"></div>
 </div>
 </div>
 
 <div class="round final">
 <h2>Finále</h2>
-
 <div class="match">
-<div class="team">
-<span>Vítěz SF1</span>
-<input type="number">
-</div>
-<div class="team">
-<span>Vítěz SF2</span>
-<input type="number">
+<div class="team"><span>Vítěz SF1</span><input type="number"></div>
+<div class="team"><span>Vítěz SF2</span><input type="number"></div>
 </div>
 </div>
 </div>
 
-</div>
-
-<p class="note">
-Zatím nejsou definovány týmy – pavouk je připraven pro budoucí napojení na tabulku.
-</p>
-
+<p class="note">Zatím nejsou definované týmy – pavouk je připraven.</p>
 </div>
 
 </body>
