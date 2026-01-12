@@ -5,44 +5,30 @@
 <title>Extraliga – Play off</title>
 <style>
 body{margin:0;font-family:Arial;background:#f4f4f4}
-
-/* MENU */
 nav{background:#1fa9e0}
 .menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:0 20px}
 .menu-item{position:relative}
 .menu-item>a{display:block;color:white;text-decoration:none;font-weight:bold;padding:14px 12px}
-.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:240px;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:240px}
 .dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
 .menu-item:hover .dropdown{display:block}
-
-/* LAYOUT */
-.wrapper{max-width:1500px;margin:0 auto;background:white;min-height:100vh;padding:30px}
-h1{text-align:center;margin-bottom:30px}
-
-/* BRACKET */
-.bracket{position:relative;display:grid;grid-template-columns:1fr 120px 1fr;column-gap:40px}
+.wrapper{max-width:1350px;margin:0 auto;background:white;min-height:100vh;padding:24px}
+h1{text-align:center;margin-bottom:20px;font-size:28px}
+.bracket{position:relative;display:grid;grid-template-columns:1fr 100px 1fr;column-gap:30px;transform:scale(0.9);transform-origin:top center}
 .column{position:relative}
-.title{font-weight:bold;margin:20px 0 6px}
-
-/* TABLE STYLE */
+.title{font-weight:bold;margin:16px 0 6px}
 table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #999;padding:6px;text-align:center}
+th,td{border:1px solid #999;padding:5px;text-align:center;font-size:13px}
 th{background:#1fa9e0;color:white}
 .team{text-align:left}
-.series{font-weight:bold}
-
-/* CONNECTORS */
 .line-h{position:absolute;height:3px;background:#000}
 .line-v{position:absolute;width:3px;background:#000}
-
-.sf1-h{top:120px;left:100%;width:60px}
-.sf2-h{top:320px;left:100%;width:60px}
-.mid-v{top:120px;left:calc(100% + 60px);height:200px}
-.fin-h{top:220px;left:calc(100% + 60px);width:60px}
-
-/* ADMIN */
-.admin{border-top:3px solid #1fa9e0;padding-top:30px;margin-top:50px}
-label{display:inline-block;width:140px}
+.sf1-h{top:108px;left:100%;width:50px}
+.sf2-h{top:278px;left:100%;width:50px}
+.mid-v{top:108px;left:calc(100% + 50px);height:170px}
+.fin-h{top:193px;left:calc(100% + 50px);width:50px}
+.admin{border-top:3px solid #1fa9e0;padding-top:24px;margin-top:40px}
+label{display:inline-block;width:130px}
 input,select{padding:4px}
 button{padding:6px 12px}
 </style>
@@ -75,7 +61,7 @@ button{padding:6px 12px}
 </table>
 
 <div class="title">2. Semifinále</div>
-<table style="margin-top:70px">
+<table style="margin-top:60px">
 <tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
 <tr><td class="team">Tým 3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td class="team">Tým 4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -90,7 +76,7 @@ button{padding:6px 12px}
 <div></div>
 
 <div class="column">
-<div class="title" style="margin-top:200px">Finále</div>
+<div class="title" style="margin-top:170px">Finále</div>
 <table>
 <tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
 <tr><td class="team">Vítěz SF1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
