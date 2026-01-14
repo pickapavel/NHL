@@ -1,135 +1,99 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
 <title>Extraliga – Play off</title>
 <style>
-body{font-family:Arial;margin:0}
-nav{background:#27a8e0}
-nav ul{list-style:none;margin:0;padding:0;display:flex;justify-content:center}
-nav li{position:relative}
-nav a{display:block;padding:15px 20px;color:#fff;text-decoration:none;font-weight:bold}
-nav li:hover{background:#1b8fc2}
-nav li ul{display:none;position:absolute;top:50px;left:0;background:#27a8e0}
-nav li:hover ul{display:block}
-nav li ul li{width:220px}
-
-.container{max-width:1200px;margin:auto;padding:20px}
-h1{text-align:center}
-.section-title{margin-top:30px;font-weight:bold}
-
-.table{border-collapse:collapse;width:100%;margin-bottom:40px}
-.table th,.table td{border:1px solid #999;padding:6px;text-align:center}
-.table th{background:#bfe0f5}
-.table td.team{text-align:left;padding-left:10px;font-weight:bold}
-
-.bracket{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:10px}
-.lines{display:flex;flex-direction:column;align-items:center}
-.lines div{width:80px;height:2px;background:#000;margin:60px 0}
-
-.admin{border-top:3px solid #2aa7df;padding-top:20px}
+body { font-family: Arial; }
+table { border-collapse: collapse; margin-bottom: 30px; }
+th, td { border: 1px solid #888; padding: 6px 8px; text-align: center; }
+th:first-child, td:first-child { text-align: left; }
 </style>
 </head>
 <body>
 
-<nav>
-<ul>
-<li>
-<a href="#">Extraliga</a>
-<ul>
-<li><a href="index.html">Extraliga – základní část</a></li>
-<li><a href="playoff.html">Extraliga – play off</a></li>
-</ul>
-</li>
-<li><a href="ms.html">Mistrovství světa</a></li>
-<li><a href="olympiada.html">Olympijský turnaj</a></li>
-<li><a href="worldcup.html">Světový pohár</a></li>
-</ul>
-</nav>
-
-<div class="container">
 <h1>Extraliga – Play off</h1>
 
-<div class="bracket">
-<div>
-<div class="section-title">1. Semifinále</div>
-<table class="table">
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<h2>1. Semifinále</h2>
+<table id="sf1">
+<tr>
+<th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th>
+</tr>
+<tr><td>HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 </table>
 
-<div class="section-title">2. Semifinále</div>
-<table class="table">
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<h2>2. Semifinále</h2>
+<table id="sf2">
+<tr>
+<th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th>
+</tr>
+<tr><td>HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 </table>
-</div>
 
-<div class="lines"><div></div><div></div></div>
-
-<div>
-<div class="section-title">Finále</div>
-<table class="table">
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">Vítěz SF1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">Vítěz SF2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</table>
-</div>
-</div>
-
-<div class="admin">
 <h2>Admin – zápis výsledku (play off)</h2>
 
-Heslo: <input type="password"><br><br>
+<label>Heslo:
+<input id="heslo" type="password"></label><br><br>
 
-Fáze:
-<select id="phase">
+<label>Fáze:
+<select id="faze">
 <option value="sf1">Semifinále 1</option>
 <option value="sf2">Semifinále 2</option>
-<option value="fin">Finále</option>
-</select><br><br>
+</select></label><br><br>
 
-Domácí:
-<select id="home"></select><br><br>
+<label>Domácí:
+<select id="domaci">
+<option>HC Chemopetrol Litvínov</option>
+<option>HC Dynamo Pardubice</option>
+<option>HC Geus Okna Kladno</option>
+<option>HC Sparta Praha</option>
+</select></label><br><br>
 
-Hosté:
-<select id="away"></select><br><br>
+<label>Hosté:
+<select id="hoste">
+<option>HC Chemopetrol Litvínov</option>
+<option>HC Dynamo Pardubice</option>
+<option>HC Geus Okna Kladno</option>
+<option>HC Sparta Praha</option>
+</select></label><br><br>
 
-Skóre:
-<input size="2"> : <input size="2"><br><br>
+<label>Skóre:
+<input id="g1" size="2"> :
+<input id="g2" size="2"></label><br><br>
 
-<button>Uložit výsledek</button>
-</div>
-
-</div>
+<button onclick="uloz()">Uložit výsledek</button>
 
 <script>
-const teams = {
-  sf1: ["HC Chemopetrol Litvínov","HC Dynamo Pardubice"],
-  sf2: ["HC Geus Okna Kladno","HC Sparta Praha"],
-  fin: ["Vítěz SF1","Vítěz SF2"]
-};
+function uloz() {
+  if (document.getElementById('heslo').value !== 'Lokomotiva') {
+    alert('Špatné heslo');
+    return;
+  }
 
-function fillTeams(){
-  const phase = document.getElementById("phase").value;
-  const home = document.getElementById("home");
-  const away = document.getElementById("away");
-  home.innerHTML = "";
-  away.innerHTML = "";
-  teams[phase].forEach(t=>{
-    const o1 = document.createElement("option");
-    o1.value = t; o1.textContent = t;
-    const o2 = document.createElement("option");
-    o2.value = t; o2.textContent = t;
-    home.appendChild(o1);
-    away.appendChild(o2);
-  });
+  const faze = document.getElementById('faze').value;
+  const domaci = document.getElementById('domaci').value;
+  const hoste = document.getElementById('hoste').value;
+  const g1 = document.getElementById('g1').value;
+  const g2 = document.getElementById('g2').value;
+
+  const table = document.getElementById(faze);
+  const rows = table.rows;
+
+  for (let r = 1; r <= 2; r++) {
+    if (rows[r].cells[0].innerText === domaci) {
+      for (let c = 1; c <= 7; c++) {
+        if (rows[r].cells[c].innerText === '') {
+          rows[r].cells[c].innerText = g1 + ':' + g2;
+          alert('Výsledek uložen');
+          return;
+        }
+      }
+    }
+  }
 }
-
-document.getElementById("phase").addEventListener("change", fillTeams);
-fillTeams();
 </script>
 
 </body>
