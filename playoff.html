@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -8,10 +7,14 @@
 body{font-family:Arial;margin:0}
 .container{max-width:1200px;margin:auto;padding:20px}
 h1{text-align:center}
-.bracket{display:grid;grid-template-columns:1fr 200px 1fr;gap:20px;align-items:center}
-.box{border:2px solid #2aa7df;padding:10px}
-.line{height:2px;background:#000}
-.admin{margin-top:40px;border-top:3px solid #2aa7df;padding-top:20px}
+.section-title{margin-top:30px;font-weight:bold}
+.table{border-collapse:collapse;width:100%;margin-bottom:40px}
+.table th,.table td{border:1px solid #999;padding:6px;text-align:center}
+.table th{background:#bfe0f5}
+.bracket{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;gap:10px}
+.lines{display:flex;flex-direction:column;align-items:center}
+.lines div{width:60px;height:2px;background:#000;margin:55px 0}
+.admin{border-top:3px solid #2aa7df;padding-top:20px}
 </style>
 </head>
 <body>
@@ -19,31 +22,35 @@ h1{text-align:center}
 <h1>Extraliga – Play off</h1>
 
 <div class="bracket">
-  <div>
-    <div class="box">
-      <b>Semifinále 1</b><br>
-      HC Chemopetrol Litvínov<br>
-      HC Dynamo Pardubice
-    </div>
-    <br>
-    <div class="box">
-      <b>Semifinále 2</b><br>
-      HC Geus Okna Kladno<br>
-      HC Sparta Praha
-    </div>
-  </div>
+<div>
+<div class="section-title">1. Semifinále</div>
+<table class="table">
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td>HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
 
-  <div>
-    <div class="line"></div>
-    <br><br><br>
-    <div class="line"></div>
-  </div>
+<div class="section-title">2. Semifinále</div>
+<table class="table">
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td>HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+</div>
 
-  <div class="box">
-    <b>Finále</b><br>
-    Vítěz SF1<br>
-    Vítěz SF2
-  </div>
+<div class="lines">
+<div></div>
+<div></div>
+</div>
+
+<div>
+<div class="section-title">Finále</div>
+<table class="table">
+<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
+<tr><td>Vítěz SF1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Vítěz SF2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+</div>
 </div>
 
 <div class="admin">
