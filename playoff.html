@@ -12,16 +12,14 @@ nav{background:#1fa9e0}
 .dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:240px}
 .dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
 .menu-item:hover .dropdown{display:block}
-
 .wrapper{max-width:1350px;margin:0 auto;background:white;min-height:100vh;padding:24px}
 h1{text-align:center;margin-bottom:20px;font-size:28px}
-
 .admin{border-top:3px solid #1fa9e0;padding-top:24px;margin-top:40px}
 label{display:inline-block;width:150px}
 input,select{padding:6px;width:220px}
 .score input{width:60px}
 button{padding:8px 16px;font-weight:bold}
-
+.error{color:red;font-weight:bold;margin-top:10px}
 </style>
 </head>
 <body>
@@ -62,16 +60,19 @@ button{padding:8px 16px;font-weight:bold}
 
 <label>Skóre:</label>
 <span class="score">
-<input type="number" min="0"> :
-<input type="number" min="0">
+<input type="number" id="gh" min="0"> :
+<input type="number" id="ga" min="0">
 </span><br><br>
 
-<button>Uložit výsledek</button>
+<button onclick="save()">Uložit výsledek</button>
+<div id="msg" class="error"></div>
 </div>
 
 </div>
 
 <script>
+const PASSWORD = "Lokomotiva";
+
 const teams = {
   sf1: ["HC Chemopetrol Litvínov","HC Dynamo Pardubice"],
   sf2: ["HC Geus Okna Kladno","HC Sparta Praha"],
@@ -79,18 +80,42 @@ const teams = {
 };
 
 function fillTeams() {
-  const phase = document.getElementById("phase").value;
-  const home = document.getElementById("home");
-  const away = document.getElementById("away");
+  const phase = phaseSel.value;
   home.innerHTML = "";
   away.innerHTML = "";
   teams[phase].forEach(t => {
     home.add(new Option(t,t));
     away.add(new Option(t,t));
   });
+  away.selectedIndex = 1;
 }
 
-document.getElementById("phase").addEventListener("change", fillTeams);
+function save() {
+  msg.textContent = "";
+  if(password.value !== PASSWORD){
+    msg.textContent = "Špatné heslo";
+    return;
+  }
+  if(home.value === away.value){
+    msg.textContent = "Domácí a hosté nemohou být stejný tým";
+    return;
+  }
+  if(gh.value === "" || ga.value === ""){
+    msg.textContent = "Zadej skóre";
+    return;
+  }
+  alert("Výsledek uložen (logika zápisu bude další krok)");
+}
+
+const phaseSel = document.getElementById("phase");
+const home = document.getElementById("home");
+const away = document.getElementById("away");
+const password = document.getElementById("password");
+const gh = document.getElementById("gh");
+const ga = document.getElementById("ga");
+const msg = document.getElementById("msg");
+
+phaseSel.addEventListener("change", fillTeams);
 fillTeams();
 </script>
 
