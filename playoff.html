@@ -1,123 +1,66 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
 <title>Extraliga – Play off</title>
 <style>
-body{margin:0;font-family:Arial;background:#f4f4f4}
-nav{background:#1fa9e0}
-.menu{max-width:1200px;margin:0 auto;display:flex;gap:20px;padding:0 20px}
-.menu-item{position:relative}
-.menu-item>a{display:block;color:white;text-decoration:none;font-weight:bold;padding:14px 12px}
-.dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:240px}
-.dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
-.menu-item:hover .dropdown{display:block}
-.wrapper{max-width:1350px;margin:0 auto;background:white;min-height:100vh;padding:24px}
-h1{text-align:center;margin-bottom:20px;font-size:28px}
-.admin{border-top:3px solid #1fa9e0;padding-top:24px;margin-top:40px}
-label{display:inline-block;width:150px}
-input,select{padding:6px;width:220px}
-.score input{width:60px}
-button{padding:8px 16px;font-weight:bold}
-.error{color:red;font-weight:bold;margin-top:10px}
+body{font-family:Arial;margin:0}
+.container{max-width:1200px;margin:auto;padding:20px}
+h1{text-align:center}
+.bracket{display:grid;grid-template-columns:1fr 200px 1fr;gap:20px;align-items:center}
+.box{border:2px solid #2aa7df;padding:10px}
+.line{height:2px;background:#000}
+.admin{margin-top:40px;border-top:3px solid #2aa7df;padding-top:20px}
 </style>
 </head>
 <body>
+<div class="container">
+<h1>Extraliga – Play off</h1>
 
-<nav>
-<div class="menu">
-  <div class="menu-item">
-    <a>Extraliga</a>
-    <div class="dropdown">
-      <a href="index.html">Extraliga – základní část</a>
-      <a href="playoff.html">Extraliga – play off</a>
+<div class="bracket">
+  <div>
+    <div class="box">
+      <b>Semifinále 1</b><br>
+      HC Chemopetrol Litvínov<br>
+      HC Dynamo Pardubice
+    </div>
+    <br>
+    <div class="box">
+      <b>Semifinále 2</b><br>
+      HC Geus Okna Kladno<br>
+      HC Sparta Praha
     </div>
   </div>
-</div>
-</nav>
 
-<div class="wrapper">
-<h1>Extraliga – Play off</h1>
+  <div>
+    <div class="line"></div>
+    <br><br><br>
+    <div class="line"></div>
+  </div>
+
+  <div class="box">
+    <b>Finále</b><br>
+    Vítěz SF1<br>
+    Vítěz SF2
+  </div>
+</div>
 
 <div class="admin">
 <h2>Admin – zápis výsledku (play off)</h2>
-
-<label>Heslo:</label>
-<input type="password" id="password"><br><br>
-
-<label>Fáze:</label>
-<select id="phase">
-  <option value="sf1">Semifinále 1</option>
-  <option value="sf2">Semifinále 2</option>
-  <option value="final">Finále</option>
+Heslo: <input type="password"><br><br>
+Fáze:
+<select>
+<option>Semifinále 1</option>
+<option>Semifinále 2</option>
+<option>Finále</option>
 </select><br><br>
-
-<label>Tým domácí:</label>
-<select id="home"></select><br><br>
-
-<label>Tým hosté:</label>
-<select id="away"></select><br><br>
-
-<label>Skóre:</label>
-<span class="score">
-<input type="number" id="gh" min="0"> :
-<input type="number" id="ga" min="0">
-</span><br><br>
-
-<button onclick="save()">Uložit výsledek</button>
-<div id="msg" class="error"></div>
+Domácí: <select></select><br><br>
+Hosté: <select></select><br><br>
+Skóre: <input size="2"> : <input size="2"><br><br>
+<button>Uložit výsledek</button>
 </div>
 
 </div>
-
-<script>
-const PASSWORD = "Lokomotiva";
-
-const teams = {
-  sf1: ["HC Chemopetrol Litvínov","HC Dynamo Pardubice"],
-  sf2: ["HC Geus Okna Kladno","HC Sparta Praha"],
-  final: ["Vítěz SF1","Vítěz SF2"]
-};
-
-function fillTeams() {
-  const phase = phaseSel.value;
-  home.innerHTML = "";
-  away.innerHTML = "";
-  teams[phase].forEach(t => {
-    home.add(new Option(t,t));
-    away.add(new Option(t,t));
-  });
-  away.selectedIndex = 1;
-}
-
-function save() {
-  msg.textContent = "";
-  if(password.value !== PASSWORD){
-    msg.textContent = "Špatné heslo";
-    return;
-  }
-  if(home.value === away.value){
-    msg.textContent = "Domácí a hosté nemohou být stejný tým";
-    return;
-  }
-  if(gh.value === "" || ga.value === ""){
-    msg.textContent = "Zadej skóre";
-    return;
-  }
-  alert("Výsledek uložen (logika zápisu bude další krok)");
-}
-
-const phaseSel = document.getElementById("phase");
-const home = document.getElementById("home");
-const away = document.getElementById("away");
-const password = document.getElementById("password");
-const gh = document.getElementById("gh");
-const ga = document.getElementById("ga");
-const msg = document.getElementById("msg");
-
-phaseSel.addEventListener("change", fillTeams);
-fillTeams();
-</script>
-
 </body>
 </html>
