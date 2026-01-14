@@ -12,25 +12,16 @@ nav{background:#1fa9e0}
 .dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;min-width:240px}
 .dropdown a{display:block;padding:10px 12px;color:#1fa9e0;text-decoration:none}
 .menu-item:hover .dropdown{display:block}
+
 .wrapper{max-width:1350px;margin:0 auto;background:white;min-height:100vh;padding:24px}
 h1{text-align:center;margin-bottom:20px;font-size:28px}
-.bracket{position:relative;display:grid;grid-template-columns:1fr 100px 1fr;column-gap:30px;transform:scale(0.9);transform-origin:top center}
-.column{position:relative}
-.title{font-weight:bold;margin:16px 0 6px}
-table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #999;padding:5px;text-align:center;font-size:13px}
-th{background:#1fa9e0;color:white}
-.team{text-align:left}
-.line-h{position:absolute;height:3px;background:#000}
-.line-v{position:absolute;width:3px;background:#000}
-.sf1-h{top:108px;left:100%;width:50px}
-.sf2-h{top:278px;left:100%;width:50px}
-.mid-v{top:108px;left:calc(100% + 50px);height:170px}
-.fin-h{top:193px;left:calc(100% + 50px);width:50px}
+
 .admin{border-top:3px solid #1fa9e0;padding-top:24px;margin-top:40px}
-label{display:inline-block;width:130px}
-input,select{padding:4px}
-button{padding:6px 12px}
+label{display:inline-block;width:150px}
+input,select{padding:6px;width:220px}
+.score input{width:60px}
+button{padding:8px 16px;font-weight:bold}
+
 </style>
 </head>
 <body>
@@ -50,60 +41,58 @@ button{padding:6px 12px}
 <div class="wrapper">
 <h1>Extraliga – Play off</h1>
 
-<div class="bracket">
-
-<div class="column">
-<div class="title">1. Semifinále</div>
-<table>
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</table>
-
-<div class="title">2. Semifinále</div>
-<table style="margin-top:60px">
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</table>
-
-<div class="line-h sf1-h"></div>
-<div class="line-h sf2-h"></div>
-<div class="line-v mid-v"></div>
-<div class="line-h fin-h"></div>
-</div>
-
-<div></div>
-
-<div class="column">
-<div class="title" style="margin-top:170px">Finále</div>
-<table>
-<tr><th>Tým</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Z5</th><th>Z6</th><th>Z7</th><th>Stav série</th></tr>
-<tr><td class="team">Vítěz SF1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td class="team">Vítěz SF2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</table>
-</div>
-
-</div>
-
 <div class="admin">
 <h2>Admin – zápis výsledku (play off)</h2>
+
+<label>Heslo:</label>
+<input type="password" id="password"><br><br>
+
 <label>Fáze:</label>
-<select>
-<option>Semifinále 1</option>
-<option>Semifinále 2</option>
-<option>Finále</option>
+<select id="phase">
+  <option value="sf1">Semifinále 1</option>
+  <option value="sf2">Semifinále 2</option>
+  <option value="final">Finále</option>
 </select><br><br>
+
 <label>Tým domácí:</label>
-<input><br><br>
+<select id="home"></select><br><br>
+
 <label>Tým hosté:</label>
-<input><br><br>
+<select id="away"></select><br><br>
+
 <label>Skóre:</label>
-<input type="number" style="width:60px"> :
-<input type="number" style="width:60px"><br><br>
+<span class="score">
+<input type="number" min="0"> :
+<input type="number" min="0">
+</span><br><br>
+
 <button>Uložit výsledek</button>
 </div>
 
 </div>
+
+<script>
+const teams = {
+  sf1: ["HC Chemopetrol Litvínov","HC Dynamo Pardubice"],
+  sf2: ["HC Geus Okna Kladno","HC Sparta Praha"],
+  final: ["Vítěz SF1","Vítěz SF2"]
+};
+
+function fillTeams() {
+  const phase = document.getElementById("phase").value;
+  const home = document.getElementById("home");
+  const away = document.getElementById("away");
+  home.innerHTML = "";
+  away.innerHTML = "";
+  teams[phase].forEach(t => {
+    home.add(new Option(t,t));
+    away.add(new Option(t,t));
+  });
+}
+
+document.getElementById("phase").addEventListener("change", fillTeams);
+fillTeams();
+</script>
+
 </body>
 </html>
