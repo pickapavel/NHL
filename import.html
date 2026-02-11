@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Import statistik ze zápasu</title>
+<title>Import statistik ze zápasu (OCR)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -71,23 +71,62 @@ th{background:#cfe8f7}
 </div>
 
 <script>
+
+const TEAM_MAP = {
+  "SLA": "HC Slavia Praha",
+  "KVA": "HC Energie Karlovy Vary",
+  "CEB": "HC Mountfield České Budějovice",
+  "LIB": "HC Bílí Tygři Liberec",
+  "SPA": "HC Sparta Praha",
+  "PAR": "HC Moeller Pardubice",
+  "LIT": "HC Litvínov",
+  "KLA": "HC Geus Okna Kladno",
+  "VIT": "HC Vítkovice Steel",
+  "PLZ": "HC Lasselsberger Plzeň",
+  "ZNO": "HC Znojemští Orli",
+  "ZLI": "HC RI OKNA Zlín",
+  "TRI": "HC Oceláři Třinec",
+  "MBL": "BK Mladá Boleslav"
+};
+
 document.getElementById("img").addEventListener("change", async (e)=>{
+
   const file = e.target.files[0];
   if(!file) return;
 
   const result = await Tesseract.recognize(file,'eng');
-  console.log(result.data.text);
+  const text = result.data.text.toUpperCase();
+  console.log(text);
+
+  let awayTeam = "Hosté";
+  let homeTeam = "Domácí";
+
+  Object.keys(TEAM_MAP).forEach(code=>{
+    if(text.includes(code)){
+      if(awayTeam==="Hosté") awayTeam = TEAM_MAP[code];
+      else if(homeTeam==="Domácí") homeTeam = TEAM_MAP[code];
+    }
+  });
 
   const table = document.getElementById("statsTable");
 
   const awayRow = table.insertRow();
-  awayRow.innerHTML = "<td class='left'>Hosté</td><td>Hosté</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+  awayRow.innerHTML =
+  "<td class='left'>"+awayTeam+"</td><td>Hosté</td>" +
+  "<td></td><td></td><td></td><td></td><td></td><td></td>" +
+  "<td></td><td></td><td></td><td></td>" +
+  "<td></td><td></td><td></td><td></td>";
 
   const homeRow = table.insertRow();
-  homeRow.innerHTML = "<td class='left'>Domácí</td><td>Domácí</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+  homeRow.innerHTML =
+  "<td class='left'>"+homeTeam+"</td><td>Domácí</td>" +
+  "<td></td><td></td><td></td><td></td><td></td><td></td>" +
+  "<td></td><td></td><td></td><td></td>" +
+  "<td></td><td></td><td></td><td></td>";
 
-  alert("Obrázek načten. OCR text je v console (F12).");
+  alert("OCR načteno. Týmy rozpoznány.");
 });
+
 </script>
 
 </body>
