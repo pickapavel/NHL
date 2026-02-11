@@ -6,7 +6,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-<!-- FIREBASE (doplníš svoje údaje) -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
@@ -21,6 +21,7 @@ th{background:#cfe8f7}
 button{padding:8px 14px;margin-top:10px}
 </style>
 </head>
+
 <body>
 
 <div class="wrapper">
@@ -58,8 +59,8 @@ button{padding:8px 14px;margin-top:10px}
 
 <script>
 
+/* ================= FIREBASE ================= */
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
@@ -71,6 +72,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
 /* ============================================ */
 
 const TEAM_MAP = {
@@ -82,11 +84,15 @@ const TEAM_MAP = {
 
 let xmlData = [];
 
+/* ===== TABULKA ===== */
+
 function addRow(data){
   const tr=document.createElement("tr");
   tr.innerHTML=data.map((c,i)=>"<td class='"+(i==0?"left":"")+"'>"+c+"</td>").join("");
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
+
+/* ===== OCR POMOCNÉ ===== */
 
 function findLine(text, keyword){
   return text.split("\n").find(l => l.includes(keyword)) || "";
@@ -95,6 +101,17 @@ function findLine(text, keyword){
 function numbers(line){
   return line.match(/[0-9:]+/g) || [];
 }
+
+/* ===== NAČTENÍ EXISTUJÍCÍCH DAT Z FIREBASE ===== */
+
+db.ref("ocr_statistiky").on("child_added", snap=>{
+  const d = snap.val();
+  addRow(d.away);
+  addRow(d.home);
+  xmlData.push({away:d.away,home:d.home});
+});
+
+/* ===== OCR IMPORT ===== */
 
 document.getElementById("img").addEventListener("change", async (e)=>{
 
@@ -120,33 +137,52 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   const attack=numbers(findLine(text,"TIMEONATTACK"));
   const pp=numbers(findLine(text,"PP"));
 
-  const awayRow=[away,"Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
-  const homeRow=[home,"Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
+  const awayRow=[
+    away,"Hosté",
+    shots[0],shots[1],
+    hits[0],hits[1],
+    faceoffs[0],faceoffs[1],
+    attack[0],attack[1],
+    pp[0],pp[0],
+    "Ne"
+  ];
+
+  const homeRow=[
+    home,"Domácí",
+    shots[1],shots[0],
+    hits[1],hits[0],
+    faceoffs[1],faceoffs[0],
+    attack[1],attack[0],
+    pp[1],pp[1],
+    "Ne"
+  ];
 
   addRow(awayRow);
   addRow(homeRow);
 
-  /* ULOŽENÍ DO FIREBASE */
   db.ref("ocr_statistiky").push({
     away: awayRow,
     home: homeRow,
     time: Date.now()
   });
 
-  /* ULOŽENÍ DO XML PAMĚTI */
   xmlData.push({away:awayRow,home:homeRow});
 
-  alert("Uloženo do Firebase + připraveno do XML.");
+  alert("Uloženo do Firebase + XML.");
 });
+
+/* ===== XML EXPORT ===== */
 
 function downloadXML(){
   let xml = '<?xml version="1.0" encoding="UTF-8"?><zapasy>';
+
   xmlData.forEach(z=>{
     xml += "<zapas>";
     xml += "<hoste>"+z.away.join("|")+"</hoste>";
     xml += "<domaci>"+z.home.join("|")+"</domaci>";
     xml += "</zapas>";
   });
+
   xml += "</zapasy>";
 
   const blob = new Blob([xml],{type:"text/xml"});
