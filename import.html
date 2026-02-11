@@ -5,7 +5,6 @@
 <title>Import statistik ze zápasu (OCR)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
@@ -58,7 +57,8 @@ button{padding:8px 14px;margin-top:10px}
 
 <script>
 
-/* FIREBASE */
+/* ================= FIREBASE ================= */
+
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
@@ -72,48 +72,55 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* MAPA TÝMŮ */
+/* ================= TEAM MAP ================= */
+
 const TEAM_MAP = {
-  "KLA": "HC Geus Okna Kladno",
-  "TRI": "HC Oceláři Třinec",
-  "SPA": "HC Sparta Praha",
-  "LIT": "HC Litvínov"
+  "KLA":"HC Geus Okna Kladno",
+  "TRI":"HC Oceláři Třinec",
+  "SPA":"HC Sparta Praha",
+  "LIT":"HC Litvínov"
 };
 
-let allData = [];
+let allData=[];
 
-/* TABULKA */
+/* ================= TABULKA ================= */
+
 function addRow(data){
   const tr=document.createElement("tr");
   tr.innerHTML=data.map((c,i)=>
-    "<td class='"+(i==0?"left":"")+"'>"+c+"</td>"
+    `<td class="${i==0?'left':''}">${c||""}</td>`
   ).join("");
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
-/* NAČTENÍ Z FIREBASE PO OTEVŘENÍ */
-db.ref("ocr_statistiky").on("value", snap=>{
+/* NAČTENÍ DAT PO OTEVŘENÍ */
+db.ref("ocr_statistiky").on("value",(snap)=>{
   const tbody=document.querySelector("#statsTable tbody");
   tbody.innerHTML="";
   allData=[];
 
   snap.forEach(child=>{
     const z=child.val();
+    if(!z) return;
     addRow(z.away);
     addRow(z.home);
     allData.push(z);
   });
 });
 
-/* OCR */
-function findLine(text, keyword){
-  return text.split("\n").find(l => l.includes(keyword)) || "";
+/* ================= OCR ================= */
+
+function findLine(text,keyword){
+  return text.split("\n").find(l=>l.includes(keyword)) || "";
 }
+
 function numbers(line){
+  if(!line) return [];
   return line.match(/[0-9:]+/g) || [];
 }
 
-document.getElementById("img").addEventListener("change", async (e)=>{
+document.getElementById("img").addEventListener("change", async(e)=>{
+
   const file=e.target.files[0];
   if(!file) return;
 
@@ -136,15 +143,25 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   const attack=numbers(findLine(text,"TIMEONATTACK"));
   const pp=numbers(findLine(text,"PP"));
 
-  const awayRow=[away,"Hosté",shots[0],shots[1],hits[0],hits[1],
-                 faceoffs[0],faceoffs[1],attack[0],attack[1],
-                 pp[0],pp[0],"Ne"];
+  const awayRow=[
+    away,"Hosté",
+    shots[0]||0,shots[1]||0,
+    hits[0]||0,hits[1]||0,
+    faceoffs[0]||0,faceoffs[1]||0,
+    attack[0]||"0:00",attack[1]||"0:00",
+    pp[0]||"0/0",pp[0]||"0/0","Ne"
+  ];
 
-  const homeRow=[home,"Domácí",shots[1],shots[0],hits[1],hits[0],
-                 faceoffs[1],faceoffs[0],attack[1],attack[0],
-                 pp[1],pp[1],"Ne"];
+  const homeRow=[
+    home,"Domácí",
+    shots[1]||0,shots[0]||0,
+    hits[1]||0,hits[0]||0,
+    faceoffs[1]||0,faceoffs[0]||0,
+    attack[1]||"0:00",attack[0]||"0:00",
+    pp[1]||"0/0",pp[1]||"0/0","Ne"
+  ];
 
-  db.ref("ocr_statistiky").push({
+  await db.ref("ocr_statistiky").push({
     away:awayRow,
     home:homeRow,
     time:Date.now()
@@ -153,7 +170,8 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   alert("Uloženo do Firebase.");
 });
 
-/* XML EXPORT */
+/* ================= XML ================= */
+
 function downloadXML(){
   let xml='<?xml version="1.0" encoding="UTF-8"?><zapasy>';
   allData.forEach(z=>{
