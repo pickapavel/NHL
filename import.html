@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Import statistik ze zápasu</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
 nav{background:#22a6df}
@@ -15,7 +18,7 @@ nav{background:#22a6df}
 .menu-item:hover .dropdown{display:block}
 
 .wrapper{max-width:1200px;margin:0 auto;background:white;padding:30px;min-height:100vh}
-table{border-collapse:collapse;width:100%;margin-top:20px}
+table{border-collapse:collapse;width:100%;margin-top:20px;font-size:14px}
 th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
@@ -37,43 +40,53 @@ th{background:#cfe8f7}
 </nav>
 
 <div class="wrapper">
-<h1>Import statistik ze zápasu (obrázek)</h1>
+<h1>Import statistik ze zápasu (OCR)</h1>
 
 <div class="upload">
 <input type="file" id="img" accept="image/*">
-<p>Po nahrání se data zapíšou do tabulky (OCR logika se doplní).</p>
+<p>Po nahrání obrázku se přidají 2 řádky statistik (hosté + domácí).</p>
 </div>
 
-<table id="stats">
+<table id="statsTable">
 <tr>
-<th class="left">Statistika</th>
-<th>Hosté</th>
-<th>Domácí</th>
+<th>Tým</th>
+<th>Role</th>
+<th>Góly vstř.</th>
+<th>Góly ink.</th>
+<th>Hity dané</th>
+<th>Hity obdrž.</th>
+<th>Vhaz. vyhr.</th>
+<th>Vhaz. prohr.</th>
+<th>Čas v útoku</th>
+<th>Čas v obraně</th>
+<th>Přesilovky</th>
+<th>Využ. PP</th>
+<th>Góly 1.</th>
+<th>Góly 2.</th>
+<th>Góly 3.</th>
+<th>OT</th>
 </tr>
-<tr><td class="left">Góly vstřelené</td><td></td><td></td></tr>
-<tr><td class="left">Góly inkasované</td><td></td><td></td></tr>
-<tr><td class="left">Hity dané</td><td></td><td></td></tr>
-<tr><td class="left">Hity obdržené</td><td></td><td></td></tr>
-<tr><td class="left">Vhazování vyhrané</td><td></td><td></td></tr>
-<tr><td class="left">Vhazování prohrané</td><td></td><td></td></tr>
-<tr><td class="left">Čas v útoku</td><td></td><td></td></tr>
-<tr><td class="left">Čas v obraně</td><td></td><td></td></tr>
-<tr><td class="left">Počet přesilovek</td><td></td><td></td></tr>
-<tr><td class="left">Minuty v přesilovce</td><td></td><td></td></tr>
-<tr><td class="left">Využití přesilovek</td><td></td><td></td></tr>
-<tr><td class="left">Minuty v oslabení</td><td></td><td></td></tr>
-<tr><td class="left">Inkasované góly v oslabení</td><td></td><td></td></tr>
-<tr><td class="left">Góly 1. třetina</td><td></td><td></td></tr>
-<tr><td class="left">Góly 2. třetina</td><td></td><td></td></tr>
-<tr><td class="left">Góly 3. třetina</td><td></td><td></td></tr>
-<tr><td class="left">Rozhodnuto v prodloužení</td><td></td><td></td></tr>
 </table>
 
 </div>
 
 <script>
-document.getElementById("img").addEventListener("change",()=>{
-alert("Obrázek nahrán. OCR a parsování statistik se doplní v dalším kroku.");
+document.getElementById("img").addEventListener("change", async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const result = await Tesseract.recognize(file,'eng');
+  console.log(result.data.text);
+
+  const table = document.getElementById("statsTable");
+
+  const awayRow = table.insertRow();
+  awayRow.innerHTML = "<td class='left'>Hosté</td><td>Hosté</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+
+  const homeRow = table.insertRow();
+  homeRow.innerHTML = "<td class='left'>Domácí</td><td>Domácí</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+
+  alert("Obrázek načten. OCR text je v console (F12).");
 });
 </script>
 
