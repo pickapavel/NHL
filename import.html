@@ -59,8 +59,6 @@ button{padding:8px 14px;margin-top:10px}
 
 <script>
 
-/* ================= FIREBASE ================= */
-
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
@@ -73,8 +71,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* ============================================ */
-
 const TEAM_MAP = {
   "KLA": "HC Geus Okna Kladno",
   "TRI": "HC Oceláři Třinec",
@@ -84,21 +80,18 @@ const TEAM_MAP = {
 
 let xmlData = [];
 
-/* ===== TABULKA ===== */
-
 function addRow(data){
   const tr=document.createElement("tr");
   tr.innerHTML=data.map((c,i)=>"<td class='"+(i==0?"left":"")+"'>"+c+"</td>").join("");
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
-/* ===== NAČTENÍ DAT PŘI STARTU (FIX) ===== */
-
+/* === NAČTENÍ DAT Z FIREBASE PO OTEVŘENÍ STRÁNKY === */
 db.ref("ocr_statistiky").on("value", snapshot => {
 
   const tbody = document.querySelector("#statsTable tbody");
-  tbody.innerHTML = "";        // vyčistit tabulku
-  xmlData = [];                // vyčistit XML paměť
+  tbody.innerHTML = "";
+  xmlData = [];
 
   snapshot.forEach(child => {
     const d = child.val();
@@ -109,8 +102,6 @@ db.ref("ocr_statistiky").on("value", snapshot => {
 
 });
 
-/* ===== OCR POMOCNÉ ===== */
-
 function findLine(text, keyword){
   return text.split("\n").find(l => l.includes(keyword)) || "";
 }
@@ -118,8 +109,6 @@ function findLine(text, keyword){
 function numbers(line){
   return line.match(/[0-9:]+/g) || [];
 }
-
-/* ===== OCR IMPORT ===== */
 
 document.getElementById("img").addEventListener("change", async (e)=>{
 
@@ -173,8 +162,6 @@ document.getElementById("img").addEventListener("change", async (e)=>{
 
   alert("Uloženo do Firebase + XML.");
 });
-
-/* ===== XML EXPORT ===== */
 
 function downloadXML(){
   let xml = '<?xml version="1.0" encoding="UTF-8"?><zapasy>';
