@@ -6,7 +6,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
@@ -23,13 +22,13 @@ button{padding:8px 14px;margin-top:10px}
 </head>
 
 <body>
-
 <div class="wrapper">
+
 <h1>Import statistik ze zápasu (OCR)</h1>
 
 <div class="upload">
 <input type="file" id="img" accept="image/*">
-<p>Po nahrání obrázku se statistiky uloží do Firebase a zároveň do XML.</p>
+<p>Po nahrání obrázku se statistiky uloží do Firebase a zůstanou tam trvale.</p>
 </div>
 
 <button onclick="downloadXML()">Stáhnout XML</button>
@@ -59,11 +58,13 @@ button{padding:8px 14px;margin-top:10px}
 
 <script>
 
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
+  databaseURL: "https://statistiky-6310a-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "statistiky-6310a",
-  storageBucket: "statistiky-6310a.firebasestorage.app",
+  storageBucket: "statistiky-6310a.appspot.com",
   messagingSenderId: "1023222901562",
   appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
 };
@@ -71,6 +72,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+/* MAPA TÝMŮ */
 const TEAM_MAP = {
   "KLA": "HC Geus Okna Kladno",
   "TRI": "HC Oceláři Třinec",
@@ -78,45 +80,45 @@ const TEAM_MAP = {
   "LIT": "HC Litvínov"
 };
 
-let xmlData = [];
+let allData = [];
 
+/* TABULKA */
 function addRow(data){
   const tr=document.createElement("tr");
-  tr.innerHTML=data.map((c,i)=>"<td class='"+(i==0?"left":"")+"'>"+c+"</td>").join("");
+  tr.innerHTML=data.map((c,i)=>
+    "<td class='"+(i==0?"left":"")+"'>"+c+"</td>"
+  ).join("");
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
-/* === NAČTENÍ DAT Z FIREBASE PO OTEVŘENÍ STRÁNKY === */
-db.ref("ocr_statistiky").on("value", snapshot => {
+/* NAČTENÍ Z FIREBASE PO OTEVŘENÍ */
+db.ref("ocr_statistiky").on("value", snap=>{
+  const tbody=document.querySelector("#statsTable tbody");
+  tbody.innerHTML="";
+  allData=[];
 
-  const tbody = document.querySelector("#statsTable tbody");
-  tbody.innerHTML = "";
-  xmlData = [];
-
-  snapshot.forEach(child => {
-    const d = child.val();
-    addRow(d.away);
-    addRow(d.home);
-    xmlData.push({away:d.away,home:d.home});
+  snap.forEach(child=>{
+    const z=child.val();
+    addRow(z.away);
+    addRow(z.home);
+    allData.push(z);
   });
-
 });
 
+/* OCR */
 function findLine(text, keyword){
   return text.split("\n").find(l => l.includes(keyword)) || "";
 }
-
 function numbers(line){
   return line.match(/[0-9:]+/g) || [];
 }
 
 document.getElementById("img").addEventListener("change", async (e)=>{
-
-  const file = e.target.files[0];
+  const file=e.target.files[0];
   if(!file) return;
 
-  const result = await Tesseract.recognize(file,'eng');
-  const text = result.data.text.toUpperCase();
+  const result=await Tesseract.recognize(file,'eng');
+  const text=result.data.text.toUpperCase();
 
   let away="Hosté";
   let home="Domácí";
@@ -124,7 +126,7 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   Object.keys(TEAM_MAP).forEach(code=>{
     if(text.includes(code)){
       if(away==="Hosté") away=TEAM_MAP[code];
-      else if(home==="Domácí") home=TEAM_MAP[code];
+      else home=TEAM_MAP[code];
     }
   });
 
@@ -134,48 +136,35 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   const attack=numbers(findLine(text,"TIMEONATTACK"));
   const pp=numbers(findLine(text,"PP"));
 
-  const awayRow=[
-    away,"Hosté",
-    shots[0],shots[1],
-    hits[0],hits[1],
-    faceoffs[0],faceoffs[1],
-    attack[0],attack[1],
-    pp[0],pp[0],
-    "Ne"
-  ];
+  const awayRow=[away,"Hosté",shots[0],shots[1],hits[0],hits[1],
+                 faceoffs[0],faceoffs[1],attack[0],attack[1],
+                 pp[0],pp[0],"Ne"];
 
-  const homeRow=[
-    home,"Domácí",
-    shots[1],shots[0],
-    hits[1],hits[0],
-    faceoffs[1],faceoffs[0],
-    attack[1],attack[0],
-    pp[1],pp[1],
-    "Ne"
-  ];
+  const homeRow=[home,"Domácí",shots[1],shots[0],hits[1],hits[0],
+                 faceoffs[1],faceoffs[0],attack[1],attack[0],
+                 pp[1],pp[1],"Ne"];
 
   db.ref("ocr_statistiky").push({
-    away: awayRow,
-    home: homeRow,
-    time: Date.now()
+    away:awayRow,
+    home:homeRow,
+    time:Date.now()
   });
 
-  alert("Uloženo do Firebase + XML.");
+  alert("Uloženo do Firebase.");
 });
 
+/* XML EXPORT */
 function downloadXML(){
-  let xml = '<?xml version="1.0" encoding="UTF-8"?><zapasy>';
-
-  xmlData.forEach(z=>{
-    xml += "<zapas>";
-    xml += "<hoste>"+z.away.join("|")+"</hoste>";
-    xml += "<domaci>"+z.home.join("|")+"</domaci>";
-    xml += "</zapas>";
+  let xml='<?xml version="1.0" encoding="UTF-8"?><zapasy>';
+  allData.forEach(z=>{
+    xml+="<zapas>";
+    xml+="<hoste>"+z.away.join("|")+"</hoste>";
+    xml+="<domaci>"+z.home.join("|")+"</domaci>";
+    xml+="</zapas>";
   });
+  xml+="</zapasy>";
 
-  xml += "</zapasy>";
-
-  const blob = new Blob([xml],{type:"text/xml"});
+  const blob=new Blob([xml],{type:"text/xml"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   a.download="statistiky.xml";
@@ -183,6 +172,5 @@ function downloadXML(){
 }
 
 </script>
-
 </body>
 </html>
