@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <title>Import statistik ze zápasu (OCR)</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
 .wrapper{max-width:1200px;margin:0 auto;background:white;padding:30px}
@@ -13,41 +11,38 @@ table{border-collapse:collapse;width:100%;margin-top:20px}
 th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
-.upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
+.filters{margin-bottom:15px;padding:10px;background:#eef6fb}
+select{margin-right:10px;padding:5px}
+.summary{margin-top:15px;font-weight:bold}
 button{padding:6px 10px}
-.filter{margin:10px 0;font-weight:bold}
-.dialog{
-display:none;
-position:fixed;
-left:50%;
-top:50%;
-transform:translate(-50%,-50%);
-background:white;
-padding:20px;
-border:2px solid #333;
-z-index:999;
-}
 </style>
 </head>
 
 <body>
-
 <div class="wrapper">
 
-<h1>Import statistik ze zápasu (OCR)</h1>
+<h1>Statistiky zápasů</h1>
 
-<div class="upload">
-<input type="file" id="img" accept="image/*">
-<p>Po nahrání obrázku se statistiky zapíšou do tabulky a zůstanou i po F5.</p>
-</div>
+<!-- FILTRY -->
+<div class="filters">
+Zobrazit hráče:
+<select id="filterPlayer">
+<option value="">Vše</option>
+<option>Pici</option>
+<option>Kubele</option>
+</select>
 
-<div class="filter">
-Zobrazit statistiky:
-<select id="filterMode" onchange="renderTable()">
-<option value="all">Vše</option>
-<option value="player">Podle hráče</option>
-<option value="team">Podle týmu</option>
-<option value="category">Podle kategorie</option>
+Tým:
+<select id="filterTeam">
+<option value="">Vše</option>
+</select>
+
+Kategorie:
+<select id="filterCategory">
+<option value="">Vše</option>
+<option>OH</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - play off</option>
 </select>
 </div>
 
@@ -69,160 +64,112 @@ Zobrazit statistiky:
 <th>OT</th>
 <th>Kategorie</th>
 <th>Hráč</th>
-<th>Akce</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody>
+
+<!-- DATA ZŮSTÁVAJÍ NATVRDO V HTML -->
+<tr>
+<td class="left">HC Geus Okna Kladno</td>
+<td>Hosté</td>
+<td>30</td><td>18</td>
+<td>28</td><td>4</td>
+<td>14</td><td>12</td>
+<td>11:53</td><td>4:24</td>
+<td>1</td><td>1</td>
+<td>Ne</td>
+<td>Extraliga - základní část</td>
+<td>Kubele</td>
+</tr>
+
+<tr>
+<td class="left">HC Oceláři Třinec</td>
+<td>Domácí</td>
+<td>18</td><td>30</td>
+<td>4</td><td>28</td>
+<td>12</td><td>14</td>
+<td>4:24</td><td>11:53</td>
+<td>1</td><td>1</td>
+<td>Ne</td>
+<td>Extraliga - základní část</td>
+<td>Pici</td>
+</tr>
+
+</tbody>
 </table>
 
-</div>
+<div class="summary" id="summary"></div>
 
-<div id="editDialog" class="dialog">
-<h3>Aktualizace zápasu</h3>
-
-Kategorie:<br>
-<select id="dlgKategorie">
-<option>OH</option>
-<option>Extraliga - základní část</option>
-<option>Extraliga - play off</option>
-</select><br><br>
-
-Tým:<br>
-<select id="dlgTeam"></select><br><br>
-
-Hráč:<br>
-<select id="dlgHrac">
-<option>Pici</option>
-<option>Kubele</option>
-</select><br><br>
-
-<button onclick="saveEdit()">Uložit</button>
-<button onclick="closeDialog()">Zrušit</button>
 </div>
 
 <script>
 
-let allRows=[];
-let editMatchStart=null;
+const table = document.getElementById("statsTable");
+const tbody = table.querySelector("tbody");
 
-function saveLocal(){
-localStorage.setItem("ocr_stats",JSON.stringify(allRows));
+const filterPlayer = document.getElementById("filterPlayer");
+const filterTeam = document.getElementById("filterTeam");
+const filterCategory = document.getElementById("filterCategory");
+
+function fillTeams(){
+    const teams = new Set();
+    [...tbody.rows].forEach(r=>{
+        teams.add(r.cells[0].innerText);
+    });
+    teams.forEach(t=>{
+        const o=document.createElement("option");
+        o.textContent=t;
+        filterTeam.appendChild(o);
+    });
+}
+fillTeams();
+
+function toSeconds(t){
+    if(!t.includes(":")) return 0;
+    const p=t.split(":");
+    return parseInt(p[0])*60+parseInt(p[1]);
 }
 
-function loadLocal(){
-const data=localStorage.getItem("ocr_stats");
-if(!data) return;
-allRows=JSON.parse(data);
-renderTable();
+function applyFilters(){
+
+    let games=0, goals=0, goalsAgainst=0, hits=0;
+
+    [...tbody.rows].forEach(row=>{
+
+        const team=row.cells[0].innerText;
+        const player=row.cells[14].innerText;
+        const category=row.cells[13].innerText;
+
+        let show=true;
+
+        if(filterPlayer.value && player!==filterPlayer.value) show=false;
+        if(filterTeam.value && team!==filterTeam.value) show=false;
+        if(filterCategory.value && category!==filterCategory.value) show=false;
+
+        row.style.display = show ? "" : "none";
+
+        if(show){
+            games++;
+            goals+=parseInt(row.cells[2].innerText)||0;
+            goalsAgainst+=parseInt(row.cells[3].innerText)||0;
+            hits+=parseInt(row.cells[4].innerText)||0;
+        }
+    });
+
+    document.getElementById("summary").innerText =
+        "Zápasy: "+games+
+        " | Góly: "+goals+
+        " | Ink.: "+goalsAgainst+
+        " | Hity: "+hits;
 }
 
-function renderTable(){
+filterPlayer.onchange=applyFilters;
+filterTeam.onchange=applyFilters;
+filterCategory.onchange=applyFilters;
 
-const mode=document.getElementById("filterMode").value;
-const tbody=document.querySelector("#statsTable tbody");
-tbody.innerHTML="";
-
-let rows=[...allRows];
-
-if(mode==="player"){
-rows.sort((a,b)=>(a.hrac||"").localeCompare(b.hrac||""));
-}
-if(mode==="team"){
-rows.sort((a,b)=>a.data[0].localeCompare(b.data[0]));
-}
-if(mode==="category"){
-rows.sort((a,b)=>(a.kategorie||"").localeCompare(b.kategorie||""));
-}
-
-for(let i=0;i<rows.length;i+=2){
-
-const r1=rows[i];
-const r2=rows[i+1];
-if(!r2) break;
-
-const tr1=document.createElement("tr");
-const tr2=document.createElement("tr");
-
-tr1.innerHTML=
-r1.data.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
-"<td>"+(r1.kategorie||"")+"</td>"+
-"<td>"+(r1.hrac||"")+"</td>"+
-"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
-
-tr2.innerHTML=
-r2.data.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
-"<td>"+(r2.kategorie||"")+"</td>"+
-"<td>"+(r2.hrac||"")+"</td>";
-
-tbody.appendChild(tr1);
-tbody.appendChild(tr2);
-}
-}
-
-function openDialog(index){
-editMatchStart=index;
-const t=document.getElementById("dlgTeam");
-t.innerHTML="";
-t.innerHTML=
-"<option>"+allRows[index].data[0]+"</option>"+
-"<option>"+allRows[index+1].data[0]+"</option>";
-document.getElementById("editDialog").style.display="block";
-}
-
-function closeDialog(){
-document.getElementById("editDialog").style.display="none";
-}
-
-function saveEdit(){
-const kat=document.getElementById("dlgKategorie").value;
-const team=document.getElementById("dlgTeam").value;
-const hrac=document.getElementById("dlgHrac").value;
-const druhy=(hrac==="Pici")?"Kubele":"Pici";
-
-allRows[editMatchStart].kategorie=kat;
-allRows[editMatchStart+1].kategorie=kat;
-
-if(allRows[editMatchStart].data[0]===team){
-allRows[editMatchStart].hrac=hrac;
-allRows[editMatchStart+1].hrac=druhy;
-}else{
-allRows[editMatchStart].hrac=druhy;
-allRows[editMatchStart+1].hrac=hrac;
-}
-
-saveLocal();
-renderTable();
-closeDialog();
-}
-
-function findLine(text,k){return text.split("\n").find(l=>l.includes(k))||"";}
-function numbers(line){return line.match(/[0-9:]+/g)||[];}
-
-document.getElementById("img").addEventListener("change",async(e)=>{
-const file=e.target.files[0];
-if(!file) return;
-
-const result=await Tesseract.recognize(file,'eng');
-const text=result.data.text.toUpperCase();
-
-const shots=numbers(findLine(text,"SHOTS"));
-const hits=numbers(findLine(text,"HITS"));
-const faceoffs=numbers(findLine(text,"FACEOFF"));
-const attack=numbers(findLine(text,"TIMEONATTACK"));
-const pp=numbers(findLine(text,"PP"));
-
-const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
-const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
-
-allRows.push({data:away});
-allRows.push({data:home});
-
-saveLocal();
-renderTable();
-});
-
-loadLocal();
+applyFilters();
 
 </script>
+
 </body>
 </html>
