@@ -89,6 +89,14 @@ const TEAM_MAP = {
   "MBL": "BK Mladá Boleslav"
 };
 
+function findLine(text, keyword){
+  return text.split("\n").find(l => l.includes(keyword)) || "";
+}
+
+function numbers(line){
+  return line.match(/[0-9:]+/g) || [];
+}
+
 document.getElementById("img").addEventListener("change", async (e)=>{
 
   const file = e.target.files[0];
@@ -98,8 +106,8 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   const text = result.data.text.toUpperCase();
   console.log(text);
 
-  let awayTeam = "Hosté";
-  let homeTeam = "Domácí";
+  let awayTeam="Hosté";
+  let homeTeam="Domácí";
 
   Object.keys(TEAM_MAP).forEach(code=>{
     if(text.includes(code)){
@@ -108,23 +116,68 @@ document.getElementById("img").addEventListener("change", async (e)=>{
     }
   });
 
-  const table = document.getElementById("statsTable");
+  const shots = numbers(findLine(text,"SHOTS"));
+  const hits = numbers(findLine(text,"HITS"));
+  const faceoffs = numbers(findLine(text,"FACEOFF"));
+  const attack = numbers(findLine(text,"TIMEONATTACK"));
+  const pim = numbers(findLine(text,"PIM"));
+  const pp = numbers(findLine(text,"PP"));
 
-  const awayRow = table.insertRow();
-  awayRow.innerHTML =
-  "<td class='left'>"+awayTeam+"</td><td>Hosté</td>" +
-  "<td></td><td></td><td></td><td></td><td></td><td></td>" +
-  "<td></td><td></td><td></td><td></td>" +
-  "<td></td><td></td><td></td><td></td>";
+  let goalsAway=0,goalsHome=0;
+  const lines=text.split("\n");
+  lines.forEach(l=>{
+    if(l.includes("KLA")||l.includes("TRI")||l.includes("SPA")){
+      const g=l.match(/[0-9]/g);
+      if(g && g.length>=3){
+        goalsAway=g.map(Number).reduce((a,b)=>a+b,0);
+      }
+    }
+  });
 
-  const homeRow = table.insertRow();
-  homeRow.innerHTML =
-  "<td class='left'>"+homeTeam+"</td><td>Domácí</td>" +
-  "<td></td><td></td><td></td><td></td><td></td><td></td>" +
-  "<td></td><td></td><td></td><td></td>" +
-  "<td></td><td></td><td></td><td></td>";
+  const table=document.getElementById("statsTable");
 
-  alert("OCR načteno. Týmy rozpoznány.");
+  function addRow(team,role,GF,GA,hitsFor,hitsAgainst,foWon,foLost,att,def,ppCount,ppUsed,g1,g2,g3){
+    const row=table.insertRow();
+    row.innerHTML=
+    "<td class='left'>"+team+"</td>"+
+    "<td>"+role+"</td>"+
+    "<td>"+GF+"</td>"+
+    "<td>"+GA+"</td>"+
+    "<td>"+hitsFor+"</td>"+
+    "<td>"+hitsAgainst+"</td>"+
+    "<td>"+foWon+"</td>"+
+    "<td>"+foLost+"</td>"+
+    "<td>"+att+"</td>"+
+    "<td>"+def+"</td>"+
+    "<td>"+ppCount+"</td>"+
+    "<td>"+ppUsed+"</td>"+
+    "<td>"+g1+"</td>"+
+    "<td>"+g2+"</td>"+
+    "<td>"+g3+"</td>"+
+    "<td>Ne</td>";
+  }
+
+  addRow(
+    awayTeam,"Hosté",
+    shots[0]||"",shots[1]||"",
+    hits[0]||"",hits[1]||"",
+    faceoffs[0]||"",faceoffs[1]||"",
+    attack[0]||"",attack[1]||"",
+    pp[0]||"",pp[0]||"",
+    "","",""
+  );
+
+  addRow(
+    homeTeam,"Domácí",
+    shots[1]||"",shots[0]||"",
+    hits[1]||"",hits[0]||"",
+    faceoffs[1]||"",faceoffs[0]||"",
+    attack[1]||"",attack[0]||"",
+    pp[1]||"",pp[1]||"",
+    "","",""
+  );
+
+  alert("OCR načteno a statistiky doplněny.");
 });
 
 </script>
