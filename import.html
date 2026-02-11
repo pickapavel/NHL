@@ -2,7 +2,9 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Statistiky zápasů</title>
+<title>Import statistik ze zápasu (OCR)</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
@@ -11,19 +13,23 @@ table{border-collapse:collapse;width:100%;margin-top:20px}
 th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
-.filters{margin-bottom:15px;padding:10px;background:#eef6fb}
+.upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
+.filters{margin:10px 0;padding:10px;background:#eef6fb}
 button{padding:6px 10px}
 dialog{padding:20px}
-.summary{margin-top:15px;font-weight:bold}
+.summary{margin-top:10px;font-weight:bold}
 </style>
 </head>
 
 <body>
 <div class="wrapper">
 
-<h1>Statistiky zápasů</h1>
+<h1>Import statistik ze zápasu (OCR)</h1>
 
-<!-- FILTRY -->
+<div class="upload">
+<input type="file" id="img" accept="image/*">
+</div>
+
 <div class="filters">
 Hráč:
 <select id="filterPlayer">
@@ -33,9 +39,7 @@ Hráč:
 </select>
 
 Tým:
-<select id="filterTeam">
-<option value="">Vše</option>
-</select>
+<select id="filterTeam"><option value="">Vše</option></select>
 
 Kategorie:
 <select id="filterCategory">
@@ -67,155 +71,179 @@ Kategorie:
 <th>Akce</th>
 </tr>
 </thead>
-
-<tbody>
-
-<tr class="matchStart">
-<td class="left">HC Geus Okna Kladno</td>
-<td>Hosté</td>
-<td>30</td><td>18</td>
-<td>28</td><td>4</td>
-<td>14</td><td>12</td>
-<td>11:53</td><td>4:24</td>
-<td>1</td><td>1</td>
-<td>Ne</td>
-<td class="category"></td>
-<td class="player"></td>
-<td rowspan="2">
-<button onclick="openDialog(this)">Aktualizovat</button>
-</td>
-</tr>
-
-<tr>
-<td class="left">HC Oceláři Třinec</td>
-<td>Domácí</td>
-<td>18</td><td>30</td>
-<td>4</td><td>28</td>
-<td>12</td><td>14</td>
-<td>4:24</td><td>11:53</td>
-<td>1</td><td>1</td>
-<td>Ne</td>
-<td class="category"></td>
-<td class="player"></td>
-</tr>
-
-</tbody>
+<tbody></tbody>
 </table>
 
 <div class="summary" id="summary"></div>
 
 </div>
 
-<!-- DIALOG -->
 <dialog id="editDialog">
 <h3>Aktualizace zápasu</h3>
 
 Kategorie:<br>
-<select id="dialogCategory">
+<select id="dlgCategory">
 <option>OH</option>
 <option>Extraliga - základní část</option>
 <option>Extraliga - play off</option>
 </select><br><br>
 
 Tým (hráč):<br>
-<select id="dialogPlayer">
+<select id="dlgPlayer">
 <option>Kubele</option>
 <option>Pici</option>
 </select><br><br>
 
-<button onclick="saveDialog()">Uložit</button>
+<button onclick="saveEdit()">Uložit</button>
 <button onclick="editDialog.close()">Zavřít</button>
 </dialog>
 
 <script>
 
+let allMatches=[];
+let editIndex=null;
+
+function saveLocal(){
+localStorage.setItem("ocr_matches",JSON.stringify(allMatches));
+}
+
+function loadLocal(){
+const data=localStorage.getItem("ocr_matches");
+if(data) allMatches=JSON.parse(data);
+renderTable();
+}
+
+function renderTable(){
+
 const tbody=document.querySelector("#statsTable tbody");
-const dialog=document.getElementById("editDialog");
+tbody.innerHTML="";
 
-let editedRow=null;
+allMatches.forEach((m,i)=>{
 
-/* OTEVŘENÍ DIALOGU */
-function openDialog(btn){
-  editedRow=btn.closest("tr");
-  dialog.showModal();
+const tr1=document.createElement("tr");
+const tr2=document.createElement("tr");
+
+tr1.innerHTML=
+m.away.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
+"<td>"+(m.category||"")+"</td>"+
+"<td>"+(m.playerAway||"")+"</td>"+
+"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
+
+tr2.innerHTML=
+m.home.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
+"<td>"+(m.category||"")+"</td>"+
+"<td>"+(m.playerHome||"")+"</td>";
+
+tbody.appendChild(tr1);
+tbody.appendChild(tr2);
+});
+
+fillTeams();
+applyFilters();
 }
 
-/* ULOŽENÍ */
-function saveDialog(){
-
-  const category=document.getElementById("dialogCategory").value;
-  const player=document.getElementById("dialogPlayer").value;
-  const secondPlayer = player==="Pici" ? "Kubele" : "Pici";
-
-  const row1=editedRow;
-  const row2=editedRow.nextElementSibling;
-
-  row1.querySelector(".category").innerText=category;
-  row2.querySelector(".category").innerText=category;
-
-  row1.querySelector(".player").innerText=player;
-  row2.querySelector(".player").innerText=secondPlayer;
-
-  dialog.close();
-  applyFilters();
+function openDialog(i){
+editIndex=i;
+editDialog.showModal();
 }
+
+function saveEdit(){
+
+const cat=dlgCategory.value;
+const player=dlgPlayer.value;
+const other=player==="Pici"?"Kubele":"Pici";
+
+allMatches[editIndex].category=cat;
+allMatches[editIndex].playerAway=player;
+allMatches[editIndex].playerHome=other;
+
+saveLocal();
+renderTable();
+editDialog.close();
+}
+
+/* OCR */
+
+function findLine(t,k){return t.split("\n").find(l=>l.includes(k))||"";}
+function numbers(l){return l.match(/[0-9:]+/g)||[];}
+
+document.getElementById("img").addEventListener("change",async e=>{
+
+const file=e.target.files[0];
+if(!file) return;
+
+const r=await Tesseract.recognize(file,'eng');
+const text=r.data.text.toUpperCase();
+
+const shots=numbers(findLine(text,"SHOTS"));
+const hits=numbers(findLine(text,"HITS"));
+const faceoffs=numbers(findLine(text,"FACEOFF"));
+const attack=numbers(findLine(text,"TIMEONATTACK"));
+const pp=numbers(findLine(text,"PP"));
+
+const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
+const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
+
+allMatches.push({away:away,home:home});
+
+saveLocal();
+renderTable();
+});
 
 /* FILTRY */
 
-const filterPlayer=document.getElementById("filterPlayer");
-const filterTeam=document.getElementById("filterTeam");
-const filterCategory=document.getElementById("filterCategory");
-
 function fillTeams(){
-  const set=new Set();
-  [...tbody.rows].forEach(r=>set.add(r.cells[0].innerText));
-  set.forEach(t=>{
-    const o=document.createElement("option");
-    o.textContent=t;
-    filterTeam.appendChild(o);
-  });
+const sel=document.getElementById("filterTeam");
+const set=new Set();
+allMatches.forEach(m=>{set.add(m.away[0]);set.add(m.home[0]);});
+sel.innerHTML='<option value="">Vše</option>';
+set.forEach(t=>{
+const o=document.createElement("option");
+o.textContent=t;
+sel.appendChild(o);
+});
 }
-fillTeams();
 
 function applyFilters(){
 
-  let games=0,goals=0;
+const p=filterPlayer.value;
+const t=filterTeam.value;
+const c=filterCategory.value;
 
-  for(let i=0;i<tbody.rows.length;i+=2){
+const rows=document.querySelectorAll("#statsTable tbody tr");
 
-    const r1=tbody.rows[i];
-    const r2=tbody.rows[i+1];
+let games=0;
 
-    const team=r1.cells[0].innerText;
-    const player=r1.cells[14].innerText;
-    const category=r1.cells[13].innerText;
+for(let i=0;i<rows.length;i+=2){
 
-    let show=true;
+const r1=rows[i];
+const r2=rows[i+1];
 
-    if(filterPlayer.value && player!==filterPlayer.value) show=false;
-    if(filterTeam.value && team!==filterTeam.value) show=false;
-    if(filterCategory.value && category!==filterCategory.value) show=false;
+const player=r1.cells[14].innerText;
+const team=r1.cells[0].innerText;
+const cat=r1.cells[13].innerText;
 
-    r1.style.display=show?"":"none";
-    r2.style.display=show?"":"none";
+let show=true;
 
-    if(show){
-      games++;
-      goals+=parseInt(r1.cells[2].innerText)||0;
-    }
-  }
+if(p && player!==p) show=false;
+if(t && team!==t) show=false;
+if(c && cat!==c) show=false;
 
-  document.getElementById("summary").innerText=
-    "Zápasy: "+games+" | Góly: "+goals;
+r1.style.display=show?"":"none";
+r2.style.display=show?"":"none";
+
+if(show) games++;
+}
+
+summary.innerText="Zápasy: "+games;
 }
 
 filterPlayer.onchange=applyFilters;
 filterTeam.onchange=applyFilters;
 filterCategory.onchange=applyFilters;
 
-applyFilters();
+loadLocal();
 
 </script>
-
 </body>
 </html>
