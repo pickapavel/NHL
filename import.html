@@ -92,6 +92,23 @@ function addRow(data){
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
+/* ===== NAČTENÍ DAT PŘI STARTU (FIX) ===== */
+
+db.ref("ocr_statistiky").on("value", snapshot => {
+
+  const tbody = document.querySelector("#statsTable tbody");
+  tbody.innerHTML = "";        // vyčistit tabulku
+  xmlData = [];                // vyčistit XML paměť
+
+  snapshot.forEach(child => {
+    const d = child.val();
+    addRow(d.away);
+    addRow(d.home);
+    xmlData.push({away:d.away,home:d.home});
+  });
+
+});
+
 /* ===== OCR POMOCNÉ ===== */
 
 function findLine(text, keyword){
@@ -101,15 +118,6 @@ function findLine(text, keyword){
 function numbers(line){
   return line.match(/[0-9:]+/g) || [];
 }
-
-/* ===== NAČTENÍ EXISTUJÍCÍCH DAT Z FIREBASE ===== */
-
-db.ref("ocr_statistiky").on("child_added", snap=>{
-  const d = snap.val();
-  addRow(d.away);
-  addRow(d.home);
-  xmlData.push({away:d.away,home:d.home});
-});
 
 /* ===== OCR IMPORT ===== */
 
@@ -157,16 +165,11 @@ document.getElementById("img").addEventListener("change", async (e)=>{
     "Ne"
   ];
 
-  addRow(awayRow);
-  addRow(homeRow);
-
   db.ref("ocr_statistiky").push({
     away: awayRow,
     home: homeRow,
     time: Date.now()
   });
-
-  xmlData.push({away:awayRow,home:homeRow});
 
   alert("Uloženo do Firebase + XML.");
 });
