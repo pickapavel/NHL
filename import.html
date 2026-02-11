@@ -2,31 +2,33 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Import statistik (OCR)</title>
+<title>Import statistik ze zápasu (OCR)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
 .wrapper{max-width:1200px;margin:0 auto;background:white;padding:30px}
 table{border-collapse:collapse;width:100%;margin-top:20px}
-th,td{border:1px solid #999;padding:6px;text-align:center}
+th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
 .upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
+button{padding:8px 14px;margin-top:10px}
 </style>
 </head>
 
 <body>
-<div class="wrapper">
 
+<div class="wrapper">
 <h1>Import statistik ze zápasu (OCR)</h1>
 
 <div class="upload">
 <input type="file" id="img" accept="image/*">
+<p>Po nahrání obrázku se statistiky zapíšou do tabulky a zůstanou i po F5.</p>
 </div>
+
+<button onclick="downloadXML()">Stáhnout XML</button>
 
 <table id="statsTable">
 <thead>
@@ -41,6 +43,9 @@ th{background:#cfe8f7}
 <th>Vhaz. prohr.</th>
 <th>Čas v útoku</th>
 <th>Čas v obraně</th>
+<th>Přesilovky</th>
+<th>Využ. PP</th>
+<th>OT</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -50,62 +55,64 @@ th{background:#cfe8f7}
 
 <script>
 
-/* FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
-  authDomain: "statistiky-6310a.firebaseapp.com",
-  databaseURL: "https://statistiky-6310a-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "statistiky-6310a"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-/* MAPA TÝMŮ */
 const TEAM_MAP = {
-  "KLA":"HC Geus Okna Kladno",
-  "TRI":"HC Oceláři Třinec",
-  "SPA":"HC Sparta Praha",
-  "LIT":"HC Litvínov"
+  "KLA": "HC Geus Okna Kladno",
+  "TRI": "HC Oceláři Třinec",
+  "SPA": "HC Sparta Praha",
+  "LIT": "HC Litvínov"
 };
 
-/* TABULKA */
+let xmlData = [];
+
+/* ===== TABULKA ===== */
+
 function addRow(data){
   const tr=document.createElement("tr");
   tr.innerHTML=data.map((c,i)=>
-    `<td class="${i==0?'left':''}">${c}</td>`
+    "<td class='"+(i==0?"left":"")+"'>"+c+"</td>"
   ).join("");
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
-/* NAČTENÍ EXISTUJÍCÍCH DAT */
-async function loadData(){
-  const snap = await db.ref("ocr_statistiky").get();
-  if(!snap.exists()) return;
+/* ===== ULOŽENÍ ===== */
 
-  snap.forEach(child=>{
-    const z=child.val();
+function saveLocal(){
+  localStorage.setItem("ocr_statistiky", JSON.stringify(xmlData));
+}
+
+/* ===== NAČTENÍ PO F5 ===== */
+
+function loadLocal(){
+  const saved = localStorage.getItem("ocr_statistiky");
+  if(!saved) return;
+
+  xmlData = JSON.parse(saved);
+
+  xmlData.forEach(z=>{
     addRow(z.away);
     addRow(z.home);
   });
 }
-loadData();
 
-/* OCR */
-function findLine(text,keyword){
-  return text.split("\n").find(l=>l.includes(keyword)) || "";
+loadLocal();
+
+/* ===== OCR ===== */
+
+function findLine(text, keyword){
+  return text.split("\n").find(l => l.includes(keyword)) || "";
 }
+
 function numbers(line){
   return line.match(/[0-9:]+/g) || [];
 }
 
-document.getElementById("img").addEventListener("change", async(e)=>{
+document.getElementById("img").addEventListener("change", async (e)=>{
 
-  const file=e.target.files[0];
+  const file = e.target.files[0];
   if(!file) return;
 
-  const result=await Tesseract.recognize(file,'eng');
-  const text=result.data.text.toUpperCase();
+  const result = await Tesseract.recognize(file,'eng');
+  const text = result.data.text.toUpperCase();
 
   let away="Hosté";
   let home="Domácí";
@@ -113,7 +120,7 @@ document.getElementById("img").addEventListener("change", async(e)=>{
   Object.keys(TEAM_MAP).forEach(code=>{
     if(text.includes(code)){
       if(away==="Hosté") away=TEAM_MAP[code];
-      else home=TEAM_MAP[code];
+      else if(home==="Domácí") home=TEAM_MAP[code];
     }
   });
 
@@ -121,13 +128,15 @@ document.getElementById("img").addEventListener("change", async(e)=>{
   const hits=numbers(findLine(text,"HITS"));
   const faceoffs=numbers(findLine(text,"FACEOFF"));
   const attack=numbers(findLine(text,"TIMEONATTACK"));
+  const pp=numbers(findLine(text,"PP"));
 
   const awayRow=[
     away,"Hosté",
     shots[0]||0,shots[1]||0,
     hits[0]||0,hits[1]||0,
     faceoffs[0]||0,faceoffs[1]||0,
-    attack[0]||"0:00",attack[1]||"0:00"
+    attack[0]||"0:00",attack[1]||"0:00",
+    pp[0]||0,pp[0]||0,"Ne"
   ];
 
   const homeRow=[
@@ -135,19 +144,38 @@ document.getElementById("img").addEventListener("change", async(e)=>{
     shots[1]||0,shots[0]||0,
     hits[1]||0,hits[0]||0,
     faceoffs[1]||0,faceoffs[0]||0,
-    attack[1]||"0:00",attack[0]||"0:00"
+    attack[1]||"0:00",attack[0]||"0:00",
+    pp[1]||0,pp[1]||0,"Ne"
   ];
-
-  await db.ref("ocr_statistiky").push({
-    away:awayRow,
-    home:homeRow
-  });
 
   addRow(awayRow);
   addRow(homeRow);
 
-  alert("Uloženo.");
+  xmlData.push({away:awayRow,home:homeRow});
+  saveLocal();
+
 });
+
+/* ===== XML ===== */
+
+function downloadXML(){
+  let xml='<?xml version="1.0" encoding="UTF-8"?><zapasy>';
+
+  xmlData.forEach(z=>{
+    xml+="<zapas>";
+    xml+="<hoste>"+z.away.join("|")+"</hoste>";
+    xml+="<domaci>"+z.home.join("|")+"</domaci>";
+    xml+="</zapas>";
+  });
+
+  xml+="</zapasy>";
+
+  const blob=new Blob([xml],{type:"text/xml"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="statistiky.xml";
+  a.click();
+}
 
 </script>
 </body>
