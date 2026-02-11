@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Import statistik ze zápasu (OCR)</title>
+<title>Statistiky zápasů</title>
 
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
@@ -12,9 +12,9 @@ th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
 .filters{margin-bottom:15px;padding:10px;background:#eef6fb}
-select{margin-right:10px;padding:5px}
-.summary{margin-top:15px;font-weight:bold}
 button{padding:6px 10px}
+dialog{padding:20px}
+.summary{margin-top:15px;font-weight:bold}
 </style>
 </head>
 
@@ -25,7 +25,7 @@ button{padding:6px 10px}
 
 <!-- FILTRY -->
 <div class="filters">
-Zobrazit hráče:
+Hráč:
 <select id="filterPlayer">
 <option value="">Vše</option>
 <option>Pici</option>
@@ -64,12 +64,13 @@ Kategorie:
 <th>OT</th>
 <th>Kategorie</th>
 <th>Hráč</th>
+<th>Akce</th>
 </tr>
 </thead>
+
 <tbody>
 
-<!-- DATA ZŮSTÁVAJÍ NATVRDO V HTML -->
-<tr>
+<tr class="matchStart">
 <td class="left">HC Geus Okna Kladno</td>
 <td>Hosté</td>
 <td>30</td><td>18</td>
@@ -78,8 +79,11 @@ Kategorie:
 <td>11:53</td><td>4:24</td>
 <td>1</td><td>1</td>
 <td>Ne</td>
-<td>Extraliga - základní část</td>
-<td>Kubele</td>
+<td class="category"></td>
+<td class="player"></td>
+<td rowspan="2">
+<button onclick="openDialog(this)">Aktualizovat</button>
+</td>
 </tr>
 
 <tr>
@@ -91,8 +95,8 @@ Kategorie:
 <td>4:24</td><td>11:53</td>
 <td>1</td><td>1</td>
 <td>Ne</td>
-<td>Extraliga - základní část</td>
-<td>Pici</td>
+<td class="category"></td>
+<td class="player"></td>
 </tr>
 
 </tbody>
@@ -102,65 +106,107 @@ Kategorie:
 
 </div>
 
+<!-- DIALOG -->
+<dialog id="editDialog">
+<h3>Aktualizace zápasu</h3>
+
+Kategorie:<br>
+<select id="dialogCategory">
+<option>OH</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - play off</option>
+</select><br><br>
+
+Tým (hráč):<br>
+<select id="dialogPlayer">
+<option>Kubele</option>
+<option>Pici</option>
+</select><br><br>
+
+<button onclick="saveDialog()">Uložit</button>
+<button onclick="editDialog.close()">Zavřít</button>
+</dialog>
+
 <script>
 
-const table = document.getElementById("statsTable");
-const tbody = table.querySelector("tbody");
+const tbody=document.querySelector("#statsTable tbody");
+const dialog=document.getElementById("editDialog");
 
-const filterPlayer = document.getElementById("filterPlayer");
-const filterTeam = document.getElementById("filterTeam");
-const filterCategory = document.getElementById("filterCategory");
+let editedRow=null;
+
+/* OTEVŘENÍ DIALOGU */
+function openDialog(btn){
+  editedRow=btn.closest("tr");
+  dialog.showModal();
+}
+
+/* ULOŽENÍ */
+function saveDialog(){
+
+  const category=document.getElementById("dialogCategory").value;
+  const player=document.getElementById("dialogPlayer").value;
+  const secondPlayer = player==="Pici" ? "Kubele" : "Pici";
+
+  const row1=editedRow;
+  const row2=editedRow.nextElementSibling;
+
+  row1.querySelector(".category").innerText=category;
+  row2.querySelector(".category").innerText=category;
+
+  row1.querySelector(".player").innerText=player;
+  row2.querySelector(".player").innerText=secondPlayer;
+
+  dialog.close();
+  applyFilters();
+}
+
+/* FILTRY */
+
+const filterPlayer=document.getElementById("filterPlayer");
+const filterTeam=document.getElementById("filterTeam");
+const filterCategory=document.getElementById("filterCategory");
 
 function fillTeams(){
-    const teams = new Set();
-    [...tbody.rows].forEach(r=>{
-        teams.add(r.cells[0].innerText);
-    });
-    teams.forEach(t=>{
-        const o=document.createElement("option");
-        o.textContent=t;
-        filterTeam.appendChild(o);
-    });
+  const set=new Set();
+  [...tbody.rows].forEach(r=>set.add(r.cells[0].innerText));
+  set.forEach(t=>{
+    const o=document.createElement("option");
+    o.textContent=t;
+    filterTeam.appendChild(o);
+  });
 }
 fillTeams();
 
-function toSeconds(t){
-    if(!t.includes(":")) return 0;
-    const p=t.split(":");
-    return parseInt(p[0])*60+parseInt(p[1]);
-}
-
 function applyFilters(){
 
-    let games=0, goals=0, goalsAgainst=0, hits=0;
+  let games=0,goals=0;
 
-    [...tbody.rows].forEach(row=>{
+  for(let i=0;i<tbody.rows.length;i+=2){
 
-        const team=row.cells[0].innerText;
-        const player=row.cells[14].innerText;
-        const category=row.cells[13].innerText;
+    const r1=tbody.rows[i];
+    const r2=tbody.rows[i+1];
 
-        let show=true;
+    const team=r1.cells[0].innerText;
+    const player=r1.cells[14].innerText;
+    const category=r1.cells[13].innerText;
 
-        if(filterPlayer.value && player!==filterPlayer.value) show=false;
-        if(filterTeam.value && team!==filterTeam.value) show=false;
-        if(filterCategory.value && category!==filterCategory.value) show=false;
+    let show=true;
 
-        row.style.display = show ? "" : "none";
+    if(filterPlayer.value && player!==filterPlayer.value) show=false;
+    if(filterTeam.value && team!==filterTeam.value) show=false;
+    if(filterCategory.value && category!==filterCategory.value) show=false;
 
-        if(show){
-            games++;
-            goals+=parseInt(row.cells[2].innerText)||0;
-            goalsAgainst+=parseInt(row.cells[3].innerText)||0;
-            hits+=parseInt(row.cells[4].innerText)||0;
-        }
-    });
+    r1.style.display=show?"":"none";
+    r2.style.display=show?"":"none";
 
-    document.getElementById("summary").innerText =
-        "Zápasy: "+games+
-        " | Góly: "+goals+
-        " | Ink.: "+goalsAgainst+
-        " | Hity: "+hits;
+    if(show){
+      games++;
+      goals+=parseInt(r1.cells[2].innerText)||0;
+    }
+  }
+
+  document.getElementById("summary").innerText=
+    "Zápasy: "+games+" | Góly: "+goals;
 }
 
 filterPlayer.onchange=applyFilters;
