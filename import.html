@@ -15,7 +15,7 @@ th{background:#cfe8f7}
 .left{text-align:left}
 .upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
 button{padding:6px 10px}
-
+.filter{margin:10px 0;font-weight:bold}
 .dialog{
 display:none;
 position:fixed;
@@ -39,6 +39,16 @@ z-index:999;
 <div class="upload">
 <input type="file" id="img" accept="image/*">
 <p>Po nahrání obrázku se statistiky zapíšou do tabulky a zůstanou i po F5.</p>
+</div>
+
+<div class="filter">
+Zobrazit statistiky:
+<select id="filterMode" onchange="renderTable()">
+<option value="all">Vše</option>
+<option value="player">Podle hráče</option>
+<option value="team">Podle týmu</option>
+<option value="category">Podle kategorie</option>
+</select>
 </div>
 
 <table id="statsTable">
@@ -67,7 +77,6 @@ z-index:999;
 
 </div>
 
-<!-- DIALOG -->
 <div id="editDialog" class="dialog">
 <h3>Aktualizace zápasu</h3>
 
@@ -96,8 +105,6 @@ Hráč:<br>
 let allRows=[];
 let editMatchStart=null;
 
-/* ===== LOCAL STORAGE ===== */
-
 function saveLocal(){
 localStorage.setItem("ocr_stats",JSON.stringify(allRows));
 }
@@ -109,17 +116,29 @@ allRows=JSON.parse(data);
 renderTable();
 }
 
-/* ===== TABULKA ===== */
-
 function renderTable(){
 
+const mode=document.getElementById("filterMode").value;
 const tbody=document.querySelector("#statsTable tbody");
 tbody.innerHTML="";
 
-for(let i=0;i<allRows.length;i+=2){
+let rows=[...allRows];
 
-const r1=allRows[i];
-const r2=allRows[i+1];
+if(mode==="player"){
+rows.sort((a,b)=>(a.hrac||"").localeCompare(b.hrac||""));
+}
+if(mode==="team"){
+rows.sort((a,b)=>a.data[0].localeCompare(b.data[0]));
+}
+if(mode==="category"){
+rows.sort((a,b)=>(a.kategorie||"").localeCompare(b.kategorie||""));
+}
+
+for(let i=0;i<rows.length;i+=2){
+
+const r1=rows[i];
+const r2=rows[i+1];
+if(!r2) break;
 
 const tr1=document.createElement("tr");
 const tr2=document.createElement("tr");
@@ -140,19 +159,13 @@ tbody.appendChild(tr2);
 }
 }
 
-/* ===== DIALOG ===== */
-
 function openDialog(index){
-
 editMatchStart=index;
-
-const teamSelect=document.getElementById("dlgTeam");
-teamSelect.innerHTML="";
-
-teamSelect.innerHTML=
+const t=document.getElementById("dlgTeam");
+t.innerHTML="";
+t.innerHTML=
 "<option>"+allRows[index].data[0]+"</option>"+
 "<option>"+allRows[index+1].data[0]+"</option>";
-
 document.getElementById("editDialog").style.display="block";
 }
 
@@ -161,7 +174,6 @@ document.getElementById("editDialog").style.display="none";
 }
 
 function saveEdit(){
-
 const kat=document.getElementById("dlgKategorie").value;
 const team=document.getElementById("dlgTeam").value;
 const hrac=document.getElementById("dlgHrac").value;
@@ -183,17 +195,10 @@ renderTable();
 closeDialog();
 }
 
-/* ===== OCR ===== */
-
-function findLine(text, keyword){
-return text.split("\n").find(l=>l.includes(keyword))||"";
-}
-function numbers(line){
-return line.match(/[0-9:]+/g)||[];
-}
+function findLine(text,k){return text.split("\n").find(l=>l.includes(k))||"";}
+function numbers(line){return line.match(/[0-9:]+/g)||[];}
 
 document.getElementById("img").addEventListener("change",async(e)=>{
-
 const file=e.target.files[0];
 if(!file) return;
 
@@ -206,26 +211,11 @@ const faceoffs=numbers(findLine(text,"FACEOFF"));
 const attack=numbers(findLine(text,"TIMEONATTACK"));
 const pp=numbers(findLine(text,"PP"));
 
-const awayRow=[
-"HC Geus Okna Kladno","Hosté",
-shots[0],shots[1],
-hits[0],hits[1],
-faceoffs[0],faceoffs[1],
-attack[0],attack[1],
-pp[0],pp[0],"Ne"
-];
+const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
+const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
 
-const homeRow=[
-"HC Oceláři Třinec","Domácí",
-shots[1],shots[0],
-hits[1],hits[0],
-faceoffs[1],faceoffs[0],
-attack[1],attack[0],
-pp[1],pp[1],"Ne"
-];
-
-allRows.push({data:awayRow});
-allRows.push({data:homeRow});
+allRows.push({data:away});
+allRows.push({data:home});
 
 saveLocal();
 renderTable();
