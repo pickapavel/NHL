@@ -15,6 +15,7 @@ th{background:#cfe8f7}
 .left{text-align:left}
 .upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
 button{padding:6px 10px}
+
 .dialog{
 display:none;
 position:fixed;
@@ -32,6 +33,7 @@ z-index:999;
 <body>
 
 <div class="wrapper">
+
 <h1>Import statistik ze zápasu (OCR)</h1>
 
 <div class="upload">
@@ -76,7 +78,7 @@ Kategorie:<br>
 <option>Extraliga - play off</option>
 </select><br><br>
 
-Hráč:<br>
+Hráč (pro vybraný tým):<br>
 <select id="dlgHrac">
 <option>Pici</option>
 <option>Kubele</option>
@@ -96,7 +98,7 @@ const TEAM_MAP={
 };
 
 let allRows=[];
-let editIndex=null;
+let editMatchStart=null;
 
 /* ===== LOCAL STORAGE ===== */
 
@@ -117,7 +119,10 @@ function renderTable(){
 const tbody=document.querySelector("#statsTable tbody");
 tbody.innerHTML="";
 
-allRows.forEach((row,i)=>{
+for(let i=0;i<allRows.length;i++){
+
+const row=allRows[i];
+
 const tr=document.createElement("tr");
 
 tr.innerHTML=
@@ -126,22 +131,18 @@ row.data.map((c,j)=>
 ).join("")+
 "<td>"+(row.kategorie||"")+"</td>"+
 "<td>"+(row.hrac||"")+"</td>"+
-"<td><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
+"<td>"+(i%2==0?
+"<button onclick='openDialog("+i+")'>Aktualizovat</button>"
+:"")+"</td>";
 
 tbody.appendChild(tr);
-});
 }
-
-function addRow(data){
-allRows.push({data:data,kategorie:"",hrac:""});
-saveLocal();
-renderTable();
 }
 
 /* ===== DIALOG ===== */
 
-function openDialog(i){
-editIndex=i;
+function openDialog(index){
+editMatchStart=index; // první řádek zápasu
 document.getElementById("editDialog").style.display="block";
 }
 
@@ -150,13 +151,17 @@ document.getElementById("editDialog").style.display="none";
 }
 
 function saveEdit(){
-if(editIndex===null) return;
 
-allRows[editIndex].kategorie=
-document.getElementById("dlgKategorie").value;
+const kat=document.getElementById("dlgKategorie").value;
+const hrac=document.getElementById("dlgHrac").value;
+const druhy = (hrac==="Pici") ? "Kubele" : "Pici";
 
-allRows[editIndex].hrac=
-document.getElementById("dlgHrac").value;
+/* zápas = 2 řádky */
+allRows[editMatchStart].kategorie=kat;
+allRows[editMatchStart+1].kategorie=kat;
+
+allRows[editMatchStart].hrac=hrac;
+allRows[editMatchStart+1].hrac=druhy;
 
 saveLocal();
 renderTable();
@@ -215,8 +220,11 @@ attack[1],attack[0],
 pp[1],pp[1],"Ne"
 ];
 
-addRow(awayRow);
-addRow(homeRow);
+allRows.push({data:awayRow});
+allRows.push({data:homeRow});
+
+saveLocal();
+renderTable();
 
 });
 
