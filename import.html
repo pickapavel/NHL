@@ -78,7 +78,10 @@ Kategorie:<br>
 <option>Extraliga - play off</option>
 </select><br><br>
 
-Hráč (pro vybraný tým):<br>
+Tým:<br>
+<select id="dlgTeam"></select><br><br>
+
+Hráč:<br>
 <select id="dlgHrac">
 <option>Pici</option>
 <option>Kubele</option>
@@ -89,13 +92,6 @@ Hráč (pro vybraný tým):<br>
 </div>
 
 <script>
-
-const TEAM_MAP={
-"KLA":"HC Geus Okna Kladno",
-"TRI":"HC Oceláři Třinec",
-"SPA":"HC Sparta Praha",
-"LIT":"HC Litvínov"
-};
 
 let allRows=[];
 let editMatchStart=null;
@@ -116,33 +112,47 @@ renderTable();
 /* ===== TABULKA ===== */
 
 function renderTable(){
+
 const tbody=document.querySelector("#statsTable tbody");
 tbody.innerHTML="";
 
-for(let i=0;i<allRows.length;i++){
+for(let i=0;i<allRows.length;i+=2){
 
-const row=allRows[i];
+const r1=allRows[i];
+const r2=allRows[i+1];
 
-const tr=document.createElement("tr");
+const tr1=document.createElement("tr");
+const tr2=document.createElement("tr");
 
-tr.innerHTML=
-row.data.map((c,j)=>
-"<td class='"+(j==0?"left":"")+"'>"+c+"</td>"
-).join("")+
-"<td>"+(row.kategorie||"")+"</td>"+
-"<td>"+(row.hrac||"")+"</td>"+
-"<td>"+(i%2==0?
-"<button onclick='openDialog("+i+")'>Aktualizovat</button>"
-:"")+"</td>";
+tr1.innerHTML=
+r1.data.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
+"<td>"+(r1.kategorie||"")+"</td>"+
+"<td>"+(r1.hrac||"")+"</td>"+
+"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
 
-tbody.appendChild(tr);
+tr2.innerHTML=
+r2.data.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
+"<td>"+(r2.kategorie||"")+"</td>"+
+"<td>"+(r2.hrac||"")+"</td>";
+
+tbody.appendChild(tr1);
+tbody.appendChild(tr2);
 }
 }
 
 /* ===== DIALOG ===== */
 
 function openDialog(index){
-editMatchStart=index; // první řádek zápasu
+
+editMatchStart=index;
+
+const teamSelect=document.getElementById("dlgTeam");
+teamSelect.innerHTML="";
+
+teamSelect.innerHTML=
+"<option>"+allRows[index].data[0]+"</option>"+
+"<option>"+allRows[index+1].data[0]+"</option>";
+
 document.getElementById("editDialog").style.display="block";
 }
 
@@ -153,15 +163,20 @@ document.getElementById("editDialog").style.display="none";
 function saveEdit(){
 
 const kat=document.getElementById("dlgKategorie").value;
+const team=document.getElementById("dlgTeam").value;
 const hrac=document.getElementById("dlgHrac").value;
-const druhy = (hrac==="Pici") ? "Kubele" : "Pici";
+const druhy=(hrac==="Pici")?"Kubele":"Pici";
 
-/* zápas = 2 řádky */
 allRows[editMatchStart].kategorie=kat;
 allRows[editMatchStart+1].kategorie=kat;
 
+if(allRows[editMatchStart].data[0]===team){
 allRows[editMatchStart].hrac=hrac;
 allRows[editMatchStart+1].hrac=druhy;
+}else{
+allRows[editMatchStart].hrac=druhy;
+allRows[editMatchStart+1].hrac=hrac;
+}
 
 saveLocal();
 renderTable();
@@ -173,7 +188,6 @@ closeDialog();
 function findLine(text, keyword){
 return text.split("\n").find(l=>l.includes(keyword))||"";
 }
-
 function numbers(line){
 return line.match(/[0-9:]+/g)||[];
 }
@@ -186,16 +200,6 @@ if(!file) return;
 const result=await Tesseract.recognize(file,'eng');
 const text=result.data.text.toUpperCase();
 
-let away="Hosté";
-let home="Domácí";
-
-Object.keys(TEAM_MAP).forEach(code=>{
-if(text.includes(code)){
-if(away==="Hosté") away=TEAM_MAP[code];
-else home=TEAM_MAP[code];
-}
-});
-
 const shots=numbers(findLine(text,"SHOTS"));
 const hits=numbers(findLine(text,"HITS"));
 const faceoffs=numbers(findLine(text,"FACEOFF"));
@@ -203,7 +207,7 @@ const attack=numbers(findLine(text,"TIMEONATTACK"));
 const pp=numbers(findLine(text,"PP"));
 
 const awayRow=[
-away,"Hosté",
+"HC Geus Okna Kladno","Hosté",
 shots[0],shots[1],
 hits[0],hits[1],
 faceoffs[0],faceoffs[1],
@@ -212,7 +216,7 @@ pp[0],pp[0],"Ne"
 ];
 
 const homeRow=[
-home,"Domácí",
+"HC Oceláři Třinec","Domácí",
 shots[1],shots[0],
 hits[1],hits[0],
 faceoffs[1],faceoffs[0],
@@ -225,10 +229,8 @@ allRows.push({data:homeRow});
 
 saveLocal();
 renderTable();
-
 });
 
-/* ===== START ===== */
 loadLocal();
 
 </script>
