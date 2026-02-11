@@ -14,7 +14,18 @@ th,td{border:1px solid #999;padding:6px 8px;text-align:center}
 th{background:#cfe8f7}
 .left{text-align:left}
 .upload{margin:20px 0;padding:20px;border:2px dashed #22a6df;text-align:center}
-button{padding:8px 14px;margin-top:10px}
+button{padding:6px 10px}
+.dialog{
+display:none;
+position:fixed;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px;
+border:2px solid #333;
+z-index:999;
+}
 </style>
 </head>
 
@@ -27,8 +38,6 @@ button{padding:8px 14px;margin-top:10px}
 <input type="file" id="img" accept="image/*">
 <p>Po nahrání obrázku se statistiky zapíšou do tabulky a zůstanou i po F5.</p>
 </div>
-
-<button onclick="downloadXML()">Stáhnout XML</button>
 
 <table id="statsTable">
 <thead>
@@ -46,6 +55,9 @@ button{padding:8px 14px;margin-top:10px}
 <th>Přesilovky</th>
 <th>Využ. PP</th>
 <th>OT</th>
+<th>Kategorie</th>
+<th>Hráč</th>
+<th>Akce</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -53,129 +65,163 @@ button{padding:8px 14px;margin-top:10px}
 
 </div>
 
+<!-- DIALOG -->
+<div id="editDialog" class="dialog">
+<h3>Aktualizace zápasu</h3>
+
+Kategorie:<br>
+<select id="dlgKategorie">
+<option>OH</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - play off</option>
+</select><br><br>
+
+Hráč:<br>
+<select id="dlgHrac">
+<option>Pici</option>
+<option>Kubele</option>
+</select><br><br>
+
+<button onclick="saveEdit()">Uložit</button>
+<button onclick="closeDialog()">Zrušit</button>
+</div>
+
 <script>
 
-const TEAM_MAP = {
-  "KLA": "HC Geus Okna Kladno",
-  "TRI": "HC Oceláři Třinec",
-  "SPA": "HC Sparta Praha",
-  "LIT": "HC Litvínov"
+const TEAM_MAP={
+"KLA":"HC Geus Okna Kladno",
+"TRI":"HC Oceláři Třinec",
+"SPA":"HC Sparta Praha",
+"LIT":"HC Litvínov"
 };
 
-let xmlData = [];
+let allRows=[];
+let editIndex=null;
+
+/* ===== LOCAL STORAGE ===== */
+
+function saveLocal(){
+localStorage.setItem("ocr_stats",JSON.stringify(allRows));
+}
+
+function loadLocal(){
+const data=localStorage.getItem("ocr_stats");
+if(!data) return;
+allRows=JSON.parse(data);
+renderTable();
+}
 
 /* ===== TABULKA ===== */
 
+function renderTable(){
+const tbody=document.querySelector("#statsTable tbody");
+tbody.innerHTML="";
+
+allRows.forEach((row,i)=>{
+const tr=document.createElement("tr");
+
+tr.innerHTML=
+row.data.map((c,j)=>
+"<td class='"+(j==0?"left":"")+"'>"+c+"</td>"
+).join("")+
+"<td>"+(row.kategorie||"")+"</td>"+
+"<td>"+(row.hrac||"")+"</td>"+
+"<td><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
+
+tbody.appendChild(tr);
+});
+}
+
 function addRow(data){
-  const tr=document.createElement("tr");
-  tr.innerHTML=data.map((c,i)=>
-    "<td class='"+(i==0?"left":"")+"'>"+c+"</td>"
-  ).join("");
-  document.querySelector("#statsTable tbody").appendChild(tr);
+allRows.push({data:data,kategorie:"",hrac:""});
+saveLocal();
+renderTable();
 }
 
-/* ===== ULOŽENÍ ===== */
+/* ===== DIALOG ===== */
 
-function saveLocal(){
-  localStorage.setItem("ocr_statistiky", JSON.stringify(xmlData));
+function openDialog(i){
+editIndex=i;
+document.getElementById("editDialog").style.display="block";
 }
 
-/* ===== NAČTENÍ PO F5 ===== */
-
-function loadLocal(){
-  const saved = localStorage.getItem("ocr_statistiky");
-  if(!saved) return;
-
-  xmlData = JSON.parse(saved);
-
-  xmlData.forEach(z=>{
-    addRow(z.away);
-    addRow(z.home);
-  });
+function closeDialog(){
+document.getElementById("editDialog").style.display="none";
 }
 
-loadLocal();
+function saveEdit(){
+if(editIndex===null) return;
+
+allRows[editIndex].kategorie=
+document.getElementById("dlgKategorie").value;
+
+allRows[editIndex].hrac=
+document.getElementById("dlgHrac").value;
+
+saveLocal();
+renderTable();
+closeDialog();
+}
 
 /* ===== OCR ===== */
 
 function findLine(text, keyword){
-  return text.split("\n").find(l => l.includes(keyword)) || "";
+return text.split("\n").find(l=>l.includes(keyword))||"";
 }
 
 function numbers(line){
-  return line.match(/[0-9:]+/g) || [];
+return line.match(/[0-9:]+/g)||[];
 }
 
-document.getElementById("img").addEventListener("change", async (e)=>{
+document.getElementById("img").addEventListener("change",async(e)=>{
 
-  const file = e.target.files[0];
-  if(!file) return;
+const file=e.target.files[0];
+if(!file) return;
 
-  const result = await Tesseract.recognize(file,'eng');
-  const text = result.data.text.toUpperCase();
+const result=await Tesseract.recognize(file,'eng');
+const text=result.data.text.toUpperCase();
 
-  let away="Hosté";
-  let home="Domácí";
+let away="Hosté";
+let home="Domácí";
 
-  Object.keys(TEAM_MAP).forEach(code=>{
-    if(text.includes(code)){
-      if(away==="Hosté") away=TEAM_MAP[code];
-      else if(home==="Domácí") home=TEAM_MAP[code];
-    }
-  });
+Object.keys(TEAM_MAP).forEach(code=>{
+if(text.includes(code)){
+if(away==="Hosté") away=TEAM_MAP[code];
+else home=TEAM_MAP[code];
+}
+});
 
-  const shots=numbers(findLine(text,"SHOTS"));
-  const hits=numbers(findLine(text,"HITS"));
-  const faceoffs=numbers(findLine(text,"FACEOFF"));
-  const attack=numbers(findLine(text,"TIMEONATTACK"));
-  const pp=numbers(findLine(text,"PP"));
+const shots=numbers(findLine(text,"SHOTS"));
+const hits=numbers(findLine(text,"HITS"));
+const faceoffs=numbers(findLine(text,"FACEOFF"));
+const attack=numbers(findLine(text,"TIMEONATTACK"));
+const pp=numbers(findLine(text,"PP"));
 
-  const awayRow=[
-    away,"Hosté",
-    shots[0]||0,shots[1]||0,
-    hits[0]||0,hits[1]||0,
-    faceoffs[0]||0,faceoffs[1]||0,
-    attack[0]||"0:00",attack[1]||"0:00",
-    pp[0]||0,pp[0]||0,"Ne"
-  ];
+const awayRow=[
+away,"Hosté",
+shots[0],shots[1],
+hits[0],hits[1],
+faceoffs[0],faceoffs[1],
+attack[0],attack[1],
+pp[0],pp[0],"Ne"
+];
 
-  const homeRow=[
-    home,"Domácí",
-    shots[1]||0,shots[0]||0,
-    hits[1]||0,hits[0]||0,
-    faceoffs[1]||0,faceoffs[0]||0,
-    attack[1]||"0:00",attack[0]||"0:00",
-    pp[1]||0,pp[1]||0,"Ne"
-  ];
+const homeRow=[
+home,"Domácí",
+shots[1],shots[0],
+hits[1],hits[0],
+faceoffs[1],faceoffs[0],
+attack[1],attack[0],
+pp[1],pp[1],"Ne"
+];
 
-  addRow(awayRow);
-  addRow(homeRow);
-
-  xmlData.push({away:awayRow,home:homeRow});
-  saveLocal();
+addRow(awayRow);
+addRow(homeRow);
 
 });
 
-/* ===== XML ===== */
-
-function downloadXML(){
-  let xml='<?xml version="1.0" encoding="UTF-8"?><zapasy>';
-
-  xmlData.forEach(z=>{
-    xml+="<zapas>";
-    xml+="<hoste>"+z.away.join("|")+"</hoste>";
-    xml+="<domaci>"+z.home.join("|")+"</domaci>";
-    xml+="</zapas>";
-  });
-
-  xml+="</zapasy>";
-
-  const blob=new Blob([xml],{type:"text/xml"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="statistiky.xml";
-  a.click();
-}
+/* ===== START ===== */
+loadLocal();
 
 </script>
 </body>
