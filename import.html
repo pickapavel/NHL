@@ -129,6 +129,20 @@ const TEAM_NAMES = {
 let allMatches=[];
 let editIndex=null;
 
+/* ===== HELPERS ===== */
+
+function findLine(t,k){
+  return t.split("\n").find(l=>l.includes(k))||"";
+}
+
+function numbers(l){
+  return l.match(/[0-9:]+/g)||[];
+}
+
+function val(a,i){
+  return a && a[i] ? a[i] : "0";
+}
+
 /* ===== LOCAL STORAGE ===== */
 
 function saveLocal(){
@@ -196,9 +210,6 @@ editDialog.close();
 
 /* ===== OCR ===== */
 
-function findLine(t,k){return t.split("\n").find(l=>l.includes(k))||"";}
-function numbers(l){return l.match(/[0-9:]+/g)||[];}
-
 document.getElementById("img").addEventListener("change",async e=>{
 
 const file=e.target.files[0];
@@ -231,25 +242,25 @@ let homeTeam = TEAM_NAMES[foundCodes[1]] || "Domácí";
 const shots=numbers(findLine(text,"SHOTS"));
 const hits=numbers(findLine(text,"HITS"));
 const faceoffs=numbers(findLine(text,"FACEOFF"));
-const attack=numbers(findLine(text,"TIMEONATTACK"));
+const attack=numbers(findLine(text,"TIME ON ATTACK"));
 const pp=numbers(findLine(text,"PP"));
 
 const away=[
 awayTeam,"Hosté",
-shots[0],shots[1],
-hits[0],hits[1],
-faceoffs[0],faceoffs[1],
-attack[0],attack[1],
-pp[0],pp[0],"Ne"
+val(shots,0),val(shots,1),
+val(hits,0),val(hits,1),
+val(faceoffs,0),val(faceoffs,1),
+val(attack,0),val(attack,1),
+val(pp,0),val(pp,0),"Ne"
 ];
 
 const home=[
 homeTeam,"Domácí",
-shots[1],shots[0],
-hits[1],hits[0],
-faceoffs[1],faceoffs[0],
-attack[1],attack[0],
-pp[1],pp[1],"Ne"
+val(shots,1),val(shots,0),
+val(hits,1),val(hits,0),
+val(faceoffs,1),val(faceoffs,0),
+val(attack,1),val(attack,0),
+val(pp,1),val(pp,1),"Ne"
 ];
 
 allMatches.push({away:away,home:home});
