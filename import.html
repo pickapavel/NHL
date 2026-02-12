@@ -18,7 +18,6 @@ th{background:#cfe8f7}
 button{padding:6px 10px}
 dialog{padding:20px}
 .summary{margin-top:10px;font-weight:bold}
-h2{margin-top:40px}
 </style>
 </head>
 
@@ -77,30 +76,27 @@ Kategorie:
 
 <div class="summary" id="summary"></div>
 
-<h2>Souhrn statistik (kontingenční pohled)</h2>
-
-<table id="pivotTable">
-<thead>
-<tr>
-<th>Tým</th>
-<th>Zápasy</th>
-<th>Góly</th>
-<th>Inkas.</th>
-<th>Hity</th>
-<th>Obdrž.</th>
-<th>Vhaz.</th>
-<th>Prohr.</th>
-<th>Čas útok</th>
-<th>Čas obrana</th>
-<th>PP</th>
-<th>PP góly</th>
-<th>PP %</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
 </div>
+
+<dialog id="editDialog">
+<h3>Aktualizace zápasu</h3>
+
+Kategorie:<br>
+<select id="dlgCategory">
+<option>OH</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - play off</option>
+</select><br><br>
+
+Tým (hráč):<br>
+<select id="dlgPlayer">
+<option>Kubele</option>
+<option>Pici</option>
+</select><br><br>
+
+<button onclick="saveEdit()">Uložit</button>
+<button onclick="editDialog.close()">Zavřít</button>
+</dialog>
 
 <script>
 
@@ -144,93 +140,57 @@ tbody.appendChild(tr2);
 
 fillTeams();
 applyFilters();
-buildPivot();
 }
 
-function timeToSec(t){
-if(!t || !t.includes(":")) return 0;
-const p=t.split(":");
-return parseInt(p[0])*60+parseInt(p[1]);
+function openDialog(i){
+editIndex=i;
+editDialog.showModal();
 }
 
-function secToTime(s){
-const m=Math.floor(s/60);
-const sec=s%60;
-return m+":"+(sec<10?"0":"")+sec;
+function saveEdit(){
+
+const cat=dlgCategory.value;
+const player=dlgPlayer.value;
+const other=player==="Pici"?"Kubele":"Pici";
+
+allMatches[editIndex].category=cat;
+allMatches[editIndex].playerAway=player;
+allMatches[editIndex].playerHome=other;
+
+saveLocal();
+renderTable();
+editDialog.close();
 }
 
-function buildPivot(){
+/* OCR */
 
-const tbody=document.querySelector("#pivotTable tbody");
-tbody.innerHTML="";
+function findLine(t,k){return t.split("\n").find(l=>l.includes(k))||"";}
+function numbers(l){return l.match(/[0-9:]+/g)||[];}
 
-const p=filterPlayer.value;
-const t=filterTeam.value;
-const c=filterCategory.value;
+document.getElementById("img").addEventListener("change",async e=>{
 
-let stats={};
+const file=e.target.files[0];
+if(!file) return;
 
-allMatches.forEach(m=>{
+const r=await Tesseract.recognize(file,'eng');
+const text=r.data.text.toUpperCase();
 
-[m.away,m.home].forEach((row,i)=>{
+const shots=numbers(findLine(text,"SHOTS"));
+const hits=numbers(findLine(text,"HITS"));
+const faceoffs=numbers(findLine(text,"FACEOFF"));
+const attack=numbers(findLine(text,"TIMEONATTACK"));
+const pp=numbers(findLine(text,"PP"));
 
-const team=row[0];
-const player=i==0?m.playerAway:m.playerHome;
-const cat=m.category;
+const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
+const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
 
-if(p && player!==p) return;
-if(t && team!==t) return;
-if(c && cat!==c) return;
+allMatches.push({away:away,home:home});
 
-if(!stats[team]){
-stats[team]={
-games:0,g:0,ga:0,h:0,ha:0,
-fo:0,fol:0,toa:0,tod:0,pp:0,ppg:0
-};
-}
-
-stats[team].games++;
-stats[team].g+=parseInt(row[2]||0);
-stats[team].ga+=parseInt(row[3]||0);
-stats[team].h+=parseInt(row[4]||0);
-stats[team].ha+=parseInt(row[5]||0);
-stats[team].fo+=parseInt(row[6]||0);
-stats[team].fol+=parseInt(row[7]||0);
-stats[team].toa+=timeToSec(row[8]);
-stats[team].tod+=timeToSec(row[9]);
-stats[team].pp+=parseInt(row[10]||0);
-stats[team].ppg+=parseInt(row[11]||0);
-
+saveLocal();
+renderTable();
 });
 
-});
-
-Object.keys(stats).forEach(team=>{
-
-const s=stats[team];
-const tr=document.createElement("tr");
-
-const ppPerc=s.pp?Math.round((s.ppg/s.pp)*100):0;
-
-tr.innerHTML=
-`<td class="left">${team}</td>
-<td>${s.games}</td>
-<td>${s.g}</td>
-<td>${s.ga}</td>
-<td>${s.h}</td>
-<td>${s.ha}</td>
-<td>${s.fo}</td>
-<td>${s.fol}</td>
-<td>${secToTime(s.toa)}</td>
-<td>${secToTime(s.tod)}</td>
-<td>${s.pp}</td>
-<td>${s.ppg}</td>
-<td>${ppPerc}%</td>`;
-
-tbody.appendChild(tr);
-});
-
-}
+/* FILTRY */
 
 function fillTeams(){
 const sel=document.getElementById("filterTeam");
@@ -276,7 +236,6 @@ if(show) games++;
 }
 
 summary.innerText="Zápasy: "+games;
-buildPivot();
 }
 
 filterPlayer.onchange=applyFilters;
