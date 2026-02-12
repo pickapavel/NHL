@@ -6,12 +6,13 @@
 
 <style>
 body{font-family:Arial;background:#f2f2f2;margin:0}
-.wrapper{max-width:1000px;margin:40px auto;background:white;padding:30px}
+.wrapper{max-width:1100px;margin:40px auto;background:white;padding:30px}
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-table{border-collapse:collapse;width:100%}
+table{border-collapse:collapse;width:100%;margin-top:20px}
 th,td{border:1px solid #999;padding:8px;text-align:center}
 th{background:#cfe8f7}
 button{padding:8px 14px}
+h2{margin-top:40px}
 </style>
 </head>
 
@@ -62,13 +63,30 @@ button{padding:8px 14px}
 
 </div>
 
+<h2>Historie zápasů</h2>
+
+<table id="history">
+<thead>
+<tr>
+<th>Datum</th>
+<th>Kategorie</th>
+<th>Hráč</th>
+<th>Hosté</th>
+<th>Domácí</th>
+<th>Skóre</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
 </div>
 
 <!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
@@ -85,6 +103,11 @@ const db = getFirestore(app);
 window.db = db;
 window.addDoc = addDoc;
 window.collection = collection;
+window.getDocs = getDocs;
+window.query = query;
+window.orderBy = orderBy;
+
+loadMatches();
 
 </script>
 
@@ -92,6 +115,7 @@ window.collection = collection;
 
 let loadedLines = [];
 
+/* NAČTENÍ TXT */
 document.getElementById("fileInput").addEventListener("change", e => {
 
     const reader = new FileReader();
@@ -106,6 +130,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
     reader.readAsText(e.target.files[0]);
 });
 
+/* ULOŽENÍ */
 async function saveMatch(){
 
     if(loadedLines.length < 20){
@@ -122,7 +147,46 @@ async function saveMatch(){
         created: Date.now()
     });
 
-    alert("Zápas uložen do Firebase!");
+    alert("Zápas uložen!");
+    loadMatches();
+}
+
+/* NAČTENÍ HISTORIE */
+async function loadMatches(){
+
+    const tbody = document.querySelector("#history tbody");
+    tbody.innerHTML="";
+
+    const q = query(collection(db,"zapasy"), orderBy("created","desc"));
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach(doc=>{
+
+        const d = doc.data();
+
+        const awayGoals =
+            Number(d.stats[6]) +
+            Number(d.stats[7]) +
+            Number(d.stats[8]);
+
+        const homeGoals =
+            Number(d.stats[16]) +
+            Number(d.stats[17]) +
+            Number(d.stats[18]);
+
+        const tr=document.createElement("tr");
+
+        tr.innerHTML=`
+        <td>${new Date(d.created).toLocaleDateString()}</td>
+        <td>${d.category}</td>
+        <td>${d.player}</td>
+        <td>${d.awayTeam}</td>
+        <td>${d.homeTeam}</td>
+        <td>${awayGoals} : ${homeGoals}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
 }
 
 </script>
