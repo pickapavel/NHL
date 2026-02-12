@@ -11,13 +11,19 @@ body{
     margin:0;
 }
 .wrapper{
-    max-width:900px;
+    max-width:1000px;
     margin:40px auto;
     background:white;
     padding:30px;
 }
-h1{
-    margin-top:0;
+.controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+select,input{
+    padding:6px;
 }
 table{
     border-collapse:collapse;
@@ -33,10 +39,8 @@ th{
     background:#cfe8f7;
 }
 .upload{
-    padding:15px;
+    padding:10px;
     border:2px dashed #22a6df;
-    text-align:center;
-    margin-bottom:20px;
 }
 </style>
 </head>
@@ -47,16 +51,41 @@ th{
 
 <h1>Statistiky zápasu</h1>
 
+<div class="controls">
+
 <div class="upload">
 <input type="file" id="fileInput" accept=".txt">
+</div>
+
+<select id="category">
+<option value="">Kategorie</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - Play off</option>
+<option>OH</option>
+</select>
+
+<select id="player">
+<option value="">Hráč</option>
+<option>Pici</option>
+<option>Kubele</option>
+</select>
+
+<select id="homeTeam">
+<option value="">Domácí tým</option>
+</select>
+
+<select id="awayTeam">
+<option value="">Hostující tým</option>
+</select>
+
 </div>
 
 <table id="statsTable" style="display:none">
 <thead>
 <tr>
 <th>Statistika</th>
-<th>Hosté</th>
-<th>Domácí</th>
+<th id="awayName">Hosté</th>
+<th id="homeName">Domácí</th>
 </tr>
 </thead>
 <tbody>
@@ -65,7 +94,7 @@ th{
 <tr><td>Vyhraná vhazování</td><td id="h_vhaz"></td><td id="d_vhaz"></td></tr>
 <tr><td>Čas v útoku</td><td id="h_utok"></td><td id="d_utok"></td></tr>
 <tr><td>Přesilovky (min)</td><td id="h_pp"></td><td id="d_pp"></td></tr>
-<tr><td>Oslabení (góly/pokusy)</td><td id="h_pk"></td><td id="d_pk"></td></tr>
+<tr><td>Oslabení</td><td id="h_pk"></td><td id="d_pk"></td></tr>
 <tr><td>Góly 1. třetina</td><td id="h_g1"></td><td id="d_g1"></td></tr>
 <tr><td>Góly 2. třetina</td><td id="h_g2"></td><td id="d_g2"></td></tr>
 <tr><td>Góly 3. třetina</td><td id="h_g3"></td><td id="d_g3"></td></tr>
@@ -76,6 +105,45 @@ th{
 </div>
 
 <script>
+
+/* ===== SEZNAM EXTRALIGA TÝMŮ ===== */
+
+const extraligaTeams = [
+"HC Bílí Tygři Liberec",
+"HC Dynamo Pardubice",
+"HC Chemopetrol Litvínov",
+"HC Geus Okna Kladno",
+"HC Motor České Budějovice",
+"HC Energie Karlovy Vary",
+"HC Sparta Praha",
+"HC Oceláři Třinec"
+];
+
+/* ===== NAPLNĚNÍ TÝMŮ ===== */
+
+const categorySelect = document.getElementById("category");
+const homeTeam = document.getElementById("homeTeam");
+const awayTeam = document.getElementById("awayTeam");
+
+categorySelect.addEventListener("change", () => {
+
+    homeTeam.innerHTML = '<option value="">Domácí tým</option>';
+    awayTeam.innerHTML = '<option value="">Hostující tým</option>';
+
+    if(categorySelect.value.includes("Extraliga")){
+        extraligaTeams.forEach(team=>{
+            let o1=document.createElement("option");
+            o1.textContent=team;
+            homeTeam.appendChild(o1);
+
+            let o2=document.createElement("option");
+            o2.textContent=team;
+            awayTeam.appendChild(o2);
+        });
+    }
+});
+
+/* ===== NAČTENÍ TXT SOUBORU ===== */
 
 document.getElementById("fileInput").addEventListener("change", function(e){
 
@@ -96,31 +164,37 @@ document.getElementById("fileInput").addEventListener("change", function(e){
             return;
         }
 
+        document.getElementById("awayName").innerText =
+            awayTeam.value || "Hosté";
+
+        document.getElementById("homeName").innerText =
+            homeTeam.value || "Domácí";
+
         // HOSTÉ
-        document.getElementById("h_strely").innerText = lines[0];
-        document.getElementById("h_hity").innerText = lines[1];
-        document.getElementById("h_vhaz").innerText = lines[2];
-        document.getElementById("h_utok").innerText = lines[3];
-        document.getElementById("h_pp").innerText = lines[4];
-        document.getElementById("h_pk").innerText = lines[5];
-        document.getElementById("h_g1").innerText = lines[6];
-        document.getElementById("h_g2").innerText = lines[7];
-        document.getElementById("h_g3").innerText = lines[8];
-        document.getElementById("h_ot").innerText = lines[9] == "1" ? "ANO" : "NE";
+        h_strely.innerText = lines[0];
+        h_hity.innerText = lines[1];
+        h_vhaz.innerText = lines[2];
+        h_utok.innerText = lines[3];
+        h_pp.innerText = lines[4];
+        h_pk.innerText = lines[5];
+        h_g1.innerText = lines[6];
+        h_g2.innerText = lines[7];
+        h_g3.innerText = lines[8];
+        h_ot.innerText = lines[9] == "1" ? "ANO" : "NE";
 
         // DOMÁCÍ
-        document.getElementById("d_strely").innerText = lines[10];
-        document.getElementById("d_hity").innerText = lines[11];
-        document.getElementById("d_vhaz").innerText = lines[12];
-        document.getElementById("d_utok").innerText = lines[13];
-        document.getElementById("d_pp").innerText = lines[14];
-        document.getElementById("d_pk").innerText = lines[15];
-        document.getElementById("d_g1").innerText = lines[16];
-        document.getElementById("d_g2").innerText = lines[17];
-        document.getElementById("d_g3").innerText = lines[18];
-        document.getElementById("d_ot").innerText = lines[19] == "1" ? "ANO" : "NE";
+        d_strely.innerText = lines[10];
+        d_hity.innerText = lines[11];
+        d_vhaz.innerText = lines[12];
+        d_utok.innerText = lines[13];
+        d_pp.innerText = lines[14];
+        d_pk.innerText = lines[15];
+        d_g1.innerText = lines[16];
+        d_g2.innerText = lines[17];
+        d_g3.innerText = lines[18];
+        d_ot.innerText = lines[19] == "1" ? "ANO" : "NE";
 
-        document.getElementById("statsTable").style.display = "table";
+        document.getElementById("statsTable").style.display="table";
     };
 
     reader.readAsText(file);
