@@ -29,6 +29,8 @@ button{padding:8px 14px;margin-top:10px}
 <p>Po nahrání obrázku se statistiky zapíšou do tabulky a zůstanou i po F5.</p>
 </div>
 
+<button onclick="downloadXML()">Stáhnout XML</button>
+
 <table id="statsTable">
 <thead>
 <tr>
@@ -54,55 +56,61 @@ button{padding:8px 14px;margin-top:10px}
 
 <script>
 
-/* ===== MAPA TÝMŮ ===== */
+/* =========================
+   ULOŽENÁ DATA
+========================= */
 
-const TEAM_MAP = {
-  "SPA": "HC Sparta Praha",
-  "LIB": "HC Bílí Tygři Liberec",
-  "KLA": "HC Geus Okna Kladno",
-  "TRI": "HC Oceláři Třinec",
-  "LIT": "HC Litvínov"
-};
+let allMatches = JSON.parse(localStorage.getItem("ocr_stats") || "[]");
 
-/* ===== TABULKA ===== */
+/* =========================
+   TABULKA
+========================= */
 
 function addRow(data){
   const tr=document.createElement("tr");
+
   tr.innerHTML=data.map((c,i)=>
     "<td class='"+(i==0?"left":"")+"'>"+c+"</td>"
   ).join("");
+
   document.querySelector("#statsTable tbody").appendChild(tr);
 }
 
-/* ===== LOCAL STORAGE ===== */
-
-function saveTable(){
-  localStorage.setItem(
-    "ocr_stats",
-    document.querySelector("#statsTable tbody").innerHTML
-  );
-}
-
 function loadTable(){
-  const data = localStorage.getItem("ocr_stats");
-  if(data){
-    document.querySelector("#statsTable tbody").innerHTML=data;
-  }
+  const tbody=document.querySelector("#statsTable tbody");
+  tbody.innerHTML="";
+  allMatches.forEach(r=>addRow(r));
 }
 
 loadTable();
 
-/* ===== OCR POMOCNÉ ===== */
+/* =========================
+   MAPA TÝMŮ
+========================= */
+
+const TEAM_MAP = {
+  "KLA": "HC Geus Okna Kladno",
+  "TRI": "HC Oceláři Třinec",
+  "SPA": "HC Sparta Praha",
+  "LIB": "HC Bílí Tygři Liberec",
+  "LIT": "HC Litvínov"
+};
+
+/* =========================
+   OCR POMOCNÉ
+========================= */
 
 function findLine(text, keyword){
   return text.split("\n").find(l => l.includes(keyword)) || "";
 }
 
 function numbers(line){
-  return line.match(/[0-9]+:[0-9]+|[0-9]+/g) || [];
+  return line.match(/[0-9:]+/g) || [];
 }
 
-/* ===== OCR ===== */
+/* =========================
+   OCR IMPORT
+========================= */
 
 document.getElementById("img").addEventListener("change", async (e)=>{
 
@@ -111,10 +119,6 @@ document.getElementById("img").addEventListener("change", async (e)=>{
 
   const result=await Tesseract.recognize(file,'eng');
   const text=result.data.text.toUpperCase();
-
-  console.log(text);
-
-  /* ---- TÝMY ---- */
 
   let teamsFound=[];
 
@@ -132,13 +136,11 @@ document.getElementById("img").addEventListener("change", async (e)=>{
   const away=teamsFound[0];
   const home=teamsFound[1];
 
-  /* ---- STATISTIKY ---- */
-
   const shots=numbers(findLine(text,"SHOTS"));
   const hits=numbers(findLine(text,"HITS"));
   const faceoffs=numbers(findLine(text,"FACEOFF"));
   const attack=numbers(findLine(text,"TIME ON ATTACK"));
-  const pp=numbers(findLine(text," PP "));
+  const pp=numbers(findLine(text,"PP"));
 
   const awayRow=[
     away,"Hosté",
@@ -146,7 +148,7 @@ document.getElementById("img").addEventListener("change", async (e)=>{
     hits[0],hits[1],
     faceoffs[0],faceoffs[1],
     attack[0],attack[1],
-    pp[0],pp[1],
+    pp[0],pp[0],
     "Ne"
   ];
 
@@ -156,18 +158,39 @@ document.getElementById("img").addEventListener("change", async (e)=>{
     hits[1],hits[0],
     faceoffs[1],faceoffs[0],
     attack[1],attack[0],
-    pp[1],pp[0],
+    pp[1],pp[1],
     "Ne"
   ];
 
-  addRow(awayRow);
-  addRow(homeRow);
+  allMatches.push(awayRow);
+  allMatches.push(homeRow);
 
-  saveTable();
+  localStorage.setItem("ocr_stats", JSON.stringify(allMatches));
 
-  alert("Zápas zapsán.");
+  loadTable();
 
+  alert("Zápas uložen.");
 });
+
+/* =========================
+   XML EXPORT
+========================= */
+
+function downloadXML(){
+  let xml='<?xml version="1.0" encoding="UTF-8"?><zapasy>';
+
+  allMatches.forEach(r=>{
+    xml+="<zapas>"+r.join("|")+"</zapas>";
+  });
+
+  xml+="</zapasy>";
+
+  const blob=new Blob([xml],{type:"text/xml"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="statistiky.xml";
+  a.click();
+}
 
 </script>
 
