@@ -26,14 +26,6 @@ dialog{padding:20px}
 
 <h1>Import statistik ze zápasu (OCR)</h1>
 
-<!-- DROPDOWN PRO VÝBĚR TÝMU -->
-<div class="filters">
-<strong>Vybrat tým (zobrazí všechny jeho zápasy):</strong>
-<select id="filterTeamMain">
-<option value="">Všechny týmy</option>
-</select>
-</div>
-
 <div class="upload">
 <input type="file" id="img" accept="image/*">
 </div>
@@ -77,7 +69,6 @@ Kategorie:
 <th>Kategorie</th>
 <th>Hráč</th>
 <th>Akce</th>
-<th>Smazat</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -109,8 +100,24 @@ Tým (hráč):<br>
 
 <script>
 
+/* ===== MAPA TÝMŮ ===== */
+
+const TEAM_MAP = {
+  "SPA":"HC Sparta Praha",
+  "LIB":"HC Bílí Tygři Liberec",
+  "KLA":"HC Geus Okna Kladno",
+  "TRI":"HC Oceláři Třinec",
+  "PAR":"HC Dynamo Pardubice",
+  "LIT":"HC Litvínov",
+  "PLZ":"HC Plzeň",
+  "ZLN":"HC Zlín",
+  "VIT":"HC Vítkovice"
+};
+
 let allMatches=[];
 let editIndex=null;
+
+/* ===== LOCAL STORAGE ===== */
 
 function saveLocal(){
 localStorage.setItem("ocr_matches",JSON.stringify(allMatches));
@@ -121,6 +128,8 @@ const data=localStorage.getItem("ocr_matches");
 if(data) allMatches=JSON.parse(data);
 renderTable();
 }
+
+/* ===== TABULKA ===== */
 
 function renderTable(){
 
@@ -136,8 +145,7 @@ tr1.innerHTML=
 m.away.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
 "<td>"+(m.category||"")+"</td>"+
 "<td>"+(m.playerAway||"")+"</td>"+
-"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>"+
-"<td rowspan='2'><button onclick='deleteMatch("+i+")'>Smazat</button></td>";
+"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
 
 tr2.innerHTML=
 m.home.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
@@ -151,6 +159,8 @@ tbody.appendChild(tr2);
 fillTeams();
 applyFilters();
 }
+
+/* ===== DIALOG ===== */
 
 function openDialog(i){
 editIndex=i;
@@ -172,14 +182,7 @@ renderTable();
 editDialog.close();
 }
 
-function deleteMatch(i){
-if(!confirm("Opravdu smazat tento zápas?")) return;
-allMatches.splice(i,1);
-saveLocal();
-renderTable();
-}
-
-/* OCR */
+/* ===== OCR ===== */
 
 function findLine(t,k){return t.split("\n").find(l=>l.includes(k))||"";}
 function numbers(l){return l.match(/[0-9:]+/g)||[];}
@@ -192,14 +195,44 @@ if(!file) return;
 const r=await Tesseract.recognize(file,'eng');
 const text=r.data.text.toUpperCase();
 
+/* NALEZENÍ TÝMŮ */
+
+let foundTeams=[];
+
+Object.keys(TEAM_MAP).forEach(code=>{
+  if(text.includes(code)){
+    foundTeams.push(TEAM_MAP[code]);
+  }
+});
+
+let awayTeam=foundTeams[0] || "Hosté";
+let homeTeam=foundTeams[1] || "Domácí";
+
+/* STATISTIKY */
+
 const shots=numbers(findLine(text,"SHOTS"));
 const hits=numbers(findLine(text,"HITS"));
 const faceoffs=numbers(findLine(text,"FACEOFF"));
 const attack=numbers(findLine(text,"TIMEONATTACK"));
 const pp=numbers(findLine(text,"PP"));
 
-const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
-const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
+const away=[
+awayTeam,"Hosté",
+shots[0],shots[1],
+hits[0],hits[1],
+faceoffs[0],faceoffs[1],
+attack[0],attack[1],
+pp[0],pp[0],"Ne"
+];
+
+const home=[
+homeTeam,"Domácí",
+shots[1],shots[0],
+hits[1],hits[0],
+faceoffs[1],faceoffs[0],
+attack[1],attack[0],
+pp[1],pp[1],"Ne"
+];
 
 allMatches.push({away:away,home:home});
 
@@ -207,30 +240,20 @@ saveLocal();
 renderTable();
 });
 
-/* FILTRY */
+/* ===== FILTRY ===== */
 
 function fillTeams(){
-
 const sel=document.getElementById("filterTeam");
-const selMain=document.getElementById("filterTeamMain");
-
 const set=new Set();
 allMatches.forEach(m=>{
 set.add(m.away[0]);
 set.add(m.home[0]);
 });
-
 sel.innerHTML='<option value="">Vše</option>';
-selMain.innerHTML='<option value="">Všechny týmy</option>';
-
 set.forEach(t=>{
 const o=document.createElement("option");
 o.textContent=t;
 sel.appendChild(o);
-
-const o2=document.createElement("option");
-o2.textContent=t;
-selMain.appendChild(o2);
 });
 }
 
@@ -239,7 +262,6 @@ function applyFilters(){
 const p=filterPlayer.value;
 const t=filterTeam.value;
 const c=filterCategory.value;
-const mainTeam=document.getElementById("filterTeamMain").value;
 
 const rows=document.querySelectorAll("#statsTable tbody tr");
 
@@ -251,15 +273,13 @@ const r1=rows[i];
 const r2=rows[i+1];
 
 const player=r1.cells[14].innerText;
-const team1=r1.cells[0].innerText;
-const team2=r2.cells[0].innerText;
+const team=r1.cells[0].innerText;
 const cat=r1.cells[13].innerText;
 
 let show=true;
 
-if(mainTeam && team1!==mainTeam && team2!==mainTeam) show=false;
 if(p && player!==p) show=false;
-if(t && team1!==t) show=false;
+if(t && team!==t) show=false;
 if(c && cat!==c) show=false;
 
 r1.style.display=show?"":"none";
@@ -274,7 +294,6 @@ summary.innerText="Zápasy: "+games;
 filterPlayer.onchange=applyFilters;
 filterTeam.onchange=applyFilters;
 filterCategory.onchange=applyFilters;
-filterTeamMain.onchange=applyFilters;
 
 loadLocal();
 
