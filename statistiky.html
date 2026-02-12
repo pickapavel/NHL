@@ -5,43 +5,13 @@
 <title>Statistiky zápasu</title>
 
 <style>
-body{
-    font-family: Arial;
-    background:#f2f2f2;
-    margin:0;
-}
-.wrapper{
-    max-width:1000px;
-    margin:40px auto;
-    background:white;
-    padding:30px;
-}
-.controls{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:20px;
-}
-select,input{
-    padding:6px;
-}
-table{
-    border-collapse:collapse;
-    width:100%;
-    margin-top:20px;
-}
-th,td{
-    border:1px solid #999;
-    padding:8px;
-    text-align:center;
-}
-th{
-    background:#cfe8f7;
-}
-.upload{
-    padding:10px;
-    border:2px dashed #22a6df;
-}
+body{font-family:Arial;background:#f2f2f2;margin:0}
+.wrapper{max-width:1000px;margin:40px auto;background:white;padding:30px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+th{background:#cfe8f7}
+button{padding:8px 14px}
 </style>
 </head>
 
@@ -53,152 +23,107 @@ th{
 
 <div class="controls">
 
-<div class="upload">
 <input type="file" id="fileInput" accept=".txt">
-</div>
 
 <select id="category">
-<option value="">Kategorie</option>
 <option>Extraliga - základní část</option>
 <option>Extraliga - Play off</option>
 <option>OH</option>
 </select>
 
 <select id="player">
-<option value="">Hráč</option>
 <option>Pici</option>
 <option>Kubele</option>
 </select>
 
 <select id="homeTeam">
-<option value="">Domácí tým</option>
+<option>HC Sparta Praha</option>
+<option>HC Bílí Tygři Liberec</option>
+<option>HC Dynamo Pardubice</option>
+<option>HC Chemopetrol Litvínov</option>
+<option>HC Geus Okna Kladno</option>
+<option>HC Motor České Budějovice</option>
+<option>HC Energie Karlovy Vary</option>
+<option>HC Oceláři Třinec</option>
 </select>
 
 <select id="awayTeam">
-<option value="">Hostující tým</option>
+<option>HC Sparta Praha</option>
+<option>HC Bílí Tygři Liberec</option>
+<option>HC Dynamo Pardubice</option>
+<option>HC Chemopetrol Litvínov</option>
+<option>HC Geus Okna Kladno</option>
+<option>HC Motor České Budějovice</option>
+<option>HC Energie Karlovy Vary</option>
+<option>HC Oceláři Třinec</option>
 </select>
 
-</div>
-
-<table id="statsTable" style="display:none">
-<thead>
-<tr>
-<th>Statistika</th>
-<th id="awayName">Hosté</th>
-<th id="homeName">Domácí</th>
-</tr>
-</thead>
-<tbody>
-<tr><td>Střely</td><td id="h_strely"></td><td id="d_strely"></td></tr>
-<tr><td>Hity</td><td id="h_hity"></td><td id="d_hity"></td></tr>
-<tr><td>Vyhraná vhazování</td><td id="h_vhaz"></td><td id="d_vhaz"></td></tr>
-<tr><td>Čas v útoku</td><td id="h_utok"></td><td id="d_utok"></td></tr>
-<tr><td>Přesilovky (min)</td><td id="h_pp"></td><td id="d_pp"></td></tr>
-<tr><td>Oslabení</td><td id="h_pk"></td><td id="d_pk"></td></tr>
-<tr><td>Góly 1. třetina</td><td id="h_g1"></td><td id="d_g1"></td></tr>
-<tr><td>Góly 2. třetina</td><td id="h_g2"></td><td id="d_g2"></td></tr>
-<tr><td>Góly 3. třetina</td><td id="h_g3"></td><td id="d_g3"></td></tr>
-<tr><td>Prodloužení</td><td id="h_ot"></td><td id="d_ot"></td></tr>
-</tbody>
-</table>
+<button onclick="saveMatch()">Uložit zápas</button>
 
 </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+  authDomain: "statistiky-6310a.firebaseapp.com",
+  projectId: "statistiky-6310a",
+  storageBucket: "statistiky-6310a.appspot.com",
+  messagingSenderId: "1023222901562",
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+window.addDoc = addDoc;
+window.collection = collection;
+
+</script>
 
 <script>
 
-/* ===== SEZNAM EXTRALIGA TÝMŮ ===== */
+let loadedLines = [];
 
-const extraligaTeams = [
-"HC Bílí Tygři Liberec",
-"HC Dynamo Pardubice",
-"HC Chemopetrol Litvínov",
-"HC Geus Okna Kladno",
-"HC Motor České Budějovice",
-"HC Energie Karlovy Vary",
-"HC Sparta Praha",
-"HC Oceláři Třinec"
-];
-
-/* ===== NAPLNĚNÍ TÝMŮ ===== */
-
-const categorySelect = document.getElementById("category");
-const homeTeam = document.getElementById("homeTeam");
-const awayTeam = document.getElementById("awayTeam");
-
-categorySelect.addEventListener("change", () => {
-
-    homeTeam.innerHTML = '<option value="">Domácí tým</option>';
-    awayTeam.innerHTML = '<option value="">Hostující tým</option>';
-
-    if(categorySelect.value.includes("Extraliga")){
-        extraligaTeams.forEach(team=>{
-            let o1=document.createElement("option");
-            o1.textContent=team;
-            homeTeam.appendChild(o1);
-
-            let o2=document.createElement("option");
-            o2.textContent=team;
-            awayTeam.appendChild(o2);
-        });
-    }
-});
-
-/* ===== NAČTENÍ TXT SOUBORU ===== */
-
-document.getElementById("fileInput").addEventListener("change", function(e){
-
-    const file = e.target.files[0];
-    if(!file) return;
+document.getElementById("fileInput").addEventListener("change", e => {
 
     const reader = new FileReader();
 
-    reader.onload = function(event){
-
-        const lines = event.target.result
+    reader.onload = ev => {
+        loadedLines = ev.target.result
             .split(/\r?\n/)
-            .map(l => l.trim())
-            .filter(l => l !== "");
-
-        if(lines.length < 20){
-            alert("Soubor nemá 20 hodnot.");
-            return;
-        }
-
-        document.getElementById("awayName").innerText =
-            awayTeam.value || "Hosté";
-
-        document.getElementById("homeName").innerText =
-            homeTeam.value || "Domácí";
-
-        // HOSTÉ
-        h_strely.innerText = lines[0];
-        h_hity.innerText = lines[1];
-        h_vhaz.innerText = lines[2];
-        h_utok.innerText = lines[3];
-        h_pp.innerText = lines[4];
-        h_pk.innerText = lines[5];
-        h_g1.innerText = lines[6];
-        h_g2.innerText = lines[7];
-        h_g3.innerText = lines[8];
-        h_ot.innerText = lines[9] == "1" ? "ANO" : "NE";
-
-        // DOMÁCÍ
-        d_strely.innerText = lines[10];
-        d_hity.innerText = lines[11];
-        d_vhaz.innerText = lines[12];
-        d_utok.innerText = lines[13];
-        d_pp.innerText = lines[14];
-        d_pk.innerText = lines[15];
-        d_g1.innerText = lines[16];
-        d_g2.innerText = lines[17];
-        d_g3.innerText = lines[18];
-        d_ot.innerText = lines[19] == "1" ? "ANO" : "NE";
-
-        document.getElementById("statsTable").style.display="table";
+            .map(l=>l.trim())
+            .filter(l=>l!=="");
     };
 
-    reader.readAsText(file);
+    reader.readAsText(e.target.files[0]);
 });
+
+async function saveMatch(){
+
+    if(loadedLines.length < 20){
+        alert("Nejprve nahraj zapas.txt");
+        return;
+    }
+
+    await addDoc(collection(db,"zapasy"),{
+        category: category.value,
+        player: player.value,
+        homeTeam: homeTeam.value,
+        awayTeam: awayTeam.value,
+        stats: loadedLines,
+        created: Date.now()
+    });
+
+    alert("Zápas uložen do Firebase!");
+}
 
 </script>
 
