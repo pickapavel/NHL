@@ -26,6 +26,14 @@ dialog{padding:20px}
 
 <h1>Import statistik ze zápasu (OCR)</h1>
 
+<!-- NOVÝ DROPDOWN PRO VÝBĚR TÝMU -->
+<div class="filters">
+<strong>Vybrat tým (zobrazí všechny jeho zápasy):</strong>
+<select id="filterTeamMain">
+<option value="">Všechny týmy</option>
+</select>
+</div>
+
 <div class="upload">
 <input type="file" id="img" accept="image/*">
 </div>
@@ -193,14 +201,27 @@ renderTable();
 /* FILTRY */
 
 function fillTeams(){
+
 const sel=document.getElementById("filterTeam");
+const selMain=document.getElementById("filterTeamMain");
+
 const set=new Set();
-allMatches.forEach(m=>{set.add(m.away[0]);set.add(m.home[0]);});
+allMatches.forEach(m=>{
+set.add(m.away[0]);
+set.add(m.home[0]);
+});
+
 sel.innerHTML='<option value="">Vše</option>';
+selMain.innerHTML='<option value="">Všechny týmy</option>';
+
 set.forEach(t=>{
 const o=document.createElement("option");
 o.textContent=t;
 sel.appendChild(o);
+
+const o2=document.createElement("option");
+o2.textContent=t;
+selMain.appendChild(o2);
 });
 }
 
@@ -209,6 +230,7 @@ function applyFilters(){
 const p=filterPlayer.value;
 const t=filterTeam.value;
 const c=filterCategory.value;
+const mainTeam=document.getElementById("filterTeamMain").value;
 
 const rows=document.querySelectorAll("#statsTable tbody tr");
 
@@ -220,13 +242,15 @@ const r1=rows[i];
 const r2=rows[i+1];
 
 const player=r1.cells[14].innerText;
-const team=r1.cells[0].innerText;
+const team1=r1.cells[0].innerText;
+const team2=r2.cells[0].innerText;
 const cat=r1.cells[13].innerText;
 
 let show=true;
 
+if(mainTeam && team1!==mainTeam && team2!==mainTeam) show=false;
 if(p && player!==p) show=false;
-if(t && team!==t) show=false;
+if(t && team1!==t) show=false;
 if(c && cat!==c) show=false;
 
 r1.style.display=show?"":"none";
@@ -241,6 +265,7 @@ summary.innerText="Zápasy: "+games;
 filterPlayer.onchange=applyFilters;
 filterTeam.onchange=applyFilters;
 filterCategory.onchange=applyFilters;
+filterTeamMain.onchange=applyFilters;
 
 loadLocal();
 
