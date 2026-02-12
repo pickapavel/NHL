@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Statistiky zápasu</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    margin:0;
+}
+.wrapper{
+    max-width:900px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+}
+h1{
+    margin-top:0;
+}
+table{
+    border-collapse:collapse;
+    width:100%;
+    margin-top:20px;
+}
+th,td{
+    border:1px solid #999;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#cfe8f7;
+}
+.upload{
+    padding:15px;
+    border:2px dashed #22a6df;
+    text-align:center;
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Statistiky zápasu</h1>
+
+<div class="upload">
+<input type="file" id="fileInput" accept=".txt">
+</div>
+
+<table id="statsTable" style="display:none">
+<thead>
+<tr>
+<th>Statistika</th>
+<th>Hosté</th>
+<th>Domácí</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Střely</td><td id="h_strely"></td><td id="d_strely"></td></tr>
+<tr><td>Hity</td><td id="h_hity"></td><td id="d_hity"></td></tr>
+<tr><td>Vyhraná vhazování</td><td id="h_vhaz"></td><td id="d_vhaz"></td></tr>
+<tr><td>Čas v útoku</td><td id="h_utok"></td><td id="d_utok"></td></tr>
+<tr><td>Přesilovky (min)</td><td id="h_pp"></td><td id="d_pp"></td></tr>
+<tr><td>Oslabení (góly/pokusy)</td><td id="h_pk"></td><td id="d_pk"></td></tr>
+<tr><td>Góly 1. třetina</td><td id="h_g1"></td><td id="d_g1"></td></tr>
+<tr><td>Góly 2. třetina</td><td id="h_g2"></td><td id="d_g2"></td></tr>
+<tr><td>Góly 3. třetina</td><td id="h_g3"></td><td id="d_g3"></td></tr>
+<tr><td>Prodloužení</td><td id="h_ot"></td><td id="d_ot"></td></tr>
+</tbody>
+</table>
+
+</div>
+
+<script>
+
+document.getElementById("fileInput").addEventListener("change", function(e){
+
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+
+        const lines = event.target.result
+            .split(/\r?\n/)
+            .map(l => l.trim())
+            .filter(l => l !== "");
+
+        if(lines.length < 20){
+            alert("Soubor nemá 20 hodnot.");
+            return;
+        }
+
+        // HOSTÉ
+        document.getElementById("h_strely").innerText = lines[0];
+        document.getElementById("h_hity").innerText = lines[1];
+        document.getElementById("h_vhaz").innerText = lines[2];
+        document.getElementById("h_utok").innerText = lines[3];
+        document.getElementById("h_pp").innerText = lines[4];
+        document.getElementById("h_pk").innerText = lines[5];
+        document.getElementById("h_g1").innerText = lines[6];
+        document.getElementById("h_g2").innerText = lines[7];
+        document.getElementById("h_g3").innerText = lines[8];
+        document.getElementById("h_ot").innerText = lines[9] == "1" ? "ANO" : "NE";
+
+        // DOMÁCÍ
+        document.getElementById("d_strely").innerText = lines[10];
+        document.getElementById("d_hity").innerText = lines[11];
+        document.getElementById("d_vhaz").innerText = lines[12];
+        document.getElementById("d_utok").innerText = lines[13];
+        document.getElementById("d_pp").innerText = lines[14];
+        document.getElementById("d_pk").innerText = lines[15];
+        document.getElementById("d_g1").innerText = lines[16];
+        document.getElementById("d_g2").innerText = lines[17];
+        document.getElementById("d_g3").innerText = lines[18];
+        document.getElementById("d_ot").innerText = lines[19] == "1" ? "ANO" : "NE";
+
+        document.getElementById("statsTable").style.display = "table";
+    };
+
+    reader.readAsText(file);
+});
+
+</script>
+
+</body>
+</html>
