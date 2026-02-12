@@ -103,6 +103,18 @@ Tým (hráč):<br>
 /* ===== MAPA TÝMŮ ===== */
 
 const TEAM_MAP = {
+  "SPA":["SPA","SPARTA"],
+  "LIB":["LIB","LIBEREC","TYGRI"],
+  "KLA":["KLA","KLADNO"],
+  "TRI":["TRI","TRINEC"],
+  "PAR":["PAR","PARDUBICE"],
+  "LIT":["LIT","LITVINOV"],
+  "PLZ":["PLZ","PLZEN"],
+  "ZLN":["ZLN","ZLIN"],
+  "VIT":["VIT","VITKOVICE"]
+};
+
+const TEAM_NAMES = {
   "SPA":"HC Sparta Praha",
   "LIB":"HC Bílí Tygři Liberec",
   "KLA":"HC Geus Okna Kladno",
@@ -193,20 +205,26 @@ const file=e.target.files[0];
 if(!file) return;
 
 const r=await Tesseract.recognize(file,'eng');
-const text=r.data.text.toUpperCase();
+
+const text = r.data.text
+  .toUpperCase()
+  .replace(/1/g,"I")
+  .replace(/0/g,"O");
 
 /* NALEZENÍ TÝMŮ */
 
-let foundTeams=[];
+let foundCodes=[];
 
-Object.keys(TEAM_MAP).forEach(code=>{
-  if(text.includes(code)){
-    foundTeams.push(TEAM_MAP[code]);
-  }
+Object.entries(TEAM_MAP).forEach(([code,variants])=>{
+  variants.forEach(v=>{
+    if(text.includes(v) && !foundCodes.includes(code)){
+      foundCodes.push(code);
+    }
+  });
 });
 
-let awayTeam=foundTeams[0] || "Hosté";
-let homeTeam=foundTeams[1] || "Domácí";
+let awayTeam = TEAM_NAMES[foundCodes[0]] || "Hosté";
+let homeTeam = TEAM_NAMES[foundCodes[1]] || "Domácí";
 
 /* STATISTIKY */
 
