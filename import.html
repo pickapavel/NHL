@@ -26,7 +26,7 @@ dialog{padding:20px}
 
 <h1>Import statistik ze zápasu (OCR)</h1>
 
-<!-- NOVÝ DROPDOWN PRO VÝBĚR TÝMU -->
+<!-- DROPDOWN PRO VÝBĚR TÝMU -->
 <div class="filters">
 <strong>Vybrat tým (zobrazí všechny jeho zápasy):</strong>
 <select id="filterTeamMain">
@@ -77,6 +77,7 @@ Kategorie:
 <th>Kategorie</th>
 <th>Hráč</th>
 <th>Akce</th>
+<th>Smazat</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -135,7 +136,8 @@ tr1.innerHTML=
 m.away.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
 "<td>"+(m.category||"")+"</td>"+
 "<td>"+(m.playerAway||"")+"</td>"+
-"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>";
+"<td rowspan='2'><button onclick='openDialog("+i+")'>Aktualizovat</button></td>"+
+"<td rowspan='2'><button onclick='deleteMatch("+i+")'>Smazat</button></td>";
 
 tr2.innerHTML=
 m.home.map((c,j)=>"<td class='"+(j==0?"left":"")+"'>"+c+"</td>").join("")+
@@ -168,6 +170,13 @@ allMatches[editIndex].playerHome=other;
 saveLocal();
 renderTable();
 editDialog.close();
+}
+
+function deleteMatch(i){
+if(!confirm("Opravdu smazat tento zápas?")) return;
+allMatches.splice(i,1);
+saveLocal();
+renderTable();
 }
 
 /* OCR */
