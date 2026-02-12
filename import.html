@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Import statistik ze zĂˇpasu (OCR)</title>
+<title>Import statistik ze zápasu (OCR)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -24,36 +24,28 @@ dialog{padding:20px}
 <body>
 <div class="wrapper">
 
-<h1>Import statistik ze zĂˇpasu (OCR)</h1>
-
-<!-- NOVĂť DROPDOWN PRO VĂťBÄšR TĂťMU -->
-<div class="filters">
-<strong>Vybrat tĂ˝m (zobrazĂ­ vĹˇechny jeho zĂˇpasy):</strong>
-<select id="filterTeamMain">
-<option value="">VĹˇechny tĂ˝my</option>
-</select>
-</div>
+<h1>Import statistik ze zápasu (OCR)</h1>
 
 <div class="upload">
 <input type="file" id="img" accept="image/*">
 </div>
 
 <div class="filters">
-HrĂˇÄŤ:
+Hráč:
 <select id="filterPlayer">
-<option value="">VĹˇe</option>
+<option value="">Vše</option>
 <option>Pici</option>
 <option>Kubele</option>
 </select>
 
-TĂ˝m:
-<select id="filterTeam"><option value="">VĹˇe</option></select>
+Tým:
+<select id="filterTeam"><option value="">Vše</option></select>
 
 Kategorie:
 <select id="filterCategory">
-<option value="">VĹˇe</option>
+<option value="">Vše</option>
 <option>OH</option>
-<option>Extraliga - zĂˇkladnĂ­ ÄŤĂˇst</option>
+<option>Extraliga - základní část</option>
 <option>Extraliga - play off</option>
 </select>
 </div>
@@ -61,21 +53,21 @@ Kategorie:
 <table id="statsTable">
 <thead>
 <tr>
-<th>TĂ˝m</th>
+<th>Tým</th>
 <th>Role</th>
-<th>GĂłly vstĹ™.</th>
-<th>GĂłly ink.</th>
-<th>Hity danĂ©</th>
-<th>Hity obdrĹľ.</th>
+<th>Góly vstř.</th>
+<th>Góly ink.</th>
+<th>Hity dané</th>
+<th>Hity obdrž.</th>
 <th>Vhaz. vyhr.</th>
 <th>Vhaz. prohr.</th>
-<th>ÄŚas v Ăştoku</th>
-<th>ÄŚas v obranÄ›</th>
-<th>PĹ™esilovky</th>
-<th>VyuĹľ. PP</th>
+<th>Čas v útoku</th>
+<th>Čas v obraně</th>
+<th>Přesilovky</th>
+<th>Využ. PP</th>
 <th>OT</th>
 <th>Kategorie</th>
-<th>HrĂˇÄŤ</th>
+<th>Hráč</th>
 <th>Akce</th>
 </tr>
 </thead>
@@ -87,23 +79,23 @@ Kategorie:
 </div>
 
 <dialog id="editDialog">
-<h3>Aktualizace zĂˇpasu</h3>
+<h3>Aktualizace zápasu</h3>
 
 Kategorie:<br>
 <select id="dlgCategory">
 <option>OH</option>
-<option>Extraliga - zĂˇkladnĂ­ ÄŤĂˇst</option>
+<option>Extraliga - základní část</option>
 <option>Extraliga - play off</option>
 </select><br><br>
 
-TĂ˝m (hrĂˇÄŤ):<br>
+Tým (hráč):<br>
 <select id="dlgPlayer">
 <option>Kubele</option>
 <option>Pici</option>
 </select><br><br>
 
-<button onclick="saveEdit()">UloĹľit</button>
-<button onclick="editDialog.close()">ZavĹ™Ă­t</button>
+<button onclick="saveEdit()">Uložit</button>
+<button onclick="editDialog.close()">Zavřít</button>
 </dialog>
 
 <script>
@@ -189,8 +181,8 @@ const faceoffs=numbers(findLine(text,"FACEOFF"));
 const attack=numbers(findLine(text,"TIMEONATTACK"));
 const pp=numbers(findLine(text,"PP"));
 
-const away=["HC Geus Okna Kladno","HostĂ©",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
-const home=["HC OcelĂˇĹ™i TĹ™inec","DomĂˇcĂ­",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
+const away=["HC Geus Okna Kladno","Hosté",shots[0],shots[1],hits[0],hits[1],faceoffs[0],faceoffs[1],attack[0],attack[1],pp[0],pp[0],"Ne"];
+const home=["HC Oceláři Třinec","Domácí",shots[1],shots[0],hits[1],hits[0],faceoffs[1],faceoffs[0],attack[1],attack[0],pp[1],pp[1],"Ne"];
 
 allMatches.push({away:away,home:home});
 
@@ -201,27 +193,14 @@ renderTable();
 /* FILTRY */
 
 function fillTeams(){
-
 const sel=document.getElementById("filterTeam");
-const selMain=document.getElementById("filterTeamMain");
-
 const set=new Set();
-allMatches.forEach(m=>{
-set.add(m.away[0]);
-set.add(m.home[0]);
-});
-
-sel.innerHTML='<option value="">VĹˇe</option>';
-selMain.innerHTML='<option value="">VĹˇechny tĂ˝my</option>';
-
+allMatches.forEach(m=>{set.add(m.away[0]);set.add(m.home[0]);});
+sel.innerHTML='<option value="">Vše</option>';
 set.forEach(t=>{
 const o=document.createElement("option");
 o.textContent=t;
 sel.appendChild(o);
-
-const o2=document.createElement("option");
-o2.textContent=t;
-selMain.appendChild(o2);
 });
 }
 
@@ -230,7 +209,6 @@ function applyFilters(){
 const p=filterPlayer.value;
 const t=filterTeam.value;
 const c=filterCategory.value;
-const mainTeam=document.getElementById("filterTeamMain").value;
 
 const rows=document.querySelectorAll("#statsTable tbody tr");
 
@@ -242,15 +220,13 @@ const r1=rows[i];
 const r2=rows[i+1];
 
 const player=r1.cells[14].innerText;
-const team1=r1.cells[0].innerText;
-const team2=r2.cells[0].innerText;
+const team=r1.cells[0].innerText;
 const cat=r1.cells[13].innerText;
 
 let show=true;
 
-if(mainTeam && team1!==mainTeam && team2!==mainTeam) show=false;
 if(p && player!==p) show=false;
-if(t && team1!==t) show=false;
+if(t && team!==t) show=false;
 if(c && cat!==c) show=false;
 
 r1.style.display=show?"":"none";
@@ -259,13 +235,12 @@ r2.style.display=show?"":"none";
 if(show) games++;
 }
 
-summary.innerText="ZĂˇpasy: "+games;
+summary.innerText="Zápasy: "+games;
 }
 
 filterPlayer.onchange=applyFilters;
 filterTeam.onchange=applyFilters;
 filterCategory.onchange=applyFilters;
-filterTeamMain.onchange=applyFilters;
 
 loadLocal();
 
