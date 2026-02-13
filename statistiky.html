@@ -6,7 +6,6 @@
 <title>Statistiky zápasu</title>
 
 <style>
-
 *{box-sizing:border-box}
 
 body{
@@ -22,27 +21,22 @@ body{
     background:white;
 }
 
-.controls{
+.controls,.filterBar{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-bottom:20px;
+    margin-bottom:15px;
 }
 
-.controls > *{
+.controls > *, .filterBar > *{
     flex:1;
     min-width:160px;
     padding:8px;
 }
 
-.tableWrap{
-    overflow-x:auto;
-}
-
 table{
     border-collapse:collapse;
     width:100%;
-    min-width:650px;
 }
 
 th,td{
@@ -51,11 +45,13 @@ th,td{
     text-align:center;
 }
 
-/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
-    font-weight:bold;
+}
+
+.activeMatch{
+    background:#d3d3d3 !important;
 }
 
 .deleteBtn{
@@ -65,25 +61,6 @@ th{
     padding:6px 10px;
     cursor:pointer;
 }
-
-/* AKTIVNÍ ZÁPAS */
-.activeMatch{
-    background:#d3d3d3 !important;
-    color:black;
-}
-
-.filterBar{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:10px;
-}
-
-@media (max-width:700px){
-    .controls > *,
-    .filterBar > *{flex:100%;}
-}
-
 </style>
 </head>
 
@@ -94,7 +71,6 @@ th{
 <h1>Statistiky zápasu</h1>
 
 <div class="controls">
-
 <input type="file" id="fileInput" accept=".txt">
 
 <select id="category">
@@ -135,13 +111,11 @@ th{
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
-
 </div>
 
 <h2>Historie zápasů</h2>
 
 <div class="filterBar">
-
 <select id="filterCategory">
 <option value="">Všechny kategorie</option>
 <option>Extraliga - základní část</option>
@@ -157,10 +131,8 @@ th{
 
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
-
 </div>
 
-<div class="tableWrap">
 <table id="history">
 <thead>
 <tr>
@@ -175,11 +147,9 @@ th{
 </thead>
 <tbody></tbody>
 </table>
-</div>
 
 <h2>Detail zápasu</h2>
 
-<div class="tableWrap">
 <table id="detailTable" style="display:none">
 <tr><th>Statistika</th><th>Hosté</th><th>Domácí</th></tr>
 <tr><td>Střely</td><td id="ds0"></td><td id="ds10"></td></tr>
@@ -193,44 +163,14 @@ th{
 <tr><td>Góly 3. tř.</td><td id="ds8"></td><td id="ds18"></td></tr>
 <tr><td>Prodloužení</td><td id="ds9"></td><td id="ds19"></td></tr>
 </table>
-</div>
 
 </div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
-  authDomain: "statistiky-6310a.firebaseapp.com",
-  projectId: "statistiky-6310a",
-  storageBucket: "statistiky-6310a.appspot.com",
-  messagingSenderId: "1023222901562",
-  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.db=db;
-window.addDoc=addDoc;
-window.collection=collection;
-window.getDocs=getDocs;
-window.deleteDoc=deleteDoc;
-window.doc=doc;
-window.query=query;
-window.orderBy=orderBy;
-
-window.addEventListener("load", loadMatches);
-
-</script>
 
 <script>
-
-/* JS část zůstává stejná jako předtím */
+/* ===== ZÁLOHA ===== */
+function backup(matches){
+    localStorage.setItem("backup_zapasy", JSON.stringify(matches));
+}
 </script>
 
 </body>
