@@ -66,9 +66,8 @@ th{
     cursor:pointer;
 }
 
-/* ✅ AKTIVNÍ ZÁPAS — ZMĚNĚNO NA ŠEDOU */
 .activeMatch{
-    background:#d3d3d3 !important;
+    background:#ffff00 !important;
     color:black;
 }
 
@@ -197,6 +196,185 @@ th{
 
 </div>
 
-<!-- ZBYTEK JS ZŮSTÁVÁ BEZE ZMĚNY -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+  authDomain: "statistiky-6310a.firebaseapp.com",
+  projectId: "statistiky-6310a",
+  storageBucket: "statistiky-6310a.appspot.com",
+  messagingSenderId: "1023222901562",
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db=db;
+window.addDoc=addDoc;
+window.collection=collection;
+window.getDocs=getDocs;
+window.deleteDoc=deleteDoc;
+window.doc=doc;
+window.query=query;
+window.orderBy=orderBy;
+
+window.addEventListener("load", loadMatches);
+
+</script>
+
+<script>
+
+let loadedLines=[];
+let activeRow=null;
+let allMatches=[];
+
+/* ===== FILTR ===== */
+
+function applyFilter(){
+    const cat=document.getElementById("filterCategory").value;
+    const player=document.getElementById("filterPlayer").value;
+    renderMatches(cat,player);
+}
+
+function resetFilter(){
+    filterCategory.value="";
+    filterPlayer.value="";
+    renderMatches();
+}
+
+/* ===== NAČTENÍ TXT ===== */
+
+document.getElementById("fileInput").addEventListener("change", e=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        loadedLines=ev.target.result.split(/\r?\n/)
+        .map(l=>l.trim()).filter(l=>l!=="");
+    };
+    reader.readAsText(e.target.files[0]);
+});
+
+/* ===== ULOŽENÍ ===== */
+
+async function saveMatch(){
+
+    if(!category.value || !player.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii, hráče a oba týmy.");
+        return;
+    }
+
+    if(loadedLines.length<20){
+        alert("Nejprve nahraj zapas.txt");
+        return;
+    }
+
+    await addDoc(collection(db,"zapasy"),{
+        category:category.value,
+        player:player.value,
+        homeTeam:homeTeam.value,
+        awayTeam:awayTeam.value,
+        stats:loadedLines,
+        created:Date.now()
+    });
+
+    loadMatches();
+}
+
+/* ===== MAZÁNÍ ===== */
+
+async function deleteMatch(id){
+    if(!confirm("Opravdu smazat zápas?")) return;
+    await deleteDoc(doc(db,"zapasy",id));
+    loadMatches();
+}
+
+/* ===== NAČTENÍ ===== */
+
+async function loadMatches(){
+
+    allMatches=[];
+    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
+    const snapshot=await getDocs(q);
+
+    snapshot.forEach(docSnap=>{
+        allMatches.push({id:docSnap.id,...docSnap.data()});
+    });
+
+    renderMatches();
+}
+
+/* ===== RENDER ===== */
+
+function renderMatches(filterCategory="",filterPlayer=""){
+
+    const tbody=document.querySelector("#history tbody");
+    tbody.innerHTML="";
+
+    let first=true;
+
+    allMatches.forEach(m=>{
+
+        if(filterCategory && m.category!==filterCategory) return;
+        if(filterPlayer && m.player!==filterPlayer) return;
+
+        const awayGoals=
+            Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
+
+        const homeGoals=
+            Number(m.stats[16])+Number(m.stats[17])+Number(m.stats[18]);
+
+        const tr=document.createElement("tr");
+
+        tr.innerHTML=`
+        <td>${new Date(m.created).toLocaleDateString()}</td>
+        <td>${m.category}</td>
+        <td>${m.player}</td>
+        <td>${m.awayTeam}</td>
+        <td>${m.homeTeam}</td>
+        <td>${awayGoals} : ${homeGoals}</td>
+        <td><button class="deleteBtn">Smazat</button></td>
+        `;
+
+        tr.onclick=()=>{
+            setActiveRow(tr);
+            showDetail(m.stats);
+        };
+
+        tr.querySelector(".deleteBtn").onclick=(e)=>{
+            e.stopPropagation();
+            deleteMatch(m.id);
+        };
+
+        tbody.appendChild(tr);
+
+        if(first){
+            setActiveRow(tr);
+            showDetail(m.stats);
+            first=false;
+        }
+    });
+}
+
+/* ===== DETAIL ===== */
+
+function setActiveRow(row){
+    if(activeRow) activeRow.classList.remove("activeMatch");
+    activeRow=row;
+    activeRow.classList.add("activeMatch");
+}
+
+function showDetail(stats){
+    for(let i=0;i<20;i++){
+        document.getElementById("ds"+i).innerText=stats[i];
+    }
+    document.getElementById("detailTable").style.display="table";
+}
+
+</script>
+
 </body>
 </html>
