@@ -113,6 +113,7 @@ td{
 <th>Hity</th>
 <th>Vhazování</th>
 <th>Čas v útoku</th>
+<th>Průměr čas v útoku</th>
 <th>Přesilovky</th>
 <th>Oslabení</th>
 </tr>
@@ -151,6 +152,18 @@ window.collection=collection;
 </script>
 
 <script>
+
+function timeToSeconds(t){
+    if(!t || !t.includes(":")) return 0;
+    const parts = t.split(":");
+    return Number(parts[0])*60 + Number(parts[1]);
+}
+
+function secondsToTime(sec){
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return m + ":" + String(s).padStart(2,"0");
+}
 
 async function loadTeamStats(){
 
@@ -199,11 +212,15 @@ async function loadTeamStats(){
         shots+=Number(isHome ? m.stats[10] : m.stats[0]);
         hits+=Number(isHome ? m.stats[11] : m.stats[1]);
         faceoffs+=Number(isHome ? m.stats[12] : m.stats[2]);
-        attackTime+=Number(isHome ? m.stats[13] : m.stats[3]);
-        pp+=Number(isHome ? m.stats[4] : m.stats[14]);
-        pk+=Number(isHome ? m.stats[5] : m.stats[15]);
+
+        attackTime+=timeToSeconds(isHome ? m.stats[13] : m.stats[3]);
+
+        pp+=Number(isHome ? m.stats[14] : m.stats[4]);
+        pk+=Number(isHome ? m.stats[15] : m.stats[5]);
 
     });
+
+    const avgAttack = games>0 ? secondsToTime(Math.floor(attackTime/games)) : "0:00";
 
     document.getElementById("summaryRow").innerHTML=`
         <td>${games}</td>
@@ -214,7 +231,8 @@ async function loadTeamStats(){
         <td>${shots}</td>
         <td>${hits}</td>
         <td>${faceoffs}</td>
-        <td>${attackTime}</td>
+        <td>${secondsToTime(attackTime)}</td>
+        <td>${avgAttack}</td>
         <td>${pp}</td>
         <td>${pk}</td>
     `;
