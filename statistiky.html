@@ -51,7 +51,6 @@ th,td{
     text-align:center;
 }
 
-/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
@@ -218,7 +217,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.db=db;
 window.addDoc=addDoc;
 window.collection=collection;
 window.getDocs=getDocs;
@@ -238,8 +236,7 @@ let activeRow=null;
 let allMatches=[];
 
 function applyFilter(){
-    const cat=document.getElementById("filterCategory").value;
-    renderMatches(cat);
+    renderMatches(filterCategory.value);
 }
 
 function resetFilter(){
@@ -318,11 +315,17 @@ function renderMatches(filterCategory=""){
 
         if(filterCategory && m.category!==filterCategory) return;
 
-        const awayGoals =
+        let awayGoals =
             Number(m.stats[6]) + Number(m.stats[7]) + Number(m.stats[8]);
 
-        const homeGoals =
+        let homeGoals =
             Number(m.stats[16]) + Number(m.stats[17]) + Number(m.stats[18]);
+
+        // ===== NÁJEZDY =====
+        if(m.stats.length>20){
+            if(m.stats[20]==="1") homeGoals++;
+            if(m.stats[20]==="2") awayGoals++;
+        }
 
         const tr=document.createElement("tr");
 
