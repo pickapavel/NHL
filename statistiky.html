@@ -177,6 +177,12 @@ th{
 <option value="">Všechny týmy</option>
 </select>
 
+<select id="filterHomeAway">
+<option value="">Domácí i venkovní</option>
+<option value="home">Domácí</option>
+<option value="away">Venkovní</option>
+</select>
+
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
 
@@ -256,14 +262,17 @@ let activeRow=null;
 let allMatches=[];
 
 function applyFilter(){
-    const cat=document.getElementById("filterCategory").value;
-    const team=document.getElementById("filterTeam").value;
-    renderMatches(cat,team);
+    renderMatches(
+        filterCategory.value,
+        filterTeam.value,
+        filterHomeAway.value
+    );
 }
 
 function resetFilter(){
     filterCategory.value="";
     filterTeam.value="";
+    filterHomeAway.value="";
     renderMatches();
 }
 
@@ -286,7 +295,7 @@ function fillTeamFilter(category=""){
     });
 }
 
-document.getElementById("filterCategory").addEventListener("change",()=>{
+filterCategory.addEventListener("change",()=>{
     fillTeamFilter(filterCategory.value);
 });
 
@@ -351,7 +360,7 @@ async function loadMatches(){
     renderMatches();
 }
 
-function renderMatches(filterCategory="",filterTeam=""){
+function renderMatches(filterCategory="",filterTeam="",filterHomeAway=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -365,6 +374,9 @@ function renderMatches(filterCategory="",filterTeam=""){
         if(filterTeam &&
            m.homeTeam!==filterTeam &&
            m.awayTeam!==filterTeam) return;
+
+        if(filterHomeAway==="home" && filterTeam && m.homeTeam!==filterTeam) return;
+        if(filterHomeAway==="away" && filterTeam && m.awayTeam!==filterTeam) return;
 
         const awayGoals=
             Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
