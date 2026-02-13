@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistiky týmů</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+    font-family:Arial;
+    background:#f2f2f2;
+    margin:0;
+}
+
+.wrapper{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+    background:white;
+}
+
+.controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.controls > *{
+    flex:1;
+    min-width:160px;
+    padding:8px;
+}
+
+.tableWrap{
+    overflow-x:auto;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:650px;
+}
+
+th{
+    border:1px solid #999;
+    padding:8px;
+    text-align:center;
+    background:black;
+    color:#ffff00;
+}
+
+td{
+    border:1px solid #999;
+    padding:8px;
+    text-align:center;
+}
+
+.summaryRow{
+    background:#d3d3d3;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Statistiky týmů</h1>
+
+<div class="controls">
+
+<select id="teamSelect">
+<option value="">Vyber tým</option>
+<option>HC Sparta Praha (P)</option>
+<option>HC Sparta Praha (K)</option>
+<option>HC Bílí Tygři Liberec (P)</option>
+<option>HC Bílí Tygři Liberec (K)</option>
+<option>HC Dynamo Pardubice (P)</option>
+<option>HC Dynamo Pardubice (K)</option>
+<option>HC Chemopetrol Litvínov (P)</option>
+<option>HC Chemopetrol Litvínov (K)</option>
+<option>HC Geus Okna Kladno (P)</option>
+<option>HC Geus Okna Kladno (K)</option>
+<option>HC Motor České Budějovice (P)</option>
+<option>HC Motor České Budějovice (K)</option>
+<option>HC Energie Karlovy Vary (P)</option>
+<option>HC Energie Karlovy Vary (K)</option>
+<option>HC Oceláři Třinec (P)</option>
+<option>HC Oceláři Třinec (K)</option>
+</select>
+
+<button onclick="loadTeamStats()">Zobrazit statistiky</button>
+
+</div>
+
+<div class="tableWrap">
+
+<table id="teamStats" style="display:none">
+<thead>
+<tr>
+<th>Zápasy</th>
+<th>Výhry</th>
+<th>Prohry</th>
+<th>Góly vstř.</th>
+<th>Góly ink.</th>
+<th>Střely</th>
+<th>Hity</th>
+<th>Vhazování</th>
+<th>Čas v útoku</th>
+<th>Přesilovky</th>
+<th>Oslabení</th>
+</tr>
+</thead>
+<tbody>
+<tr class="summaryRow" id="summaryRow"></tr>
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+  authDomain: "statistiky-6310a.firebaseapp.com",
+  projectId: "statistiky-6310a",
+  storageBucket: "statistiky-6310a.appspot.com",
+  messagingSenderId: "1023222901562",
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db=db;
+window.getDocs=getDocs;
+window.collection=collection;
+
+</script>
+
+<script>
+
+async function loadTeamStats(){
+
+    const team=document.getElementById("teamSelect").value;
+    if(!team) return;
+
+    let games=0;
+    let wins=0;
+    let losses=0;
+    let goalsFor=0;
+    let goalsAgainst=0;
+    let shots=0;
+    let hits=0;
+    let faceoffs=0;
+    let attackTime=0;
+    let pp=0;
+    let pk=0;
+
+    const snapshot=await getDocs(collection(db,"zapasy"));
+
+    snapshot.forEach(docSnap=>{
+
+        const m=docSnap.data();
+
+        if(m.homeTeam!==team && m.awayTeam!==team) return;
+
+        games++;
+
+        const awayGoals =
+            Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
+
+        const homeGoals =
+            Number(m.stats[16])+Number(m.stats[17])+Number(m.stats[18]);
+
+        const isHome = m.homeTeam===team;
+
+        const gf = isHome ? homeGoals : awayGoals;
+        const ga = isHome ? awayGoals : homeGoals;
+
+        goalsFor+=gf;
+        goalsAgainst+=ga;
+
+        if(gf>ga) wins++;
+        else losses++;
+
+        shots+=Number(isHome ? m.stats[10] : m.stats[0]);
+        hits+=Number(isHome ? m.stats[11] : m.stats[1]);
+        faceoffs+=Number(isHome ? m.stats[12] : m.stats[2]);
+        attackTime+=Number(isHome ? m.stats[13] : m.stats[3]);
+        pp+=Number(isHome ? m.stats[4] : m.stats[14]);
+        pk+=Number(isHome ? m.stats[5] : m.stats[15]);
+
+    });
+
+    document.getElementById("summaryRow").innerHTML=`
+        <td>${games}</td>
+        <td>${wins}</td>
+        <td>${losses}</td>
+        <td>${goalsFor}</td>
+        <td>${goalsAgainst}</td>
+        <td>${shots}</td>
+        <td>${hits}</td>
+        <td>${faceoffs}</td>
+        <td>${attackTime}</td>
+        <td>${pp}</td>
+        <td>${pk}</td>
+    `;
+
+    document.getElementById("teamStats").style.display="table";
+}
+
+</script>
+
+</body>
+</html>
