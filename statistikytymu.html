@@ -172,6 +172,15 @@ function secondsToTime(sec){
     return m + ":" + String(s).padStart(2,"0");
 }
 
+function parsePK(value){
+    if(!value || !value.includes("/")) return {ga:0, pk:0};
+    const parts=value.split("/");
+    return {
+        ga:Number(parts[0]),
+        pk:Number(parts[1])
+    };
+}
+
 async function loadTeamStats(){
 
     const team=document.getElementById("teamSelect").value;
@@ -179,17 +188,13 @@ async function loadTeamStats(){
 
     if(!team) return;
 
-    let games=0;
-    let wins=0;
-    let losses=0;
-    let goalsFor=0;
-    let goalsAgainst=0;
-    let shots=0;
-    let hits=0;
-    let faceoffs=0;
+    let games=0,wins=0,losses=0;
+    let goalsFor=0,goalsAgainst=0;
+    let shots=0,hits=0,faceoffs=0;
     let attackTime=0;
     let pp=0;
-    let pk=0;
+    let pkGoals=0;
+    let pkTotal=0;
 
     const snapshot=await getDocs(collection(db,"zapasy"));
 
@@ -226,7 +231,10 @@ async function loadTeamStats(){
         attackTime+=timeToSeconds(isHome ? m.stats[13] : m.stats[3]);
 
         pp+=Number(isHome ? m.stats[14] : m.stats[4]);
-        pk+=Number(isHome ? m.stats[15] : m.stats[5]);
+
+        const parsed=parsePK(isHome ? m.stats[15] : m.stats[5]);
+        pkGoals+=parsed.ga;
+        pkTotal+=parsed.pk;
 
     });
 
@@ -246,7 +254,7 @@ async function loadTeamStats(){
         <td>${secondsToTime(attackTime)}</td>
         <td>${avgAttack}</td>
         <td>${pp}</td>
-        <td>${pk}</td>
+        <td>${pkGoals}/${pkTotal}</td>
     `;
 
     document.getElementById("teamStats").style.display="table";
