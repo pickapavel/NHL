@@ -57,7 +57,6 @@ td{
     text-align:left;
 }
 
-/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
@@ -73,7 +72,7 @@ th{
 }
 
 .activeMatch{
-    background:#d3d3d3; !important;
+    background:#d3d3d3 !important;
     color:black;
 }
 
@@ -174,6 +173,10 @@ th{
 <option>OH</option>
 </select>
 
+<select id="filterTeam">
+<option value="">Všechny týmy</option>
+</select>
+
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
 
@@ -254,13 +257,38 @@ let allMatches=[];
 
 function applyFilter(){
     const cat=document.getElementById("filterCategory").value;
-    renderMatches(cat);
+    const team=document.getElementById("filterTeam").value;
+    renderMatches(cat,team);
 }
 
 function resetFilter(){
     filterCategory.value="";
+    filterTeam.value="";
     renderMatches();
 }
+
+function fillTeamFilter(category=""){
+    const select=document.getElementById("filterTeam");
+    const teams=new Set();
+
+    allMatches.forEach(m=>{
+        if(category && m.category!==category) return;
+        teams.add(m.homeTeam);
+        teams.add(m.awayTeam);
+    });
+
+    select.innerHTML='<option value="">Všechny týmy</option>';
+    teams.forEach(t=>{
+        const o=document.createElement("option");
+        o.value=t;
+        o.textContent=t;
+        select.appendChild(o);
+    });
+}
+
+document.getElementById("filterCategory").addEventListener("change",()=>{
+    fillTeamFilter(filterCategory.value);
+});
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -319,10 +347,11 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...docSnap.data()});
     });
 
+    fillTeamFilter();
     renderMatches();
 }
 
-function renderMatches(filterCategory=""){
+function renderMatches(filterCategory="",filterTeam=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -332,6 +361,10 @@ function renderMatches(filterCategory=""){
     allMatches.forEach(m=>{
 
         if(filterCategory && m.category!==filterCategory) return;
+
+        if(filterTeam &&
+           m.homeTeam!==filterTeam &&
+           m.awayTeam!==filterTeam) return;
 
         const awayGoals=
             Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
