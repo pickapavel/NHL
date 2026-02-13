@@ -332,7 +332,8 @@ function renderMatches(filterCategory=""){
                 awayGoals++;
                 suffix=" SN";
             }
-        } else if(m.stats[9]==="1"){
+        }
+        else if(m.stats[9]==="1" && Math.abs(homeGoals-awayGoals)===1){
             suffix=" OT";
         }
 
