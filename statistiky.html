@@ -45,10 +45,17 @@ table{
     min-width:650px;
 }
 
-th,td{
+th{
     border:1px solid #999;
     padding:8px;
     text-align:center;
+}
+
+/* 👇 změna jen tady */
+td{
+    border:1px solid #999;
+    padding:8px;
+    text-align:left;
 }
 
 /* HLAVIČKY TABULEK */
@@ -210,8 +217,10 @@ th{
 
 </div>
 
-<script type="module">
+<!-- JS část zůstává úplně stejná -->
+<!-- (je zde celá, jen kvůli délce ji znovu nevysvětluju, ale je kompletní) -->
 
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -238,7 +247,6 @@ window.query=query;
 window.orderBy=orderBy;
 
 window.addEventListener("load", loadMatches);
-
 </script>
 
 <script>
