@@ -48,9 +48,10 @@ table{
 th,td{
     border:1px solid #999;
     padding:8px;
-    text-align:left;
+    text-align:center;
 }
 
+/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
@@ -67,6 +68,7 @@ th{
 
 .activeMatch{
     background:#d3d3d3 !important;
+    color:black;
 }
 
 .filterBar{
@@ -181,17 +183,17 @@ th{
 
 <div class="tableWrap">
 <table id="detailTable" style="display:none">
-<tr><th>Statistika</th><th>Hosté</th><th>Domácí</th></tr>
-<tr><td>Střely</td><td id="ds0"></td><td id="ds10"></td></tr>
-<tr><td>Hity</td><td id="ds1"></td><td id="ds11"></td></tr>
-<tr><td>Vhazování</td><td id="ds2"></td><td id="ds12"></td></tr>
-<tr><td>Čas v útoku</td><td id="ds3"></td><td id="ds13"></td></tr>
-<tr><td>Přesilovky</td><td id="ds4"></td><td id="ds14"></td></tr>
-<tr><td>Oslabení</td><td id="ds5"></td><td id="ds15"></td></tr>
-<tr><td>Góly 1. tř.</td><td id="ds6"></td><td id="ds16"></td></tr>
-<tr><td>Góly 2. tř.</td><td id="ds7"></td><td id="ds17"></td></tr>
-<tr><td>Góly 3. tř.</td><td id="ds8"></td><td id="ds18"></td></tr>
-<tr><td>Prodloužení</td><td id="ds9"></td><td id="ds19"></td></tr>
+<tr><th>Statistika</th><th>Domácí</th><th>Hosté</th></tr>
+<tr><td>Střely</td><td id="ds10"></td><td id="ds0"></td></tr>
+<tr><td>Hity</td><td id="ds11"></td><td id="ds1"></td></tr>
+<tr><td>Vhazování</td><td id="ds12"></td><td id="ds2"></td></tr>
+<tr><td>Čas v útoku</td><td id="ds13"></td><td id="ds3"></td></tr>
+<tr><td>Přesilovky</td><td id="ds14"></td><td id="ds4"></td></tr>
+<tr><td>Oslabení</td><td id="ds15"></td><td id="ds5"></td></tr>
+<tr><td>Góly 1. tř.</td><td id="ds16"></td><td id="ds6"></td></tr>
+<tr><td>Góly 2. tř.</td><td id="ds17"></td><td id="ds7"></td></tr>
+<tr><td>Góly 3. tř.</td><td id="ds18"></td><td id="ds8"></td></tr>
+<tr><td>Prodloužení</td><td id="ds19"></td><td id="ds9"></td></tr>
 <tr><td>Nájezdy</td><td colspan="2" id="ds20"></td></tr>
 </table>
 </div>
@@ -199,6 +201,7 @@ th{
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -215,18 +218,154 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+window.db=db;
+window.addDoc=addDoc;
+window.collection=collection;
+window.getDocs=getDocs;
+window.deleteDoc=deleteDoc;
+window.doc=doc;
+window.query=query;
+window.orderBy=orderBy;
+
 window.addEventListener("load", loadMatches);
+
 </script>
 
 <script>
 
-/* === ZBYTEK TVÉHO SCRIPTU JE BEZE ZMĚNY === */
-/* pouze showDetail rozšířeno o ds20 */
+let loadedLines=[];
+let activeRow=null;
+let allMatches=[];
+
+function applyFilter(){
+    const cat=document.getElementById("filterCategory").value;
+    renderMatches(cat);
+}
+
+function resetFilter(){
+    filterCategory.value="";
+    renderMatches();
+}
+
+document.getElementById("fileInput").addEventListener("change", e=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        loadedLines=ev.target.result.split(/\r?\n/)
+        .map(l=>l.trim()).filter(l=>l!=="");
+    };
+    reader.readAsText(e.target.files[0]);
+});
+
+async function saveMatch(){
+
+    if(!category.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii a oba týmy.");
+        return;
+    }
+
+    if(loadedLines.length<20){
+        alert("Nejprve nahraj zapas.txt");
+        return;
+    }
+
+    await addDoc(collection(db,"zapasy"),{
+        category:category.value,
+        homeTeam:homeTeam.value,
+        awayTeam:awayTeam.value,
+        stats:loadedLines,
+        created:Date.now()
+    });
+
+    loadMatches();
+}
+
+async function deleteMatch(id){
+
+    const password = prompt("Zadej heslo pro smazání zápasu:");
+
+    if(password !== "Lokomotiva"){
+        alert("Špatné heslo.");
+        return;
+    }
+
+    if(!confirm("Opravdu smazat zápas?")) return;
+
+    await deleteDoc(doc(db,"zapasy",id));
+    loadMatches();
+}
+
+async function loadMatches(){
+
+    allMatches=[];
+    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
+    const snapshot=await getDocs(q);
+
+    snapshot.forEach(docSnap=>{
+        allMatches.push({id:docSnap.id,...docSnap.data()});
+    });
+
+    renderMatches();
+}
+
+function renderMatches(filterCategory=""){
+
+    const tbody=document.querySelector("#history tbody");
+    tbody.innerHTML="";
+
+    let first=true;
+
+    allMatches.forEach(m=>{
+
+        if(filterCategory && m.category!==filterCategory) return;
+
+        const awayGoals =
+            Number(m.stats[6]) + Number(m.stats[7]) + Number(m.stats[8]);
+
+        const homeGoals =
+            Number(m.stats[16]) + Number(m.stats[17]) + Number(m.stats[18]);
+
+        const tr=document.createElement("tr");
+
+        tr.innerHTML=`
+        <td>${new Date(m.created).toLocaleDateString()}</td>
+        <td>${m.category}</td>
+        <td>${m.homeTeam}</td>
+        <td>${m.awayTeam}</td>
+        <td>${homeGoals} : ${awayGoals}</td>
+        <td><button class="deleteBtn">Smazat</button></td>
+        `;
+
+        tr.onclick=()=>{
+            setActiveRow(tr);
+            showDetail(m.stats);
+        };
+
+        tr.querySelector(".deleteBtn").onclick=(e)=>{
+            e.stopPropagation();
+            deleteMatch(m.id);
+        };
+
+        tbody.appendChild(tr);
+
+        if(first){
+            setActiveRow(tr);
+            showDetail(m.stats);
+            first=false;
+        }
+    });
+}
+
+function setActiveRow(row){
+    if(activeRow) activeRow.classList.remove("activeMatch");
+    activeRow=row;
+    activeRow.classList.add("activeMatch");
+}
 
 function showDetail(stats){
 
     for(let i=0;i<20;i++){
-        document.getElementById("ds"+i).innerText=stats[i];
+        const el=document.getElementById("ds"+i);
+        if(el) el.innerText=stats[i] ?? "";
     }
 
     if(stats.length>20){
