@@ -279,7 +279,16 @@ async function saveMatch(){
 }
 
 async function deleteMatch(id){
+
+    const password = prompt("Zadej heslo pro smazání zápasu:");
+
+    if(password !== "Lokomotiva"){
+        alert("Špatné heslo.");
+        return;
+    }
+
     if(!confirm("Opravdu smazat zápas?")) return;
+
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
