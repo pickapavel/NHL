@@ -51,7 +51,6 @@ th{
     text-align:center;
 }
 
-/* 👇 změna jen tady */
 td{
     border:1px solid #999;
     padding:8px;
@@ -85,7 +84,6 @@ th{
     margin-bottom:10px;
 }
 
-/* ===== MOBIL ===== */
 @media (max-width:700px){
 
     .controls > *,
@@ -123,42 +121,42 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-<option>HC Sparta Praha (Pici)</option>
-<option>HC Sparta Praha (Kubele)</option>
-<option>HC Bílí Tygři Liberec (Pici)</option>
-<option>HC Bílí Tygři Liberec (Kubele)</option>
-<option>HC Dynamo Pardubice (Pici)</option>
-<option>HC Dynamo Pardubice (Kubele)</option>
-<option>HC Chemopetrol Litvínov (Pici)</option>
-<option>HC Chemopetrol Litvínov (Kubele)</option>
-<option>HC Geus Okna Kladno (Pici)</option>
-<option>HC Geus Okna Kladno (Kubele)</option>
-<option>HC Motor České Budějovice (Pici)</option>
-<option>HC Motor České Budějovice (Kubele)</option>
-<option>HC Energie Karlovy Vary (Pici)</option>
-<option>HC Energie Karlovy Vary (Kubele)</option>
-<option>HC Oceláři Třinec (Pici)</option>
-<option>HC Oceláři Třinec (Kubele)</option>
+<option>HC Sparta Praha (P)</option>
+<option>HC Sparta Praha (K)</option>
+<option>HC Bílí Tygři Liberec (P)</option>
+<option>HC Bílí Tygři Liberec (K)</option>
+<option>HC Dynamo Pardubice (P)</option>
+<option>HC Dynamo Pardubice (K)</option>
+<option>HC Chemopetrol Litvínov (P)</option>
+<option>HC Chemopetrol Litvínov (K)</option>
+<option>HC Geus Okna Kladno (P)</option>
+<option>HC Geus Okna Kladno (K)</option>
+<option>HC Motor České Budějovice (P)</option>
+<option>HC Motor České Budějovice (K)</option>
+<option>HC Energie Karlovy Vary (P)</option>
+<option>HC Energie Karlovy Vary (K)</option>
+<option>HC Oceláři Třinec (P)</option>
+<option>HC Oceláři Třinec (K)</option>
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-<option>HC Sparta Praha (Pici)</option>
-<option>HC Sparta Praha (Kubele)</option>
-<option>HC Bílí Tygři Liberec (Pici)</option>
-<option>HC Bílí Tygři Liberec (Kubele)</option>
-<option>HC Dynamo Pardubice (Pici)</option>
-<option>HC Dynamo Pardubice (Kubele)</option>
-<option>HC Chemopetrol Litvínov (Pici)</option>
-<option>HC Chemopetrol Litvínov (Kubele)</option>
-<option>HC Geus Okna Kladno (Pici)</option>
-<option>HC Geus Okna Kladno (Kubele)</option>
-<option>HC Motor České Budějovice (Pici)</option>
-<option>HC Motor České Budějovice (Kubele)</option>
-<option>HC Energie Karlovy Vary (Pici)</option>
-<option>HC Energie Karlovy Vary (Kubele)</option>
-<option>HC Oceláři Třinec (Pici)</option>
-<option>HC Oceláři Třinec (Kubele)</option>
+<option>HC Sparta Praha (P)</option>
+<option>HC Sparta Praha (K)</option>
+<option>HC Bílí Tygři Liberec (P)</option>
+<option>HC Bílí Tygři Liberec (K)</option>
+<option>HC Dynamo Pardubice (P)</option>
+<option>HC Dynamo Pardubice (K)</option>
+<option>HC Chemopetrol Litvínov (P)</option>
+<option>HC Chemopetrol Litvínov (K)</option>
+<option>HC Geus Okna Kladno (P)</option>
+<option>HC Geus Okna Kladno (K)</option>
+<option>HC Motor České Budějovice (P)</option>
+<option>HC Motor České Budějovice (K)</option>
+<option>HC Energie Karlovy Vary (P)</option>
+<option>HC Energie Karlovy Vary (K)</option>
+<option>HC Oceláři Třinec (P)</option>
+<option>HC Oceláři Třinec (K)</option>
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -217,10 +215,8 @@ th{
 
 </div>
 
-<!-- JS část zůstává úplně stejná -->
-<!-- (je zde celá, jen kvůli délce ji znovu nevysvětluju, ale je kompletní) -->
-
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -247,6 +243,7 @@ window.query=query;
 window.orderBy=orderBy;
 
 window.addEventListener("load", loadMatches);
+
 </script>
 
 <script>
