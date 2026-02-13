@@ -103,12 +103,6 @@ th{
 <option>OH</option>
 </select>
 
-<select id="player">
-<option value="" selected disabled>Hráč</option>
-<option>Pici</option>
-<option>Kubele</option>
-</select>
-
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
 <option>HC Sparta Praha (Pici)</option>
@@ -164,12 +158,6 @@ th{
 <option>OH</option>
 </select>
 
-<select id="filterPlayer">
-<option value="">Všichni hráči</option>
-<option>Pici</option>
-<option>Kubele</option>
-</select>
-
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
 
@@ -181,7 +169,6 @@ th{
 <tr>
 <th>Datum</th>
 <th>Kategorie</th>
-<th>Hráč</th>
 <th>Hosté</th>
 <th>Domácí</th>
 <th>Skóre</th>
@@ -251,13 +238,11 @@ let allMatches=[];
 
 function applyFilter(){
     const cat=document.getElementById("filterCategory").value;
-    const player=document.getElementById("filterPlayer").value;
-    renderMatches(cat,player);
+    renderMatches(cat);
 }
 
 function resetFilter(){
     filterCategory.value="";
-    filterPlayer.value="";
     renderMatches();
 }
 
@@ -272,8 +257,8 @@ document.getElementById("fileInput").addEventListener("change", e=>{
 
 async function saveMatch(){
 
-    if(!category.value || !player.value || !homeTeam.value || !awayTeam.value){
-        alert("Vyber kategorii, hráče a oba týmy.");
+    if(!category.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii a oba týmy.");
         return;
     }
 
@@ -284,7 +269,6 @@ async function saveMatch(){
 
     await addDoc(collection(db,"zapasy"),{
         category:category.value,
-        player:player.value,
         homeTeam:homeTeam.value,
         awayTeam:awayTeam.value,
         stats:loadedLines,
@@ -313,7 +297,7 @@ async function loadMatches(){
     renderMatches();
 }
 
-function renderMatches(filterCategory="",filterPlayer=""){
+function renderMatches(filterCategory=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -323,7 +307,6 @@ function renderMatches(filterCategory="",filterPlayer=""){
     allMatches.forEach(m=>{
 
         if(filterCategory && m.category!==filterCategory) return;
-        if(filterPlayer && m.player!==filterPlayer) return;
 
         const awayGoals=
             Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
@@ -336,7 +319,6 @@ function renderMatches(filterCategory="",filterPlayer=""){
         tr.innerHTML=`
         <td>${new Date(m.created).toLocaleDateString()}</td>
         <td>${m.category}</td>
-        <td>${m.player}</td>
         <td>${m.awayTeam}</td>
         <td>${m.homeTeam}</td>
         <td>${awayGoals} : ${homeGoals}</td>
