@@ -79,22 +79,38 @@ h2{margin-top:40px}
 <tbody></tbody>
 </table>
 
+<h2>Detail zápasu</h2>
+
+<table id="detailTable" style="display:none">
+<tr><th>Statistika</th><th>Hosté</th><th>Domácí</th></tr>
+<tr><td>Střely</td><td id="ds0"></td><td id="ds10"></td></tr>
+<tr><td>Hity</td><td id="ds1"></td><td id="ds11"></td></tr>
+<tr><td>Vhazování</td><td id="ds2"></td><td id="ds12"></td></tr>
+<tr><td>Čas v útoku</td><td id="ds3"></td><td id="ds13"></td></tr>
+<tr><td>Přesilovky</td><td id="ds4"></td><td id="ds14"></td></tr>
+<tr><td>Oslabení</td><td id="ds5"></td><td id="ds15"></td></tr>
+<tr><td>Góly 1. tř.</td><td id="ds6"></td><td id="ds16"></td></tr>
+<tr><td>Góly 2. tř.</td><td id="ds7"></td><td id="ds17"></td></tr>
+<tr><td>Góly 3. tř.</td><td id="ds8"></td><td id="ds18"></td></tr>
+<tr><td>Prodloužení</td><td id="ds9"></td><td id="ds19"></td></tr>
+</table>
+
 </div>
 
 <!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy }
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD0jDnVNHAzs83g6FGwQT_nQpOCvI4NTNU",
+  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
   projectId: "statistiky-6310a",
-  storageBucket: "statistiky-6310a.firebasestorage.app",
+  storageBucket: "statistiky-6310a.appspot.com",
   messagingSenderId: "1023222901562",
-  appId: "1:1023222901562:web:a28f835f4bb212958b7e03"
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -115,6 +131,7 @@ window.addEventListener("load", loadMatches);
 
 let loadedLines = [];
 
+/* NAČTENÍ TXT */
 document.getElementById("fileInput").addEventListener("change", e => {
 
     const reader = new FileReader();
@@ -129,6 +146,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
     reader.readAsText(e.target.files[0]);
 });
 
+/* ULOŽENÍ */
 async function saveMatch(){
 
     if(loadedLines.length < 20){
@@ -149,6 +167,7 @@ async function saveMatch(){
     loadMatches();
 }
 
+/* NAČTENÍ HISTORIE */
 async function loadMatches(){
 
     const tbody = document.querySelector("#history tbody");
@@ -172,6 +191,7 @@ async function loadMatches(){
             Number(d.stats[18]);
 
         const tr=document.createElement("tr");
+        tr.style.cursor="pointer";
 
         tr.innerHTML=`
         <td>${new Date(d.created).toLocaleDateString()}</td>
@@ -182,8 +202,20 @@ async function loadMatches(){
         <td>${awayGoals} : ${homeGoals}</td>
         `;
 
+        tr.onclick = () => showDetail(d.stats);
+
         tbody.appendChild(tr);
     });
+}
+
+/* DETAIL ZÁPASU */
+function showDetail(stats){
+
+    for(let i=0;i<20;i++){
+        document.getElementById("ds"+i).innerText = stats[i];
+    }
+
+    document.getElementById("detailTable").style.display="table";
 }
 
 </script>
