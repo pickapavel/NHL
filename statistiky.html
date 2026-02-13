@@ -72,8 +72,22 @@ th{
     color:black;
 }
 
+/* FILTR PANEL */
+.filterBar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+}
+
+.filterBar select,
+.filterBar button{
+    padding:8px;
+}
+
 @media (max-width:700px){
-    .controls > *{flex:100%;}
+    .controls > *,
+    .filterBar > *{flex:100%;}
 }
 
 </style>
@@ -131,6 +145,18 @@ th{
 </div>
 
 <h2>Historie zápasů</h2>
+
+<div class="filterBar">
+<select id="filterCategory">
+<option value="">Všechny kategorie</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - Play off</option>
+<option>OH</option>
+</select>
+
+<button onclick="applyFilter()">Filtrovat</button>
+<button onclick="resetFilter()">Zobrazit vše</button>
+</div>
 
 <div class="tableWrap">
 <table id="history">
@@ -204,6 +230,21 @@ window.addEventListener("load", loadMatches);
 
 let loadedLines=[];
 let activeRow=null;
+let allMatches=[];
+
+/* ===== FILTR ===== */
+
+function applyFilter(){
+    const cat=document.getElementById("filterCategory").value;
+    renderMatches(cat);
+}
+
+function resetFilter(){
+    document.getElementById("filterCategory").value="";
+    renderMatches();
+}
+
+/* ===== NAČTENÍ TXT ===== */
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -213,6 +254,8 @@ document.getElementById("fileInput").addEventListener("change", e=>{
     };
     reader.readAsText(e.target.files[0]);
 });
+
+/* ===== ULOŽENÍ ===== */
 
 async function saveMatch(){
 
@@ -238,63 +281,81 @@ async function saveMatch(){
     loadMatches();
 }
 
+/* ===== MAZÁNÍ ===== */
+
 async function deleteMatch(id){
     if(!confirm("Opravdu smazat zápas?")) return;
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
 
+/* ===== NAČTENÍ Z FIREBASE ===== */
+
 async function loadMatches(){
+
+    allMatches=[];
+    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
+    const snapshot=await getDocs(q);
+
+    snapshot.forEach(docSnap=>{
+        allMatches.push({id:docSnap.id,...docSnap.data()});
+    });
+
+    renderMatches();
+}
+
+/* ===== VYKRESLENÍ TABULKY ===== */
+
+function renderMatches(filterCategory=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
 
-    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
-    const snapshot=await getDocs(q);
-
     let first=true;
 
-    snapshot.forEach(docSnap=>{
+    allMatches.forEach(m=>{
 
-        const d=docSnap.data();
+        if(filterCategory && m.category!==filterCategory) return;
 
         const awayGoals=
-            Number(d.stats[6])+Number(d.stats[7])+Number(d.stats[8]);
+            Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
 
         const homeGoals=
-            Number(d.stats[16])+Number(d.stats[17])+Number(d.stats[18]);
+            Number(m.stats[16])+Number(m.stats[17])+Number(m.stats[18]);
 
         const tr=document.createElement("tr");
 
         tr.innerHTML=`
-        <td>${new Date(d.created).toLocaleDateString()}</td>
-        <td>${d.category}</td>
-        <td>${d.player}</td>
-        <td>${d.awayTeam}</td>
-        <td>${d.homeTeam}</td>
+        <td>${new Date(m.created).toLocaleDateString()}</td>
+        <td>${m.category}</td>
+        <td>${m.player}</td>
+        <td>${m.awayTeam}</td>
+        <td>${m.homeTeam}</td>
         <td>${awayGoals} : ${homeGoals}</td>
         <td><button class="deleteBtn">Smazat</button></td>
         `;
 
         tr.onclick=()=>{
             setActiveRow(tr);
-            showDetail(d.stats);
+            showDetail(m.stats);
         };
 
         tr.querySelector(".deleteBtn").onclick=(e)=>{
             e.stopPropagation();
-            deleteMatch(docSnap.id);
+            deleteMatch(m.id);
         };
 
         tbody.appendChild(tr);
 
         if(first){
             setActiveRow(tr);
-            showDetail(d.stats);
+            showDetail(m.stats);
             first=false;
         }
     });
 }
+
+/* ===== DETAIL ===== */
 
 function setActiveRow(row){
     if(activeRow) activeRow.classList.remove("activeMatch");
