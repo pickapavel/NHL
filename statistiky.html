@@ -11,7 +11,8 @@ body{font-family:Arial;background:#f2f2f2;margin:0}
 table{border-collapse:collapse;width:100%;margin-top:20px}
 th,td{border:1px solid #999;padding:8px;text-align:center}
 th{background:#cfe8f7}
-button{padding:8px 14px}
+button{padding:6px 10px;cursor:pointer}
+.deleteBtn{background:#d9534f;color:white;border:none}
 h2{margin-top:40px}
 </style>
 </head>
@@ -74,6 +75,7 @@ h2{margin-top:40px}
 <th>Hosté</th>
 <th>Domácí</th>
 <th>Skóre</th>
+<th>Smazat</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -101,7 +103,7 @@ h2{margin-top:40px}
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } 
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -120,6 +122,8 @@ window.db = db;
 window.addDoc = addDoc;
 window.collection = collection;
 window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
 window.query = query;
 window.orderBy = orderBy;
 
@@ -131,22 +135,17 @@ window.addEventListener("load", loadMatches);
 
 let loadedLines = [];
 
-/* NAČTENÍ TXT */
 document.getElementById("fileInput").addEventListener("change", e => {
-
     const reader = new FileReader();
-
     reader.onload = ev => {
         loadedLines = ev.target.result
             .split(/\r?\n/)
             .map(l=>l.trim())
             .filter(l=>l!=="");
     };
-
     reader.readAsText(e.target.files[0]);
 });
 
-/* ULOŽENÍ */
 async function saveMatch(){
 
     if(loadedLines.length < 20){
@@ -167,7 +166,14 @@ async function saveMatch(){
     loadMatches();
 }
 
-/* NAČTENÍ HISTORIE */
+async function deleteMatch(id){
+
+    if(!confirm("Opravdu chceš smazat tento zápas?")) return;
+
+    await deleteDoc(doc(db,"zapasy",id));
+    loadMatches();
+}
+
 async function loadMatches(){
 
     const tbody = document.querySelector("#history tbody");
@@ -176,9 +182,9 @@ async function loadMatches(){
     const q = query(collection(db,"zapasy"), orderBy("created","desc"));
     const snapshot = await getDocs(q);
 
-    snapshot.forEach(doc=>{
+    snapshot.forEach(docSnap=>{
 
-        const d = doc.data();
+        const d = docSnap.data();
 
         const awayGoals =
             Number(d.stats[6]) +
@@ -200,21 +206,24 @@ async function loadMatches(){
         <td>${d.awayTeam}</td>
         <td>${d.homeTeam}</td>
         <td>${awayGoals} : ${homeGoals}</td>
+        <td><button class="deleteBtn">Smazat</button></td>
         `;
 
         tr.onclick = () => showDetail(d.stats);
+
+        tr.querySelector(".deleteBtn").onclick = (e)=>{
+            e.stopPropagation();
+            deleteMatch(docSnap.id);
+        };
 
         tbody.appendChild(tr);
     });
 }
 
-/* DETAIL ZÁPASU */
 function showDetail(stats){
-
     for(let i=0;i<20;i++){
         document.getElementById("ds"+i).innerText = stats[i];
     }
-
     document.getElementById("detailTable").style.display="table";
 }
 
