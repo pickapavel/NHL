@@ -52,10 +52,17 @@ th,td{
     text-align:center;
 }
 
+/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
     font-weight:bold;
+}
+
+/* ZAROVNÁNÍ TÝMŮ DOLEVA */
+.teamCell{
+    text-align:left;
+    padding-left:12px;
 }
 
 .deleteBtn{
@@ -342,8 +349,8 @@ function renderMatches(filterCategory=""){
         tr.innerHTML=`
         <td>${new Date(m.created).toLocaleDateString()}</td>
         <td>${m.category}</td>
-        <td>${m.homeTeam}</td>
-        <td>${m.awayTeam}</td>
+        <td class="teamCell">${m.homeTeam}</td>
+        <td class="teamCell">${m.awayTeam}</td>
         <td>${homeGoals} : ${awayGoals}${suffix}</td>
         <td><button class="deleteBtn">Smazat</button></td>
         `;
