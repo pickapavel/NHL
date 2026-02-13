@@ -51,8 +51,10 @@ th,td{
     text-align:center;
 }
 
+/* ČERNÁ HLAVIČKA + ZLATÝ TEXT */
 th{
-    background:#cfe8f7;
+    background:black;
+    color:#d4af37;
 }
 
 .deleteBtn{
@@ -63,7 +65,6 @@ th{
     cursor:pointer;
 }
 
-/* OZNAČENÍ AKTIVNÍHO ZÁPASU */
 .activeMatch{
     background:#fff3cd !important;
 }
@@ -86,17 +87,20 @@ th{
 <input type="file" id="fileInput" accept=".txt">
 
 <select id="category">
+<option value="" selected disabled>Kategorie</option>
 <option>Extraliga - základní část</option>
 <option>Extraliga - Play off</option>
 <option>OH</option>
 </select>
 
 <select id="player">
+<option value="" selected disabled>Hráč</option>
 <option>Pici</option>
 <option>Kubele</option>
 </select>
 
 <select id="homeTeam">
+<option value="" selected disabled>Domácí tým</option>
 <option>HC Sparta Praha</option>
 <option>HC Bílí Tygři Liberec</option>
 <option>HC Dynamo Pardubice</option>
@@ -108,6 +112,7 @@ th{
 </select>
 
 <select id="awayTeam">
+<option value="" selected disabled>Hostující tým</option>
 <option>HC Sparta Praha</option>
 <option>HC Bílí Tygři Liberec</option>
 <option>HC Dynamo Pardubice</option>
@@ -208,6 +213,11 @@ document.getElementById("fileInput").addEventListener("change", e=>{
 
 async function saveMatch(){
 
+    if(!category.value || !player.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii, hráče a oba týmy.");
+        return;
+    }
+
     if(loadedLines.length<20){
         alert("Nejprve nahraj zapas.txt");
         return;
@@ -275,13 +285,11 @@ async function loadMatches(){
 
         tbody.appendChild(tr);
 
-        /* AUTOMATICKY VYBRAT POSLEDNÍ ZÁPAS */
         if(first){
             setActiveRow(tr);
             showDetail(d.stats);
             first=false;
         }
-
     });
 }
 
