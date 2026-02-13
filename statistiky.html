@@ -149,7 +149,6 @@ th{
 <h2>Historie zápasů</h2>
 
 <div class="filterBar">
-
 <select id="filterCategory">
 <option value="">Všechny kategorie</option>
 <option>Extraliga - základní část</option>
@@ -159,7 +158,6 @@ th{
 
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
-
 </div>
 
 <div class="tableWrap">
@@ -217,6 +215,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* KRITICKÉ - zpřístupnění mimo module */
+window.db=db;
 window.addDoc=addDoc;
 window.collection=collection;
 window.getDocs=getDocs;
@@ -321,7 +321,6 @@ function renderMatches(filterCategory=""){
         let homeGoals =
             Number(m.stats[16]) + Number(m.stats[17]) + Number(m.stats[18]);
 
-        // ===== NÁJEZDY =====
         if(m.stats.length>20){
             if(m.stats[20]==="1") homeGoals++;
             if(m.stats[20]==="2") awayGoals++;
