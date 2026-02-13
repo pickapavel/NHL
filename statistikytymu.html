@@ -95,6 +95,13 @@ td{
 <option>HC Oceláři Třinec (K)</option>
 </select>
 
+<select id="categorySelect">
+<option value="">Všechny kategorie</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - Play off</option>
+<option>OH</option>
+</select>
+
 <button onclick="loadTeamStats()">Zobrazit statistiky</button>
 
 </div>
@@ -168,6 +175,8 @@ function secondsToTime(sec){
 async function loadTeamStats(){
 
     const team=document.getElementById("teamSelect").value;
+    const category=document.getElementById("categorySelect").value;
+
     if(!team) return;
 
     let games=0;
@@ -189,6 +198,7 @@ async function loadTeamStats(){
         const m=docSnap.data();
 
         if(m.homeTeam!==team && m.awayTeam!==team) return;
+        if(category && m.category!==category) return;
 
         games++;
 
@@ -220,7 +230,9 @@ async function loadTeamStats(){
 
     });
 
-    const avgAttack = games>0 ? secondsToTime(Math.floor(attackTime/games)) : "0:00";
+    const avgAttack = games>0
+        ? secondsToTime(Math.floor(attackTime/games))
+        : "0:00";
 
     document.getElementById("summaryRow").innerHTML=`
         <td>${games}</td>
