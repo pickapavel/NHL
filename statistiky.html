@@ -67,7 +67,7 @@ th{
 }
 
 .activeMatch{
-    background:##d3d3d3; !important;
+    background:#ffff00 !important;
     color:black;
 }
 
@@ -111,26 +111,42 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-<option>HC Sparta Praha</option>
-<option>HC Bílí Tygři Liberec</option>
-<option>HC Dynamo Pardubice</option>
-<option>HC Chemopetrol Litvínov</option>
-<option>HC Geus Okna Kladno</option>
-<option>HC Motor České Budějovice</option>
-<option>HC Energie Karlovy Vary</option>
-<option>HC Oceláři Třinec</option>
+<option>HC Sparta Praha (Pici)</option>
+<option>HC Sparta Praha (Kubele)</option>
+<option>HC Bílí Tygři Liberec (Pici)</option>
+<option>HC Bílí Tygři Liberec (Kubele)</option>
+<option>HC Dynamo Pardubice (Pici)</option>
+<option>HC Dynamo Pardubice (Kubele)</option>
+<option>HC Chemopetrol Litvínov (Pici)</option>
+<option>HC Chemopetrol Litvínov (Kubele)</option>
+<option>HC Geus Okna Kladno (Pici)</option>
+<option>HC Geus Okna Kladno (Kubele)</option>
+<option>HC Motor České Budějovice (Pici)</option>
+<option>HC Motor České Budějovice (Kubele)</option>
+<option>HC Energie Karlovy Vary (Pici)</option>
+<option>HC Energie Karlovy Vary (Kubele)</option>
+<option>HC Oceláři Třinec (Pici)</option>
+<option>HC Oceláři Třinec (Kubele)</option>
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-<option>HC Sparta Praha</option>
-<option>HC Bílí Tygři Liberec</option>
-<option>HC Dynamo Pardubice</option>
-<option>HC Chemopetrol Litvínov</option>
-<option>HC Geus Okna Kladno</option>
-<option>HC Motor České Budějovice</option>
-<option>HC Energie Karlovy Vary</option>
-<option>HC Oceláři Třinec</option>
+<option>HC Sparta Praha (Pici)</option>
+<option>HC Sparta Praha (Kubele)</option>
+<option>HC Bílí Tygři Liberec (Pici)</option>
+<option>HC Bílí Tygři Liberec (Kubele)</option>
+<option>HC Dynamo Pardubice (Pici)</option>
+<option>HC Dynamo Pardubice (Kubele)</option>
+<option>HC Chemopetrol Litvínov (Pici)</option>
+<option>HC Chemopetrol Litvínov (Kubele)</option>
+<option>HC Geus Okna Kladno (Pici)</option>
+<option>HC Geus Okna Kladno (Kubele)</option>
+<option>HC Motor České Budějovice (Pici)</option>
+<option>HC Motor České Budějovice (Kubele)</option>
+<option>HC Energie Karlovy Vary (Pici)</option>
+<option>HC Energie Karlovy Vary (Kubele)</option>
+<option>HC Oceláři Třinec (Pici)</option>
+<option>HC Oceláři Třinec (Kubele)</option>
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -233,8 +249,6 @@ let loadedLines=[];
 let activeRow=null;
 let allMatches=[];
 
-/* ===== FILTR ===== */
-
 function applyFilter(){
     const cat=document.getElementById("filterCategory").value;
     const player=document.getElementById("filterPlayer").value;
@@ -247,8 +261,6 @@ function resetFilter(){
     renderMatches();
 }
 
-/* ===== NAČTENÍ TXT ===== */
-
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
     reader.onload=ev=>{
@@ -257,8 +269,6 @@ document.getElementById("fileInput").addEventListener("change", e=>{
     };
     reader.readAsText(e.target.files[0]);
 });
-
-/* ===== ULOŽENÍ ===== */
 
 async function saveMatch(){
 
@@ -284,15 +294,11 @@ async function saveMatch(){
     loadMatches();
 }
 
-/* ===== MAZÁNÍ ===== */
-
 async function deleteMatch(id){
     if(!confirm("Opravdu smazat zápas?")) return;
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
-
-/* ===== NAČTENÍ ===== */
 
 async function loadMatches(){
 
@@ -306,8 +312,6 @@ async function loadMatches(){
 
     renderMatches();
 }
-
-/* ===== RENDER ===== */
 
 function renderMatches(filterCategory="",filterPlayer=""){
 
@@ -359,8 +363,6 @@ function renderMatches(filterCategory="",filterPlayer=""){
     });
 }
 
-/* ===== DETAIL ===== */
-
 function setActiveRow(row){
     if(activeRow) activeRow.classList.remove("activeMatch");
     activeRow=row;
@@ -378,4 +380,3 @@ function showDetail(stats){
 
 </body>
 </html>
-
