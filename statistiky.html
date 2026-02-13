@@ -32,7 +32,8 @@ body{
 .controls > *{
     flex:1;
     min-width:160px;
-    padding:8px;
+    padding:10px;
+    font-size:16px;
 }
 
 .tableWrap{
@@ -215,7 +216,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* KRITICKÉ - zpřístupnění mimo module */
 window.db=db;
 window.addDoc=addDoc;
 window.collection=collection;
@@ -321,9 +321,19 @@ function renderMatches(filterCategory=""){
         let homeGoals =
             Number(m.stats[16]) + Number(m.stats[17]) + Number(m.stats[18]);
 
+        let suffix="";
+
         if(m.stats.length>20){
-            if(m.stats[20]==="1") homeGoals++;
-            if(m.stats[20]==="2") awayGoals++;
+            if(m.stats[20]==="1"){
+                homeGoals++;
+                suffix=" SN";
+            }
+            if(m.stats[20]==="2"){
+                awayGoals++;
+                suffix=" SN";
+            }
+        } else if(m.stats[9]==="1"){
+            suffix=" OT";
         }
 
         const tr=document.createElement("tr");
@@ -333,7 +343,7 @@ function renderMatches(filterCategory=""){
         <td>${m.category}</td>
         <td>${m.homeTeam}</td>
         <td>${m.awayTeam}</td>
-        <td>${homeGoals} : ${awayGoals}</td>
+        <td>${homeGoals} : ${awayGoals}${suffix}</td>
         <td><button class="deleteBtn">Smazat</button></td>
         `;
 
