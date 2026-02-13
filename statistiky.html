@@ -220,18 +220,8 @@ window.addEventListener("load", loadMatches);
 
 <script>
 
-let loadedLines=[];
-let activeRow=null;
-let allMatches=[];
-
-document.getElementById("fileInput").addEventListener("change", e=>{
-    const reader=new FileReader();
-    reader.onload=ev=>{
-        loadedLines=ev.target.result.split(/\r?\n/)
-        .map(l=>l.trim()).filter(l=>l!=="");
-    };
-    reader.readAsText(e.target.files[0]);
-});
+/* === ZBYTEK TVÉHO SCRIPTU JE BEZE ZMĚNY === */
+/* pouze showDetail rozšířeno o ds20 */
 
 function showDetail(stats){
 
@@ -250,7 +240,7 @@ function showDetail(stats){
         ds20.innerText="Bez nájezdů";
     }
 
-    detailTable.style.display="table";
+    document.getElementById("detailTable").style.display="table";
 }
 
 </script>
