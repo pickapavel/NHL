@@ -45,18 +45,13 @@ table{
     min-width:650px;
 }
 
-th{
-    border:1px solid #999;
-    padding:8px;
-    text-align:center;
-}
-
-td{
+th,td{
     border:1px solid #999;
     padding:8px;
     text-align:left;
 }
 
+/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
@@ -84,18 +79,8 @@ th{
 }
 
 @media (max-width:700px){
-
     .controls > *,
-    .filterBar > *{
-        flex:100%;
-    }
-
-    .filterBar select,
-    .filterBar button{
-        font-size:18px;
-        padding:14px;
-        min-height:48px;
-    }
+    .filterBar > *{flex:100%;}
 }
 
 </style>
@@ -175,12 +160,28 @@ th{
 
 <select id="filterTeam">
 <option value="">Všechny týmy</option>
+<option>HC Sparta Praha (P)</option>
+<option>HC Sparta Praha (K)</option>
+<option>HC Bílí Tygři Liberec (P)</option>
+<option>HC Bílí Tygři Liberec (K)</option>
+<option>HC Dynamo Pardubice (P)</option>
+<option>HC Dynamo Pardubice (K)</option>
+<option>HC Chemopetrol Litvínov (P)</option>
+<option>HC Chemopetrol Litvínov (K)</option>
+<option>HC Geus Okna Kladno (P)</option>
+<option>HC Geus Okna Kladno (K)</option>
+<option>HC Motor České Budějovice (P)</option>
+<option>HC Motor České Budějovice (K)</option>
+<option>HC Energie Karlovy Vary (P)</option>
+<option>HC Energie Karlovy Vary (K)</option>
+<option>HC Oceláři Třinec (P)</option>
+<option>HC Oceláři Třinec (K)</option>
 </select>
 
 <select id="filterHomeAway">
 <option value="">Domácí i venkovní</option>
-<option value="home">Domácí</option>
-<option value="away">Venkovní</option>
+<option value="home">Pouze domácí</option>
+<option value="away">Pouze venkovní</option>
 </select>
 
 <button onclick="applyFilter()">Filtrovat</button>
@@ -194,8 +195,8 @@ th{
 <tr>
 <th>Datum</th>
 <th>Kategorie</th>
-<th>Hosté</th>
 <th>Domácí</th>
+<th>Hosté</th>
 <th>Skóre</th>
 <th>Smazat</th>
 </tr>
@@ -262,11 +263,10 @@ let activeRow=null;
 let allMatches=[];
 
 function applyFilter(){
-    renderMatches(
-        filterCategory.value,
-        filterTeam.value,
-        filterHomeAway.value
-    );
+    const cat=filterCategory.value;
+    const team=filterTeam.value;
+    const ha=filterHomeAway.value;
+    renderMatches(cat,team,ha);
 }
 
 function resetFilter(){
@@ -275,29 +275,6 @@ function resetFilter(){
     filterHomeAway.value="";
     renderMatches();
 }
-
-function fillTeamFilter(category=""){
-    const select=document.getElementById("filterTeam");
-    const teams=new Set();
-
-    allMatches.forEach(m=>{
-        if(category && m.category!==category) return;
-        teams.add(m.homeTeam);
-        teams.add(m.awayTeam);
-    });
-
-    select.innerHTML='<option value="">Všechny týmy</option>';
-    teams.forEach(t=>{
-        const o=document.createElement("option");
-        o.value=t;
-        o.textContent=t;
-        select.appendChild(o);
-    });
-}
-
-filterCategory.addEventListener("change",()=>{
-    fillTeamFilter(filterCategory.value);
-});
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -356,11 +333,10 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...docSnap.data()});
     });
 
-    fillTeamFilter();
     renderMatches();
 }
 
-function renderMatches(filterCategory="",filterTeam="",filterHomeAway=""){
+function renderMatches(filterCategory="",filterTeam="",filterHA=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -371,17 +347,17 @@ function renderMatches(filterCategory="",filterTeam="",filterHomeAway=""){
 
         if(filterCategory && m.category!==filterCategory) return;
 
-        if(filterTeam &&
-           m.homeTeam!==filterTeam &&
-           m.awayTeam!==filterTeam) return;
+        if(filterTeam){
+            if(m.homeTeam!==filterTeam && m.awayTeam!==filterTeam) return;
+        }
 
-        if(filterHomeAway==="home" && filterTeam && m.homeTeam!==filterTeam) return;
-        if(filterHomeAway==="away" && filterTeam && m.awayTeam!==filterTeam) return;
+        if(filterHA==="home" && m.homeTeam!==filterTeam) return;
+        if(filterHA==="away" && m.awayTeam!==filterTeam) return;
 
-        const awayGoals=
+        const awayGoals =
             Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
 
-        const homeGoals=
+        const homeGoals =
             Number(m.stats[16])+Number(m.stats[17])+Number(m.stats[18]);
 
         const tr=document.createElement("tr");
@@ -389,9 +365,9 @@ function renderMatches(filterCategory="",filterTeam="",filterHomeAway=""){
         tr.innerHTML=`
         <td>${new Date(m.created).toLocaleDateString()}</td>
         <td>${m.category}</td>
-        <td>${m.awayTeam}</td>
         <td>${m.homeTeam}</td>
-        <td>${awayGoals} : ${homeGoals}</td>
+        <td>${m.awayTeam}</td>
+        <td>${homeGoals} : ${awayGoals}</td>
         <td><button class="deleteBtn">Smazat</button></td>
         `;
 
