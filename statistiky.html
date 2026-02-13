@@ -66,23 +66,16 @@ th{
     cursor:pointer;
 }
 
-/* AKTIVNÍ ZÁPAS */
 .activeMatch{
     background:#ffff00 !important;
     color:black;
 }
 
-/* FILTR PANEL */
 .filterBar{
     display:flex;
     gap:10px;
     flex-wrap:wrap;
     margin-bottom:10px;
-}
-
-.filterBar select,
-.filterBar button{
-    padding:8px;
 }
 
 @media (max-width:700px){
@@ -147,6 +140,7 @@ th{
 <h2>Historie zápasů</h2>
 
 <div class="filterBar">
+
 <select id="filterCategory">
 <option value="">Všechny kategorie</option>
 <option>Extraliga - základní část</option>
@@ -154,8 +148,15 @@ th{
 <option>OH</option>
 </select>
 
+<select id="filterPlayer">
+<option value="">Všichni hráči</option>
+<option>Pici</option>
+<option>Kubele</option>
+</select>
+
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
+
 </div>
 
 <div class="tableWrap">
@@ -236,11 +237,13 @@ let allMatches=[];
 
 function applyFilter(){
     const cat=document.getElementById("filterCategory").value;
-    renderMatches(cat);
+    const player=document.getElementById("filterPlayer").value;
+    renderMatches(cat,player);
 }
 
 function resetFilter(){
-    document.getElementById("filterCategory").value="";
+    filterCategory.value="";
+    filterPlayer.value="";
     renderMatches();
 }
 
@@ -289,7 +292,7 @@ async function deleteMatch(id){
     loadMatches();
 }
 
-/* ===== NAČTENÍ Z FIREBASE ===== */
+/* ===== NAČTENÍ ===== */
 
 async function loadMatches(){
 
@@ -304,9 +307,9 @@ async function loadMatches(){
     renderMatches();
 }
 
-/* ===== VYKRESLENÍ TABULKY ===== */
+/* ===== RENDER ===== */
 
-function renderMatches(filterCategory=""){
+function renderMatches(filterCategory="",filterPlayer=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -316,6 +319,7 @@ function renderMatches(filterCategory=""){
     allMatches.forEach(m=>{
 
         if(filterCategory && m.category!==filterCategory) return;
+        if(filterPlayer && m.player!==filterPlayer) return;
 
         const awayGoals=
             Number(m.stats[6])+Number(m.stats[7])+Number(m.stats[8]);
