@@ -32,8 +32,7 @@ body{
 .controls > *{
     flex:1;
     min-width:160px;
-    padding:10px;
-    font-size:16px;
+    padding:8px;
 }
 
 .tableWrap{
@@ -49,20 +48,13 @@ table{
 th,td{
     border:1px solid #999;
     padding:8px;
-    text-align:center;
+    text-align:left;
 }
 
-/* HLAVIČKY TABULEK */
 th{
     background:black;
     color:#ffff00;
     font-weight:bold;
-}
-
-/* ZAROVNÁNÍ TÝMŮ DOLEVA */
-.teamCell{
-    text-align:left;
-    padding-left:12px;
 }
 
 .deleteBtn{
@@ -75,7 +67,6 @@ th{
 
 .activeMatch{
     background:#d3d3d3 !important;
-    color:black;
 }
 
 .filterBar{
@@ -198,58 +189,16 @@ th{
 <tr><td>Góly 1. tř.</td><td id="ds16"></td><td id="ds6"></td></tr>
 <tr><td>Góly 2. tř.</td><td id="ds17"></td><td id="ds7"></td></tr>
 <tr><td>Góly 3. tř.</td><td id="ds18"></td><td id="ds8"></td></tr>
-<tr><td>Prodloužení</td><td id="ds19"></td><td id="ds9"></td></tr>
-<tr><td>Nájezdy</td><td colspan="2" id="ds20"></td></tr>
 </table>
 </div>
 
 </div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
-  authDomain: "statistiky-6310a.firebaseapp.com",
-  projectId: "statistiky-6310a",
-  storageBucket: "statistiky-6310a.appspot.com",
-  messagingSenderId: "1023222901562",
-  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.db=db;
-window.addDoc=addDoc;
-window.collection=collection;
-window.getDocs=getDocs;
-window.deleteDoc=deleteDoc;
-window.doc=doc;
-window.query=query;
-window.orderBy=orderBy;
-
-window.addEventListener("load", loadMatches);
-
-</script>
 
 <script>
 
 let loadedLines=[];
 let activeRow=null;
 let allMatches=[];
-
-function applyFilter(){
-    renderMatches(filterCategory.value);
-}
-
-function resetFilter(){
-    filterCategory.value="";
-    renderMatches();
-}
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -260,146 +209,37 @@ document.getElementById("fileInput").addEventListener("change", e=>{
     reader.readAsText(e.target.files[0]);
 });
 
-async function saveMatch(){
+function calcScore(stats){
 
-    if(!category.value || !homeTeam.value || !awayTeam.value){
-        alert("Vyber kategorii a oba týmy.");
-        return;
+    let awayGoals =
+        Number(stats[6])+
+        Number(stats[7])+
+        Number(stats[8]);
+
+    let homeGoals =
+        Number(stats[16])+
+        Number(stats[17])+
+        Number(stats[18]);
+
+    // OT vítězný gól
+    if(stats[9]==="11") awayGoals++;
+    if(stats[19]==="11") homeGoals++;
+
+    let suffix="";
+
+    if(stats[20]==="1" || stats[20]==="2"){
+        suffix=" SN";
     }
-
-    if(loadedLines.length<20){
-        alert("Nejprve nahraj zapas.txt");
-        return;
-    }
-
-    await addDoc(collection(db,"zapasy"),{
-        category:category.value,
-        homeTeam:homeTeam.value,
-        awayTeam:awayTeam.value,
-        stats:loadedLines,
-        created:Date.now()
-    });
-
-    loadMatches();
-}
-
-async function deleteMatch(id){
-
-    const password = prompt("Zadej heslo pro smazání zápasu:");
-
-    if(password !== "Lokomotiva"){
-        alert("Špatné heslo.");
-        return;
-    }
-
-    if(!confirm("Opravdu smazat zápas?")) return;
-
-    await deleteDoc(doc(db,"zapasy",id));
-    loadMatches();
-}
-
-async function loadMatches(){
-
-    allMatches=[];
-    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
-    const snapshot=await getDocs(q);
-
-    snapshot.forEach(docSnap=>{
-        allMatches.push({id:docSnap.id,...docSnap.data()});
-    });
-
-    renderMatches();
-}
-
-function renderMatches(filterCategory=""){
-
-    const tbody=document.querySelector("#history tbody");
-    tbody.innerHTML="";
-
-    let first=true;
-
-    allMatches.forEach(m=>{
-
-        if(filterCategory && m.category!==filterCategory) return;
-
-        let awayGoals =
-            Number(m.stats[6]) + Number(m.stats[7]) + Number(m.stats[8]);
-
-        let homeGoals =
-            Number(m.stats[16]) + Number(m.stats[17]) + Number(m.stats[18]);
-
-        let suffix="";
-
-        if(m.stats.length>20){
-            if(m.stats[20]==="1"){
-                homeGoals++;
-                suffix=" SN";
-            }
-            if(m.stats[20]==="2"){
-                awayGoals++;
-                suffix=" SN";
-            }
-        }
-        else if(m.stats[9]==="1" && Math.abs(homeGoals-awayGoals)===1){
+    else{
+        if(
+            (stats[9]==="11" || stats[19]==="11") &&
+            Math.abs(homeGoals-awayGoals)===1
+        ){
             suffix=" OT";
         }
-
-        const tr=document.createElement("tr");
-
-        tr.innerHTML=`
-        <td>${new Date(m.created).toLocaleDateString()}</td>
-        <td>${m.category}</td>
-        <td class="teamCell">${m.homeTeam}</td>
-        <td class="teamCell">${m.awayTeam}</td>
-        <td>${homeGoals} : ${awayGoals}${suffix}</td>
-        <td><button class="deleteBtn">Smazat</button></td>
-        `;
-
-        tr.onclick=()=>{
-            setActiveRow(tr);
-            showDetail(m.stats);
-        };
-
-        tr.querySelector(".deleteBtn").onclick=(e)=>{
-            e.stopPropagation();
-            deleteMatch(m.id);
-        };
-
-        tbody.appendChild(tr);
-
-        if(first){
-            setActiveRow(tr);
-            showDetail(m.stats);
-            first=false;
-        }
-    });
-}
-
-function setActiveRow(row){
-    if(activeRow) activeRow.classList.remove("activeMatch");
-    activeRow=row;
-    activeRow.classList.add("activeMatch");
-}
-
-function showDetail(stats){
-
-    for(let i=0;i<20;i++){
-        const el=document.getElementById("ds"+i);
-        if(el) el.innerText=stats[i] ?? "";
     }
 
-    if(stats.length>20){
-        if(stats[20]==="1")
-            ds20.innerText="Výhra domácích na nájezdy";
-        else if(stats[20]==="2")
-            ds20.innerText="Výhra hostů na nájezdy";
-        else
-            ds20.innerText="Bez nájezdů";
-    }else{
-        ds20.innerText="Bez nájezdů";
-    }
-
-    document.getElementById("detailTable").style.display="table";
+    return homeGoals+" : "+awayGoals+suffix;
 }
 
 </script>
