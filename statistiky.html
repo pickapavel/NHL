@@ -214,34 +214,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.db=db;
-window.addDoc=addDoc;
-window.collection=collection;
-window.getDocs=getDocs;
-window.deleteDoc=deleteDoc;
-window.doc=doc;
-window.query=query;
-window.orderBy=orderBy;
-
 window.addEventListener("load", loadMatches);
-
-</script>
-
-<script>
 
 let loadedLines=[];
 let activeRow=null;
 let allMatches=[];
-
-function applyFilter(){
-    const cat=document.getElementById("filterCategory").value;
-    renderMatches(cat);
-}
-
-function resetFilter(){
-    filterCategory.value="";
-    renderMatches();
-}
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -251,6 +228,36 @@ document.getElementById("fileInput").addEventListener("change", e=>{
     };
     reader.readAsText(e.target.files[0]);
 });
+
+function calculateScore(stats){
+
+    let awayGoals =
+        Number(stats[6])+
+        Number(stats[7])+
+        Number(stats[8]);
+
+    let homeGoals =
+        Number(stats[16])+
+        Number(stats[17])+
+        Number(stats[18]);
+
+    if(stats[9]==="11") awayGoals++;
+    if(stats[19]==="11") homeGoals++;
+
+    let suffix="";
+
+    if(stats[20]==="1" || stats[20]==="2"){
+        suffix=" SN";
+    }
+    else if(
+        (stats[9]==="11" || stats[19]==="11") &&
+        Math.abs(homeGoals-awayGoals)===1
+    ){
+        suffix=" OT";
+    }
+
+    return homeGoals+" : "+awayGoals+suffix;
+}
 
 async function saveMatch(){
 
@@ -284,8 +291,6 @@ async function deleteMatch(id){
         return;
     }
 
-    if(!confirm("Opravdu smazat zápas?")) return;
-
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
@@ -301,36 +306,6 @@ async function loadMatches(){
     });
 
     renderMatches();
-}
-
-function calculateScore(stats){
-
-    let awayGoals =
-        Number(stats[6])+
-        Number(stats[7])+
-        Number(stats[8]);
-
-    let homeGoals =
-        Number(stats[16])+
-        Number(stats[17])+
-        Number(stats[18]);
-
-    if(stats[9]==="11") awayGoals++;
-    if(stats[19]==="11") homeGoals++;
-
-    let suffix="";
-
-    if(stats[20]==="1" || stats[20]==="2"){
-        suffix=" SN";
-    }
-    else if(
-        (stats[9]==="11" || stats[19]==="11") &&
-        Math.abs(homeGoals-awayGoals)===1
-    ){
-        suffix=" OT";
-    }
-
-    return homeGoals+" : "+awayGoals+suffix;
 }
 
 function renderMatches(filterCategory=""){
@@ -375,6 +350,15 @@ function renderMatches(filterCategory=""){
             first=false;
         }
     });
+}
+
+function applyFilter(){
+    renderMatches(filterCategory.value);
+}
+
+function resetFilter(){
+    filterCategory.value="";
+    renderMatches();
 }
 
 function setActiveRow(row){
