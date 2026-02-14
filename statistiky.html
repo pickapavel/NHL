@@ -35,9 +35,7 @@ body{
     padding:8px;
 }
 
-.tableWrap{
-    overflow-x:auto;
-}
+.tableWrap{overflow-x:auto;}
 
 table{
     border-collapse:collapse;
@@ -148,7 +146,6 @@ th{
 <h2>Historie zápasů</h2>
 
 <div class="filterBar">
-
 <select id="filterCategory">
 <option value="">Všechny kategorie</option>
 <option>Extraliga - základní část</option>
@@ -158,7 +155,6 @@ th{
 
 <button onclick="applyFilter()">Filtrovat</button>
 <button onclick="resetFilter()">Zobrazit vše</button>
-
 </div>
 
 <div class="tableWrap">
@@ -214,20 +210,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.addEventListener("load", loadMatches);
-
 let loadedLines=[];
 let activeRow=null;
 let allMatches=[];
 
-document.getElementById("fileInput").addEventListener("change", e=>{
-    const reader=new FileReader();
-    reader.onload=ev=>{
-        loadedLines=ev.target.result.split(/\r?\n/)
-        .map(l=>l.trim()).filter(l=>l!=="");
-    };
-    reader.readAsText(e.target.files[0]);
-});
+window.addEventListener("load", loadMatches);
 
 function calculateScore(stats){
 
@@ -259,45 +246,10 @@ function calculateScore(stats){
     return homeGoals+" : "+awayGoals+suffix;
 }
 
-async function saveMatch(){
-
-    if(!category.value || !homeTeam.value || !awayTeam.value){
-        alert("Vyber kategorii a oba týmy.");
-        return;
-    }
-
-    if(loadedLines.length<20){
-        alert("Nejprve nahraj zapas.txt");
-        return;
-    }
-
-    await addDoc(collection(db,"zapasy"),{
-        category:category.value,
-        homeTeam:homeTeam.value,
-        awayTeam:awayTeam.value,
-        stats:loadedLines,
-        created:Date.now()
-    });
-
-    loadMatches();
-}
-
-async function deleteMatch(id){
-
-    const password = prompt("Zadej heslo pro smazání zápasu:");
-
-    if(password !== "Lokomotiva"){
-        alert("Špatné heslo.");
-        return;
-    }
-
-    await deleteDoc(doc(db,"zapasy",id));
-    loadMatches();
-}
-
 async function loadMatches(){
 
     allMatches=[];
+
     const q=query(collection(db,"zapasy"),orderBy("created","desc"));
     const snapshot=await getDocs(q);
 
@@ -308,7 +260,7 @@ async function loadMatches(){
     renderMatches();
 }
 
-function renderMatches(filterCategory=""){
+function renderMatches(){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -317,10 +269,6 @@ function renderMatches(filterCategory=""){
 
     allMatches.forEach(m=>{
 
-        if(filterCategory && m.category!==filterCategory) return;
-
-        const score = calculateScore(m.stats);
-
         const tr=document.createElement("tr");
 
         tr.innerHTML=`
@@ -328,50 +276,12 @@ function renderMatches(filterCategory=""){
         <td>${m.category}</td>
         <td>${m.homeTeam}</td>
         <td>${m.awayTeam}</td>
-        <td>${score}</td>
+        <td>${calculateScore(m.stats)}</td>
         <td><button class="deleteBtn">Smazat</button></td>
         `;
 
-        tr.onclick=()=>{
-            setActiveRow(tr);
-            showDetail(m.stats);
-        };
-
-        tr.querySelector(".deleteBtn").onclick=(e)=>{
-            e.stopPropagation();
-            deleteMatch(m.id);
-        };
-
         tbody.appendChild(tr);
-
-        if(first){
-            setActiveRow(tr);
-            showDetail(m.stats);
-            first=false;
-        }
     });
-}
-
-function applyFilter(){
-    renderMatches(filterCategory.value);
-}
-
-function resetFilter(){
-    filterCategory.value="";
-    renderMatches();
-}
-
-function setActiveRow(row){
-    if(activeRow) activeRow.classList.remove("activeMatch");
-    activeRow=row;
-    activeRow.classList.add("activeMatch");
-}
-
-function showDetail(stats){
-    for(let i=0;i<20;i++){
-        document.getElementById("ds"+i).innerText=stats[i];
-    }
-    document.getElementById("detailTable").style.display="table";
 }
 
 </script>
