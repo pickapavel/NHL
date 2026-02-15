@@ -101,42 +101,60 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-<option>HC Sparta Praha (P)</option>
-<option>HC Sparta Praha (K)</option>
-<option>HC Bílí Tygři Liberec (P)</option>
-<option>HC Bílí Tygři Liberec (K)</option>
-<option>HC Dynamo Pardubice (P)</option>
-<option>HC Dynamo Pardubice (K)</option>
-<option>HC Chemopetrol Litvínov (P)</option>
-<option>HC Chemopetrol Litvínov (K)</option>
-<option>HC Geus Okna Kladno (P)</option>
-<option>HC Geus Okna Kladno (K)</option>
-<option>HC Motor České Budějovice (P)</option>
-<option>HC Motor České Budějovice (K)</option>
-<option>HC Energie Karlovy Vary (P)</option>
-<option>HC Energie Karlovy Vary (K)</option>
-<option>HC Oceláři Třinec (P)</option>
-<option>HC Oceláři Třinec (K)</option>
+
+<option value="HC Sparta Praha (P)">Sparta (P)</option>
+<option value="HC Sparta Praha (K)">Sparta (K)</option>
+
+<option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
+<option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
+
+<option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
+<option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
+
+<option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
+<option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
+
+<option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
+<option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
+
+<option value="HC Motor České Budějovice (P)">Motor (P)</option>
+<option value="HC Motor České Budějovice (K)">Motor (K)</option>
+
+<option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
+<option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
+
+<option value="HC Oceláři Třinec (P)">Třinec (P)</option>
+<option value="HC Oceláři Třinec (K)">Třinec (K)</option>
+
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-<option>HC Sparta Praha (P)</option>
-<option>HC Sparta Praha (K)</option>
-<option>HC Bílí Tygři Liberec (P)</option>
-<option>HC Bílí Tygři Liberec (K)</option>
-<option>HC Dynamo Pardubice (P)</option>
-<option>HC Dynamo Pardubice (K)</option>
-<option>HC Chemopetrol Litvínov (P)</option>
-<option>HC Chemopetrol Litvínov (K)</option>
-<option>HC Geus Okna Kladno (P)</option>
-<option>HC Geus Okna Kladno (K)</option>
-<option>HC Motor České Budějovice (P)</option>
-<option>HC Motor České Budějovice (K)</option>
-<option>HC Energie Karlovy Vary (P)</option>
-<option>HC Energie Karlovy Vary (K)</option>
-<option>HC Oceláři Třinec (P)</option>
-<option>HC Oceláři Třinec (K)</option>
+
+<option value="HC Sparta Praha (P)">Sparta (P)</option>
+<option value="HC Sparta Praha (K)">Sparta (K)</option>
+
+<option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
+<option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
+
+<option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
+<option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
+
+<option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
+<option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
+
+<option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
+<option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
+
+<option value="HC Motor České Budějovice (P)">Motor (P)</option>
+<option value="HC Motor České Budějovice (K)">Motor (K)</option>
+
+<option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
+<option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
+
+<option value="HC Oceláři Třinec (P)">Třinec (P)</option>
+<option value="HC Oceláři Třinec (K)">Třinec (K)</option>
+
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -211,7 +229,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let loadedLines=[];
-let activeRow=null;
 let allMatches=[];
 
 window.addEventListener("load", loadMatches);
@@ -219,14 +236,10 @@ window.addEventListener("load", loadMatches);
 function calculateScore(stats){
 
     let awayGoals =
-        Number(stats[6])+
-        Number(stats[7])+
-        Number(stats[8]);
+        Number(stats[6])+Number(stats[7])+Number(stats[8]);
 
     let homeGoals =
-        Number(stats[16])+
-        Number(stats[17])+
-        Number(stats[18]);
+        Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
     if(stats[9]==="11") awayGoals++;
     if(stats[19]==="11") homeGoals++;
@@ -235,8 +248,7 @@ function calculateScore(stats){
 
     if(stats[20]==="1" || stats[20]==="2"){
         suffix=" SN";
-    }
-    else if(
+    } else if(
         (stats[9]==="11" || stats[19]==="11") &&
         Math.abs(homeGoals-awayGoals)===1
     ){
@@ -247,9 +259,7 @@ function calculateScore(stats){
 }
 
 async function loadMatches(){
-
     allMatches=[];
-
     const q=query(collection(db,"zapasy"),orderBy("created","desc"));
     const snapshot=await getDocs(q);
 
@@ -261,14 +271,10 @@ async function loadMatches(){
 }
 
 function renderMatches(){
-
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
 
-    let first=true;
-
     allMatches.forEach(m=>{
-
         const tr=document.createElement("tr");
 
         tr.innerHTML=`
