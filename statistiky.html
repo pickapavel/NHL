@@ -306,9 +306,9 @@ function renderMatches(){
     });
 }
 
-/* ================= CATEGORY SELECT ================= */
+/* ====== OPRAVA — funkce dostupná z HTML ====== */
 
-function openCategorySelect(id){
+window.openCategorySelect = async function(id){
 
     const categories=[
         "Exhibice",
@@ -335,19 +335,16 @@ function openCategorySelect(id){
     const index=parseInt(choice)-1;
     if(index<0 || index>=categories.length) return;
 
-    changeCategory(id,categories[index]);
-}
-
-async function changeCategory(id,newCategory){
     await updateDoc(doc(db,"zapasy",id),{
-        category:newCategory
+        category:categories[index]
     });
+
     loadMatches();
 }
 
 /* ================= SAVE / DELETE ================= */
 
-async function saveMatch(){
+window.saveMatch = async function(){
 
     if(!category.value || !homeTeam.value || !awayTeam.value){
         alert("Vyber kategorii a oba týmy.");
@@ -370,7 +367,7 @@ async function saveMatch(){
     loadMatches();
 }
 
-async function deleteMatch(id){
+window.deleteMatch = async function(id){
 
     const password=prompt("Zadej heslo:");
     if(password!=="Lokomotiva") return;
@@ -378,9 +375,6 @@ async function deleteMatch(id){
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
-
-window.saveMatch = saveMatch;
-window.deleteMatch = deleteMatch;
 
 </script>
 
