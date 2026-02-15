@@ -188,6 +188,7 @@ ohTeamsBase.forEach(t=>{
 });
 
 function fillTeams(){
+
     const cat=document.getElementById("category").value;
     const home=document.getElementById("homeTeam");
     const away=document.getElementById("awayTeam");
@@ -198,8 +199,11 @@ function fillTeams(){
     const list = cat.startsWith("OH") ? ohTeams : extraligaTeams;
 
     list.forEach(t=>{
-        home.innerHTML+=`<option value="${t}">${t}</option>`;
-        away.innerHTML+=`<option value="${t}">${t}</option>`;
+
+        const bold = t.endsWith("(P)") ? "font-weight:bold;" : "";
+
+        home.innerHTML += `<option value="${t}" style="${bold}">${t}</option>`;
+        away.innerHTML += `<option value="${t}" style="${bold}">${t}</option>`;
     });
 }
 
@@ -265,7 +269,7 @@ async function loadMatches(){
     requestAnimationFrame(renderMatches);
 }
 
-/* ================= RENDER (FAST) ================= */
+/* ================= FAST RENDER ================= */
 
 function renderMatches(){
 
