@@ -94,42 +94,60 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-<option value="HC Sparta Praha (P)">Sparta (P)</option>
+
+<option value="HC Sparta Praha (P)" style="font-weight:bold;">Sparta (P)</option>
 <option value="HC Sparta Praha (K)">Sparta (K)</option>
-<option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
+
+<option value="HC Bílí Tygři Liberec (P)" style="font-weight:bold;">Liberec (P)</option>
 <option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-<option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
+
+<option value="HC Dynamo Pardubice (P)" style="font-weight:bold;">Pardubice (P)</option>
 <option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-<option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
+
+<option value="HC Chemopetrol Litvínov (P)" style="font-weight:bold;">Litvínov (P)</option>
 <option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-<option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
+
+<option value="HC Geus Okna Kladno (P)" style="font-weight:bold;">Kladno (P)</option>
 <option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-<option value="HC Motor České Budějovice (P)">Motor (P)</option>
+
+<option value="HC Motor České Budějovice (P)" style="font-weight:bold;">Motor (P)</option>
 <option value="HC Motor České Budějovice (K)">Motor (K)</option>
-<option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
+
+<option value="HC Energie Karlovy Vary (P)" style="font-weight:bold;">Karlovy Vary (P)</option>
 <option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-<option value="HC Oceláři Třinec (P)">Třinec (P)</option>
+
+<option value="HC Oceláři Třinec (P)" style="font-weight:bold;">Třinec (P)</option>
 <option value="HC Oceláři Třinec (K)">Třinec (K)</option>
+
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-<option value="HC Sparta Praha (P)">Sparta (P)</option>
+
+<option value="HC Sparta Praha (P)" style="font-weight:bold;">Sparta (P)</option>
 <option value="HC Sparta Praha (K)">Sparta (K)</option>
-<option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
+
+<option value="HC Bílí Tygři Liberec (P)" style="font-weight:bold;">Liberec (P)</option>
 <option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-<option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
+
+<option value="HC Dynamo Pardubice (P)" style="font-weight:bold;">Pardubice (P)</option>
 <option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-<option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
+
+<option value="HC Chemopetrol Litvínov (P)" style="font-weight:bold;">Litvínov (P)</option>
 <option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-<option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
+
+<option value="HC Geus Okna Kladno (P)" style="font-weight:bold;">Kladno (P)</option>
 <option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-<option value="HC Motor České Budějovice (P)">Motor (P)</option>
+
+<option value="HC Motor České Budějovice (P)" style="font-weight:bold;">Motor (P)</option>
 <option value="HC Motor České Budějovice (K)">Motor (K)</option>
-<option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
+
+<option value="HC Energie Karlovy Vary (P)" style="font-weight:bold;">Karlovy Vary (P)</option>
 <option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-<option value="HC Oceláři Třinec (P)">Třinec (P)</option>
+
+<option value="HC Oceláři Třinec (P)" style="font-weight:bold;">Třinec (P)</option>
 <option value="HC Oceláři Třinec (K)">Třinec (K)</option>
+
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -177,10 +195,8 @@ const db = getFirestore(app);
 let loadedLines=[];
 let allMatches=[];
 
-/* ===== RYCHLEJŠÍ NAČTENÍ TXT ===== */
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
-
     reader.onload=ev=>{
         setTimeout(()=>{
             loadedLines = ev.target.result
@@ -189,7 +205,6 @@ document.getElementById("fileInput").addEventListener("change", e=>{
                 .filter(l=>l!=="");
         },0);
     };
-
     reader.readAsText(e.target.files[0]);
 });
 
