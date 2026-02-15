@@ -153,9 +153,7 @@ const db = getFirestore(app);
 let loadedLines=[];
 let allMatches=[];
 
-/* =========================
-   TÝMY
-========================= */
+/* ================= TEAM LIST ================= */
 
 const extraligaTeams = [
 "HC Sparta Praha (P)","HC Sparta Praha (K)",
@@ -168,7 +166,7 @@ const extraligaTeams = [
 "HC Oceláři Třinec (P)","HC Oceláři Třinec (K)"
 ];
 
-const ohTeams = [
+const ohTeamsBase = [
 "Česká Republika",
 "Rusko",
 "Finsko",
@@ -183,13 +181,19 @@ const ohTeams = [
 "USA"
 ];
 
+const ohTeams = [];
+ohTeamsBase.forEach(t=>{
+    ohTeams.push(t+" (P)");
+    ohTeams.push(t+" (K)");
+});
+
 function fillTeams(){
     const cat=document.getElementById("category").value;
     const home=document.getElementById("homeTeam");
     const away=document.getElementById("awayTeam");
 
-    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
-    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+    home.innerHTML='<option disabled selected>Domácí tým</option>';
+    away.innerHTML='<option disabled selected>Hostující tým</option>';
 
     const list = cat.startsWith("OH") ? ohTeams : extraligaTeams;
 
@@ -201,7 +205,7 @@ function fillTeams(){
 
 document.getElementById("category").addEventListener("change", fillTeams);
 
-/* ========================= */
+/* ================= TXT LOAD ================= */
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
@@ -216,7 +220,7 @@ document.getElementById("fileInput").addEventListener("change", e=>{
     reader.readAsText(e.target.files[0]);
 });
 
-window.addEventListener("load", loadMatches);
+/* ================= SCORE ================= */
 
 function calculateScore(stats){
 
@@ -242,6 +246,63 @@ function calculateScore(stats){
 
     return homeGoals+" : "+awayGoals+suffix;
 }
+
+/* ================= FIREBASE ================= */
+
+window.addEventListener("load", loadMatches);
+
+async function loadMatches(){
+
+    allMatches=[];
+
+    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
+    const snapshot=await getDocs(q);
+
+    snapshot.forEach(docSnap=>{
+        allMatches.push({id:docSnap.id,...docSnap.data()});
+    });
+
+    requestAnimationFrame(renderMatches);
+}
+
+/* ================= RENDER (FAST) ================= */
+
+function renderMatches(){
+
+    const tbody=document.querySelector("#history tbody");
+    tbody.innerHTML="";
+
+    let i=0;
+
+    function drawChunk(){
+
+        for(let c=0;c<10 && i<allMatches.length;c++,i++){
+
+            const m=allMatches[i];
+
+            const tr=document.createElement("tr");
+
+            tr.innerHTML=`
+            <td>${new Date(m.created).toLocaleDateString()}</td>
+            <td>${m.category}</td>
+            <td>${m.homeTeam}</td>
+            <td>${m.awayTeam}</td>
+            <td>${calculateScore(m.stats)}</td>
+            <td><button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button></td>
+            `;
+
+            tbody.appendChild(tr);
+        }
+
+        if(i<allMatches.length){
+            requestAnimationFrame(drawChunk);
+        }
+    }
+
+    drawChunk();
+}
+
+/* ================= SAVE / DELETE ================= */
 
 async function saveMatch(){
 
@@ -273,38 +334,6 @@ async function deleteMatch(id){
 
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
-}
-
-async function loadMatches(){
-    allMatches=[];
-    const q=query(collection(db,"zapasy"),orderBy("created","desc"));
-    const snapshot=await getDocs(q);
-
-    snapshot.forEach(docSnap=>{
-        allMatches.push({id:docSnap.id,...docSnap.data()});
-    });
-
-    renderMatches();
-}
-
-function renderMatches(){
-    const tbody=document.querySelector("#history tbody");
-    tbody.innerHTML="";
-
-    allMatches.forEach(m=>{
-        const tr=document.createElement("tr");
-
-        tr.innerHTML=`
-        <td>${new Date(m.created).toLocaleDateString()}</td>
-        <td>${m.category}</td>
-        <td>${m.homeTeam}</td>
-        <td>${m.awayTeam}</td>
-        <td>${calculateScore(m.stats)}</td>
-        <td><button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button></td>
-        `;
-
-        tbody.appendChild(tr);
-    });
 }
 
 window.saveMatch = saveMatch;
