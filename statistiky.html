@@ -32,7 +32,8 @@ body{
 .controls > *{
     flex:1;
     min-width:160px;
-    padding:8px;
+    padding:10px;
+    font-size:16px;
 }
 
 .tableWrap{overflow-x:auto;}
@@ -65,18 +66,6 @@ th{
 
 .activeMatch{
     background:#d3d3d3 !important;
-}
-
-.filterBar{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:10px;
-}
-
-@media (max-width:700px){
-    .controls > *,
-    .filterBar > *{flex:100%;}
 }
 
 </style>
@@ -284,7 +273,8 @@ function renderMatches(){
     });
 }
 
-window.deleteMatch=deleteMatch;
+window.saveMatch = saveMatch;
+window.deleteMatch = deleteMatch;
 
 </script>
 
