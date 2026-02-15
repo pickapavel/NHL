@@ -88,7 +88,13 @@ th{
 <select id="category">
 <option value="" selected disabled>Kategorie</option>
 
+<option>Exhibice</option>
+
 <option>Extraliga - základní část</option>
+<option>Extraliga - předkolo</option>
+<option>Extraliga - čtvrtfinále</option>
+<option>Extraliga - semifinále</option>
+<option>Extraliga - finále</option>
 <option>Extraliga - Play off</option>
 
 <option>OH - základní část</option>
@@ -232,13 +238,11 @@ function calculateScore(stats){
     let homeGoals =
         Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
-    // OT goal
     if(stats[9]==="11") awayGoals++;
     if(stats[19]==="11") homeGoals++;
 
     let suffix="";
 
-    // SN winner
     if(stats[20]==="1"){
         homeGoals++;
         suffix=" SN";
