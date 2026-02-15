@@ -68,6 +68,10 @@ th{
     background:#d3d3d3 !important;
 }
 
+@media (max-width:700px){
+    .controls > *{flex:100%;}
+}
+
 </style>
 </head>
 
@@ -173,12 +177,19 @@ const db = getFirestore(app);
 let loadedLines=[];
 let allMatches=[];
 
+/* ===== RYCHLEJŠÍ NAČTENÍ TXT ===== */
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
+
     reader.onload=ev=>{
-        loadedLines=ev.target.result.split(/\r?\n/)
-        .map(l=>l.trim()).filter(l=>l!=="");
+        setTimeout(()=>{
+            loadedLines = ev.target.result
+                .split(/\r?\n/)
+                .map(l=>l.trim())
+                .filter(l=>l!=="");
+        },0);
     };
+
     reader.readAsText(e.target.files[0]);
 });
 
