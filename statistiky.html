@@ -92,6 +92,7 @@ th{
 <option>Extraliga - Play off</option>
 
 <option>OH - základní část</option>
+<option>OH - Play OFF - předkolo</option>
 <option>OH - čtvrtfinále</option>
 <option>OH - semifinále</option>
 <option>OH - finále</option>
@@ -101,60 +102,10 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-
-<option value="HC Sparta Praha (P)" style="font-weight:bold;">Sparta (P)</option>
-<option value="HC Sparta Praha (K)">Sparta (K)</option>
-
-<option value="HC Bílí Tygři Liberec (P)" style="font-weight:bold;">Liberec (P)</option>
-<option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-
-<option value="HC Dynamo Pardubice (P)" style="font-weight:bold;">Pardubice (P)</option>
-<option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-
-<option value="HC Chemopetrol Litvínov (P)" style="font-weight:bold;">Litvínov (P)</option>
-<option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-
-<option value="HC Geus Okna Kladno (P)" style="font-weight:bold;">Kladno (P)</option>
-<option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-
-<option value="HC Motor České Budějovice (P)" style="font-weight:bold;">Motor (P)</option>
-<option value="HC Motor České Budějovice (K)">Motor (K)</option>
-
-<option value="HC Energie Karlovy Vary (P)" style="font-weight:bold;">Karlovy Vary (P)</option>
-<option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-
-<option value="HC Oceláři Třinec (P)" style="font-weight:bold;">Třinec (P)</option>
-<option value="HC Oceláři Třinec (K)">Třinec (K)</option>
-
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-
-<option value="HC Sparta Praha (P)" style="font-weight:bold;">Sparta (P)</option>
-<option value="HC Sparta Praha (K)">Sparta (K)</option>
-
-<option value="HC Bílí Tygři Liberec (P)" style="font-weight:bold;">Liberec (P)</option>
-<option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-
-<option value="HC Dynamo Pardubice (P)" style="font-weight:bold;">Pardubice (P)</option>
-<option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-
-<option value="HC Chemopetrol Litvínov (P)" style="font-weight:bold;">Litvínov (P)</option>
-<option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-
-<option value="HC Geus Okna Kladno (P)" style="font-weight:bold;">Kladno (P)</option>
-<option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-
-<option value="HC Motor České Budějovice (P)" style="font-weight:bold;">Motor (P)</option>
-<option value="HC Motor České Budějovice (K)">Motor (K)</option>
-
-<option value="HC Energie Karlovy Vary (P)" style="font-weight:bold;">Karlovy Vary (P)</option>
-<option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-
-<option value="HC Oceláři Třinec (P)" style="font-weight:bold;">Třinec (P)</option>
-<option value="HC Oceláři Třinec (K)">Třinec (K)</option>
-
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -201,6 +152,56 @@ const db = getFirestore(app);
 
 let loadedLines=[];
 let allMatches=[];
+
+/* =========================
+   TÝMY
+========================= */
+
+const extraligaTeams = [
+"HC Sparta Praha (P)","HC Sparta Praha (K)",
+"HC Bílí Tygři Liberec (P)","HC Bílí Tygři Liberec (K)",
+"HC Dynamo Pardubice (P)","HC Dynamo Pardubice (K)",
+"HC Chemopetrol Litvínov (P)","HC Chemopetrol Litvínov (K)",
+"HC Geus Okna Kladno (P)","HC Geus Okna Kladno (K)",
+"HC Motor České Budějovice (P)","HC Motor České Budějovice (K)",
+"HC Energie Karlovy Vary (P)","HC Energie Karlovy Vary (K)",
+"HC Oceláři Třinec (P)","HC Oceláři Třinec (K)"
+];
+
+const ohTeams = [
+"Česká Republika",
+"Rusko",
+"Finsko",
+"Švédsko",
+"Kanada",
+"Itálie",
+"Francie",
+"Kazachstán",
+"Japonsko",
+"Velká Británie",
+"Polsko",
+"USA"
+];
+
+function fillTeams(){
+    const cat=document.getElementById("category").value;
+    const home=document.getElementById("homeTeam");
+    const away=document.getElementById("awayTeam");
+
+    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
+    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+
+    const list = cat.startsWith("OH") ? ohTeams : extraligaTeams;
+
+    list.forEach(t=>{
+        home.innerHTML+=`<option value="${t}">${t}</option>`;
+        away.innerHTML+=`<option value="${t}">${t}</option>`;
+    });
+}
+
+document.getElementById("category").addEventListener("change", fillTeams);
+
+/* ========================= */
 
 document.getElementById("fileInput").addEventListener("change", e=>{
     const reader=new FileReader();
