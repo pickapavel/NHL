@@ -101,60 +101,42 @@ th{
 
 <select id="homeTeam">
 <option value="" selected disabled>Domácí tým</option>
-
 <option value="HC Sparta Praha (P)">Sparta (P)</option>
 <option value="HC Sparta Praha (K)">Sparta (K)</option>
-
 <option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
 <option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-
 <option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
 <option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-
 <option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
 <option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-
 <option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
 <option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-
 <option value="HC Motor České Budějovice (P)">Motor (P)</option>
 <option value="HC Motor České Budějovice (K)">Motor (K)</option>
-
 <option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
 <option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-
 <option value="HC Oceláři Třinec (P)">Třinec (P)</option>
 <option value="HC Oceláři Třinec (K)">Třinec (K)</option>
-
 </select>
 
 <select id="awayTeam">
 <option value="" selected disabled>Hostující tým</option>
-
 <option value="HC Sparta Praha (P)">Sparta (P)</option>
 <option value="HC Sparta Praha (K)">Sparta (K)</option>
-
 <option value="HC Bílí Tygři Liberec (P)">Liberec (P)</option>
 <option value="HC Bílí Tygři Liberec (K)">Liberec (K)</option>
-
 <option value="HC Dynamo Pardubice (P)">Pardubice (P)</option>
 <option value="HC Dynamo Pardubice (K)">Pardubice (K)</option>
-
 <option value="HC Chemopetrol Litvínov (P)">Litvínov (P)</option>
 <option value="HC Chemopetrol Litvínov (K)">Litvínov (K)</option>
-
 <option value="HC Geus Okna Kladno (P)">Kladno (P)</option>
 <option value="HC Geus Okna Kladno (K)">Kladno (K)</option>
-
 <option value="HC Motor České Budějovice (P)">Motor (P)</option>
 <option value="HC Motor České Budějovice (K)">Motor (K)</option>
-
 <option value="HC Energie Karlovy Vary (P)">Karlovy Vary (P)</option>
 <option value="HC Energie Karlovy Vary (K)">Karlovy Vary (K)</option>
-
 <option value="HC Oceláři Třinec (P)">Třinec (P)</option>
 <option value="HC Oceláři Třinec (K)">Třinec (K)</option>
-
 </select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
@@ -162,18 +144,6 @@ th{
 </div>
 
 <h2>Historie zápasů</h2>
-
-<div class="filterBar">
-<select id="filterCategory">
-<option value="">Všechny kategorie</option>
-<option>Extraliga - základní část</option>
-<option>Extraliga - Play off</option>
-<option>OH</option>
-</select>
-
-<button onclick="applyFilter()">Filtrovat</button>
-<button onclick="resetFilter()">Zobrazit vše</button>
-</div>
 
 <div class="tableWrap">
 <table id="history">
@@ -188,23 +158,6 @@ th{
 </tr>
 </thead>
 <tbody></tbody>
-</table>
-</div>
-
-<h2>Detail zápasu</h2>
-
-<div class="tableWrap">
-<table id="detailTable" style="display:none">
-<tr><th>Statistika</th><th>Domácí</th><th>Hosté</th></tr>
-<tr><td>Střely</td><td id="ds10"></td><td id="ds0"></td></tr>
-<tr><td>Hity</td><td id="ds11"></td><td id="ds1"></td></tr>
-<tr><td>Vhazování</td><td id="ds12"></td><td id="ds2"></td></tr>
-<tr><td>Čas v útoku</td><td id="ds13"></td><td id="ds3"></td></tr>
-<tr><td>Přesilovky</td><td id="ds14"></td><td id="ds4"></td></tr>
-<tr><td>Oslabení</td><td id="ds15"></td><td id="ds5"></td></tr>
-<tr><td>Góly 1. tř.</td><td id="ds16"></td><td id="ds6"></td></tr>
-<tr><td>Góly 2. tř.</td><td id="ds17"></td><td id="ds7"></td></tr>
-<tr><td>Góly 3. tř.</td><td id="ds18"></td><td id="ds8"></td></tr>
 </table>
 </div>
 
@@ -230,6 +183,15 @@ const db = getFirestore(app);
 
 let loadedLines=[];
 let allMatches=[];
+
+document.getElementById("fileInput").addEventListener("change", e=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        loadedLines=ev.target.result.split(/\r?\n/)
+        .map(l=>l.trim()).filter(l=>l!=="");
+    };
+    reader.readAsText(e.target.files[0]);
+});
 
 window.addEventListener("load", loadMatches);
 
@@ -258,6 +220,38 @@ function calculateScore(stats){
     return homeGoals+" : "+awayGoals+suffix;
 }
 
+async function saveMatch(){
+
+    if(!category.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii a oba týmy.");
+        return;
+    }
+
+    if(loadedLines.length<20){
+        alert("Nahraj zapas.txt");
+        return;
+    }
+
+    await addDoc(collection(db,"zapasy"),{
+        category:category.value,
+        homeTeam:homeTeam.value,
+        awayTeam:awayTeam.value,
+        stats:loadedLines,
+        created:Date.now()
+    });
+
+    loadMatches();
+}
+
+async function deleteMatch(id){
+
+    const password=prompt("Zadej heslo:");
+    if(password!=="Lokomotiva") return;
+
+    await deleteDoc(doc(db,"zapasy",id));
+    loadMatches();
+}
+
 async function loadMatches(){
     allMatches=[];
     const q=query(collection(db,"zapasy"),orderBy("created","desc"));
@@ -283,12 +277,14 @@ function renderMatches(){
         <td>${m.homeTeam}</td>
         <td>${m.awayTeam}</td>
         <td>${calculateScore(m.stats)}</td>
-        <td><button class="deleteBtn">Smazat</button></td>
+        <td><button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button></td>
         `;
 
         tbody.appendChild(tr);
     });
 }
+
+window.deleteMatch=deleteMatch;
 
 </script>
 
