@@ -181,7 +181,7 @@ const ohTeamsBase = [
 "USA"
 ];
 
-const ohTeams = [];
+const ohTeams=[];
 ohTeamsBase.forEach(t=>{
     ohTeams.push(t+" (P)");
     ohTeams.push(t+" (K)");
@@ -199,11 +199,9 @@ function fillTeams(){
     const list = cat.startsWith("OH") ? ohTeams : extraligaTeams;
 
     list.forEach(t=>{
-
         const bold = t.endsWith("(P)") ? "font-weight:bold;" : "";
-
-        home.innerHTML += `<option value="${t}" style="${bold}">${t}</option>`;
-        away.innerHTML += `<option value="${t}" style="${bold}">${t}</option>`;
+        home.innerHTML+=`<option value="${t}" style="${bold}">${t}</option>`;
+        away.innerHTML+=`<option value="${t}" style="${bold}">${t}</option>`;
     });
 }
 
@@ -234,14 +232,22 @@ function calculateScore(stats){
     let homeGoals =
         Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
+    // OT goal
     if(stats[9]==="11") awayGoals++;
     if(stats[19]==="11") homeGoals++;
 
     let suffix="";
 
-    if(stats[20]==="1" || stats[20]==="2"){
+    // SN winner
+    if(stats[20]==="1"){
+        homeGoals++;
         suffix=" SN";
-    } else if(
+    }
+    else if(stats[20]==="2"){
+        awayGoals++;
+        suffix=" SN";
+    }
+    else if(
         (stats[9]==="11" || stats[19]==="11") &&
         Math.abs(homeGoals-awayGoals)===1
     ){
