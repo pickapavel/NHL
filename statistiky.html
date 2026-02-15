@@ -64,6 +64,15 @@ th{
     cursor:pointer;
 }
 
+.editBtn{
+    background:#0275d8;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    cursor:pointer;
+    margin-right:5px;
+}
+
 .activeMatch{
     background:#d3d3d3 !important;
 }
@@ -129,7 +138,7 @@ th{
 <th>Domácí</th>
 <th>Hosté</th>
 <th>Skóre</th>
-<th>Smazat</th>
+<th>Akce</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -141,7 +150,7 @@ th{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -279,41 +288,46 @@ async function loadMatches(){
     requestAnimationFrame(renderMatches);
 }
 
-/* ================= FAST RENDER ================= */
+/* ================= RENDER ================= */
 
 function renderMatches(){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
 
-    let i=0;
+    allMatches.forEach(m=>{
 
-    function drawChunk(){
+        const tr=document.createElement("tr");
 
-        for(let c=0;c<10 && i<allMatches.length;c++,i++){
+        tr.innerHTML=`
+        <td>${new Date(m.created).toLocaleDateString()}</td>
+        <td>${m.category}</td>
+        <td>${m.homeTeam}</td>
+        <td>${m.awayTeam}</td>
+        <td>${calculateScore(m.stats)}</td>
+        <td>
+            <button class="editBtn" onclick="changeCategory('${m.id}')">Změnit kategorii</button>
+            <button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button>
+        </td>
+        `;
 
-            const m=allMatches[i];
+        tbody.appendChild(tr);
+    });
+}
 
-            const tr=document.createElement("tr");
+/* ================= EDIT CATEGORY ================= */
 
-            tr.innerHTML=`
-            <td>${new Date(m.created).toLocaleDateString()}</td>
-            <td>${m.category}</td>
-            <td>${m.homeTeam}</td>
-            <td>${m.awayTeam}</td>
-            <td>${calculateScore(m.stats)}</td>
-            <td><button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button></td>
-            `;
+async function changeCategory(id){
 
-            tbody.appendChild(tr);
-        }
+    const newCategory = prompt("Zadej novou kategorii:");
 
-        if(i<allMatches.length){
-            requestAnimationFrame(drawChunk);
-        }
-    }
+    if(!newCategory) return;
 
-    drawChunk();
+    await updateDoc(doc(db,"zapasy",id),{
+        category:newCategory
+    });
+
+    loadMatches();
 }
 
 /* ================= SAVE / DELETE ================= */
@@ -352,6 +366,7 @@ async function deleteMatch(id){
 
 window.saveMatch = saveMatch;
 window.deleteMatch = deleteMatch;
+window.changeCategory = changeCategory;
 
 </script>
 
