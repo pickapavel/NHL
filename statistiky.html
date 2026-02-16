@@ -64,19 +64,6 @@ th{
     cursor:pointer;
 }
 
-.editBtn{
-    background:#0275d8;
-    color:white;
-    border:none;
-    padding:6px 10px;
-    cursor:pointer;
-    margin-right:5px;
-}
-
-.activeMatch{
-    background:#d3d3d3 !important;
-}
-
 .filterBar{
     display:flex;
     gap:10px;
@@ -101,6 +88,14 @@ th{
 <div class="controls">
 
 <input type="file" id="fileInput" accept=".txt">
+
+<select id="season">
+<option value="Sezóna 1">Sezóna 1</option>
+<option value="Sezóna 2" selected>Sezóna 2</option>
+<option value="Sezóna 3">Sezóna 3</option>
+<option value="Sezóna 4">Sezóna 4</option>
+<option value="Sezóna 5">Sezóna 5</option>
+</select>
 
 <select id="category">
 <option value="" selected disabled>Kategorie</option>
@@ -162,6 +157,7 @@ th{
 <thead>
 <tr>
 <th>Datum</th>
+<th>Sezóna</th>
 <th>Kategorie</th>
 <th>Domácí</th>
 <th>Hosté</th>
@@ -322,7 +318,11 @@ async function loadMatches(){
     const snapshot=await getDocs(q);
 
     snapshot.forEach(docSnap=>{
-        allMatches.push({id:docSnap.id,...docSnap.data()});
+        const data=docSnap.data();
+        if(!data.season){
+            data.season="Sezóna 1";
+        }
+        allMatches.push({id:docSnap.id,...data});
     });
 
     fillFilterLists();
@@ -386,6 +386,7 @@ function renderMatches(fc="",ft="",fr=""){
 
         tr.innerHTML=`
         <td>${new Date(m.created).toLocaleDateString()}</td>
+        <td>${m.season}</td>
         <td>${m.category}</td>
         <td>${m.homeTeam}</td>
         <td>${m.awayTeam}</td>
@@ -407,6 +408,7 @@ window.saveMatch = async function(){
     }
 
     await addDoc(collection(db,"zapasy"),{
+        season:document.getElementById("season").value,
         category:category.value,
         homeTeam:homeTeam.value,
         awayTeam:awayTeam.value,
