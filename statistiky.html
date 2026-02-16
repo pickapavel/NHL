@@ -223,6 +223,7 @@ const nationalTeams=[
 ];
 
 document.getElementById("category").addEventListener("change",fillTeamSelects);
+document.getElementById("filterCategory").addEventListener("change",updateFilterTeams);
 
 function fillTeamSelects(){
 
@@ -238,10 +239,38 @@ function fillTeamSelects(){
     away.innerHTML='<option disabled selected>Hostující tým</option>';
 
     list.forEach(t=>{
-        home.innerHTML+=`<option value="${t} (P)"><b>${t} (P)</b></option>`;
+        home.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
         home.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
-        away.innerHTML+=`<option value="${t} (P)"><b>${t} (P)</b></option>`;
+        away.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
         away.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+    });
+}
+
+function updateFilterTeams(){
+
+    const fc=document.getElementById("filterCategory").value;
+    const teamSel=document.getElementById("filterTeam");
+
+    teamSel.innerHTML='<option value="">Všechny týmy</option>';
+
+    if(!fc){
+        const set=new Set();
+        allMatches.forEach(m=>{
+            set.add(m.homeTeam);
+            set.add(m.awayTeam);
+        });
+        set.forEach(t=>{
+            teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
+        });
+        return;
+    }
+
+    const isOH = fc.startsWith("OH");
+    const list = isOH ? nationalTeams : clubTeams;
+
+    list.forEach(t=>{
+        teamSel.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
+        teamSel.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
     });
 }
 
@@ -305,27 +334,20 @@ async function loadMatches(){
 function fillFilterLists(){
 
     const catSet=new Set();
-    const teamSet=new Set();
 
     allMatches.forEach(m=>{
         catSet.add(m.category);
-        teamSet.add(m.homeTeam);
-        teamSet.add(m.awayTeam);
     });
 
     const catSel=document.getElementById("filterCategory");
-    const teamSel=document.getElementById("filterTeam");
 
     catSel.innerHTML='<option value="">Všechny kategorie</option>';
-    teamSel.innerHTML='<option value="">Všechny týmy</option>';
 
     catSet.forEach(c=>{
         catSel.innerHTML+=`<option value="${c}">${c}</option>`;
     });
 
-    teamSet.forEach(t=>{
-        teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
-    });
+    updateFilterTeams();
 }
 
 window.applyFilter=function(){
@@ -341,6 +363,7 @@ window.resetFilter=function(){
     filterCategory.value="";
     filterTeam.value="";
     filterResult.value="";
+    updateFilterTeams();
     renderMatches();
 }
 
