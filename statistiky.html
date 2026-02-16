@@ -141,23 +141,10 @@ th{
 
 <select id="filterCategory">
 <option value="">Všechny kategorie</option>
+</select>
 
-<option>Exhibice</option>
-
-<option>Extraliga - základní část</option>
-<option>Extraliga - předkolo</option>
-<option>Extraliga - čtvrtfinále</option>
-<option>Extraliga - semifinále</option>
-<option>Extraliga - finále</option>
-<option>Extraliga - Play off</option>
-
-<option>OH - základní část</option>
-<option>OH - Play OFF - předkolo</option>
-<option>OH - čtvrtfinále</option>
-<option>OH - semifinále</option>
-<option>OH - finále</option>
-<option>OH - o 3. místo</option>
-
+<select id="filterTeam">
+<option value="">Všechny týmy</option>
 </select>
 
 <select id="filterResult">
@@ -212,6 +199,7 @@ let loadedLines=[];
 let allMatches=[];
 let activeFilterCategory="";
 let activeFilterResult="";
+let activeFilterTeam="";
 
 /* ================= SCORE ================= */
 
@@ -264,7 +252,34 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...docSnap.data()});
     });
 
+    fillFilters();
     renderMatches();
+}
+
+/* ================= FILTER LISTS ================= */
+
+function fillFilters(){
+
+    const catSet=new Set();
+    const teamSet=new Set();
+
+    allMatches.forEach(m=>{
+        catSet.add(m.category);
+        teamSet.add(m.homeTeam);
+        teamSet.add(m.awayTeam);
+    });
+
+    const catSelect=document.getElementById("filterCategory");
+    catSelect.innerHTML='<option value="">Všechny kategorie</option>';
+    catSet.forEach(c=>{
+        catSelect.innerHTML+=`<option value="${c}">${c}</option>`;
+    });
+
+    const teamSelect=document.getElementById("filterTeam");
+    teamSelect.innerHTML='<option value="">Všechny týmy</option>';
+    teamSet.forEach(t=>{
+        teamSelect.innerHTML+=`<option value="${t}">${t}</option>`;
+    });
 }
 
 /* ================= FILTER ================= */
@@ -272,14 +287,17 @@ async function loadMatches(){
 window.applyFilter=function(){
     activeFilterCategory=document.getElementById("filterCategory").value;
     activeFilterResult=document.getElementById("filterResult").value;
+    activeFilterTeam=document.getElementById("filterTeam").value;
     renderMatches();
 }
 
 window.resetFilter=function(){
     activeFilterCategory="";
     activeFilterResult="";
+    activeFilterTeam="";
     filterCategory.value="";
     filterResult.value="";
+    filterTeam.value="";
     renderMatches();
 }
 
@@ -293,6 +311,10 @@ function renderMatches(){
     allMatches.forEach(m=>{
 
         if(activeFilterCategory && m.category!==activeFilterCategory) return;
+
+        if(activeFilterTeam &&
+            m.homeTeam!==activeFilterTeam &&
+            m.awayTeam!==activeFilterTeam) return;
 
         const score=calculateScore(m.stats);
 
