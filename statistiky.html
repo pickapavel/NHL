@@ -120,7 +120,6 @@ th{
 <option>OH - semifinále</option>
 <option>OH - finále</option>
 <option>OH - o 3. místo</option>
-
 </select>
 
 <select id="homeTeam">
@@ -197,11 +196,59 @@ const db = getFirestore(app);
 
 let loadedLines=[];
 let allMatches=[];
-let activeFilterCategory="";
-let activeFilterResult="";
-let activeFilterTeam="";
 
-/* ================= SCORE ================= */
+const clubTeams=[
+"HC Sparta Praha",
+"HC Bílí Tygři Liberec",
+"HC Dynamo Pardubice",
+"HC Chemopetrol Litvínov",
+"HC Geus Okna Kladno",
+"HC Motor České Budějovice",
+"HC Energie Karlovy Vary",
+"HC Oceláři Třinec"
+];
+
+const nationalTeams=[
+"Česká Republika",
+"Rusko",
+"Finsko",
+"Švédsko",
+"Kanada",
+"Itálie",
+"Francie",
+"Kazachstán",
+"Japonsko",
+"Velká Británie",
+"Polsko",
+"USA"
+];
+
+function fillTeamSelects(){
+
+    const cat=document.getElementById("category").value;
+    const isOH = cat.startsWith("OH");
+
+    const list = isOH ? nationalTeams : clubTeams;
+
+    const home=document.getElementById("homeTeam");
+    const away=document.getElementById("awayTeam");
+
+    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
+    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+
+    list.forEach(t=>{
+        home.innerHTML+=`<option value="${t} (P)"><b>${t} (P)</b></option>`;
+        home.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+        away.innerHTML+=`<option value="${t} (P)"><b>${t} (P)</b></option>`;
+        away.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+    });
+}
+
+document.getElementById("category").addEventListener("change",fillTeamSelects);
+
+window.addEventListener("load", loadMatches);
+
+/* ===== SCORE ===== */
 
 function calculateScore(stats){
 
@@ -237,9 +284,7 @@ function calculateScore(stats){
     };
 }
 
-/* ================= FIREBASE ================= */
-
-window.addEventListener("load", loadMatches);
+/* ===== LOAD ===== */
 
 async function loadMatches(){
 
@@ -252,56 +297,10 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...docSnap.data()});
     });
 
-    fillFilters();
     renderMatches();
 }
 
-/* ================= FILTER LISTS ================= */
-
-function fillFilters(){
-
-    const catSet=new Set();
-    const teamSet=new Set();
-
-    allMatches.forEach(m=>{
-        catSet.add(m.category);
-        teamSet.add(m.homeTeam);
-        teamSet.add(m.awayTeam);
-    });
-
-    const catSelect=document.getElementById("filterCategory");
-    catSelect.innerHTML='<option value="">Všechny kategorie</option>';
-    catSet.forEach(c=>{
-        catSelect.innerHTML+=`<option value="${c}">${c}</option>`;
-    });
-
-    const teamSelect=document.getElementById("filterTeam");
-    teamSelect.innerHTML='<option value="">Všechny týmy</option>';
-    teamSet.forEach(t=>{
-        teamSelect.innerHTML+=`<option value="${t}">${t}</option>`;
-    });
-}
-
-/* ================= FILTER ================= */
-
-window.applyFilter=function(){
-    activeFilterCategory=document.getElementById("filterCategory").value;
-    activeFilterResult=document.getElementById("filterResult").value;
-    activeFilterTeam=document.getElementById("filterTeam").value;
-    renderMatches();
-}
-
-window.resetFilter=function(){
-    activeFilterCategory="";
-    activeFilterResult="";
-    activeFilterTeam="";
-    filterCategory.value="";
-    filterResult.value="";
-    filterTeam.value="";
-    renderMatches();
-}
-
-/* ================= RENDER ================= */
+/* ===== RENDER ===== */
 
 function renderMatches(){
 
@@ -310,15 +309,7 @@ function renderMatches(){
 
     allMatches.forEach(m=>{
 
-        if(activeFilterCategory && m.category!==activeFilterCategory) return;
-
-        if(activeFilterTeam &&
-            m.homeTeam!==activeFilterTeam &&
-            m.awayTeam!==activeFilterTeam) return;
-
         const score=calculateScore(m.stats);
-
-        if(activeFilterResult && score.type!==activeFilterResult) return;
 
         const tr=document.createElement("tr");
 
@@ -338,53 +329,12 @@ function renderMatches(){
     });
 }
 
-/* ================= CHANGE CATEGORY ================= */
-
-window.openCategorySelect = async function(id){
-
-    const categories=[
-        "Exhibice",
-        "Extraliga - základní část",
-        "Extraliga - předkolo",
-        "Extraliga - čtvrtfinále",
-        "Extraliga - semifinále",
-        "Extraliga - finále",
-        "Extraliga - Play off",
-        "OH - základní část",
-        "OH - Play OFF - předkolo",
-        "OH - čtvrtfinále",
-        "OH - semifinále",
-        "OH - finále",
-        "OH - o 3. místo"
-    ];
-
-    let html="Vyber novou kategorii:\n\n";
-    categories.forEach((c,i)=>html+=(i+1)+": "+c+"\n");
-
-    const choice=prompt(html);
-    if(!choice) return;
-
-    const index=parseInt(choice)-1;
-    if(index<0 || index>=categories.length) return;
-
-    await updateDoc(doc(db,"zapasy",id),{
-        category:categories[index]
-    });
-
-    loadMatches();
-}
-
-/* ================= SAVE / DELETE ================= */
+/* ===== SAVE ===== */
 
 window.saveMatch = async function(){
 
     if(!category.value || !homeTeam.value || !awayTeam.value){
         alert("Vyber kategorii a oba týmy.");
-        return;
-    }
-
-    if(loadedLines.length<20){
-        alert("Nahraj zapas.txt");
         return;
     }
 
@@ -396,15 +346,6 @@ window.saveMatch = async function(){
         created:Date.now()
     });
 
-    loadMatches();
-}
-
-window.deleteMatch = async function(id){
-
-    const password=prompt("Zadej heslo:");
-    if(password!=="Lokomotiva") return;
-
-    await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
 }
 
