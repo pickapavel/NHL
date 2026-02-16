@@ -130,9 +130,7 @@ td.team{
 <td><img class="logo" src="./logos/pardubice.png"></td>
 <td>3</td>
 <td class="team">HC Dynamo Pardubice</td>
-<td></td><td></td><td></td><td></td><td></td><td>
-::contentReference[oaicite:0]{index=0}
-</td><td></td><td></td><td></td><td></td>
+<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
 </tr>
 
 <tr>
@@ -175,8 +173,6 @@ td.team{
 </div>
 
 <h2>Zápasy</h2>
-
-<!-- ===== FILTRY ===== -->
 
 <div class="filterBar">
 
@@ -232,17 +228,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let allMatches=[];
-
-const extraligaTeams=[
-"HC Geus Okna Kladno",
-"HC Chemopetrol Litvínov",
-"HC Dynamo Pardubice",
-"HC Sparta Praha",
-"HC Energie Karlovy Vary",
-"HC Bílí Tygři Liberec",
-"HC Mountfield České Budějovice",
-"HC Oceláři Třinec"
-];
 
 function calculateScore(stats){
 
@@ -304,11 +289,7 @@ function fillFilters(){
     const teams=[...new Set(allMatches.flatMap(m=>[m.homeTeam,m.awayTeam]))];
 
     const extraligaCats=categories.filter(c=>c.startsWith("Extraliga"));
-    const otherCats=categories.filter(c=>!anyStartsWithExtraliga(c));
-
-    function anyStartsWithExtraliga(c){
-        return c.startsWith("Extraliga");
-    }
+    const otherCats=categories.filter(c=>!c.startsWith("Extraliga"));
 
     catSel.innerHTML='<option value="">Všechny kategorie</option>';
 
@@ -320,26 +301,13 @@ function fillFilters(){
         catSel.innerHTML+=`<option value="${c}">${c}</option>`;
     });
 
-    const extraligaList=teams.filter(t=>{
-        const name=t.replace(" (P)","").replace(" (K)","");
-        return extraligaTeams.includes(name);
-    });
-
-    const otherTeams=teams.filter(t=>!extraligaList.includes(t));
-
     teamSel.innerHTML='<option value="">Všechny týmy</option>';
 
-    extraligaList.forEach(t=>{
+    teams.forEach(t=>{
         teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
     });
 
-    otherTeams.forEach(t=>{
-        teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
-    });
-
-    if(!catSel.value){
-        catSel.value="Extraliga - základní část";
-    }
+    catSel.value="Extraliga - základní část";
 }
 
 window.applyFilter=function(){
