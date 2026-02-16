@@ -88,7 +88,7 @@ td.team{
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<!-- ===== TABULKA EXTRALIGY (BEZ VÝSLEDKŮ) ===== -->
+<!-- ===== TABULKA EXTRALIGY ===== -->
 
 <div class="tableWrap">
 <table>
@@ -176,9 +176,27 @@ td.team{
 
 <div class="filterBar">
 
-<select id="filterCategory"></select>
+<select id="filterCategory">
+<option value="">Všechny kategorie</option>
+<option>Exhibice</option>
 
-<select id="filterTeam"></select>
+<option selected>Extraliga - základní část</option>
+<option>Extraliga - předkolo</option>
+<option>Extraliga - čtvrtfinále</option>
+<option>Extraliga - semifinále</option>
+<option>Extraliga - finále</option>
+
+<option>OH - základní část</option>
+<option>OH - Play OFF - předkolo</option>
+<option>OH - čtvrtfinále</option>
+<option>OH - semifinále</option>
+<option>OH - finále</option>
+<option>OH - o 3. místo</option>
+</select>
+
+<select id="filterTeam">
+<option value="">Všechny týmy</option>
+</select>
 
 <select id="filterResult">
 <option value="">Všechny výsledky</option>
@@ -275,39 +293,30 @@ function loadMatches(){
             allMatches.push({id:docSnap.id,...docSnap.data()});
         });
 
-        fillFilters();
+        fillTeamFilter();
         applyFilter();
     });
 }
 
-function fillFilters(){
+function fillTeamFilter(){
 
-    const catSel=document.getElementById("filterCategory");
-    const teamSel=document.getElementById("filterTeam");
+    const set=new Set();
 
-    const categories=[...new Set(allMatches.map(m=>m.category))];
-    const teams=[...new Set(allMatches.flatMap(m=>[m.homeTeam,m.awayTeam]))];
-
-    const extraligaCats=categories.filter(c=>c.startsWith("Extraliga"));
-    const otherCats=categories.filter(c=>!c.startsWith("Extraliga"));
-
-    catSel.innerHTML='<option value="">Všechny kategorie</option>';
-
-    extraligaCats.forEach(c=>{
-        catSel.innerHTML+=`<option value="${c}">${c}</option>`;
+    allMatches.forEach(m=>{
+        set.add(m.homeTeam);
+        set.add(m.awayTeam);
     });
 
-    otherCats.forEach(c=>{
-        catSel.innerHTML+=`<option value="${c}">${c}</option>`;
+    const sel=document.getElementById("filterTeam");
+    const current=sel.value;
+
+    sel.innerHTML='<option value="">Všechny týmy</option>';
+
+    set.forEach(t=>{
+        sel.innerHTML+=`<option value="${t}">${t}</option>`;
     });
 
-    teamSel.innerHTML='<option value="">Všechny týmy</option>';
-
-    teams.forEach(t=>{
-        teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
-    });
-
-    catSel.value="Extraliga - základní část";
+    sel.value=current;
 }
 
 window.applyFilter=function(){
