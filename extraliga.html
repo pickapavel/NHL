@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Extraliga</title>
+<title>Extraliga - 2. sezóna</title>
 
 <style>
 
@@ -86,7 +86,7 @@ td.team{
 
 <div class="wrapper">
 
-<h1>Extraliga</h1>
+<h1>Extraliga - 2. sezóna</h1>
 
 <!-- ===== TABULKA EXTRALIGY (BEZ VÝSLEDKŮ) ===== -->
 
@@ -130,7 +130,9 @@ td.team{
 <td><img class="logo" src="./logos/pardubice.png"></td>
 <td>3</td>
 <td class="team">HC Dynamo Pardubice</td>
-<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+<td></td><td></td><td></td><td></td><td></td><td>
+::contentReference[oaicite:0]{index=0}
+</td><td></td><td></td><td></td><td></td>
 </tr>
 
 <tr>
@@ -302,7 +304,11 @@ function fillFilters(){
     const teams=[...new Set(allMatches.flatMap(m=>[m.homeTeam,m.awayTeam]))];
 
     const extraligaCats=categories.filter(c=>c.startsWith("Extraliga"));
-    const otherCats=categories.filter(c=>!c.startsWith("Extraliga"));
+    const otherCats=categories.filter(c=>!anyStartsWithExtraliga(c));
+
+    function anyStartsWithExtraliga(c){
+        return c.startsWith("Extraliga");
+    }
 
     catSel.innerHTML='<option value="">Všechny kategorie</option>';
 
@@ -314,7 +320,11 @@ function fillFilters(){
         catSel.innerHTML+=`<option value="${c}">${c}</option>`;
     });
 
-    const extraligaList=teams.filter(t=>extraligaTeams.includes(t.replace(" (P)","").replace(" (K)","")));
+    const extraligaList=teams.filter(t=>{
+        const name=t.replace(" (P)","").replace(" (K)","");
+        return extraligaTeams.includes(name);
+    });
+
     const otherTeams=teams.filter(t=>!extraligaList.includes(t));
 
     teamSel.innerHTML='<option value="">Všechny týmy</option>';
@@ -327,7 +337,9 @@ function fillFilters(){
         teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
     });
 
-    if(!catSel.value) catSel.value="Extraliga - základní část";
+    if(!catSel.value){
+        catSel.value="Extraliga - základní část";
+    }
 }
 
 window.applyFilter=function(){
