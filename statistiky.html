@@ -112,7 +112,6 @@ th{
 <option>Extraliga - čtvrtfinále</option>
 <option>Extraliga - semifinále</option>
 <option>Extraliga - finále</option>
-<option>Extraliga - Play off</option>
 
 <option>OH - základní část</option>
 <option>OH - Play OFF - předkolo</option>
@@ -179,7 +178,7 @@ th{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } 
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -223,6 +222,8 @@ const nationalTeams=[
 "USA"
 ];
 
+document.getElementById("category").addEventListener("change",fillTeamSelects);
+
 function fillTeamSelects(){
 
     const cat=document.getElementById("category").value;
@@ -233,8 +234,8 @@ function fillTeamSelects(){
     const home=document.getElementById("homeTeam");
     const away=document.getElementById("awayTeam");
 
-    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
-    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+    home.innerHTML='<option disabled selected>Domácí tým</option>';
+    away.innerHTML='<option disabled selected>Hostující tým</option>';
 
     list.forEach(t=>{
         home.innerHTML+=`<option value="${t} (P)"><b>${t} (P)</b></option>`;
@@ -243,10 +244,6 @@ function fillTeamSelects(){
         away.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
     });
 }
-
-document.getElementById("category").addEventListener("change",fillTeamSelects);
-
-window.addEventListener("load", loadMatches);
 
 /* ===== SCORE ===== */
 
@@ -262,34 +259,36 @@ function calculateScore(stats){
     if(stats[19]==="11") homeGoals++;
 
     let suffix="";
+    let type="normal";
 
     if(stats[20]==="1"){
         homeGoals++;
         suffix=" SN";
+        type="sn";
     }
     else if(stats[20]==="2"){
         awayGoals++;
         suffix=" SN";
+        type="sn";
     }
     else if(
         (stats[9]==="11" || stats[19]==="11") &&
         Math.abs(homeGoals-awayGoals)===1
     ){
         suffix=" OT";
+        type="ot";
     }
 
-    return {
-        text: homeGoals+" : "+awayGoals+suffix,
-        type: suffix===" SN" ? "sn" : suffix===" OT" ? "ot" : "normal"
-    };
+    return { text: homeGoals+" : "+awayGoals+suffix, type };
 }
 
 /* ===== LOAD ===== */
 
+window.addEventListener("load", loadMatches);
+
 async function loadMatches(){
 
     allMatches=[];
-
     const q=query(collection(db,"zapasy"),orderBy("created","desc"));
     const snapshot=await getDocs(q);
 
@@ -297,12 +296,57 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...docSnap.data()});
     });
 
+    fillFilterLists();
+    renderMatches();
+}
+
+/* ===== FILTRY ===== */
+
+function fillFilterLists(){
+
+    const catSet=new Set();
+    const teamSet=new Set();
+
+    allMatches.forEach(m=>{
+        catSet.add(m.category);
+        teamSet.add(m.homeTeam);
+        teamSet.add(m.awayTeam);
+    });
+
+    const catSel=document.getElementById("filterCategory");
+    const teamSel=document.getElementById("filterTeam");
+
+    catSel.innerHTML='<option value="">Všechny kategorie</option>';
+    teamSel.innerHTML='<option value="">Všechny týmy</option>';
+
+    catSet.forEach(c=>{
+        catSel.innerHTML+=`<option value="${c}">${c}</option>`;
+    });
+
+    teamSet.forEach(t=>{
+        teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
+    });
+}
+
+window.applyFilter=function(){
+
+    const fc=filterCategory.value;
+    const ft=filterTeam.value;
+    const fr=filterResult.value;
+
+    renderMatches(fc,ft,fr);
+}
+
+window.resetFilter=function(){
+    filterCategory.value="";
+    filterTeam.value="";
+    filterResult.value="";
     renderMatches();
 }
 
 /* ===== RENDER ===== */
 
-function renderMatches(){
+function renderMatches(fc="",ft="",fr=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -310,6 +354,10 @@ function renderMatches(){
     allMatches.forEach(m=>{
 
         const score=calculateScore(m.stats);
+
+        if(fc && m.category!==fc) return;
+        if(ft && m.homeTeam!==ft && m.awayTeam!==ft) return;
+        if(fr && score.type!==fr) return;
 
         const tr=document.createElement("tr");
 
@@ -319,10 +367,7 @@ function renderMatches(){
         <td>${m.homeTeam}</td>
         <td>${m.awayTeam}</td>
         <td>${score.text}</td>
-        <td>
-            <button class="editBtn" onclick="openCategorySelect('${m.id}')">Změnit</button>
-            <button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button>
-        </td>
+        <td><button class="deleteBtn" onclick="deleteMatch('${m.id}')">Smazat</button></td>
         `;
 
         tbody.appendChild(tr);
