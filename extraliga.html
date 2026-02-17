@@ -276,7 +276,13 @@ function loadMatches(){
 
         snapshot.forEach(docSnap=>{
             const m=docSnap.data();
-            if(m.category && m.category.startsWith("Extraliga")){
+
+            /* ===== pouze Extraliga + pouze Sezóna 2 ===== */
+            if(
+                m.category &&
+                m.category.startsWith("Extraliga") &&
+                m.season === "Sezóna 2"
+            ){
                 extraligaMatches.push(m);
             }
         });
