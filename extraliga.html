@@ -101,6 +101,14 @@ td.team{
     color:#333;
 }
 
+.resultType{
+    text-align:center;
+    font-size:13px;
+    font-weight:bold;
+    color:#0b2a3c;
+    height:16px;
+}
+
 </style>
 </head>
 
@@ -226,13 +234,31 @@ const scheduleList=[
 ];
 
 function calculateScore(stats){
+
     let awayGoals=Number(stats[6])+Number(stats[7])+Number(stats[8]);
     let homeGoals=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+
+    let resultType="";
+
     if(stats[9]==="11") awayGoals++;
     if(stats[19]==="11") homeGoals++;
-    if(stats[20]==="1") homeGoals++;
-    if(stats[20]==="2") awayGoals++;
-    return {homeGoals,awayGoals};
+
+    if(stats[20]==="1"){
+        homeGoals++;
+        resultType="SN";
+    }
+    else if(stats[20]==="2"){
+        awayGoals++;
+        resultType="SN";
+    }
+    else if(
+        (stats[9]==="11" || stats[19]==="11") &&
+        Math.abs(homeGoals-awayGoals)===1
+    ){
+        resultType="OT";
+    }
+
+    return {homeGoals,awayGoals,resultType};
 }
 
 function logoHtml(team){
@@ -248,19 +274,24 @@ function renderSchedule(matches){
     scheduleList.forEach(pair=>{
 
         const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
-        let hg=0,ag=0;
+
+        let hg=0,ag=0,type="";
 
         if(match){
             const s=calculateScore(match.stats);
             hg=s.homeGoals;
             ag=s.awayGoals;
+            type=s.resultType;
         }
 
         container.innerHTML+=`
         <div class="matchRow">
             <div class="teamBox">${logoHtml(pair[0])}${pair[0]}</div>
             <div class="scoreBox">${hg}</div>
-            <div class="periods">(0:0, 0:0, 0:0)</div>
+            <div>
+                <div class="resultType">${type}</div>
+                <div class="periods">(0:0, 0:0, 0:0)</div>
+            </div>
             <div class="scoreBox">${ag}</div>
             <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
         </div>`;
@@ -272,12 +303,12 @@ function loadMatches(){
     const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
     onSnapshot(q,(snapshot)=>{
+
         let extraligaMatches=[];
 
         snapshot.forEach(docSnap=>{
             const m=docSnap.data();
 
-            /* ===== pouze Extraliga + pouze Sezóna 2 ===== */
             if(
                 m.category &&
                 m.category.startsWith("Extraliga") &&
