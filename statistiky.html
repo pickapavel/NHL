@@ -189,6 +189,59 @@ const db = getFirestore(app);
 let loadedLines=[];
 let allMatches=[];
 
+const clubTeams=[
+"HC Sparta Praha",
+"HC Bílí Tygři Liberec",
+"HC Dynamo Pardubice",
+"HC Chemopetrol Litvínov",
+"HC Geus Okna Kladno",
+"HC Motor České Budějovice",
+"HC Energie Karlovy Vary",
+"HC Oceláři Třinec"
+];
+
+const nationalTeams=[
+"Česká Republika",
+"Rusko",
+"Finsko",
+"Švédsko",
+"Kanada",
+"Itálie",
+"Francie",
+"Kazachstán",
+"Japonsko",
+"Velká Británie",
+"Polsko",
+"USA"
+];
+
+/* ===== DOPLNĚNO — ČÍSELNÍK TÝMŮ ===== */
+
+document.getElementById("category").addEventListener("change",fillTeamSelects);
+
+function fillTeamSelects(){
+
+    const cat=document.getElementById("category").value;
+    const isOH = cat && cat.startsWith("OH");
+
+    const list = isOH ? nationalTeams : clubTeams;
+
+    const home=document.getElementById("homeTeam");
+    const away=document.getElementById("awayTeam");
+
+    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
+    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+
+    list.forEach(t=>{
+        home.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
+        home.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+        away.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
+        away.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+    });
+}
+
+/* ===== SAFE NUMBER ===== */
+
 function n(v){ return Number(v) || 0; }
 
 /* ===== SCORE ===== */
