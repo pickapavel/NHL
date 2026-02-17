@@ -110,8 +110,6 @@ td.team{text-align:left;}
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<!-- TABULKA -->
-
 <div class="tableWrap">
 <table id="standings">
 <thead>
@@ -134,6 +132,13 @@ td.team{text-align:left;}
 
 <tbody>
 
+<tr data-team="HC Dynamo Pardubice (K)">
+<td><img class="logo" src="./logos/pardubice.png"></td>
+<td></td><td class="team">HC Dynamo Pardubice (K)</td>
+<td></td><td></td><td></td><td></td><td></td><td></td>
+<td></td><td></td><td></td><td></td>
+</tr>
+
 <tr data-team="HC Geus Okna Kladno (P)">
 <td><img class="logo" src="./logos/kladno.png"></td>
 <td></td><td class="team">HC Geus Okna Kladno (P)</td>
@@ -144,13 +149,6 @@ td.team{text-align:left;}
 <tr data-team="HC Chemopetrol Litvínov (P)">
 <td><img class="logo" src="./logos/litvinov.png"></td>
 <td></td><td class="team">HC Chemopetrol Litvínov (P)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Dynamo Pardubice (K)">
-<td><img class="logo" src="./logos/pardubice.png"></td>
-<td></td><td class="team">HC Dynamo Pardubice (K)</td>
 <td></td><td></td><td></td><td></td><td></td><td></td>
 <td></td><td></td><td></td><td></td>
 </tr>
@@ -212,8 +210,6 @@ const app = initializeApp({
 });
 const db=getFirestore(app);
 
-/* ===== LOGA ===== */
-
 const teamLogos={
 "HC Geus Okna Kladno (P)":"kladno.png",
 "HC Chemopetrol Litvínov (P)":"litvinov.png",
@@ -247,74 +243,41 @@ function calculateScore(stats){
  return{home:h,away:a,type};
 }
 
-/* ===== TABULKA ===== */
-
-function updateStandings(matches){
-
- const teams={};
-
- document.querySelectorAll("#standings tbody tr").forEach(tr=>{
-  const t=tr.dataset.team;
-  teams[t]={team:t,pts:0,gf:0,ga:0,g:0,w:0,l:0,ow:0,ol:0,snw:0,snl:0};
- });
-
- matches.forEach(m=>{
-  const s=calculateScore(m.stats);
-  if(!s)return;
-
-  const H=teams[m.homeTeam];
-  const A=teams[m.awayTeam];
-
-  H.g++;A.g++;
-  H.gf+=s.home;H.ga+=s.away;
-  A.gf+=s.away;A.ga+=s.home;
-
-  if(s.type===""){
-   if(s.home>s.away){H.pts+=3;H.w++;A.l++;}
-   else{A.pts+=3;A.w++;H.l++;}
-  }else if(s.type==="OT"){
-   if(s.home>s.away){H.pts+=2;A.pts+=1;H.ow++;A.ol++;}
-   else{A.pts+=2;H.pts+=1;A.ow++;H.ol++;}
-  }else{
-   if(s.home>s.away){H.pts+=2;A.pts+=1;H.snw++;A.snl++;}
-   else{A.pts+=2;H.pts+=1;A.snw++;H.snl++;}
-  }
- });
-
- const sorted=Object.values(teams).sort((a,b)=>{
-  if(b.pts!==a.pts) return b.pts-a.pts;
-  if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
-  return b.gf-a.gf;
- });
-
- const tbody=document.querySelector("#standings tbody");
-
- sorted.forEach((t,i)=>{
-  const tr=tbody.querySelector(`tr[data-team="${t.team}"]`);
-  const c=tr.children;
-
-  c[1].innerText=i+1;
-  c[3].innerText=t.pts;
-  c[4].innerText=`${t.gf}:${t.ga}`;
-  c[5].innerText=t.gf-t.ga;
-  c[6].innerText=t.g;
-  c[7].innerText=t.w;
-  c[8].innerText=t.l;
-  c[9].innerText=t.ow;
-  c[10].innerText=t.ol;
-  c[11].innerText=t.snw;
-  c[12].innerText=t.snl;
-
-  tbody.appendChild(tr);
- });
-}
-
-/* ===== ROZPIS ===== */
+/* ===== KOMPLETNÍ ROZPIS ===== */
 
 const scheduleList=[
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
-["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"]
+["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
+["HC Znojemští Orli (K)","HC Energie Karlovy Vary (P)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Geus Okna Kladno (P)","HC Mountfield České Budějovice (K)"],
+["HC Znojemští Orli (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Bílí Tygři Liberec (K)"],
+["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Znojemští Orli (K)"],
+["HC Dynamo Pardubice (K)","HC Sparta Praha (P)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Znojemští Orli (K)"],
+["HC Mountfield České Budějovice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Bílí Tygři Liberec (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Dynamo Pardubice (K)"],
+["HC Dynamo Pardubice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Bílí Tygři Liberec (K)"],
+["HC Mountfield České Budějovice (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Znojemští Orli (K)"],
+["HC Chemopetrol Litvínov (P)","HC Dynamo Pardubice (K)"],
+["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Sparta Praha (P)","HC Znojemští Orli (K)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Bílí Tygři Liberec (K)"],
+["HC Znojemští Orli (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Dynamo Pardubice (K)"],
+["HC Energie Karlovy Vary (P)","HC Mountfield České Budějovice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Geus Okna Kladno (P)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Mountfield České Budějovice (K)","HC Energie Karlovy Vary (P)"],
+["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
 function renderSchedule(matches){
@@ -348,8 +311,6 @@ function renderSchedule(matches){
  });
 }
 
-/* ===== LOAD ===== */
-
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
 onSnapshot(q,(snap)=>{
@@ -360,7 +321,6 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
  });
 
- updateStandings(matches);
  renderSchedule(matches);
 });
 
