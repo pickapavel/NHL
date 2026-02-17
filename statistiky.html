@@ -329,6 +329,14 @@ async function loadMatches(){
     renderMatches();
 }
 
+/* ===== DELETE MATCH ===== */
+
+window.deleteMatch = async function(id){
+    if(!confirm("Opravdu smazat zápas?")) return;
+    await deleteDoc(doc(db,"zapasy",id));
+    loadMatches();
+}
+
 /* ===== FILTRY ===== */
 
 function fillFilterLists(){
