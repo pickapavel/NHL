@@ -26,7 +26,31 @@ td.team{text-align:left;}
 
 .logo{width:28px;height:28px;object-fit:contain;vertical-align:middle}
 
-/* ===== ROZPIS DESKTOP ===== */
+/* ===== FILTR ===== */
+
+.filterBar{
+ display:flex;
+ gap:10px;
+ align-items:center;
+ margin-bottom:15px;
+ flex-wrap:wrap;
+}
+
+.filterBar select,
+.filterBar button{
+ padding:8px 10px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
+.filterActive{
+ background:#2f9ec9;
+ color:white;
+ border-color:#2f9ec9;
+}
+
+/* ===== ROZPIS ===== */
 
 .matchRow{
  display:grid;
@@ -65,7 +89,6 @@ td.team{text-align:left;}
  font-weight:bold;
  width:100%;
 }
-.statsBtn:hover{background:#257fa3;}
 
 /* ===== MOBIL ===== */
 
@@ -74,37 +97,16 @@ td.team{text-align:left;}
  .matchRow{
   grid-template-columns:1fr auto;
   grid-template-rows:auto auto auto auto;
-  padding:12px;
  }
 
- .teamBox{
-  grid-column:1/3;
-  justify-content:center;
-  font-size:15px;
- }
-
- .teamRight{
-  justify-content:center;
- }
-
- .scoreBox{
-  grid-column:1/3;
-  font-size:24px;
- }
-
- .periods{
-  grid-column:1/3;
-  font-size:13px;
- }
-
+ .teamBox,
+ .scoreBox,
+ .periods,
  .statsBtn{
   grid-column:1/3;
-  margin-top:6px;
+  justify-content:center;
+  text-align:center;
  }
-}
-
-@media (max-width:600px){
- .wrapper{padding:10px}
 }
 </style>
 </head>
@@ -129,6 +131,16 @@ td.team{text-align:left;}
 </div>
 
 <h2>Rozpis zápasů</h2>
+
+<div class="filterBar">
+<select id="teamFilter">
+<option value="all">Všechny týmy</option>
+</select>
+
+<button id="filterAll" class="filterActive">Všechny zápasy</button>
+<button id="filterPlayed">Jen odehrané</button>
+</div>
+
 <div id="schedule"></div>
 
 </div>
@@ -177,6 +189,41 @@ const scheduleList=scheduleIndex.map(
  ([h,a])=>[teams[h],teams[a]]
 );
 
+/* ===== FILTR ===== */
+
+let selectedTeam="all";
+let showPlayedOnly=false;
+let currentMatches=[];
+
+const teamFilter=document.getElementById("teamFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ teamFilter.appendChild(opt);
+});
+
+teamFilter.onchange=()=>{
+ selectedTeam=teamFilter.value;
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false;
+ document.getElementById("filterAll").classList.add("filterActive");
+ document.getElementById("filterPlayed").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true;
+ document.getElementById("filterPlayed").classList.add("filterActive");
+ document.getElementById("filterAll").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
+
+/* ===== VÝPOČET SKÓRE ===== */
+
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
  let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
@@ -187,6 +234,8 @@ function calc(stats){
  return {hg,ag};
 }
 
+/* ===== TABULKA ===== */
+
 function createEmpty(){
  let obj={};
  teams.forEach(t=>{
@@ -196,6 +245,7 @@ function createEmpty(){
 }
 
 function calculateStandings(matches){
+
  let table=createEmpty();
 
  matches.forEach(m=>{
@@ -257,12 +307,21 @@ function renderStandings(arr){
  });
 }
 
+/* ===== ROZPIS ===== */
+
 function renderSchedule(matches){
+
+ currentMatches=matches;
+
  const cont=document.getElementById("schedule");
  cont.innerHTML="";
 
  scheduleList.forEach(p=>{
+
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
+
+  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
+  if(showPlayedOnly && !m) return;
 
   let hg=0,ag=0,label="";
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
