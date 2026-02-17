@@ -181,6 +181,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
   projectId: "statistiky-6310a",
+  storageBucket: "statistiky-6310a.appspot.com",
+  messagingSenderId: "1023222901562",
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -215,22 +218,47 @@ const nationalTeams=[
 "USA"
 ];
 
-/* ===== DOPLNĚNO — ČÍSELNÍK TÝMŮ ===== */
+/* ===== NAČTENÍ TXT ===== */
+
+document.getElementById("fileInput").addEventListener("change",function(e){
+
+    const file=e.target.files[0];
+    if(!file) return;
+
+    const reader=new FileReader();
+
+    reader.onload=function(ev){
+
+        loadedLines = ev.target.result
+            .split(/\r?\n/)
+            .map(l=>l.trim())
+            .filter(l=>l!== "");
+
+        while(loadedLines.length < 21){
+            loadedLines.push("0");
+        }
+    };
+
+    reader.readAsText(file,"utf-8");
+});
+
+/* ===== TÝMY PODLE KATEGORIE ===== */
 
 document.getElementById("category").addEventListener("change",fillTeamSelects);
+document.getElementById("filterCategory").addEventListener("change",updateFilterTeams);
 
 function fillTeamSelects(){
 
     const cat=document.getElementById("category").value;
-    const isOH = cat && cat.startsWith("OH");
+    const isOH = cat.startsWith("OH");
 
     const list = isOH ? nationalTeams : clubTeams;
 
     const home=document.getElementById("homeTeam");
     const away=document.getElementById("awayTeam");
 
-    home.innerHTML='<option value="" disabled selected>Domácí tým</option>';
-    away.innerHTML='<option value="" disabled selected>Hostující tým</option>';
+    home.innerHTML='<option disabled selected>Domácí tým</option>';
+    away.innerHTML='<option disabled selected>Hostující tým</option>';
 
     list.forEach(t=>{
         home.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
@@ -240,31 +268,69 @@ function fillTeamSelects(){
     });
 }
 
-/* ===== SAFE NUMBER ===== */
+function updateFilterTeams(){
 
-function n(v){ return Number(v) || 0; }
+    const fc=document.getElementById("filterCategory").value;
+    const teamSel=document.getElementById("filterTeam");
+
+    teamSel.innerHTML='<option value="">Všechny týmy</option>';
+
+    if(!fc){
+        const set=new Set();
+        allMatches.forEach(m=>{
+            set.add(m.homeTeam);
+            set.add(m.awayTeam);
+        });
+        set.forEach(t=>{
+            teamSel.innerHTML+=`<option value="${t}">${t}</option>`;
+        });
+        return;
+    }
+
+    const isOH = fc.startsWith("OH");
+    const list = isOH ? nationalTeams : clubTeams;
+
+    list.forEach(t=>{
+        teamSel.innerHTML+=`<option value="${t} (P)">${t} (P)</option>`;
+        teamSel.innerHTML+=`<option value="${t} (K)">${t} (K)</option>`;
+    });
+}
 
 /* ===== SCORE ===== */
 
 function calculateScore(stats){
 
-    if(!stats || !stats.length){
-        return { text:"0 : 0", type:"normal" };
-    }
-
     let awayGoals =
-        n(stats[6])+n(stats[7])+n(stats[8]);
+        Number(stats[6])+Number(stats[7])+Number(stats[8]);
 
     let homeGoals =
-        n(stats[16])+n(stats[17])+n(stats[18]);
+        Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
     if(stats[9]==="11") awayGoals++;
     if(stats[19]==="11") homeGoals++;
 
-    if(stats[20]==="1") homeGoals++;
-    if(stats[20]==="2") awayGoals++;
+    let suffix="";
+    let type="normal";
 
-    return { text: homeGoals+" : "+awayGoals, type:"normal" };
+    if(stats[20]==="1"){
+        homeGoals++;
+        suffix=" SN";
+        type="sn";
+    }
+    else if(stats[20]==="2"){
+        awayGoals++;
+        suffix=" SN";
+        type="sn";
+    }
+    else if(
+        (stats[9]==="11" || stats[19]==="11") &&
+        Math.abs(homeGoals-awayGoals)===1
+    ){
+        suffix=" OT";
+        type="ot";
+    }
+
+    return { text: homeGoals+" : "+awayGoals+suffix, type };
 }
 
 /* ===== LOAD ===== */
@@ -283,19 +349,54 @@ async function loadMatches(){
         allMatches.push({id:docSnap.id,...data});
     });
 
+    fillFilterLists();
     renderMatches();
 }
 
 /* ===== DELETE ===== */
 
 window.deleteMatch = async function(id){
+    if(!confirm("Opravdu smazat zápas?")) return;
     await deleteDoc(doc(db,"zapasy",id));
     loadMatches();
+};
+
+/* ===== FILTRY ===== */
+
+function fillFilterLists(){
+
+    const catSet=new Set();
+
+    allMatches.forEach(m=>{
+        catSet.add(m.category);
+    });
+
+    const catSel=document.getElementById("filterCategory");
+
+    catSel.innerHTML='<option value="">Všechny kategorie</option>';
+
+    catSet.forEach(c=>{
+        catSel.innerHTML+=`<option value="${c}">${c}</option>`;
+    });
+
+    updateFilterTeams();
+}
+
+window.applyFilter=function(){
+    renderMatches(filterCategory.value,filterTeam.value,filterResult.value);
+}
+
+window.resetFilter=function(){
+    filterCategory.value="";
+    filterTeam.value="";
+    filterResult.value="";
+    updateFilterTeams();
+    renderMatches();
 }
 
 /* ===== RENDER ===== */
 
-function renderMatches(){
+function renderMatches(fc="",ft="",fr=""){
 
     const tbody=document.querySelector("#history tbody");
     tbody.innerHTML="";
@@ -303,6 +404,10 @@ function renderMatches(){
     allMatches.forEach(m=>{
 
         const score=calculateScore(m.stats);
+
+        if(fc && m.category!==fc) return;
+        if(ft && m.homeTeam!==ft && m.awayTeam!==ft) return;
+        if(fr && score.type!==fr) return;
 
         const tr=document.createElement("tr");
 
@@ -324,12 +429,17 @@ function renderMatches(){
 
 window.saveMatch = async function(){
 
+    if(!category.value || !homeTeam.value || !awayTeam.value){
+        alert("Vyber kategorii a oba týmy.");
+        return;
+    }
+
     await addDoc(collection(db,"zapasy"),{
-        season:season.value,
+        season:document.getElementById("season").value,
         category:category.value,
         homeTeam:homeTeam.value,
         awayTeam:awayTeam.value,
-        stats:loadedLines || [],
+        stats:loadedLines,
         created:Date.now()
     });
 
