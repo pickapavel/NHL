@@ -6,7 +6,6 @@
 <title>Extraliga - 2. sezóna</title>
 
 <style>
-
 *{box-sizing:border-box}
 
 body{
@@ -100,7 +99,6 @@ td.team{text-align:left;}
     font-size:13px;
     height:16px;
 }
-
 </style>
 </head>
 
@@ -129,66 +127,7 @@ td.team{text-align:left;}
 <th>PSN</th>
 </tr>
 </thead>
-
-<tbody>
-
-<tr data-team="HC Dynamo Pardubice (K)">
-<td><img class="logo" src="./logos/pardubice.png"></td>
-<td></td><td class="team">HC Dynamo Pardubice (K)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Geus Okna Kladno (P)">
-<td><img class="logo" src="./logos/kladno.png"></td>
-<td></td><td class="team">HC Geus Okna Kladno (P)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Chemopetrol Litvínov (P)">
-<td><img class="logo" src="./logos/litvinov.png"></td>
-<td></td><td class="team">HC Chemopetrol Litvínov (P)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Sparta Praha (P)">
-<td><img class="logo" src="./logos/sparta.png"></td>
-<td></td><td class="team">HC Sparta Praha (P)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Energie Karlovy Vary (P)">
-<td><img class="logo" src="./logos/vary.png"></td>
-<td></td><td class="team">HC Energie Karlovy Vary (P)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Bílí Tygři Liberec (K)">
-<td><img class="logo" src="./logos/liberec.png"></td>
-<td></td><td class="team">HC Bílí Tygři Liberec (K)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Mountfield České Budějovice (K)">
-<td><img class="logo" src="./logos/budejovice.png"></td>
-<td></td><td class="team">HC Mountfield České Budějovice (K)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-<tr data-team="HC Znojemští Orli (K)">
-<td><img class="logo" src="./logos/znojmo.png"></td>
-<td></td><td class="team">HC Znojemští Orli (K)</td>
-<td></td><td></td><td></td><td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-</tbody>
+<tbody></tbody>
 </table>
 </div>
 
@@ -210,6 +149,19 @@ const app = initializeApp({
 });
 const db=getFirestore(app);
 
+/* ===== TÝMY ===== */
+
+const teams=[
+"HC Geus Okna Kladno (P)",
+"HC Chemopetrol Litvínov (P)",
+"HC Dynamo Pardubice (K)",
+"HC Sparta Praha (P)",
+"HC Energie Karlovy Vary (P)",
+"HC Bílí Tygři Liberec (K)",
+"HC Mountfield České Budějovice (K)",
+"HC Znojemští Orli (K)"
+];
+
 const teamLogos={
 "HC Geus Okna Kladno (P)":"kladno.png",
 "HC Chemopetrol Litvínov (P)":"litvinov.png",
@@ -225,27 +177,30 @@ function logoHtml(team){
  return `<img class="logo" src="./logos/${teamLogos[team]}">`;
 }
 
-function num(v){return isNaN(Number(v))?0:Number(v);}
+function num(v){ return isNaN(Number(v))?0:Number(v); }
+
+/* ===== VÝPOČET SKÓRE ===== */
 
 function calculateScore(stats){
  if(!stats) return null;
 
- let a=num(stats[6])+num(stats[7])+num(stats[8]);
- let h=num(stats[16])+num(stats[17])+num(stats[18]);
+ let away=num(stats[6])+num(stats[7])+num(stats[8]);
+ let home=num(stats[16])+num(stats[17])+num(stats[18]);
  let type="";
 
- if(stats[9]==="11")a++;
- if(stats[19]==="11")h++;
- if(stats[20]==="1"){h++;type="SN";}
- else if(stats[20]==="2"){a++;type="SN";}
- else if(Math.abs(h-a)===1&&(stats[9]==="11"||stats[19]==="11"))type="OT";
+ if(stats[9]==="11") away++;
+ if(stats[19]==="11") home++;
 
- return{home:h,away:a,type};
+ if(stats[20]==="1"){ home++; type="SN"; }
+ else if(stats[20]==="2"){ away++; type="SN"; }
+ else if(Math.abs(home-away)===1 && (stats[9]==="11"||stats[19]==="11")) type="OT";
+
+ return {home,away,type};
 }
 
-/* ===== KOMPLETNÍ ROZPIS ===== */
+/* ===== ROZPIS ===== */
 
-const scheduleList=[
+const scheduleList=[ /* všech 32 zápasů */
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
 ["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
@@ -280,21 +235,84 @@ const scheduleList=[
 ["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
+/* ===== TABULKA ===== */
+
+function renderTable(matches){
+
+ let stats={};
+
+ teams.forEach(t=>{
+  stats[t]={team:t,B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
+ });
+
+ matches.forEach(m=>{
+  const s=calculateScore(m.stats);
+  if(!s) return;
+
+  const H=stats[m.homeTeam];
+  const A=stats[m.awayTeam];
+
+  H.Z++; A.Z++;
+  H.GF+=s.home; H.GA+=s.away;
+  A.GF+=s.away; A.GA+=s.home;
+
+  if(s.type===""){
+     if(s.home>s.away){ H.B+=3; H.V++; }
+     else{ A.B+=3; A.V++; }
+  }
+  else if(s.type==="OT"){
+     if(s.home>s.away){ H.B+=2; A.B+=1; H.VP++; A.PP++; }
+     else{ A.B+=2; H.B+=1; A.VP++; H.PP++; }
+  }
+  else{
+     if(s.home>s.away){ H.B+=2; A.B+=1; H.VSN++; A.PSN++; }
+     else{ A.B+=2; H.B+=1; A.VSN++; H.PSN++; }
+  }
+ });
+
+ let arr=Object.values(stats);
+ arr.sort((a,b)=>{
+  if(b.B!==a.B) return b.B-a.B;
+  return (b.GF-b.GA)-(a.GF-a.GA);
+ });
+
+ const tbody=document.querySelector("#standings tbody");
+ tbody.innerHTML="";
+
+ arr.forEach((t,i)=>{
+  tbody.innerHTML+=`
+  <tr>
+   <td>${logoHtml(t.team)}</td>
+   <td>${i+1}</td>
+   <td class="team">${t.team}</td>
+   <td>${t.B}</td>
+   <td>${t.GF}:${t.GA}</td>
+   <td>${t.GF-t.GA}</td>
+   <td>${t.Z}</td>
+   <td>${t.V}</td>
+   <td>${t.P}</td>
+   <td>${t.VP}</td>
+   <td>${t.PP}</td>
+   <td>${t.VSN}</td>
+   <td>${t.PSN}</td>
+  </tr>`;
+ });
+}
+
+/* ===== ROZPIS ===== */
+
 function renderSchedule(matches){
 
  const container=document.getElementById("schedule");
  container.innerHTML="";
 
  scheduleList.forEach(pair=>{
-
   const m=matches.find(x=>x.homeTeam===pair[0] && x.awayTeam===pair[1]);
   let hg=0,ag=0,type="";
 
   if(m){
    const s=calculateScore(m.stats);
-   hg=s.home;
-   ag=s.away;
-   type=s.type;
+   hg=s.home; ag=s.away; type=s.type;
   }
 
   container.innerHTML+=`
@@ -311,6 +329,8 @@ function renderSchedule(matches){
  });
 }
 
+/* ===== FIRESTORE ===== */
+
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
 onSnapshot(q,(snap)=>{
@@ -318,9 +338,10 @@ onSnapshot(q,(snap)=>{
  snap.forEach(d=>{
   const m=d.data();
   if(m.category?.startsWith("Extraliga") && m.season==="Sezóna 2")
-   matches.push(m);
+    matches.push(m);
  });
 
+ renderTable(matches);
  renderSchedule(matches);
 });
 
