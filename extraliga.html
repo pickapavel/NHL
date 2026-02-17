@@ -47,9 +47,7 @@ th{
     font-weight:bold;
 }
 
-td.team{
-    text-align:left;
-}
+td.team{text-align:left;}
 
 .logo{
     width:28px;
@@ -60,9 +58,7 @@ td.team{
 
 /* ===== ROZPIS ===== */
 
-.schedule{
-    margin-top:20px;
-}
+.schedule{margin-top:20px;}
 
 .matchRow{
     display:grid;
@@ -81,9 +77,7 @@ td.team{
     font-weight:bold;
 }
 
-.teamRight{
-    justify-content:flex-end;
-}
+.teamRight{justify-content:flex-end;}
 
 .scoreBox{
     background:#0b2a3c;
@@ -98,7 +92,6 @@ td.team{
 .periods{
     text-align:center;
     font-size:14px;
-    color:#333;
 }
 
 .resultType{
@@ -116,8 +109,6 @@ td.team{
 <div class="wrapper">
 
 <h1>Extraliga - 2. sezóna</h1>
-
-<!-- ===== TABULKA ===== -->
 
 <div class="tableWrap">
 <table id="standings">
@@ -194,7 +185,6 @@ td.team{
 </div>
 
 <h2>Rozpis zápasů</h2>
-
 <div id="schedule" class="schedule"></div>
 
 </div>
@@ -208,14 +198,13 @@ from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
   authDomain: "statistiky-6310a.firebaseapp.com",
-  projectId: "statistiky-6310a",
-  storageBucket: "statistiky-6310a.appspot.com",
-  messagingSenderId: "1023222901562",
-  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
+  projectId: "statistiky-6310a"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+/* ===== LOGA ===== */
 
 const teamLogos={
 "HC Geus Okna Kladno (P)":"kladno.png",
@@ -234,7 +223,9 @@ function logoHtml(team){
     return `<img class="logo" src="./logos/${teamLogos[team]}">`;
 }
 
-const scheduleList=[ /* celý seznam zůstává stejný */
+/* ===== ROZPIS ===== */
+
+const scheduleList=[ /* nezměněný seznam */
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
 ["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
@@ -269,6 +260,8 @@ const scheduleList=[ /* celý seznam zůstává stejný */
 ["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
+/* ===== VÝPOČET ===== */
+
 function num(v){ return isNaN(Number(v))?0:Number(v); }
 
 function calculateScore(stats){
@@ -290,11 +283,10 @@ function calculateScore(stats){
     else if(Math.abs(home-away)===1 && (stats[9]==="11"||stats[19]==="11"))
         type="OT";
 
-    return {
-        home,away,type,
-        periods:`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
-    };
+    return {home,away,type,periods:`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`};
 }
+
+/* ===== ROZPIS ===== */
 
 function renderSchedule(matches){
 
@@ -320,6 +312,8 @@ function renderSchedule(matches){
     });
 }
 
+/* ===== TABULKA + ŘAZENÍ (REÁLNÁ EXTRALIGA) ===== */
+
 function updateStandings(matches){
 
     const teams={};
@@ -329,34 +323,54 @@ function updateStandings(matches){
         teams[t]={team:t,pts:0,gf:0,ga:0,g:0,w:0,l:0,ow:0,ol:0,snw:0,snl:0};
     });
 
+    const mutual={};
+
     matches.forEach(m=>{
         const s=calculateScore(m.stats);
         if(!s) return;
 
         const H=teams[m.homeTeam];
         const A=teams[m.awayTeam];
-
         if(!H || !A) return;
 
         H.g++; A.g++;
         H.gf+=s.home; H.ga+=s.away;
         A.gf+=s.away; A.ga+=s.home;
 
+        const key=[m.homeTeam,m.awayTeam].sort().join("|");
+        if(!mutual[key]) mutual[key]={};
+
         if(s.type===""){
-            if(s.home>s.away){H.pts+=3;H.w++;A.l++;}
-            else{A.pts+=3;A.w++;H.l++;}
+            if(s.home>s.away){H.pts+=3;H.w++;A.l++; mutual[key][H.team]=(mutual[key][H.team]||0)+3;}
+            else{A.pts+=3;A.w++;H.l++; mutual[key][A.team]=(mutual[key][A.team]||0)+3;}
         }
         else if(s.type==="OT"){
-            if(s.home>s.away){H.pts+=2;A.pts+=1;H.ow++;A.ol++;}
-            else{A.pts+=2;H.pts+=1;A.ow++;H.ol++;}
+            if(s.home>s.away){H.pts+=2;A.pts+=1;H.ow++;A.ol++; mutual[key][H.team]=(mutual[key][H.team]||0)+2;}
+            else{A.pts+=2;H.pts+=1;A.ow++;H.ol++; mutual[key][A.team]=(mutual[key][A.team]||0)+2;}
         }
         else{
-            if(s.home>s.away){H.pts+=2;A.pts+=1;H.snw++;A.snl++;}
-            else{A.pts+=2;H.pts+=1;A.snw++;H.snl++;}
+            if(s.home>s.away){H.pts+=2;A.pts+=1;H.snw++;A.snl++; mutual[key][H.team]=(mutual[key][H.team]||0)+2;}
+            else{A.pts+=2;H.pts+=1;A.snw++;H.snl++; mutual[key][A.team]=(mutual[key][A.team]||0)+2;}
         }
     });
 
-    const sorted=Object.values(teams).sort((a,b)=>b.pts-a.pts);
+    const sorted=Object.values(teams).sort((a,b)=>{
+
+        if(b.pts!==a.pts) return b.pts-a.pts;
+
+        const key=[a.team,b.team].sort().join("|");
+        if(mutual[key]){
+            const pa=mutual[key][a.team]||0;
+            const pb=mutual[key][b.team]||0;
+            if(pb!==pa) return pb-pa;
+        }
+
+        const diffA=a.gf-a.ga;
+        const diffB=b.gf-b.ga;
+        if(diffB!==diffA) return diffB-diffA;
+
+        return b.gf-a.gf;
+    });
 
     const tbody=document.querySelector("#standings tbody");
 
@@ -376,6 +390,8 @@ function updateStandings(matches){
         c[12].innerText=t.snl;
     });
 }
+
+/* ===== LOAD ===== */
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
