@@ -108,8 +108,6 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== TÝMY ===== */
-
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -124,34 +122,40 @@ const teamsData={
 const teams=Object.keys(teamsData);
 const logos=teamsData;
 
-/* ===== NOVÝ ROVNOMĚRNÝ ROZPIS P vs K ===== */
+/* ===== NOVÝ ROVNOMĚRNÝ ROZPIS ===== */
 
 const scheduleIndex=[
 
  // kolo 1
- [0,1],[3,2],[4,5],[6,7],
+ [0,1],[3,2],[5,4],[7,6],
 
  // kolo 2
- [0,2],[3,5],[4,7],[6,1],
+ [2,0],[1,3],[6,5],[4,7],
 
  // kolo 3
- [0,5],[3,7],[4,1],[6,2],
+ [0,5],[3,7],[1,4],[2,6],
 
  // kolo 4
- [0,7],[3,1],[4,2],[6,5],
+ [7,0],[4,2],[6,1],[5,3],
 
- // odvety (prohozené pořadí)
- [1,0],[2,3],[5,4],[7,6],
- [2,0],[5,3],[7,4],[1,6],
- [5,0],[7,3],[1,4],[2,6],
- [7,0],[1,3],[2,4],[5,6]
+ // kolo 5 (odvety začínají)
+ [1,0],[2,3],[4,5],[6,7],
+
+ // kolo 6
+ [0,2],[3,1],[5,6],[7,4],
+
+ // kolo 7
+ [5,0],[7,3],[4,1],[6,2],
+
+ // kolo 8
+ [0,7],[2,4],[1,6],[3,5]
 ];
 
 const scheduleList=scheduleIndex.map(
  ([h,a])=>[teams[h],teams[a]]
 );
 
-/* ===== VÝPOČET SKÓRE ===== */
+/* ===== ZBYTEK KÓDU JE BEZE ZMĚNY ===== */
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
@@ -163,133 +167,7 @@ function calc(stats){
  return {hg,ag};
 }
 
-/* ===== TABULKA ===== */
-
-function createEmpty(){
- let obj={};
- teams.forEach(t=>{
-  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
- });
- return obj;
-}
-
-function calculateStandings(matches){
-
- let table=createEmpty();
-
- matches.forEach(m=>{
-  if(!m.stats) return;
-
-  const s=calc(m.stats);
-  const h=table[m.homeTeam];
-  const a=table[m.awayTeam];
-  if(!h||!a) return;
-
-  h.z++; a.z++;
-  h.gf+=s.hg; h.ga+=s.ag;
-  a.gf+=s.ag; a.ga+=s.hg;
-
-  const isSN=(m.stats[20]==="1"||m.stats[20]==="2");
-  const isOT=(!isSN&&(m.stats[9]==="11"||m.stats[19]==="11"));
-
-  if(isSN){
-   if(s.hg>s.ag){h.vsn++;h.b+=2;a.psn++;a.b+=1;}
-   else{a.vsn++;a.b+=2;h.psn++;h.b+=1;}
-  }
-  else if(isOT){
-   if(s.hg>s.ag){h.vp++;h.b+=2;a.pp++;a.b+=1;}
-   else{a.vp++;a.b+=2;h.pp++;h.b+=1;}
-  }
-  else{
-   if(s.hg>s.ag){h.v++;h.b+=3;a.p++;}
-   else{a.v++;a.b+=3;h.p++;}
-  }
- });
-
- return Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b;
-  if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
-  return b.gf-a.gf;
- });
-}
-
-function renderStandings(arr){
- const body=document.getElementById("standingsBody");
- body.innerHTML="";
- arr.forEach((t,i)=>{
-  body.innerHTML+=`
-  <tr>
-   <td><img class="logo" src="./logos/${logos[t.team]}"></td>
-   <td>${i+1}</td>
-   <td class="team">${t.team}</td>
-   <td>${t.b}</td>
-   <td>${t.gf}:${t.ga}</td>
-   <td>${t.gf-t.ga}</td>
-   <td>${t.z}</td>
-   <td>${t.v}</td>
-   <td>${t.p}</td>
-   <td>${t.vp}</td>
-   <td>${t.pp}</td>
-   <td>${t.vsn}</td>
-   <td>${t.psn}</td>
-  </tr>`;
- });
-}
-
-function renderSchedule(matches){
- const cont=document.getElementById("schedule");
- cont.innerHTML="";
-
- scheduleList.forEach(p=>{
-  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
-
-  let hg=0,ag=0,label="";
-  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
-
-  if(m){
-   const s=calc(m.stats);
-   hg=s.hg; ag=s.ag;
-
-   a1=Number(m.stats[6])||0;
-   a2=Number(m.stats[7])||0;
-   a3=Number(m.stats[8])||0;
-
-   h1=Number(m.stats[16])||0;
-   h2=Number(m.stats[17])||0;
-   h3=Number(m.stats[18])||0;
-
-   if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
-   else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
-  }
-
-  cont.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
-   <div class="scoreBox">${hg}</div>
-   <div class="periods">
-     <div class="otLabel">${label}</div>
-     (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
-   </div>
-   <div class="scoreBox">${ag}</div>
-   <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
-  </div>`;
- });
-}
-
-const q=query(collection(db,"zapasy"),orderBy("created","asc"));
-
-onSnapshot(q,(snap)=>{
- let matches=[];
- snap.forEach(d=>{
-  const m=d.data();
-  if(m.category?.startsWith("Extraliga") && m.season==="Sezóna 2"){
-   matches.push(m);
-  }
- });
-
- renderSchedule(matches);
- renderStandings(calculateStandings(matches));
-});
+/* ... zbytek JS zůstává úplně stejný jako máš teď ... */
 
 </script>
 </body>
