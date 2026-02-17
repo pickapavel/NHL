@@ -108,7 +108,7 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== TÝMY + LOGA (ZKRÁCENO) ===== */
+/* ===== TÝMY ===== */
 
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
@@ -124,17 +124,27 @@ const teamsData={
 const teams=Object.keys(teamsData);
 const logos=teamsData;
 
-/* ===== ROZPIS (ZKRÁCENO) ===== */
+/* ===== NOVÝ ROVNOMĚRNÝ ROZPIS P vs K ===== */
 
 const scheduleIndex=[
- [4,2],[1,3],[0,5],[6,7],
- [2,3],[4,5],[7,0],[6,1],
- [5,4],[3,7],[2,0],[1,6],
- [4,7],[5,3],[1,0],[6,2],
- [2,4],[3,1],[5,0],[6,7],
- [3,2],[5,4],[0,7],[1,6],
- [4,1],[7,3],[0,2],[6,5],
- [1,4],[2,3],[5,6],[7,0]
+
+ // kolo 1
+ [0,1],[3,2],[4,5],[6,7],
+
+ // kolo 2
+ [0,2],[3,5],[4,7],[6,1],
+
+ // kolo 3
+ [0,5],[3,7],[4,1],[6,2],
+
+ // kolo 4
+ [0,7],[3,1],[4,2],[6,5],
+
+ // odvety (prohozené pořadí)
+ [1,0],[2,3],[5,4],[7,6],
+ [2,0],[5,3],[7,4],[1,6],
+ [5,0],[7,3],[1,4],[2,6],
+ [7,0],[1,3],[2,4],[5,6]
 ];
 
 const scheduleList=scheduleIndex.map(
