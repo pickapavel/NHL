@@ -75,22 +75,6 @@ td.team{text-align:left;}
   grid-template-rows:auto auto;
  }
 
- .teamBox:first-child{
-  grid-column:1/2;
- }
-
- .scoreBox:nth-child(2){
-  grid-column:2/3;
- }
-
- .scoreBox:nth-child(4){
-  grid-column:3/4;
- }
-
- .teamRight{
-  grid-column:4/5;
- }
-
  .periods{
   grid-column:1/5;
   text-align:center;
@@ -175,7 +159,40 @@ const logos={
 "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-const scheduleList=[/* BEZE ZMĚNY — zůstává přesně stejné */];
+const scheduleList=[
+["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Motor České Budějovice (K)"],
+["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Geus Okna Kladno (P)","HC Motor České Budějovice (K)"],
+["HC Oceláři Třinec (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Bílí Tygři Liberec (K)"],
+["HC Motor České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Oceláři Třinec (K)"],
+["HC Dynamo Pardubice (K)","HC Sparta Praha (P)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Oceláři Třinec (K)"],
+["HC Motor České Budějovice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Bílí Tygři Liberec (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Dynamo Pardubice (K)"],
+["HC Dynamo Pardubice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Bílí Tygři Liberec (K)"],
+["HC Motor České Budějovice (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"],
+["HC Chemopetrol Litvínov (P)","HC Dynamo Pardubice (K)"],
+["HC Motor České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Sparta Praha (P)","HC Oceláři Třinec (K)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Bílí Tygři Liberec (K)"],
+["HC Oceláři Třinec (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Dynamo Pardubice (K)"],
+["HC Energie Karlovy Vary (P)","HC Motor České Budějovice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Geus Okna Kladno (P)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Motor České Budějovice (K)","HC Energie Karlovy Vary (P)"],
+["HC Oceláři Třinec (K)","HC Sparta Praha (P)"]
+];
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
