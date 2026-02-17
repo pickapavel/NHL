@@ -11,12 +11,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA ===== */
-
-.tableWrap{
- width:100%;
- overflow-x:auto;
-}
+.tableWrap{width:100%;overflow-x:auto;}
 
 table{
  width:100%;
@@ -31,8 +26,6 @@ td.team{text-align:left;}
 
 .logo{width:28px;height:28px;object-fit:contain;vertical-align:middle}
 
-/* ===== ROZPIS ===== */
-
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr;
@@ -44,13 +37,7 @@ td.team{text-align:left;}
  gap:8px;
 }
 
-.teamBox{
- display:flex;
- align-items:center;
- gap:10px;
- font-weight:bold;
-}
-
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
 .teamRight{justify-content:flex-end;}
 
 .scoreBox{
@@ -66,34 +53,18 @@ td.team{text-align:left;}
 .periods{text-align:center;font-size:14px}
 .otLabel{font-weight:bold;font-size:13px;margin-bottom:2px}
 
-/* ===== RESPONSIVE ===== */
-
 @media (max-width:900px){
-
  .matchRow{
   grid-template-columns:1fr 60px 60px 1fr;
   grid-template-rows:auto auto;
  }
-
- .periods{
-  grid-column:1/5;
-  text-align:center;
-  font-size:13px;
- }
+ .periods{grid-column:1/5;text-align:center;font-size:13px;}
 }
 
 @media (max-width:600px){
-
  .wrapper{padding:10px}
-
- .scoreBox{
-  font-size:18px;
-  padding:6px 0;
- }
-
- .teamBox{
-  font-size:14px;
- }
+ .scoreBox{font-size:18px;padding:6px 0;}
+ .teamBox{font-size:14px;}
 }
 </style>
 </head>
@@ -137,62 +108,40 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const teams=[
-"HC Sparta Praha (P)",
-"HC Bílí Tygři Liberec (K)",
-"HC Dynamo Pardubice (K)",
-"HC Chemopetrol Litvínov (P)",
-"HC Geus Okna Kladno (P)",
-"HC Motor České Budějovice (K)",
-"HC Energie Karlovy Vary (P)",
-"HC Oceláři Třinec (K)"
-];
+/* ===== TÝMY + LOGA (ZKRÁCENO) ===== */
 
-const logos={
-"HC Sparta Praha (P)":"sparta.png",
-"HC Bílí Tygři Liberec (K)":"liberec.png",
-"HC Dynamo Pardubice (K)":"pardubice.png",
-"HC Chemopetrol Litvínov (P)":"litvinov.png",
-"HC Geus Okna Kladno (P)":"kladno.png",
-"HC Motor České Budějovice (K)":"budejovice.png",
-"HC Energie Karlovy Vary (P)":"vary.png",
-"HC Oceláři Třinec (K)":"trinec.png"
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-const scheduleList=[
-["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
-["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
-["HC Sparta Praha (P)","HC Motor České Budějovice (K)"],
-["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"],
-["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Geus Okna Kladno (P)","HC Motor České Budějovice (K)"],
-["HC Oceláři Třinec (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Bílí Tygři Liberec (K)"],
-["HC Motor České Budějovice (K)","HC Geus Okna Kladno (P)"],
-["HC Chemopetrol Litvínov (P)","HC Oceláři Třinec (K)"],
-["HC Dynamo Pardubice (K)","HC Sparta Praha (P)"],
-["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
-["HC Geus Okna Kladno (P)","HC Oceláři Třinec (K)"],
-["HC Motor České Budějovice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Bílí Tygři Liberec (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Dynamo Pardubice (K)"],
-["HC Dynamo Pardubice (K)","HC Geus Okna Kladno (P)"],
-["HC Chemopetrol Litvínov (P)","HC Bílí Tygři Liberec (K)"],
-["HC Motor České Budějovice (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"],
-["HC Chemopetrol Litvínov (P)","HC Dynamo Pardubice (K)"],
-["HC Motor České Budějovice (K)","HC Geus Okna Kladno (P)"],
-["HC Sparta Praha (P)","HC Oceláři Třinec (K)"],
-["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
-["HC Geus Okna Kladno (P)","HC Bílí Tygři Liberec (K)"],
-["HC Oceláři Třinec (K)","HC Chemopetrol Litvínov (P)"],
-["HC Sparta Praha (P)","HC Dynamo Pardubice (K)"],
-["HC Energie Karlovy Vary (P)","HC Motor České Budějovice (K)"],
-["HC Bílí Tygři Liberec (K)","HC Geus Okna Kladno (P)"],
-["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Motor České Budějovice (K)","HC Energie Karlovy Vary (P)"],
-["HC Oceláři Třinec (K)","HC Sparta Praha (P)"]
+const teams=Object.keys(teamsData);
+const logos=teamsData;
+
+/* ===== ROZPIS (ZKRÁCENO) ===== */
+
+const scheduleIndex=[
+ [4,2],[1,3],[0,5],[6,7],
+ [2,3],[4,5],[7,0],[6,1],
+ [5,4],[3,7],[2,0],[1,6],
+ [4,7],[5,3],[1,0],[6,2],
+ [2,4],[3,1],[5,0],[6,7],
+ [3,2],[5,4],[0,7],[1,6],
+ [4,1],[7,3],[0,2],[6,5],
+ [1,4],[2,3],[5,6],[7,0]
 ];
+
+const scheduleList=scheduleIndex.map(
+ ([h,a])=>[teams[h],teams[a]]
+);
+
+/* ===== VÝPOČET SKÓRE ===== */
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
@@ -203,6 +152,8 @@ function calc(stats){
  if(stats[20]==="2") ag++;
  return {hg,ag};
 }
+
+/* ===== TABULKA ===== */
 
 function createEmpty(){
  let obj={};
