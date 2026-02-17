@@ -6,94 +6,34 @@
 <title>Extraliga - 2. sezóna</title>
 
 <style>
-
 *{box-sizing:border-box}
-
-body{
-    font-family:Arial;
-    margin:0;
-    background:#f2f2f2;
-}
-
-.wrapper{
-    max-width:1200px;
-    margin:auto;
-    padding:20px;
-    background:white;
-}
-
+body{font-family:Arial;margin:0;background:#f2f2f2;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
-
-.tableWrap{
-    overflow-x:auto;
-    margin-bottom:30px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:900px;
-}
-
-th,td{
-    border:1px solid #999;
-    padding:8px;
-    text-align:center;
-}
-
-th{
-    background:#2f9ec9;
-    color:white;
-}
-
+.tableWrap{overflow-x:auto;margin-bottom:30px;}
+table{width:100%;border-collapse:collapse;min-width:900px;}
+th,td{border:1px solid #999;padding:8px;text-align:center;}
+th{background:#2f9ec9;color:white;}
 td.team{text-align:left;}
-
-.logo{
-    width:28px;
-    height:28px;
-    object-fit:contain;
-    vertical-align:middle;
-}
-
-/* ROZPIS */
-
+.logo{width:28px;height:28px;object-fit:contain;vertical-align:middle;}
 .schedule{margin-top:20px;}
-
 .matchRow{
-    display:grid;
-    grid-template-columns:1fr 70px 220px 70px 1fr;
-    align-items:center;
-    background:#e9ecef;
-    padding:10px;
-    margin-bottom:6px;
-    border-radius:6px;
+display:grid;
+grid-template-columns:1fr 70px 220px 70px 1fr;
+align-items:center;
+background:#e9ecef;
+padding:10px;
+margin-bottom:6px;
+border-radius:6px;
 }
-
-.teamBox{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight:bold;
-}
-
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
 .teamRight{justify-content:flex-end;}
-
 .scoreBox{
-    background:#0b2a3c;
-    color:white;
-    font-size:22px;
-    font-weight:bold;
-    padding:8px 0;
-    border-radius:6px;
+background:#0b2a3c;color:white;font-size:22px;
+font-weight:bold;padding:8px 0;border-radius:6px;
 }
-
 .periods{text-align:center;font-size:14px;}
-
-.otLabel{
-    font-size:12px;
-    font-weight:bold;
-}
-
+.otLabel{font-size:12px;font-weight:bold;}
 </style>
 </head>
 
@@ -107,19 +47,10 @@ td.team{text-align:left;}
 <table id="standings">
 <thead>
 <tr>
-<th></th>
-<th>#</th>
-<th>Tým</th>
-<th>B</th>
-<th>Skóre</th>
-<th>+/-</th>
-<th>Z</th>
-<th>V</th>
-<th>P</th>
-<th>VP</th>
-<th>PP</th>
-<th>VSN</th>
-<th>PSN</th>
+<th></th><th>#</th><th>Tým</th><th>B</th>
+<th>Skóre</th><th>+/-</th>
+<th>Z</th><th>V</th><th>P</th>
+<th>VP</th><th>PP</th><th>VSN</th><th>PSN</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -137,13 +68,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, collection, query, orderBy, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig={
+const app=initializeApp({
  apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
  authDomain:"statistiky-6310a.firebaseapp.com",
  projectId:"statistiky-6310a"
-};
+});
 
-const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
 /* ===== TÝMY ===== */
@@ -170,8 +100,6 @@ const logos={
 "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-/* ===== CELÝ ROZPIS (VŽDY SE ZOBRAZÍ) ===== */
-
 const scheduleList=[
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
@@ -179,147 +107,124 @@ const scheduleList=[
 ["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"]
 ];
 
-/* ===== SCORE ===== */
-
 function calculateScore(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
-
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
-
- let type="normal";
- if(stats[20]==="1"){hg++;type="sn";}
- else if(stats[20]==="2"){ag++;type="sn";}
- else if((stats[9]==="11"||stats[19]==="11")&&Math.abs(hg-ag)===1) type="ot";
-
- return {hg,ag,type};
+let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+if(stats[9]==="11") ag++;
+if(stats[19]==="11") hg++;
+if(stats[20]==="1") hg++;
+if(stats[20]==="2") ag++;
+return {hg,ag};
 }
 
-/* ===== TABULKA ===== */
-
 function emptyStats(){
- return {B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
+return {B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
 }
 
 function buildTable(matches){
 
- let table={};
- teams.forEach(t=>table[t]=emptyStats());
+let table={};
+teams.forEach(t=>table[t]=emptyStats());
 
- matches.forEach(m=>{
-  if(!table[m.homeTeam]||!table[m.awayTeam]) return;
+matches.forEach(m=>{
+if(!m.stats) return;
 
-  const s=calculateScore(m.stats);
+const s=calculateScore(m.stats);
+const home=table[m.homeTeam];
+const away=table[m.awayTeam];
+if(!home||!away) return;
 
-  const home=table[m.homeTeam];
-  const away=table[m.awayTeam];
+home.Z++; away.Z++;
+home.GF+=s.hg; home.GA+=s.ag;
+away.GF+=s.ag; away.GA+=s.hg;
 
-  home.Z++; away.Z++;
-  home.GF+=s.hg; home.GA+=s.ag;
-  away.GF+=s.ag; away.GA+=s.hg;
+if(s.hg>s.ag){home.B+=3;home.V++;}
+else{away.B+=3;away.V++;}
+});
 
-  if(s.hg>s.ag){
-   if(s.type==="normal"){home.B+=3;home.V++;}
-   else if(s.type==="ot"){home.B+=2;home.VP++;away.B+=1;away.PP++;}
-   else {home.B+=2;home.VSN++;away.B+=1;away.PSN++;}
-  }else{
-   if(s.type==="normal"){away.B+=3;away.V++;}
-   else if(s.type==="ot"){away.B+=2;away.VP++;home.B+=1;home.PP++;}
-   else {away.B+=2;away.VSN++;home.B+=1;home.PSN++;}
-  }
- });
-
- return Object.entries(table)
- .map(([name,s])=>({name,...s,DIFF:s.GF-s.GA}))
- .sort((a,b)=>b.B-a.B||b.DIFF-a.DIFF||b.GF-a.GF);
+return Object.entries(table)
+.map(([name,s])=>({name,...s,DIFF:s.GF-s.GA}))
+.sort((a,b)=>b.B-a.B||b.DIFF-a.DIFF||b.GF-a.GF);
 }
 
 function renderTable(data){
-
- const tbody=document.querySelector("#standings tbody");
- tbody.innerHTML="";
-
- data.forEach((t,i)=>{
-  tbody.innerHTML+=`
-  <tr>
-   <td><img class="logo" src="./logos/${logos[t.name]}"></td>
-   <td>${i+1}</td>
-   <td class="team">${t.name}</td>
-   <td>${t.B}</td>
-   <td>${t.GF}:${t.GA}</td>
-   <td>${t.DIFF}</td>
-   <td>${t.Z}</td>
-   <td>${t.V}</td>
-   <td>${t.P}</td>
-   <td>${t.VP}</td>
-   <td>${t.PP}</td>
-   <td>${t.VSN}</td>
-   <td>${t.PSN}</td>
-  </tr>`;
- });
+const tbody=document.querySelector("#standings tbody");
+tbody.innerHTML="";
+data.forEach((t,i)=>{
+tbody.innerHTML+=`
+<tr>
+<td><img class="logo" src="./logos/${logos[t.name]}"></td>
+<td>${i+1}</td>
+<td class="team">${t.name}</td>
+<td>${t.B}</td>
+<td>${t.GF}:${t.GA}</td>
+<td>${t.DIFF}</td>
+<td>${t.Z}</td>
+<td>${t.V}</td>
+<td>${t.P}</td>
+<td>${t.VP}</td>
+<td>${t.PP}</td>
+<td>${t.VSN}</td>
+<td>${t.PSN}</td>
+</tr>`;
+});
 }
-
-/* ===== ROZPIS ===== */
 
 function renderSchedule(matches){
 
- const container=document.getElementById("schedule");
- container.innerHTML="";
+const container=document.getElementById("schedule");
+container.innerHTML="";
 
- scheduleList.forEach(pair=>{
+scheduleList.forEach(pair=>{
 
-  const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
+const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
 
-  let hg=0,ag=0,type="";
-
-  if(match){
-   const s=calculateScore(match.stats);
-   hg=s.hg;
-   ag=s.ag;
-   type=s.type;
-  }
-
-  container.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox">
-     <img class="logo" src="./logos/${logos[pair[0]]}">
-     ${pair[0]}
-   </div>
-
-   <div class="scoreBox">${hg}</div>
-
-   <div class="periods">
-     ${type==="ot"?"<div class='otLabel'>OT</div>":""}
-     ${type==="sn"?"<div class='otLabel'>SN</div>":""}
-     (0:0, 0:0, 0:0)
-   </div>
-
-   <div class="scoreBox">${ag}</div>
-
-   <div class="teamBox teamRight">
-     ${pair[1]}
-     <img class="logo" src="./logos/${logos[pair[1]]}">
-   </div>
-  </div>`;
- });
+let hg=0,ag=0;
+if(match){
+const s=calculateScore(match.stats);
+hg=s.hg; ag=s.ag;
 }
 
-/* ===== LOAD ===== */
+container.innerHTML+=`
+<div class="matchRow">
+<div class="teamBox">
+<img class="logo" src="./logos/${logos[pair[0]]}">
+${pair[0]}
+</div>
+<div class="scoreBox">${hg}</div>
+<div class="periods">(0:0, 0:0, 0:0)</div>
+<div class="scoreBox">${ag}</div>
+<div class="teamBox teamRight">
+${pair[1]}
+<img class="logo" src="./logos/${logos[pair[1]]}">
+</div>
+</div>`;
+});
+}
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
 onSnapshot(q,(snap)=>{
- let matches=[];
 
- snap.forEach(d=>{
-  const m=d.data();
-  if(m.season==="Sezóna 2" && m.category.startsWith("Extraliga"))
-   matches.push(m);
- });
+let matches=[];
 
- renderTable(buildTable(matches));
- renderSchedule(matches);
+snap.forEach(d=>{
+const m=d.data();
+
+/* ===== OPRAVA FILTRU ===== */
+if(
+m.category &&
+m.category.includes("Extraliga") &&
+m.season &&
+m.season.includes("Sezóna 2")
+){
+matches.push(m);
+}
+});
+
+renderTable(buildTable(matches));
+renderSchedule(matches);
+
 });
 
 </script>
