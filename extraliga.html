@@ -47,7 +47,9 @@ th{
     font-weight:bold;
 }
 
-td.team{text-align:left;}
+td.team{
+    text-align:left;
+}
 
 .logo{
     width:28px;
@@ -58,7 +60,9 @@ td.team{text-align:left;}
 
 /* ===== ROZPIS ===== */
 
-.schedule{margin-top:20px;}
+.schedule{
+    margin-top:20px;
+}
 
 .matchRow{
     display:grid;
@@ -77,7 +81,9 @@ td.team{text-align:left;}
     font-weight:bold;
 }
 
-.teamRight{justify-content:flex-end;}
+.teamRight{
+    justify-content:flex-end;
+}
 
 .scoreBox{
     background:#0b2a3c;
@@ -92,6 +98,7 @@ td.team{text-align:left;}
 .periods{
     text-align:center;
     font-size:14px;
+    color:#333;
 }
 
 .resultType{
@@ -187,6 +194,7 @@ td.team{text-align:left;}
 </div>
 
 <h2>Rozpis zápasů</h2>
+
 <div id="schedule" class="schedule"></div>
 
 </div>
@@ -226,7 +234,7 @@ function logoHtml(team){
     return `<img class="logo" src="./logos/${teamLogos[team]}">`;
 }
 
-const scheduleList=[ /* celý seznam zůstává beze změny */
+const scheduleList=[ /* celý seznam zůstává stejný */
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
 ["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
@@ -283,8 +291,7 @@ function calculateScore(stats){
         type="OT";
 
     return {
-        home,away,
-        type,
+        home,away,type,
         periods:`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
     };
 }
@@ -313,7 +320,62 @@ function renderSchedule(matches){
     });
 }
 
-/* ===== LOAD ===== */
+function updateStandings(matches){
+
+    const teams={};
+
+    document.querySelectorAll("#standings tbody tr").forEach(tr=>{
+        const t=tr.dataset.team;
+        teams[t]={team:t,pts:0,gf:0,ga:0,g:0,w:0,l:0,ow:0,ol:0,snw:0,snl:0};
+    });
+
+    matches.forEach(m=>{
+        const s=calculateScore(m.stats);
+        if(!s) return;
+
+        const H=teams[m.homeTeam];
+        const A=teams[m.awayTeam];
+
+        if(!H || !A) return;
+
+        H.g++; A.g++;
+        H.gf+=s.home; H.ga+=s.away;
+        A.gf+=s.away; A.ga+=s.home;
+
+        if(s.type===""){
+            if(s.home>s.away){H.pts+=3;H.w++;A.l++;}
+            else{A.pts+=3;A.w++;H.l++;}
+        }
+        else if(s.type==="OT"){
+            if(s.home>s.away){H.pts+=2;A.pts+=1;H.ow++;A.ol++;}
+            else{A.pts+=2;H.pts+=1;A.ow++;H.ol++;}
+        }
+        else{
+            if(s.home>s.away){H.pts+=2;A.pts+=1;H.snw++;A.snl++;}
+            else{A.pts+=2;H.pts+=1;A.snw++;H.snl++;}
+        }
+    });
+
+    const sorted=Object.values(teams).sort((a,b)=>b.pts-a.pts);
+
+    const tbody=document.querySelector("#standings tbody");
+
+    sorted.forEach((t,i)=>{
+        const tr=tbody.querySelector(`tr[data-team="${t.team}"]`);
+        const c=tr.children;
+        c[1].innerText=i+1;
+        c[3].innerText=t.pts;
+        c[4].innerText=`${t.gf}:${t.ga}`;
+        c[5].innerText=t.gf-t.ga;
+        c[6].innerText=t.g;
+        c[7].innerText=t.w;
+        c[8].innerText=t.l;
+        c[9].innerText=t.ow;
+        c[10].innerText=t.ol;
+        c[11].innerText=t.snw;
+        c[12].innerText=t.snl;
+    });
+}
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
@@ -328,6 +390,7 @@ onSnapshot(q,(snap)=>{
     });
 
     renderSchedule(matches);
+    updateStandings(matches);
 });
 
 </script>
