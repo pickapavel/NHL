@@ -161,7 +161,6 @@ td.team{
 </div>
 
 <h2>Rozpis zápasů</h2>
-
 <div id="schedule" class="schedule"></div>
 
 </div>
@@ -184,51 +183,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const teamLogos={
-"HC Geus Okna Kladno (P)":"kladno.png",
-"HC Chemopetrol Litvínov (P)":"litvinov.png",
-"HC Dynamo Pardubice (K)":"pardubice.png",
-"HC Sparta Praha (P)":"sparta.png",
-"HC Energie Karlovy Vary (P)":"vary.png",
-"HC Bílí Tygři Liberec (K)":"liberec.png",
-"HC Mountfield České Budějovice (K)":"budejovice.png",
-"HC Oceláři Třinec (K)":"trinec.png",
-"HC Znojemští Orli (K)":"znojmo.png"
-};
-
-const scheduleList=[
-["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
-["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
-["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
-["HC Znojemští Orli (K)","HC Energie Karlovy Vary (P)"],
-["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Geus Okna Kladno (P)","HC Mountfield České Budějovice (K)"],
-["HC Znojemští Orli (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Bílí Tygři Liberec (K)"],
-["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
-["HC Chemopetrol Litvínov (P)","HC Znojemští Orli (K)"],
-["HC Dynamo Pardubice (K)","HC Sparta Praha (P)"],
-["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
-["HC Geus Okna Kladno (P)","HC Znojemští Orli (K)"],
-["HC Mountfield České Budějovice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Bílí Tygři Liberec (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Dynamo Pardubice (K)"],
-["HC Dynamo Pardubice (K)","HC Geus Okna Kladno (P)"],
-["HC Chemopetrol Litvínov (P)","HC Bílí Tygři Liberec (K)"],
-["HC Mountfield České Budějovice (K)","HC Sparta Praha (P)"],
-["HC Energie Karlovy Vary (P)","HC Znojemští Orli (K)"],
-["HC Chemopetrol Litvínov (P)","HC Dynamo Pardubice (K)"],
-["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
-["HC Sparta Praha (P)","HC Znojemští Orli (K)"],
-["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
-["HC Geus Okna Kladno (P)","HC Bílí Tygři Liberec (K)"],
-["HC Znojemští Orli (K)","HC Chemopetrol Litvínov (P)"],
-["HC Sparta Praha (P)","HC Dynamo Pardubice (K)"],
-["HC Energie Karlovy Vary (P)","HC Mountfield České Budějovice (K)"],
-["HC Bílí Tygři Liberec (K)","HC Geus Okna Kladno (P)"],
-["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
-["HC Mountfield České Budějovice (K)","HC Energie Karlovy Vary (P)"],
-["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
+const teams=[
+"HC Geus Okna Kladno (P)",
+"HC Chemopetrol Litvínov (P)",
+"HC Dynamo Pardubice (K)",
+"HC Sparta Praha (P)",
+"HC Energie Karlovy Vary (P)",
+"HC Bílí Tygři Liberec (K)",
+"HC Mountfield České Budějovice (K)",
+"HC Oceláři Třinec (K)"
 ];
 
 function safeNum(v){
@@ -279,40 +242,120 @@ function calculateScore(stats){
     };
 }
 
-function logoHtml(team){
-    if(!teamLogos[team]) return "";
-    return `<img class="logo" src="./logos/${teamLogos[team]}">`;
+/* ===== TABULKA ===== */
+
+function updateStandings(matches){
+
+    const table={};
+
+    teams.forEach(t=>{
+        table[t]={
+            pts:0,gf:0,ga:0,z:0,
+            v:0,p:0,vp:0,pp:0,vsn:0,psn:0
+        };
+    });
+
+    matches.forEach(m=>{
+
+        const s=calculateScore(m.stats);
+        const home=m.homeTeam;
+        const away=m.awayTeam;
+
+        if(!table[home] || !table[away]) return;
+
+        table[home].z++;
+        table[away].z++;
+
+        table[home].gf+=s.homeGoals;
+        table[home].ga+=s.awayGoals;
+        table[away].gf+=s.awayGoals;
+        table[away].ga+=s.homeGoals;
+
+        if(s.homeGoals>s.awayGoals){
+
+            if(s.resultType===""){
+                table[home].pts+=3;
+                table[home].v++;
+                table[away].p++;
+            }
+            else if(s.resultType==="OT"){
+                table[home].pts+=2;
+                table[away].pts+=1;
+                table[home].vp++;
+                table[away].pp++;
+            }
+            else{
+                table[home].pts+=2;
+                table[away].pts+=1;
+                table[home].vsn++;
+                table[away].psn++;
+            }
+
+        }else{
+
+            if(s.resultType===""){
+                table[away].pts+=3;
+                table[away].v++;
+                table[home].p++;
+            }
+            else if(s.resultType==="OT"){
+                table[away].pts+=2;
+                table[home].pts+=1;
+                table[away].vp++;
+                table[home].pp++;
+            }
+            else{
+                table[away].pts+=2;
+                table[home].pts+=1;
+                table[away].vsn++;
+                table[home].psn++;
+            }
+        }
+
+    });
+
+    document.querySelectorAll("#standings tbody tr").forEach(tr=>{
+
+        const team=tr.dataset.team;
+        const d=table[team];
+
+        if(!d) return;
+
+        tr.children[3].textContent=d.pts;
+        tr.children[4].textContent=`${d.gf}:${d.ga}`;
+        tr.children[5].textContent=d.gf-d.ga;
+        tr.children[6].textContent=d.z;
+        tr.children[7].textContent=d.v;
+        tr.children[8].textContent=d.p;
+        tr.children[9].textContent=d.vp;
+        tr.children[10].textContent=d.pp;
+        tr.children[11].textContent=d.vsn;
+        tr.children[12].textContent=d.psn;
+
+    });
+
 }
+
+/* ===== ROZPIS ===== */
 
 function renderSchedule(matches){
 
     const container=document.getElementById("schedule");
     container.innerHTML="";
 
-    scheduleList.forEach(pair=>{
-
-        const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
-
-        let hg=0,ag=0,type="",periods="(0:0, 0:0, 0:0)";
-
-        if(match){
-            const s=calculateScore(match.stats);
-            hg=s.homeGoals;
-            ag=s.awayGoals;
-            type=s.resultType;
-            periods=s.periods;
-        }
+    matches.forEach(m=>{
+        const s=calculateScore(m.stats);
 
         container.innerHTML+=`
         <div class="matchRow">
-            <div class="teamBox">${logoHtml(pair[0])}${pair[0]}</div>
-            <div class="scoreBox">${hg}</div>
+            <div class="teamBox">${m.homeTeam}</div>
+            <div class="scoreBox">${s.homeGoals}</div>
             <div>
-                <div class="resultType">${type}</div>
-                <div class="periods">${periods}</div>
+                <div class="resultType">${s.resultType}</div>
+                <div class="periods">${s.periods}</div>
             </div>
-            <div class="scoreBox">${ag}</div>
-            <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
+            <div class="scoreBox">${s.awayGoals}</div>
+            <div class="teamBox teamRight">${m.awayTeam}</div>
         </div>`;
     });
 }
@@ -331,13 +374,15 @@ function loadMatches(){
             if(
                 m.category &&
                 m.category.startsWith("Extraliga") &&
-                m.season === "Sezóna 2"
+                m.season==="Sezóna 2"
             ){
                 extraligaMatches.push(m);
             }
         });
 
         renderSchedule(extraligaMatches);
+        updateStandings(extraligaMatches);
+
     });
 }
 
