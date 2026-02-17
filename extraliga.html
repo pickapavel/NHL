@@ -118,8 +118,6 @@ td.team{
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<!-- ===== TABULKA ===== -->
-
 <div class="tableWrap">
 <table id="standings">
 <thead>
@@ -233,10 +231,25 @@ const scheduleList=[
 ["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
+function safeNum(v){
+    const n=Number(v);
+    return isNaN(n)?0:n;
+}
+
 function calculateScore(stats){
 
-    let awayGoals=Number(stats[6])+Number(stats[7])+Number(stats[8]);
-    let homeGoals=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+    if(!stats) return {homeGoals:0,awayGoals:0,resultType:"",periods:"(0:0, 0:0, 0:0)"};
+
+    let a1=safeNum(stats[6]);
+    let a2=safeNum(stats[7]);
+    let a3=safeNum(stats[8]);
+
+    let h1=safeNum(stats[16]);
+    let h2=safeNum(stats[17]);
+    let h3=safeNum(stats[18]);
+
+    let awayGoals=a1+a2+a3;
+    let homeGoals=h1+h2+h3;
 
     let resultType="";
 
@@ -258,7 +271,12 @@ function calculateScore(stats){
         resultType="OT";
     }
 
-    return {homeGoals,awayGoals,resultType};
+    return {
+        homeGoals,
+        awayGoals,
+        resultType,
+        periods:`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
+    };
 }
 
 function logoHtml(team){
@@ -275,13 +293,14 @@ function renderSchedule(matches){
 
         const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
 
-        let hg=0,ag=0,type="";
+        let hg=0,ag=0,type="",periods="(0:0, 0:0, 0:0)";
 
         if(match){
             const s=calculateScore(match.stats);
             hg=s.homeGoals;
             ag=s.awayGoals;
             type=s.resultType;
+            periods=s.periods;
         }
 
         container.innerHTML+=`
@@ -290,7 +309,7 @@ function renderSchedule(matches){
             <div class="scoreBox">${hg}</div>
             <div>
                 <div class="resultType">${type}</div>
-                <div class="periods">(0:0, 0:0, 0:0)</div>
+                <div class="periods">${periods}</div>
             </div>
             <div class="scoreBox">${ag}</div>
             <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
