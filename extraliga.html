@@ -146,7 +146,7 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== TÝMY (STEJNÉ JAKO VE STATISTIKY.HTML) ===== */
+/* ===== TÝMY ===== */
 
 const teams=[
 "HC Sparta Praha (P)",
@@ -170,11 +170,16 @@ const logos={
 "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-/* ===== TABULKA ===== */
+/* ===== CELÝ ROZPIS (VŽDY SE ZOBRAZÍ) ===== */
 
-function emptyStats(){
- return {B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
-}
+const scheduleList=[
+["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Motor České Budějovice (K)"],
+["HC Energie Karlovy Vary (P)","HC Oceláři Třinec (K)"]
+];
+
+/* ===== SCORE ===== */
 
 function calculateScore(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
@@ -191,13 +196,18 @@ function calculateScore(stats){
  return {hg,ag,type};
 }
 
+/* ===== TABULKA ===== */
+
+function emptyStats(){
+ return {B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
+}
+
 function buildTable(matches){
 
  let table={};
  teams.forEach(t=>table[t]=emptyStats());
 
  matches.forEach(m=>{
-
   if(!table[m.homeTeam]||!table[m.awayTeam]) return;
 
   const s=calculateScore(m.stats);
@@ -253,22 +263,44 @@ function renderTable(data){
 /* ===== ROZPIS ===== */
 
 function renderSchedule(matches){
- const c=document.getElementById("schedule");
- c.innerHTML="";
 
- matches.forEach(m=>{
-  const s=calculateScore(m.stats);
+ const container=document.getElementById("schedule");
+ container.innerHTML="";
 
-  c.innerHTML+=`
+ scheduleList.forEach(pair=>{
+
+  const match=matches.find(m=>m.homeTeam===pair[0] && m.awayTeam===pair[1]);
+
+  let hg=0,ag=0,type="";
+
+  if(match){
+   const s=calculateScore(match.stats);
+   hg=s.hg;
+   ag=s.ag;
+   type=s.type;
+  }
+
+  container.innerHTML+=`
   <div class="matchRow">
-   <div class="teamBox"><img class="logo" src="./logos/${logos[m.homeTeam]}">${m.homeTeam}</div>
-   <div class="scoreBox">${s.hg}</div>
-   <div class="periods">
-     ${s.type==="ot"?"<div class='otLabel'>OT</div>":""}
-     ${s.type==="sn"?"<div class='otLabel'>SN</div>":""}
+   <div class="teamBox">
+     <img class="logo" src="./logos/${logos[pair[0]]}">
+     ${pair[0]}
    </div>
-   <div class="scoreBox">${s.ag}</div>
-   <div class="teamBox teamRight">${m.awayTeam}<img class="logo" src="./logos/${logos[m.awayTeam]}"></div>
+
+   <div class="scoreBox">${hg}</div>
+
+   <div class="periods">
+     ${type==="ot"?"<div class='otLabel'>OT</div>":""}
+     ${type==="sn"?"<div class='otLabel'>SN</div>":""}
+     (0:0, 0:0, 0:0)
+   </div>
+
+   <div class="scoreBox">${ag}</div>
+
+   <div class="teamBox teamRight">
+     ${pair[1]}
+     <img class="logo" src="./logos/${logos[pair[1]]}">
+   </div>
   </div>`;
  });
 }
@@ -279,6 +311,7 @@ const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
 onSnapshot(q,(snap)=>{
  let matches=[];
+
  snap.forEach(d=>{
   const m=d.data();
   if(m.season==="Sezóna 2" && m.category.startsWith("Extraliga"))
