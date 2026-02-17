@@ -110,10 +110,10 @@ td.team{
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<!-- ===== TABULKA EXTRALIGY ===== -->
+<!-- ===== TABULKA ===== -->
 
 <div class="tableWrap">
-<table>
+<table id="standings">
 <thead>
 <tr>
 <th></th>
@@ -131,17 +131,16 @@ td.team{
 <th>PSN</th>
 </tr>
 </thead>
-
 <tbody>
 
-<tr><td><img class="logo" src="./logos/kladno.png"></td><td>1</td><td class="team">HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/litvinov.png"></td><td>2</td><td class="team">HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/pardubice.png"></td><td>3</td><td class="team">HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/sparta.png"></td><td>4</td><td class="team">HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/vary.png"></td><td>5</td><td class="team">HC Energie Karlovy Vary</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/liberec.png"></td><td>6</td><td class="team">HC Bílí Tygři Liberec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/budejovice.png"></td><td>7</td><td class="team">HC Mountfield České Budějovice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><img class="logo" src="./logos/trinec.png"></td><td>8</td><td class="team">HC Oceláři Třinec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Geus Okna Kladno"><td><img class="logo" src="./logos/kladno.png"></td><td>1</td><td class="team">HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Chemopetrol Litvínov"><td><img class="logo" src="./logos/litvinov.png"></td><td>2</td><td class="team">HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Dynamo Pardubice"><td><img class="logo" src="./logos/pardubice.png"></td><td>3</td><td class="team">HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Sparta Praha"><td><img class="logo" src="./logos/sparta.png"></td><td>4</td><td class="team">HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Energie Karlovy Vary"><td><img class="logo" src="./logos/vary.png"></td><td>5</td><td class="team">HC Energie Karlovy Vary</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Bílí Tygři Liberec"><td><img class="logo" src="./logos/liberec.png"></td><td>6</td><td class="team">HC Bílí Tygři Liberec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Mountfield České Budějovice"><td><img class="logo" src="./logos/budejovice.png"></td><td>7</td><td class="team">HC Mountfield České Budějovice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Oceláři Třinec"><td><img class="logo" src="./logos/trinec.png"></td><td>8</td><td class="team">HC Oceláři Třinec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 
 </tbody>
 </table>
@@ -149,299 +148,161 @@ td.team{
 
 <h2>Rozpis zápasů</h2>
 
-<div class="schedule">
-
-<!-- 1 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/kladno.png"> HC Geus Okna Kladno</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Dynamo Pardubice <img class="logo" src="./logos/pardubice.png"></div>
-</div>
-
-<!-- 2 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/liberec.png"> HC Bílí Tygři Liberec</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Chemopetrol Litvínov <img class="logo" src="./logos/litvinov.png"></div>
-</div>
-
-<!-- 3 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/sparta.png"> HC Sparta Praha</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Mountfield České Budějovice <img class="logo" src="./logos/budejovice.png"></div>
-</div>
-
-<!-- 4 -->
-<div class="matchRow">
-<div class="teamBox">HC Znojemští Orli</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Energie Karlovy Vary <img class="logo" src="./logos/vary.png"></div>
-</div>
-
-<!-- 5 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/pardubice.png"> HC Dynamo Pardubice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Chemopetrol Litvínov <img class="logo" src="./logos/litvinov.png"></div>
-</div>
-
-<!-- 6 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/kladno.png"> HC Geus Okna Kladno</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Mountfield České Budějovice <img class="logo" src="./logos/budejovice.png"></div>
-</div>
-
-<!-- 7 -->
-<div class="matchRow">
-<div class="teamBox">HC Znojemští Orli</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Sparta Praha <img class="logo" src="./logos/sparta.png"></div>
-</div>
-
-<!-- 8 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/vary.png"> HC Energie Karlovy Vary</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Bílí Tygři Liberec <img class="logo" src="./logos/liberec.png"></div>
-</div>
-
-<!-- 9 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/budejovice.png"> HC Mountfield České Budějovice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Geus Okna Kladno <img class="logo" src="./logos/kladno.png"></div>
-</div>
-
-<!-- 10 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/litvinov.png"> HC Chemopetrol Litvínov</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Znojemští Orli</div>
-</div>
-
-<!-- 11 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/pardubice.png"> HC Dynamo Pardubice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Sparta Praha <img class="logo" src="./logos/sparta.png"></div>
-</div>
-
-<!-- 12 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/liberec.png"> HC Bílí Tygři Liberec</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Energie Karlovy Vary <img class="logo" src="./logos/vary.png"></div>
-</div>
-
-<!-- 13 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/kladno.png"> HC Geus Okna Kladno</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Znojemští Orli</div>
-</div>
-
-<!-- 14 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/budejovice.png"> HC Mountfield České Budějovice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Chemopetrol Litvínov <img class="logo" src="./logos/litvinov.png"></div>
-</div>
-
-<!-- 15 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/liberec.png"> HC Bílí Tygři Liberec</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Sparta Praha <img class="logo" src="./logos/sparta.png"></div>
-</div>
-
-<!-- 16 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/vary.png"> HC Energie Karlovy Vary</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Dynamo Pardubice <img class="logo" src="./logos/pardubice.png"></div>
-</div>
-
-<!-- 17 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/pardubice.png"> HC Dynamo Pardubice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Geus Okna Kladno <img class="logo" src="./logos/kladno.png"></div>
-</div>
-
-<!-- 18 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/litvinov.png"> HC Chemopetrol Litvínov</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Bílí Tygři Liberec <img class="logo" src="./logos/liberec.png"></div>
-</div>
-
-<!-- 19 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/budejovice.png"> HC Mountfield České Budějovice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Sparta Praha <img class="logo" src="./logos/sparta.png"></div>
-</div>
-
-<!-- 20 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/vary.png"> HC Energie Karlovy Vary</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Znojemští Orli</div>
-</div>
-
-<!-- 21 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/litvinov.png"> HC Chemopetrol Litvínov</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Dynamo Pardubice <img class="logo" src="./logos/pardubice.png"></div>
-</div>
-
-<!-- 22 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/budejovice.png"> HC Mountfield České Budějovice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Geus Okna Kladno <img class="logo" src="./logos/kladno.png"></div>
-</div>
-
-<!-- 23 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/sparta.png"> HC Sparta Praha</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Znojemští Orli</div>
-</div>
-
-<!-- 24 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/liberec.png"> HC Bílí Tygři Liberec</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Energie Karlovy Vary <img class="logo" src="./logos/vary.png"></div>
-</div>
-
-<!-- 25 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/kladno.png"> HC Geus Okna Kladno</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Bílí Tygři Liberec <img class="logo" src="./logos/liberec.png"></div>
-</div>
-
-<!-- 26 -->
-<div class="matchRow">
-<div class="teamBox">HC Znojemští Orli</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Chemopetrol Litvínov <img class="logo" src="./logos/litvinov.png"></div>
-</div>
-
-<!-- 27 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/sparta.png"> HC Sparta Praha</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Dynamo Pardubice <img class="logo" src="./logos/pardubice.png"></div>
-</div>
-
-<!-- 28 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/vary.png"> HC Energie Karlovy Vary</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Mountfield České Budějovice <img class="logo" src="./logos/budejovice.png"></div>
-</div>
-
-<!-- 29 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/liberec.png"> HC Bílí Tygři Liberec</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Geus Okna Kladno <img class="logo" src="./logos/kladno.png"></div>
-</div>
-
-<!-- 30 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/pardubice.png"> HC Dynamo Pardubice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Chemopetrol Litvínov <img class="logo" src="./logos/litvinov.png"></div>
-</div>
-
-<!-- 31 -->
-<div class="matchRow">
-<div class="teamBox"><img class="logo" src="./logos/budejovice.png"> HC Mountfield České Budějovice</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Energie Karlovy Vary <img class="logo" src="./logos/vary.png"></div>
-</div>
-
-<!-- 32 -->
-<div class="matchRow">
-<div class="teamBox">HC Znojemští Orli</div>
-<div class="scoreBox">0</div>
-<div class="periods">(0:0, 0:0, 0:0)</div>
-<div class="scoreBox">0</div>
-<div class="teamBox teamRight">HC Sparta Praha <img class="logo" src="./logos/sparta.png"></div>
-</div>
+<div id="schedule" class="schedule"></div>
 
 </div>
 
-</div>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+  authDomain: "statistiky-6310a.firebaseapp.com",
+  projectId: "statistiky-6310a",
+  storageBucket: "statistiky-6310a.appspot.com",
+  messagingSenderId: "1023222901562",
+  appId: "1:1023222901562:web:522ee763e27aa08a8b7e03"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const seasonName="Sezóna 2";
+
+const teams=[
+"HC Geus Okna Kladno",
+"HC Chemopetrol Litvínov",
+"HC Dynamo Pardubice",
+"HC Sparta Praha",
+"HC Energie Karlovy Vary",
+"HC Bílí Tygři Liberec",
+"HC Mountfield České Budějovice",
+"HC Oceláři Třinec"
+];
+
+function calculateScore(stats){
+
+    let awayGoals =
+        Number(stats[6])+Number(stats[7])+Number(stats[8]);
+
+    let homeGoals =
+        Number(stats[16])+Number(stats[17])+Number(stats[18]);
+
+    if(stats[9]==="11") awayGoals++;
+    if(stats[19]==="11") homeGoals++;
+
+    let type="normal";
+
+    if(stats[20]==="1"){
+        homeGoals++;
+        type="sn";
+    }
+    else if(stats[20]==="2"){
+        awayGoals++;
+        type="sn";
+    }
+    else if(
+        (stats[9]==="11" || stats[19]==="11") &&
+        Math.abs(homeGoals-awayGoals)===1
+    ){
+        type="ot";
+    }
+
+    return {homeGoals,awayGoals,type};
+}
+
+function emptyStats(){
+    return {
+        B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0
+    };
+}
+
+function updateStandings(matches){
+
+    const table={};
+    teams.forEach(t=>table[t]=emptyStats());
+
+    matches.forEach(m=>{
+        const s=calculateScore(m.stats);
+        const h=table[m.homeTeam];
+        const a=table[m.awayTeam];
+
+        h.Z++; a.Z++;
+        h.GF+=s.homeGoals; h.GA+=s.awayGoals;
+        a.GF+=s.awayGoals; a.GA+=s.homeGoals;
+
+        if(s.type==="normal"){
+            if(s.homeGoals>s.awayGoals){
+                h.V++; h.B+=3; a.P++;
+            }else{
+                a.V++; a.B+=3; h.P++;
+            }
+        }
+        else if(s.type==="ot"){
+            if(s.homeGoals>s.awayGoals){
+                h.VP++; h.B+=2; a.PP++; a.B+=1;
+            }else{
+                a.VP++; a.B+=2; h.PP++; h.B+=1;
+            }
+        }
+        else{
+            if(s.homeGoals>s.awayGoals){
+                h.VSN++; h.B+=2; a.PSN++; a.B+=1;
+            }else{
+                a.VSN++; a.B+=2; h.PSN++; h.B+=1;
+            }
+        }
+    });
+
+    const arr=Object.entries(table)
+        .map(([team,data])=>({team,...data}))
+        .sort((a,b)=>b.B-a.B || (b.GF-b.GA)-(a.GF-a.GA));
+
+    const rows=document.querySelectorAll("#standings tbody tr");
+
+    arr.forEach((t,i)=>{
+        const row=[...rows].find(r=>r.dataset.team===t.team);
+        if(!row)return;
+
+        const cells=row.children;
+        cells[1].innerText=i+1;
+        cells[3].innerText=t.B;
+        cells[4].innerText=t.GF+":"+t.GA;
+        cells[5].innerText=t.GF-t.GA;
+        cells[6].innerText=t.Z;
+        cells[7].innerText=t.V;
+        cells[8].innerText=t.P;
+        cells[9].innerText=t.VP;
+        cells[10].innerText=t.PP;
+        cells[11].innerText=t.VSN;
+        cells[12].innerText=t.PSN;
+    });
+}
+
+function loadMatches(){
+
+    const q=query(collection(db,"zapasy"),orderBy("created","asc"));
+
+    onSnapshot(q,(snapshot)=>{
+        let extraligaMatches=[];
+
+        snapshot.forEach(docSnap=>{
+            const m=docSnap.data();
+            if(m.category.startsWith("Extraliga") && m.season===seasonName){
+                extraligaMatches.push(m);
+            }
+        });
+
+        updateStandings(extraligaMatches);
+    });
+}
+
+loadMatches();
+
+</script>
 
 </body>
 </html>
