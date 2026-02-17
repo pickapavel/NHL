@@ -139,11 +139,9 @@ function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
  let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
- // gól v prodloužení
  if(stats[9]==="11") ag++;
  if(stats[19]==="11") hg++;
 
- // nájezdy
  if(stats[20]==="1") hg++;
  if(stats[20]==="2") ag++;
 
@@ -223,11 +221,22 @@ function renderSchedule(matches){
 
  scheduleList.forEach(p=>{
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
+
   let hg=0,ag=0,label="";
+  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
 
   if(m){
    const s=calc(m.stats);
    hg=s.hg; ag=s.ag;
+
+   a1=Number(m.stats[6])||0;
+   a2=Number(m.stats[7])||0;
+   a3=Number(m.stats[8])||0;
+
+   h1=Number(m.stats[16])||0;
+   h2=Number(m.stats[17])||0;
+   h3=Number(m.stats[18])||0;
+
    if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
    else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
   }
@@ -238,7 +247,7 @@ function renderSchedule(matches){
    <div class="scoreBox">${hg}</div>
    <div class="periods">
      <div class="otLabel">${label}</div>
-     (0:0, 0:0, 0:0)
+     (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
    </div>
    <div class="scoreBox">${ag}</div>
    <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
