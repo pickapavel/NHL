@@ -171,7 +171,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const seasonName="Sezóna 2";
+const teamLogos={
+"HC Geus Okna Kladno":"kladno.png",
+"HC Chemopetrol Litvínov":"litvinov.png",
+"HC Dynamo Pardubice":"pardubice.png",
+"HC Sparta Praha":"sparta.png",
+"HC Energie Karlovy Vary":"vary.png",
+"HC Bílí Tygři Liberec":"liberec.png",
+"HC Mountfield České Budějovice":"budejovice.png",
+"HC Oceláři Třinec":"trinec.png",
+"HC Znojemští Orli":"znojmo.png"
+};
 
 const scheduleList=[
 ["HC Geus Okna Kladno","HC Dynamo Pardubice"],
@@ -218,6 +228,11 @@ function calculateScore(stats){
     return {homeGoals,awayGoals};
 }
 
+function logoHtml(team){
+    if(!teamLogos[team]) return "";
+    return `<img class="logo" src="./logos/${teamLogos[team]}">`;
+}
+
 function renderSchedule(matches){
 
     const container=document.getElementById("schedule");
@@ -236,11 +251,11 @@ function renderSchedule(matches){
 
         container.innerHTML+=`
         <div class="matchRow">
-            <div class="teamBox">${pair[0]}</div>
+            <div class="teamBox">${logoHtml(pair[0])}${pair[0]}</div>
             <div class="scoreBox">${hg}</div>
             <div class="periods">(0:0, 0:0, 0:0)</div>
             <div class="scoreBox">${ag}</div>
-            <div class="teamBox teamRight">${pair[1]}</div>
+            <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
         </div>`;
     });
 }
@@ -254,7 +269,7 @@ function loadMatches(){
 
         snapshot.forEach(docSnap=>{
             const m=docSnap.data();
-            if(m.category.startsWith("Extraliga") && m.season===seasonName){
+            if(m.category && m.category.startsWith("Extraliga")){
                 extraligaMatches.push(m);
             }
         });
