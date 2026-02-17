@@ -43,10 +43,9 @@ th,td{
 th{
     background:#2f9ec9;
     color:white;
-    font-weight:bold;
 }
 
-td.team{text-align:left;}
+td.team{text-align:left}
 
 .logo{
     width:28px;
@@ -61,7 +60,7 @@ td.team{text-align:left;}
 
 .matchRow{
     display:grid;
-    grid-template-columns:1fr 70px 220px 70px 1fr;
+    grid-template-columns: 1fr 70px 220px 70px 1fr;
     align-items:center;
     background:#e9ecef;
     padding:10px;
@@ -93,11 +92,9 @@ td.team{text-align:left;}
     font-size:14px;
 }
 
-.resultType{
-    text-align:center;
+.otLabel{
     font-weight:bold;
     font-size:13px;
-    height:16px;
 }
 </style>
 </head>
@@ -139,28 +136,22 @@ td.team{text-align:left;}
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot } 
+import { getFirestore, collection, query, orderBy, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const app = initializeApp({
+const firebaseConfig={
  apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
  authDomain:"statistiky-6310a.firebaseapp.com",
- projectId:"statistiky-6310a"
-});
+ projectId:"statistiky-6310a",
+ storageBucket:"statistiky-6310a.appspot.com",
+ messagingSenderId:"1023222901562",
+ appId:"1:1023222901562:web:522ee763e27aa08a8b7e03"
+};
+
+const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== TÝMY ===== */
-
-const teams=[
-"HC Geus Okna Kladno (P)",
-"HC Chemopetrol Litvínov (P)",
-"HC Dynamo Pardubice (K)",
-"HC Sparta Praha (P)",
-"HC Energie Karlovy Vary (P)",
-"HC Bílí Tygři Liberec (K)",
-"HC Mountfield České Budějovice (K)",
-"HC Znojemští Orli (K)"
-];
+/* ===== LOGA ===== */
 
 const teamLogos={
 "HC Geus Okna Kladno (P)":"kladno.png",
@@ -173,34 +164,11 @@ const teamLogos={
 "HC Znojemští Orli (K)":"znojmo.png"
 };
 
-function logoHtml(team){
- return `<img class="logo" src="./logos/${teamLogos[team]}">`;
-}
-
-function num(v){ return isNaN(Number(v))?0:Number(v); }
-
-/* ===== VÝPOČET SKÓRE ===== */
-
-function calculateScore(stats){
- if(!stats) return null;
-
- let away=num(stats[6])+num(stats[7])+num(stats[8]);
- let home=num(stats[16])+num(stats[17])+num(stats[18]);
- let type="";
-
- if(stats[9]==="11") away++;
- if(stats[19]==="11") home++;
-
- if(stats[20]==="1"){ home++; type="SN"; }
- else if(stats[20]==="2"){ away++; type="SN"; }
- else if(Math.abs(home-away)===1 && (stats[9]==="11"||stats[19]==="11")) type="OT";
-
- return {home,away,type};
-}
+const teams=Object.keys(teamLogos);
 
 /* ===== ROZPIS ===== */
 
-const scheduleList=[ /* všech 32 zápasů */
+const scheduleList=[
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
 ["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
@@ -235,117 +203,183 @@ const scheduleList=[ /* všech 32 zápasů */
 ["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
+/* ===== SAFE NUMBER ===== */
+
+function num(v){
+    const n=Number(v);
+    return isNaN(n)?0:n;
+}
+
+/* ===== SCORE ===== */
+
+function calculateScore(stats){
+
+    if(!stats) return null;
+
+    let away=
+        num(stats[6])+num(stats[7])+num(stats[8]);
+
+    let home=
+        num(stats[16])+num(stats[17])+num(stats[18]);
+
+    if(stats[9]==="11") away++;
+    if(stats[19]==="11") home++;
+
+    let type="normal";
+
+    if(stats[20]==="1"){ home++; type="sn"; }
+    if(stats[20]==="2"){ away++; type="sn"; }
+
+    if(type==="normal" &&
+      (stats[9]==="11"||stats[19]==="11"))
+        type="ot";
+
+    return{
+        homeGoals:home,
+        awayGoals:away,
+        periods:`(${num(stats[16])}:${num(stats[6])}, ${num(stats[17])}:${num(stats[7])}, ${num(stats[18])}:${num(stats[8])})`,
+        type
+    };
+}
+
 /* ===== TABULKA ===== */
 
-function renderTable(matches){
+function createEmptyStats(){
+    return {
+        points:0, gf:0, ga:0,
+        Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0
+    };
+}
 
- let stats={};
+function buildStandings(matches){
 
- teams.forEach(t=>{
-  stats[t]={team:t,B:0,GF:0,GA:0,Z:0,V:0,P:0,VP:0,PP:0,VSN:0,PSN:0};
- });
+    let table={};
+    teams.forEach(t=>table[t]=createEmptyStats());
 
- matches.forEach(m=>{
-  const s=calculateScore(m.stats);
-  if(!s) return;
+    matches.forEach(m=>{
+        const s=calculateScore(m.stats);
+        if(!s) return;
 
-  const H=stats[m.homeTeam];
-  const A=stats[m.awayTeam];
+        const h=table[m.homeTeam];
+        const a=table[m.awayTeam];
 
-  H.Z++; A.Z++;
-  H.GF+=s.home; H.GA+=s.away;
-  A.GF+=s.away; A.GA+=s.home;
+        h.Z++; a.Z++;
 
-  if(s.type===""){
-     if(s.home>s.away){ H.B+=3; H.V++; }
-     else{ A.B+=3; A.V++; }
-  }
-  else if(s.type==="OT"){
-     if(s.home>s.away){ H.B+=2; A.B+=1; H.VP++; A.PP++; }
-     else{ A.B+=2; H.B+=1; A.VP++; H.PP++; }
-  }
-  else{
-     if(s.home>s.away){ H.B+=2; A.B+=1; H.VSN++; A.PSN++; }
-     else{ A.B+=2; H.B+=1; A.VSN++; H.PSN++; }
-  }
- });
+        h.gf+=s.homeGoals;
+        h.ga+=s.awayGoals;
+        a.gf+=s.awayGoals;
+        a.ga+=s.homeGoals;
 
- let arr=Object.values(stats);
- arr.sort((a,b)=>{
-  if(b.B!==a.B) return b.B-a.B;
-  return (b.GF-b.GA)-(a.GF-a.GA);
- });
+        if(s.type==="normal"){
+            if(s.homeGoals>s.awayGoals){ h.points+=3; h.V++; a.P++; }
+            else{ a.points+=3; a.V++; h.P++; }
+        }
+        else if(s.type==="ot"){
+            if(s.homeGoals>s.awayGoals){ h.points+=2; h.VP++; a.points+=1; a.PP++; }
+            else{ a.points+=2; a.VP++; h.points+=1; h.PP++; }
+        }
+        else{
+            if(s.homeGoals>s.awayGoals){ h.points+=2; h.VSN++; a.points+=1; a.PSN++; }
+            else{ a.points+=2; a.VSN++; h.points+=1; h.PSN++; }
+        }
+    });
 
- const tbody=document.querySelector("#standings tbody");
- tbody.innerHTML="";
+    return Object.entries(table)
+        .sort((a,b)=>{
+            if(b[1].points!==a[1].points)
+                return b[1].points-a[1].points;
+            return (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga);
+        });
+}
 
- arr.forEach((t,i)=>{
-  tbody.innerHTML+=`
-  <tr>
-   <td>${logoHtml(t.team)}</td>
-   <td>${i+1}</td>
-   <td class="team">${t.team}</td>
-   <td>${t.B}</td>
-   <td>${t.GF}:${t.GA}</td>
-   <td>${t.GF-t.GA}</td>
-   <td>${t.Z}</td>
-   <td>${t.V}</td>
-   <td>${t.P}</td>
-   <td>${t.VP}</td>
-   <td>${t.PP}</td>
-   <td>${t.VSN}</td>
-   <td>${t.PSN}</td>
-  </tr>`;
- });
+function renderStandings(matches){
+
+    const tbody=document.querySelector("#standings tbody");
+    tbody.innerHTML="";
+
+    const sorted=buildStandings(matches);
+
+    sorted.forEach((row,i)=>{
+        const team=row[0];
+        const s=row[1];
+
+        tbody.innerHTML+=`
+        <tr>
+        <td><img class="logo" src="./logos/${teamLogos[team]}"></td>
+        <td>${i+1}</td>
+        <td class="team">${team}</td>
+        <td>${s.points}</td>
+        <td>${s.gf}:${s.ga}</td>
+        <td>${s.gf-s.ga}</td>
+        <td>${s.Z}</td>
+        <td>${s.V}</td>
+        <td>${s.P}</td>
+        <td>${s.VP}</td>
+        <td>${s.PP}</td>
+        <td>${s.VSN}</td>
+        <td>${s.PSN}</td>
+        </tr>`;
+    });
 }
 
 /* ===== ROZPIS ===== */
 
-function renderSchedule(matches){
-
- const container=document.getElementById("schedule");
- container.innerHTML="";
-
- scheduleList.forEach(pair=>{
-  const m=matches.find(x=>x.homeTeam===pair[0] && x.awayTeam===pair[1]);
-  let hg=0,ag=0,type="";
-
-  if(m){
-   const s=calculateScore(m.stats);
-   hg=s.home; ag=s.away; type=s.type;
-  }
-
-  container.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox">${logoHtml(pair[0])}${pair[0]}</div>
-   <div class="scoreBox">${hg}</div>
-   <div>
-     <div class="resultType">${type}</div>
-     <div class="periods">(0:0, 0:0, 0:0)</div>
-   </div>
-   <div class="scoreBox">${ag}</div>
-   <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
-  </div>`;
- });
+function logoHtml(team){
+    return `<img class="logo" src="./logos/${teamLogos[team]}">`;
 }
 
-/* ===== FIRESTORE ===== */
+function renderSchedule(matches){
 
-const q=query(collection(db,"zapasy"),orderBy("created","asc"));
+    const container=document.getElementById("schedule");
+    container.innerHTML="";
 
-onSnapshot(q,(snap)=>{
- let matches=[];
- snap.forEach(d=>{
-  const m=d.data();
-  if(m.category?.startsWith("Extraliga") && m.season==="Sezóna 2")
-    matches.push(m);
- });
+    scheduleList.forEach(pair=>{
 
- renderTable(matches);
- renderSchedule(matches);
-});
+        const m=matches.find(x=>x.homeTeam===pair[0] && x.awayTeam===pair[1]);
+        const s=m?calculateScore(m.stats):null;
+
+        container.innerHTML+=`
+        <div class="matchRow">
+            <div class="teamBox">${logoHtml(pair[0])}${pair[0]}</div>
+            <div class="scoreBox">${s?s.homeGoals:0}</div>
+            <div class="periods">
+                ${s && s.type!=="normal"?`<div class="otLabel">${s.type.toUpperCase()}</div>`:""}
+                ${s?s.periods:"(0:0, 0:0, 0:0)"}
+            </div>
+            <div class="scoreBox">${s?s.awayGoals:0}</div>
+            <div class="teamBox teamRight">${pair[1]}${logoHtml(pair[1])}</div>
+        </div>`;
+    });
+}
+
+/* ===== LOAD ===== */
+
+function loadMatches(){
+
+    const q=query(collection(db,"zapasy"),orderBy("created","asc"));
+
+    onSnapshot(q,(snap)=>{
+
+        let matches=[];
+
+        snap.forEach(d=>{
+            const m=d.data();
+            if(
+                m.category &&
+                m.category.startsWith("Extraliga") &&
+                m.season==="Sezóna 2"
+            ){
+                matches.push(m);
+            }
+        });
+
+        renderStandings(matches);
+        renderSchedule(matches);
+    });
+}
+
+loadMatches();
 
 </script>
-
 </body>
 </html>
