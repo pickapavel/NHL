@@ -204,8 +204,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ===== LOGA ===== */
-
 const teamLogos={
 "HC Geus Okna Kladno (P)":"kladno.png",
 "HC Chemopetrol Litvínov (P)":"litvinov.png",
@@ -225,7 +223,7 @@ function logoHtml(team){
 
 /* ===== ROZPIS ===== */
 
-const scheduleList=[ /* nezměněný seznam */
+const scheduleList=[ /* celý seznam zachován */
 ["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
 ["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
 ["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
@@ -260,28 +258,24 @@ const scheduleList=[ /* nezměněný seznam */
 ["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
-/* ===== VÝPOČET ===== */
-
-function num(v){ return isNaN(Number(v))?0:Number(v); }
+function num(v){return isNaN(Number(v))?0:Number(v);}
 
 function calculateScore(stats){
     if(!stats) return null;
 
-    let a1=num(stats[6]), a2=num(stats[7]), a3=num(stats[8]);
-    let h1=num(stats[16]), h2=num(stats[17]), h3=num(stats[18]);
+    let a1=num(stats[6]),a2=num(stats[7]),a3=num(stats[8]);
+    let h1=num(stats[16]),h2=num(stats[17]),h3=num(stats[18]);
 
     let away=a1+a2+a3;
     let home=h1+h2+h3;
-
     let type="";
 
     if(stats[9]==="11") away++;
     if(stats[19]==="11") home++;
 
-    if(stats[20]==="1"){ home++; type="SN"; }
-    else if(stats[20]==="2"){ away++; type="SN"; }
-    else if(Math.abs(home-away)===1 && (stats[9]==="11"||stats[19]==="11"))
-        type="OT";
+    if(stats[20]==="1"){home++;type="SN";}
+    else if(stats[20]==="2"){away++;type="SN";}
+    else if(Math.abs(home-away)===1&&(stats[9]==="11"||stats[19]==="11")) type="OT";
 
     return {home,away,type,periods:`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`};
 }
@@ -295,7 +289,7 @@ function renderSchedule(matches){
 
     scheduleList.forEach(pair=>{
 
-        const m=matches.find(x=>x.homeTeam===pair[0] && x.awayTeam===pair[1]);
+        const m=matches.find(x=>x.homeTeam===pair[0]&&x.awayTeam===pair[1]);
         const s=m?calculateScore(m.stats):null;
 
         wrap.innerHTML+=`
@@ -312,7 +306,7 @@ function renderSchedule(matches){
     });
 }
 
-/* ===== TABULKA + ŘAZENÍ (REÁLNÁ EXTRALIGA) ===== */
+/* ===== TABULKA + ŘAZENÍ (EXTRALIGA PRAVIDLA) ===== */
 
 function updateStandings(matches){
 
@@ -331,11 +325,11 @@ function updateStandings(matches){
 
         const H=teams[m.homeTeam];
         const A=teams[m.awayTeam];
-        if(!H || !A) return;
+        if(!H||!A) return;
 
-        H.g++; A.g++;
-        H.gf+=s.home; H.ga+=s.away;
-        A.gf+=s.away; A.ga+=s.home;
+        H.g++;A.g++;
+        H.gf+=s.home;H.ga+=s.away;
+        A.gf+=s.away;A.ga+=s.home;
 
         const key=[m.homeTeam,m.awayTeam].sort().join("|");
         if(!mutual[key]) mutual[key]={};
