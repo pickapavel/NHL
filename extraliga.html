@@ -134,14 +134,21 @@ td.team{
 
 <tbody>
 
-<tr data-team="HC Geus Okna Kladno"><td><img class="logo" src="./logos/kladno.png"></td><td>1</td><td class="team">HC Geus Okna Kladno</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Chemopetrol Litvínov"><td><img class="logo" src="./logos/litvinov.png"></td><td>2</td><td class="team">HC Chemopetrol Litvínov</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Dynamo Pardubice"><td><img class="logo" src="./logos/pardubice.png"></td><td>3</td><td class="team">HC Dynamo Pardubice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Sparta Praha"><td><img class="logo" src="./logos/sparta.png"></td><td>4</td><td class="team">HC Sparta Praha</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Energie Karlovy Vary"><td><img class="logo" src="./logos/vary.png"></td><td>5</td><td class="team">HC Energie Karlovy Vary</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Bílí Tygři Liberec"><td><img class="logo" src="./logos/liberec.png"></td><td>6</td><td class="team">HC Bílí Tygři Liberec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Mountfield České Budějovice"><td><img class="logo" src="./logos/budejovice.png"></td><td>7</td><td class="team">HC Mountfield České Budějovice</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr data-team="HC Oceláři Třinec"><td><img class="logo" src="./logos/trinec.png"></td><td>8</td><td class="team">HC Oceláři Třinec</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr data-team="HC Geus Okna Kladno (P)"><td><img class="logo" src="./logos/kladno.png"></td><td>1</td><td class="team">HC Geus Okna Kladno (P)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Chemopetrol Litvínov (P)"><td><img class="logo" src="./logos/litvinov.png"></td><td>2</td><td class="team">HC Chemopetrol Litvínov (P)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Dynamo Pardubice (K)"><td><img class="logo" src="./logos/pardubice.png"></td><td>3</td><td class="team">HC Dynamo Pardubice (K)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Sparta Praha (P)"><td><img class="logo" src="./logos/sparta.png"></td><td>4</td><td class="team">HC Sparta Praha (P)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Energie Karlovy Vary (P)"><td><img class="logo" src="./logos/vary.png"></td><td>5</td><td class="team">HC Energie Karlovy Vary (P)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Bílí Tygři Liberec (K)"><td><img class="logo" src="./logos/liberec.png"></td><td>6</td><td class="team">HC Bílí Tygři Liberec (K)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Mountfield České Budějovice (K)"><td><img class="logo" src="./logos/budejovice.png"></td><td>7</td><td class="team">HC Mountfield České Budějovice (K)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+<tr data-team="HC Oceláři Třinec (K)"><td><img class="logo" src="./logos/trinec.png"></td><td>8</td><td class="team">HC Oceláři Třinec (K)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 
 </tbody>
 </table>
@@ -172,50 +179,50 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const teamLogos={
-"HC Geus Okna Kladno":"kladno.png",
-"HC Chemopetrol Litvínov":"litvinov.png",
-"HC Dynamo Pardubice":"pardubice.png",
-"HC Sparta Praha":"sparta.png",
-"HC Energie Karlovy Vary":"vary.png",
-"HC Bílí Tygři Liberec":"liberec.png",
-"HC Mountfield České Budějovice":"budejovice.png",
-"HC Oceláři Třinec":"trinec.png",
-"HC Znojemští Orli":"znojmo.png"
+"HC Geus Okna Kladno (P)":"kladno.png",
+"HC Chemopetrol Litvínov (P)":"litvinov.png",
+"HC Dynamo Pardubice (K)":"pardubice.png",
+"HC Sparta Praha (P)":"sparta.png",
+"HC Energie Karlovy Vary (P)":"vary.png",
+"HC Bílí Tygři Liberec (K)":"liberec.png",
+"HC Mountfield České Budějovice (K)":"budejovice.png",
+"HC Oceláři Třinec (K)":"trinec.png",
+"HC Znojemští Orli (K)":"znojmo.png"
 };
 
 const scheduleList=[
-["HC Geus Okna Kladno","HC Dynamo Pardubice"],
-["HC Bílí Tygři Liberec","HC Chemopetrol Litvínov"],
-["HC Sparta Praha","HC Mountfield České Budějovice"],
-["HC Znojemští Orli","HC Energie Karlovy Vary"],
-["HC Dynamo Pardubice","HC Chemopetrol Litvínov"],
-["HC Geus Okna Kladno","HC Mountfield České Budějovice"],
-["HC Znojemští Orli","HC Sparta Praha"],
-["HC Energie Karlovy Vary","HC Bílí Tygři Liberec"],
-["HC Mountfield České Budějovice","HC Geus Okna Kladno"],
-["HC Chemopetrol Litvínov","HC Znojemští Orli"],
-["HC Dynamo Pardubice","HC Sparta Praha"],
-["HC Bílí Tygři Liberec","HC Energie Karlovy Vary"],
-["HC Geus Okna Kladno","HC Znojemští Orli"],
-["HC Mountfield České Budějovice","HC Chemopetrol Litvínov"],
-["HC Bílí Tygři Liberec","HC Sparta Praha"],
-["HC Energie Karlovy Vary","HC Dynamo Pardubice"],
-["HC Dynamo Pardubice","HC Geus Okna Kladno"],
-["HC Chemopetrol Litvínov","HC Bílí Tygři Liberec"],
-["HC Mountfield České Budějovice","HC Sparta Praha"],
-["HC Energie Karlovy Vary","HC Znojemští Orli"],
-["HC Chemopetrol Litvínov","HC Dynamo Pardubice"],
-["HC Mountfield České Budějovice","HC Geus Okna Kladno"],
-["HC Sparta Praha","HC Znojemští Orli"],
-["HC Bílí Tygři Liberec","HC Energie Karlovy Vary"],
-["HC Geus Okna Kladno","HC Bílí Tygři Liberec"],
-["HC Znojemští Orli","HC Chemopetrol Litvínov"],
-["HC Sparta Praha","HC Dynamo Pardubice"],
-["HC Energie Karlovy Vary","HC Mountfield České Budějovice"],
-["HC Bílí Tygři Liberec","HC Geus Okna Kladno"],
-["HC Dynamo Pardubice","HC Chemopetrol Litvínov"],
-["HC Mountfield České Budějovice","HC Energie Karlovy Vary"],
-["HC Znojemští Orli","HC Sparta Praha"]
+["HC Geus Okna Kladno (P)","HC Dynamo Pardubice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Mountfield České Budějovice (K)"],
+["HC Znojemští Orli (K)","HC Energie Karlovy Vary (P)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Geus Okna Kladno (P)","HC Mountfield České Budějovice (K)"],
+["HC Znojemští Orli (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Bílí Tygři Liberec (K)"],
+["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Znojemští Orli (K)"],
+["HC Dynamo Pardubice (K)","HC Sparta Praha (P)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Znojemští Orli (K)"],
+["HC Mountfield České Budějovice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Bílí Tygři Liberec (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Dynamo Pardubice (K)"],
+["HC Dynamo Pardubice (K)","HC Geus Okna Kladno (P)"],
+["HC Chemopetrol Litvínov (P)","HC Bílí Tygři Liberec (K)"],
+["HC Mountfield České Budějovice (K)","HC Sparta Praha (P)"],
+["HC Energie Karlovy Vary (P)","HC Znojemští Orli (K)"],
+["HC Chemopetrol Litvínov (P)","HC Dynamo Pardubice (K)"],
+["HC Mountfield České Budějovice (K)","HC Geus Okna Kladno (P)"],
+["HC Sparta Praha (P)","HC Znojemští Orli (K)"],
+["HC Bílí Tygři Liberec (K)","HC Energie Karlovy Vary (P)"],
+["HC Geus Okna Kladno (P)","HC Bílí Tygři Liberec (K)"],
+["HC Znojemští Orli (K)","HC Chemopetrol Litvínov (P)"],
+["HC Sparta Praha (P)","HC Dynamo Pardubice (K)"],
+["HC Energie Karlovy Vary (P)","HC Mountfield České Budějovice (K)"],
+["HC Bílí Tygři Liberec (K)","HC Geus Okna Kladno (P)"],
+["HC Dynamo Pardubice (K)","HC Chemopetrol Litvínov (P)"],
+["HC Mountfield České Budějovice (K)","HC Energie Karlovy Vary (P)"],
+["HC Znojemští Orli (K)","HC Sparta Praha (P)"]
 ];
 
 function calculateScore(stats){
