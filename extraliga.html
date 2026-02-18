@@ -22,7 +22,6 @@ h1{margin-top:0}
 }
 
 .rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
-
 .teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
@@ -33,9 +32,7 @@ h1{margin-top:0}
 }
 
 .teamInfo{display:flex;flex-direction:column;}
-
 .teamName{font-weight:bold;font-size:16px;}
-
 .teamStats{font-size:13px;color:#444;margin-top:2px;}
 
 .pointsBox{
@@ -184,10 +181,7 @@ teams.forEach(t=>{
  teamFilter.appendChild(opt);
 });
 
-teamFilter.onchange=()=>{
- selectedTeam=teamFilter.value;
- renderSchedule(currentMatches);
-};
+teamFilter.onchange=()=>{ selectedTeam=teamFilter.value; renderSchedule(currentMatches); };
 
 document.getElementById("filterAll").onclick=()=>{
  showPlayedOnly=false;
@@ -305,6 +299,9 @@ function renderSchedule(matches){
   if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
   if(showPlayedOnly && !m) return;
 
+  // 🔴 OPRAVA: pokud je filtr výhry/prohry, musí zápas existovat
+  if(resultMode!=="all" && !m) return;
+
   if(selectedTeam!=="all"){
    if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
    if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
@@ -324,11 +321,9 @@ function renderSchedule(matches){
   if(m){
    const s=calc(m.stats);
    hg=s.hg; ag=s.ag;
-
    a1=Number(m.stats[6])||0;
    a2=Number(m.stats[7])||0;
    a3=Number(m.stats[8])||0;
-
    h1=Number(m.stats[16])||0;
    h2=Number(m.stats[17])||0;
    h3=Number(m.stats[18])||0;
@@ -352,6 +347,7 @@ function renderSchedule(matches){
    <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
   </div>`;
  });
+
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
