@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistiky zápasu</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ font-family:Arial;
+ margin:0;
+ background:#0b2a3c;
+ color:white;
+}
+
+.wrapper{
+ max-width:1100px;
+ margin:auto;
+ padding:20px;
+}
+
+.header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:30px;
+}
+
+.teamBig{
+ display:flex;
+ align-items:center;
+ gap:15px;
+ font-size:22px;
+ font-weight:bold;
+}
+
+.teamBig img{
+ width:70px;
+ height:70px;
+ object-fit:contain;
+ background:white;
+ padding:6px;
+ border-radius:10px;
+}
+
+.scoreBig{
+ font-size:60px;
+ font-weight:bold;
+}
+
+.periodInfo{
+ text-align:center;
+ margin-bottom:30px;
+ font-size:16px;
+ opacity:0.9;
+}
+
+.sectionTitle{
+ margin:30px 0 15px 0;
+ font-size:22px;
+ font-weight:bold;
+ border-bottom:2px solid #2f9ec9;
+ padding-bottom:6px;
+}
+
+.statRow{
+ margin-bottom:18px;
+}
+
+.statLabel{
+ text-align:center;
+ margin-bottom:6px;
+ font-weight:bold;
+}
+
+.barWrapper{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+.barSide{
+ width:60px;
+ text-align:center;
+ font-weight:bold;
+}
+
+.barTrack{
+ flex:1;
+ height:20px;
+ background:#1f3f52;
+ border-radius:10px;
+ overflow:hidden;
+ display:flex;
+}
+
+.barHome{
+ background:#2f9ec9;
+}
+
+.barAway{
+ background:#e74c3c;
+}
+
+.footerBack{
+ margin-top:40px;
+ text-align:center;
+}
+
+.footerBack a{
+ background:#2f9ec9;
+ padding:10px 18px;
+ border-radius:6px;
+ color:white;
+ text-decoration:none;
+ font-weight:bold;
+}
+
+@media(max-width:700px){
+ .header{
+  flex-direction:column;
+  gap:20px;
+ }
+ .scoreBig{
+  font-size:40px;
+ }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="header">
+ <div class="teamBig" id="homeBlock"></div>
+ <div class="scoreBig" id="scoreBlock">- : -</div>
+ <div class="teamBig" id="awayBlock"></div>
+</div>
+
+<div class="periodInfo" id="periodInfo"></div>
+
+<div class="sectionTitle">Detailní statistiky</div>
+
+<div id="statsContainer"></div>
+
+<div class="footerBack">
+ <a href="extraliga.html">← Zpět na rozpis</a>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+ authDomain:"statistiky-6310a.firebaseapp.com",
+ projectId:"statistiky-6310a"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
+};
+
+function getParam(name){
+ const url=new URL(window.location.href);
+ return url.searchParams.get(name);
+}
+
+const home=getParam("home");
+const away=getParam("away");
+
+function calc(stats){
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+ if(stats[9]==="11") ag++;
+ if(stats[19]==="11") hg++;
+ if(stats[20]==="1") hg++;
+ if(stats[20]==="2") ag++;
+ return {hg,ag};
+}
+
+function renderBar(label,homeVal,awayVal){
+
+ const total=Math.max(homeVal,awayVal);
+ const homePerc= total ? (homeVal/total)*100 : 50;
+ const awayPerc= total ? (awayVal/total)*100 : 50;
+
+ return `
+ <div class="statRow">
+   <div class="statLabel">${label}</div>
+   <div class="barWrapper">
+     <div class="barSide">${homeVal}</div>
+     <div class="barTrack">
+       <div class="barHome" style="width:${homePerc}%"></div>
+       <div class="barAway" style="width:${awayPerc}%"></div>
+     </div>
+     <div class="barSide">${awayVal}</div>
+   </div>
+ </div>
+ `;
+}
+
+async function loadMatch(){
+
+ const q=query(
+   collection(db,"zapasy"),
+   where("homeTeam","==",home),
+   where("awayTeam","==",away)
+ );
+
+ const snap=await getDocs(q);
+
+ if(snap.empty) return;
+
+ const data=snap.docs[0].data();
+ const stats=data.stats;
+
+ const s=calc(stats);
+
+ document.getElementById("homeBlock").innerHTML=
+ `<img src="./logos/${teamsData[home]}">${home}`;
+
+ document.getElementById("awayBlock").innerHTML=
+ `${away}<img src="./logos/${teamsData[away]}">`;
+
+ document.getElementById("scoreBlock").innerText=
+ `${s.hg} : ${s.ag}`;
+
+ document.getElementById("periodInfo").innerText=
+ `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
+
+ let html="";
+
+ html+=renderBar("Střely", stats[12]||0, stats[2]||0);
+ html+=renderBar("Vhazování %", stats[13]||0, stats[3]||0);
+ html+=renderBar("Přesilovky", stats[14]||0, stats[4]||0);
+ html+=renderBar("Trestné minuty", stats[15]||0, stats[5]||0);
+
+ document.getElementById("statsContainer").innerHTML=html;
+}
+
+loadMatch();
+
+</script>
+
+</body>
+</html>
