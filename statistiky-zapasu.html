@@ -53,6 +53,13 @@ body{
  text-align:center;
 }
 
+.otLabel{
+ text-align:center;
+ font-weight:bold;
+ margin-top:5px;
+ color:#2f9ec9;
+}
+
 .periodInfo{
  text-align:center;
  margin-bottom:25px;
@@ -121,12 +128,8 @@ body{
 }
 
 @media(max-width:700px){
- .header{
-  flex-direction:column;
- }
- .scoreBig{
-  font-size:42px;
- }
+ .header{flex-direction:column;}
+ .scoreBig{font-size:42px;}
 }
 </style>
 </head>
@@ -137,7 +140,10 @@ body{
 
 <div class="header">
  <div id="homeTeam" class="teamBlock"></div>
- <div id="score" class="scoreBig">- : -</div>
+ <div>
+   <div id="score" class="scoreBig">- : -</div>
+   <div id="otLabel" class="otLabel"></div>
+ </div>
  <div id="awayTeam" class="teamBlock"></div>
 </div>
 
@@ -186,16 +192,18 @@ function getParam(name){
 const home=getParam("home");
 const away=getParam("away");
 
-function timeToSeconds(t){
- if(!t || !t.includes(":")) return 0;
- const p=t.split(":");
- return Number(p[0])*60+Number(p[1]);
-}
+/* STEJNÁ FUNKCE JAKO V EXTRALIGA.HTML */
+function calc(stats){
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
-function secondsToTime(sec){
- const m=Math.floor(sec/60);
- const s=sec%60;
- return m+":"+String(s).padStart(2,"0");
+ if(stats[9]==="11") ag++;
+ if(stats[19]==="11") hg++;
+
+ if(stats[20]==="1") hg++;
+ if(stats[20]==="2") ag++;
+
+ return {hg,ag};
 }
 
 function parsePK(value){
@@ -204,14 +212,7 @@ function parsePK(value){
  return {ga:Number(p[0]),pk:Number(p[1])};
 }
 
-function calcGoals(stats){
- const awayGoals=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- const homeGoals=Number(stats[16])+Number(stats[17])+Number(stats[18]);
- return {homeGoals,awayGoals};
-}
-
 function renderBar(label,homeVal,awayVal){
-
  const max=Math.max(homeVal,awayVal,1);
  const homePerc=(homeVal/max)*100;
  const awayPerc=(awayVal/max)*100;
@@ -245,7 +246,7 @@ async function loadMatch(){
  const m=snap.docs[0].data();
  const stats=m.stats;
 
- const goals=calcGoals(stats);
+ const s=calc(stats);
 
  document.getElementById("homeTeam").innerHTML=
  `<img src="./logos/${teamsData[home]}">${home}`;
@@ -254,7 +255,15 @@ async function loadMatch(){
  `${away}<img src="./logos/${teamsData[away]}">`;
 
  document.getElementById("score").innerText=
- `${goals.homeGoals} : ${goals.awayGoals}`;
+ `${s.hg} : ${s.ag}`;
+
+ /* OT / SN label */
+ if(stats[20]==="1"||stats[20]==="2"){
+   document.getElementById("otLabel").innerText="SN";
+ }
+ else if(stats[9]==="11"||stats[19]==="11"){
+   document.getElementById("otLabel").innerText="OT";
+ }
 
  document.getElementById("periodInfo").innerText=
  `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
@@ -268,9 +277,6 @@ async function loadMatch(){
  const homeFaceoffs=Number(stats[12]);
  const awayFaceoffs=Number(stats[2]);
 
- const homeAttack=timeToSeconds(stats[13]);
- const awayAttack=timeToSeconds(stats[3]);
-
  const homePP=Number(stats[14]);
  const awayPP=Number(stats[4]);
 
@@ -281,7 +287,6 @@ async function loadMatch(){
  html+=renderBar("Střely",homeShots,awayShots);
  html+=renderBar("Hity",homeHits,awayHits);
  html+=renderBar("Vhazování",homeFaceoffs,awayFaceoffs);
- html+=renderBar("Čas v útoku (min)",secondsToTime(homeAttack),secondsToTime(awayAttack));
  html+=renderBar("Přesilovky",homePP,awayPP);
  html+=renderBar("Oslabení (GA/PK)",
    homePK.ga+"/"+homePK.pk,
