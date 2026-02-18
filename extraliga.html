@@ -11,7 +11,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA ===== */
+/* ===== TABULKA (KARTOVÝ NHL STYLE) ===== */
 
 .standingsCard{
  display:flex;
@@ -75,6 +75,30 @@ h1{margin-top:0}
  text-align:center;
 }
 
+/* ===== FILTR ===== */
+
+.filterBar{
+ display:flex;
+ gap:10px;
+ align-items:center;
+ margin:15px 0;
+ flex-wrap:wrap;
+}
+
+.filterBar select,
+.filterBar button{
+ padding:8px 10px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
+.filterActive{
+ background:#2f9ec9;
+ color:white;
+ border-color:#2f9ec9;
+}
+
 /* ===== ROZPIS ===== */
 
 .matchRow{
@@ -123,11 +147,15 @@ h1{margin-top:0}
  width:100%;
 }
 
+/* ===== MOBIL ===== */
+
 @media (max-width:900px){
+
  .matchRow{
   grid-template-columns:1fr auto;
   grid-template-rows:auto auto auto auto;
  }
+
  .teamBox,
  .scoreBox,
  .periods,
@@ -137,6 +165,7 @@ h1{margin-top:0}
   text-align:center;
  }
 }
+
 </style>
 </head>
 
@@ -148,6 +177,16 @@ h1{margin-top:0}
 <div id="standingsBody"></div>
 
 <h2>Rozpis zápasů</h2>
+
+<div class="filterBar">
+<select id="teamFilter">
+<option value="all">Všechny týmy</option>
+</select>
+
+<button id="filterAll" class="filterActive">Všechny zápasy</button>
+<button id="filterPlayed">Jen odehrané</button>
+</div>
+
 <div id="schedule"></div>
 
 </div>
@@ -167,27 +206,19 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const teams=[
-"HC Sparta Praha (P)",
-"HC Bílí Tygři Liberec (K)",
-"HC Dynamo Pardubice (K)",
-"HC Chemopetrol Litvínov (P)",
-"HC Geus Okna Kladno (P)",
-"HC Motor České Budějovice (K)",
-"HC Energie Karlovy Vary (P)",
-"HC Oceláři Třinec (K)"
-];
-
-const logos={
-"HC Sparta Praha (P)":"sparta.png",
-"HC Bílí Tygři Liberec (K)":"liberec.png",
-"HC Dynamo Pardubice (K)":"pardubice.png",
-"HC Chemopetrol Litvínov (P)":"litvinov.png",
-"HC Geus Okna Kladno (P)":"kladno.png",
-"HC Motor České Budějovice (K)":"budejovice.png",
-"HC Energie Karlovy Vary (P)":"vary.png",
-"HC Oceláři Třinec (K)":"trinec.png"
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
 };
+
+const teams=Object.keys(teamsData);
+const logos=teamsData;
 
 const scheduleIndex=[
  [0,1],[3,2],[5,4],[7,6],
@@ -200,7 +231,40 @@ const scheduleIndex=[
  [0,7],[2,4],[1,6],[3,5]
 ];
 
-const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
+const scheduleList=scheduleIndex.map(
+ ([h,a])=>[teams[h],teams[a]]
+);
+
+let selectedTeam="all";
+let showPlayedOnly=false;
+let currentMatches=[];
+
+const teamFilter=document.getElementById("teamFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ teamFilter.appendChild(opt);
+});
+
+teamFilter.onchange=()=>{
+ selectedTeam=teamFilter.value;
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false;
+ document.getElementById("filterAll").classList.add("filterActive");
+ document.getElementById("filterPlayed").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true;
+ document.getElementById("filterPlayed").classList.add("filterActive");
+ document.getElementById("filterAll").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
@@ -212,14 +276,21 @@ function calc(stats){
  return {hg,ag};
 }
 
-function calculateStandings(matches){
- let table={};
+function createEmpty(){
+ let obj={};
  teams.forEach(t=>{
-  table[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
+  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
  });
+ return obj;
+}
+
+function calculateStandings(matches){
+
+ let table=createEmpty();
 
  matches.forEach(m=>{
   if(!m.stats) return;
+
   const s=calc(m.stats);
   const h=table[m.homeTeam];
   const a=table[m.awayTeam];
@@ -254,11 +325,14 @@ function calculateStandings(matches){
 }
 
 function renderStandings(arr){
- standingsBody.innerHTML="";
+ const body=document.getElementById("standingsBody");
+ body.innerHTML="";
+
  arr.forEach((t,i)=>{
-  standingsBody.innerHTML+=`
+  body.innerHTML+=`
   <div class="standingsCard">
     <div class="rank">${i+1}</div>
+
     <div class="teamBlock">
       <img class="logo" src="./logos/${logos[t.team]}">
       <div class="teamInfo">
@@ -271,32 +345,58 @@ function renderStandings(arr){
         </div>
       </div>
     </div>
+
     <div class="pointsBox">${t.b}</div>
   </div>`;
  });
 }
 
 function renderSchedule(matches){
- schedule.innerHTML="";
- scheduleList.forEach(p=>{
-  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
-  let hg=0,ag=0,label="";
 
-  if(m && m.stats){
+ currentMatches=matches;
+
+ const cont=document.getElementById("schedule");
+ cont.innerHTML="";
+
+ scheduleList.forEach(p=>{
+
+  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
+
+  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
+  if(showPlayedOnly && !m) return;
+
+  let hg=0,ag=0,label="";
+  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
+
+  if(m){
    const s=calc(m.stats);
    hg=s.hg; ag=s.ag;
+
+   a1=Number(m.stats[6])||0;
+   a2=Number(m.stats[7])||0;
+   a3=Number(m.stats[8])||0;
+
+   h1=Number(m.stats[16])||0;
+   h2=Number(m.stats[17])||0;
+   h3=Number(m.stats[18])||0;
+
    if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
    else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
   }
 
-  schedule.innerHTML+=`
+  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`;
+
+  cont.innerHTML+=`
   <div class="matchRow">
    <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
    <div class="scoreBox">${hg}</div>
-   <div class="periods"><div class="otLabel">${label}</div></div>
+   <div class="periods">
+     <div class="otLabel">${label}</div>
+     (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
+   </div>
    <div class="scoreBox">${ag}</div>
    <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
-   <div><button class="statsBtn">Statistiky</button></div>
+   <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
   </div>`;
  });
 }
@@ -311,9 +411,11 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
- renderStandings(calculateStandings(matches));
+
  renderSchedule(matches);
+ renderStandings(calculateStandings(matches));
 });
+
 </script>
 </body>
 </html>
