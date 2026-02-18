@@ -12,13 +12,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 h1{margin-top:0}
 
 .standingsCard{
- display:flex;
- align-items:center;
- justify-content:space-between;
- background:#e9ecef;
- border-radius:10px;
- padding:14px 16px;
- margin-bottom:10px;
+ display:flex;align-items:center;justify-content:space-between;
+ background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
 }
 
 .rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
@@ -51,6 +46,14 @@ h1{margin-top:0}
 
 .filterActive{
  background:#2f9ec9;color:white;border-color:#2f9ec9;
+}
+
+.headToHeadPanel{
+ display:none;
+ background:#f1f1f1;
+ padding:10px;
+ border-radius:6px;
+ margin-top:8px;
 }
 
 .matchRow{
@@ -119,6 +122,15 @@ h1{margin-top:0}
 <option value="loss">Jen prohry</option>
 </select>
 
+<button id="headToHeadBtn">Vzájemné zápasy</button>
+
+</div>
+
+<div id="headToHeadPanel" class="headToHeadPanel">
+Vyber soupeře:
+<select id="opponentFilter">
+<option value="none">-- Vyber tým --</option>
+</select>
 </div>
 
 <div id="schedule"></div>
@@ -171,6 +183,7 @@ let selectedTeam="all";
 let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
+let opponentTeam="none";
 let currentMatches=[];
 
 const teamFilter=document.getElementById("teamFilter");
@@ -179,6 +192,14 @@ teams.forEach(t=>{
  opt.value=t;
  opt.textContent=t;
  teamFilter.appendChild(opt);
+});
+
+const opponentFilter=document.getElementById("opponentFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ opponentFilter.appendChild(opt);
 });
 
 teamFilter.onchange=()=>{ selectedTeam=teamFilter.value; renderSchedule(currentMatches); };
@@ -197,13 +218,23 @@ document.getElementById("filterPlayed").onclick=()=>{
  renderSchedule(currentMatches);
 };
 
-document.getElementById("homeAwayFilter").onchange=(e)=>{
+document.getElementById("homeAwayFilter").onchange=e=>{
  homeAwayMode=e.target.value;
  renderSchedule(currentMatches);
 };
 
-document.getElementById("resultFilter").onchange=(e)=>{
+document.getElementById("resultFilter").onchange=e=>{
  resultMode=e.target.value;
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("headToHeadBtn").onclick=()=>{
+ const panel=document.getElementById("headToHeadPanel");
+ panel.style.display=panel.style.display==="block"?"none":"block";
+};
+
+opponentFilter.onchange=e=>{
+ opponentTeam=e.target.value;
  renderSchedule(currentMatches);
 };
 
@@ -233,7 +264,6 @@ function calculateStandings(matches){
   const h=table[m.homeTeam];
   const a=table[m.awayTeam];
   if(!h||!a) return;
-
   h.z++; a.z++;
   h.gf+=s.hg; h.ga+=s.ag;
   a.gf+=s.ag; a.ga+=s.hg;
@@ -254,7 +284,6 @@ function calculateStandings(matches){
    else{a.v++;a.b+=3;h.p++;}
   }
  });
-
  return Object.values(table).sort((a,b)=>{
   if(b.b!==a.b) return b.b-a.b;
   if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
@@ -274,10 +303,7 @@ function renderStandings(arr){
       <div class="teamInfo">
         <div class="teamName">${t.team}</div>
         <div class="teamStats">
-          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-          Z ${t.z} | V ${t.v} | P ${t.p} |
-          VP ${t.vp} | PP ${t.pp} |
-          VSN ${t.vsn} | PSN ${t.psn}
+          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga}
         </div>
       </div>
     </div>
@@ -298,13 +324,16 @@ function renderSchedule(matches){
 
   if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
   if(showPlayedOnly && !m) return;
-
-  // 🔴 OPRAVA: pokud je filtr výhry/prohry, musí zápas existovat
   if(resultMode!=="all" && !m) return;
 
   if(selectedTeam!=="all"){
    if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
    if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
+  }
+
+  if(opponentTeam!=="none" && selectedTeam!=="all"){
+   if(!( (p[0]===selectedTeam && p[1]===opponentTeam) ||
+         (p[1]===selectedTeam && p[0]===opponentTeam) )) return;
   }
 
   if(m && selectedTeam!=="all" && resultMode!=="all"){
