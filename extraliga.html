@@ -44,6 +44,29 @@ h1{margin-top:0}
  padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-weight:bold;
 }
 
+/* 🔵 VÝRAZNÉ TLAČÍTKO VZÁJEMNÉ */
+
+.headToHeadBtn{
+ background:#0b2a3c;
+ color:white;
+ border:none;
+ padding:10px 14px;
+ border-radius:6px;
+ font-weight:bold;
+ cursor:pointer;
+ box-shadow:0 3px 8px rgba(0,0,0,0.25);
+ transition:0.2s;
+}
+
+.headToHeadBtn:hover{
+ background:#133b54;
+ transform:translateY(-1px);
+}
+
+.headToHeadBtn.active{
+ background:#2f9ec9;
+}
+
 .filterActive{
  background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
@@ -122,7 +145,7 @@ h1{margin-top:0}
 <option value="loss">Jen prohry</option>
 </select>
 
-<button id="headToHeadBtn">Vzájemné zápasy</button>
+<button id="headToHeadBtn" class="headToHeadBtn">Vzájemné zápasy</button>
 
 </div>
 
@@ -230,7 +253,10 @@ document.getElementById("resultFilter").onchange=e=>{
 
 document.getElementById("headToHeadBtn").onclick=()=>{
  const panel=document.getElementById("headToHeadPanel");
- panel.style.display=panel.style.display==="block"?"none":"block";
+ const btn=document.getElementById("headToHeadBtn");
+ const isOpen=panel.style.display==="block";
+ panel.style.display=isOpen?"none":"block";
+ btn.classList.toggle("active",!isOpen);
 };
 
 opponentFilter.onchange=e=>{
