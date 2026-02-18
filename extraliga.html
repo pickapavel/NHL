@@ -11,8 +11,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA (KARTOVÝ NHL STYLE) ===== */
-
 .standingsCard{
  display:flex;
  align-items:center;
@@ -23,156 +21,74 @@ h1{margin-top:0}
  margin-bottom:10px;
 }
 
-.rank{
- width:30px;
- font-weight:bold;
- font-size:18px;
- text-align:center;
-}
+.rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
 
-.teamBlock{
- display:flex;
- align-items:center;
- gap:14px;
- flex:1;
-}
+.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
- width:40px;
- height:40px;
- object-fit:contain;
+ width:40px;height:40px;object-fit:contain;
  filter:contrast(1.1) saturate(1.15);
  box-shadow:0 2px 6px rgba(0,0,0,0.25);
- border-radius:6px;
- background:white;
- padding:2px;
+ border-radius:6px;background:white;padding:2px;
 }
 
-.teamInfo{
- display:flex;
- flex-direction:column;
-}
+.teamInfo{display:flex;flex-direction:column;}
 
-.teamName{
- font-weight:bold;
- font-size:16px;
-}
+.teamName{font-weight:bold;font-size:16px;}
 
-.teamStats{
- font-size:13px;
- color:#444;
- margin-top:2px;
-}
+.teamStats{font-size:13px;color:#444;margin-top:2px;}
 
 .pointsBox{
- background:#0b2a3c;
- color:white;
- font-size:20px;
- font-weight:bold;
- padding:10px 16px;
- border-radius:8px;
- min-width:60px;
- text-align:center;
+ background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
+ padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
 
-/* ===== FILTR ===== */
-
 .filterBar{
- display:flex;
- gap:10px;
- align-items:center;
- margin:15px 0;
- flex-wrap:wrap;
+ display:flex;gap:10px;align-items:center;margin:15px 0;flex-wrap:wrap;
 }
 
 .filterBar select,
 .filterBar button{
- padding:8px 10px;
- border-radius:6px;
- border:1px solid #ccc;
- font-weight:bold;
-}
-
-.filterBar label{
- display:flex;
- align-items:center;
- gap:4px;
- font-weight:bold;
+ padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-weight:bold;
 }
 
 .filterActive{
- background:#2f9ec9;
- color:white;
- border-color:#2f9ec9;
+ background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
-
-/* ===== ROZPIS ===== */
 
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr 120px;
- align-items:center;
- background:#e9ecef;
- padding:10px;
- margin-bottom:6px;
- border-radius:6px;
- gap:8px;
+ align-items:center;background:#e9ecef;
+ padding:10px;margin-bottom:6px;border-radius:6px;gap:8px;
 }
 
-.teamBox{
- display:flex;
- align-items:center;
- gap:10px;
- font-weight:bold;
-}
-
-.teamRight{
- justify-content:flex-end;
-}
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
+.teamRight{justify-content:flex-end;}
 
 .scoreBox{
- background:#0b2a3c;
- color:white;
- font-size:22px;
- font-weight:bold;
- padding:8px 0;
- border-radius:6px;
- text-align:center;
+ background:#0b2a3c;color:white;font-size:22px;font-weight:bold;
+ padding:8px 0;border-radius:6px;text-align:center;
 }
 
 .periods{text-align:center;font-size:14px}
 .otLabel{font-weight:bold;font-size:13px;margin-bottom:2px}
 
 .statsBtn{
- background:#2f9ec9;
- color:white;
- border:none;
- padding:8px 12px;
- border-radius:6px;
- cursor:pointer;
- font-weight:bold;
- width:100%;
+ background:#2f9ec9;color:white;border:none;
+ padding:8px 12px;border-radius:6px;cursor:pointer;
+ font-weight:bold;width:100%;
 }
 
-/* ===== MOBIL ===== */
-
 @media (max-width:900px){
-
  .matchRow{
   grid-template-columns:1fr auto;
   grid-template-rows:auto auto auto auto;
  }
-
- .teamBox,
- .scoreBox,
- .periods,
- .statsBtn{
-  grid-column:1/3;
-  justify-content:center;
-  text-align:center;
+ .teamBox,.scoreBox,.periods,.statsBtn{
+  grid-column:1/3;justify-content:center;text-align:center;
  }
 }
-
 </style>
 </head>
 
@@ -194,8 +110,17 @@ h1{margin-top:0}
 <button id="filterAll" class="filterActive">Všechny zápasy</button>
 <button id="filterPlayed">Jen odehrané</button>
 
-<label><input type="checkbox" id="filterHome" checked> Domácí</label>
-<label><input type="checkbox" id="filterAway" checked> Venkovní</label>
+<select id="homeAwayFilter">
+<option value="both">Domácí i venkovní</option>
+<option value="home">Jen domácí</option>
+<option value="away">Jen venkovní</option>
+</select>
+
+<select id="resultFilter">
+<option value="all">Všechny výsledky</option>
+<option value="win">Jen výhry</option>
+<option value="loss">Jen prohry</option>
+</select>
 
 </div>
 
@@ -243,14 +168,12 @@ const scheduleIndex=[
  [0,7],[2,4],[1,6],[3,5]
 ];
 
-const scheduleList=scheduleIndex.map(
- ([h,a])=>[teams[h],teams[a]]
-);
+const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
 
 let selectedTeam="all";
 let showPlayedOnly=false;
-let showHome=true;
-let showAway=true;
+let homeAwayMode="both";
+let resultMode="all";
 let currentMatches=[];
 
 const teamFilter=document.getElementById("teamFilter");
@@ -280,13 +203,13 @@ document.getElementById("filterPlayed").onclick=()=>{
  renderSchedule(currentMatches);
 };
 
-document.getElementById("filterHome").onchange=(e)=>{
- showHome=e.target.checked;
+document.getElementById("homeAwayFilter").onchange=(e)=>{
+ homeAwayMode=e.target.value;
  renderSchedule(currentMatches);
 };
 
-document.getElementById("filterAway").onchange=(e)=>{
- showAway=e.target.checked;
+document.getElementById("resultFilter").onchange=(e)=>{
+ resultMode=e.target.value;
  renderSchedule(currentMatches);
 };
 
@@ -309,12 +232,9 @@ function createEmpty(){
 }
 
 function calculateStandings(matches){
-
  let table=createEmpty();
-
  matches.forEach(m=>{
   if(!m.stats) return;
-
   const s=calc(m.stats);
   const h=table[m.homeTeam];
   const a=table[m.awayTeam];
@@ -351,7 +271,6 @@ function calculateStandings(matches){
 function renderStandings(arr){
  const body=document.getElementById("standingsBody");
  body.innerHTML="";
-
  arr.forEach((t,i)=>{
   body.innerHTML+=`
   <div class="standingsCard">
@@ -376,25 +295,28 @@ function renderStandings(arr){
 function renderSchedule(matches){
 
  currentMatches=matches;
-
  const cont=document.getElementById("schedule");
  cont.innerHTML="";
 
  scheduleList.forEach(p=>{
 
-  if(!showHome && !showAway) return;
-
-  if(!showHome && showAway && selectedTeam!=="all" && p[1]!==selectedTeam) return;
-  if(!showAway && showHome && selectedTeam!=="all" && p[0]!==selectedTeam) return;
-
-  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
-
-  if(!showHome && p[0]===selectedTeam) return;
-  if(!showAway && p[1]===selectedTeam) return;
-
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
 
+  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
   if(showPlayedOnly && !m) return;
+
+  if(selectedTeam!=="all"){
+   if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
+   if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
+  }
+
+  if(m && selectedTeam!=="all" && resultMode!=="all"){
+   const s=calc(m.stats);
+   const isHome = (p[0]===selectedTeam);
+   const win = (isHome && s.hg>s.ag) || (!isHome && s.ag>s.hg);
+   if(resultMode==="win" && !win) return;
+   if(resultMode==="loss" && win) return;
+  }
 
   let hg=0,ag=0,label="";
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
@@ -442,7 +364,6 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
-
  renderSchedule(matches);
  renderStandings(calculateStandings(matches));
 });
