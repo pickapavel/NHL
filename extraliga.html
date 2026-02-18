@@ -11,7 +11,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA (KARTY) ===== */
+/* ===== TABULKA ===== */
 
 .standingsCard{
  display:flex;
@@ -147,8 +147,6 @@ h1{margin-top:0}
  width:100%;
 }
 
-/* ===== MOBIL ===== */
-
 @media (max-width:900px){
  .matchRow{
   grid-template-columns:1fr auto;
@@ -163,7 +161,6 @@ h1{margin-top:0}
   text-align:center;
  }
 }
-
 </style>
 </head>
 
@@ -268,16 +265,12 @@ const mutualTeam1=document.getElementById("mutualTeam1");
 const mutualTeam2=document.getElementById("mutualTeam2");
 
 teams.forEach(t=>{
- let opt1=document.createElement("option");
- opt1.value=t;
- opt1.textContent=t;
- teamFilter.appendChild(opt1);
-
- let opt2=document.createElement("option");
- opt2.value=t;
- opt2.textContent=t;
- mutualTeam1.appendChild(opt2.cloneNode(true));
- mutualTeam2.appendChild(opt2);
+ let opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ teamFilter.appendChild(opt);
+ mutualTeam1.appendChild(opt.cloneNode(true));
+ mutualTeam2.appendChild(opt.cloneNode(true));
 });
 
 teamFilter.onchange=()=>{selectedTeam=teamFilter.value;renderSchedule(currentMatches);}
@@ -310,30 +303,6 @@ function calc(stats){
  return {hg,ag};
 }
 
-function renderStandings(arr){
- const body=document.getElementById("standingsBody");
- body.innerHTML="";
- arr.forEach((t,i)=>{
-  body.innerHTML+=`
-  <div class="standingsCard">
-    <div class="rank">${i+1}</div>
-    <div class="teamBlock">
-      <img class="logo" src="./logos/${logos[t.team]}">
-      <div class="teamInfo">
-        <div class="teamName">${t.team}</div>
-        <div class="teamStats">
-          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-          Z ${t.z} | V ${t.v} | P ${t.p} |
-          VP ${t.vp} | PP ${t.pp} |
-          VSN ${t.vsn} | PSN ${t.psn}
-        </div>
-      </div>
-    </div>
-    <div class="pointsBox">${t.b}</div>
-  </div>`;
- });
-}
-
 function renderSchedule(matches){
  currentMatches=matches;
  const cont=document.getElementById("schedule");
@@ -346,47 +315,40 @@ function renderSchedule(matches){
   if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
   if(showPlayedOnly && !m) return;
 
-  if(locationFilter==="home" && selectedTeam!=="all" && p[0]!==selectedTeam) return;
-  if(locationFilter==="away" && selectedTeam!=="all" && p[1]!==selectedTeam) return;
-
   if(mutual1 && mutual2){
    if(!( (p[0]===mutual1 && p[1]===mutual2) || (p[0]===mutual2 && p[1]===mutual1) )) return;
   }
 
-  let hg=0,ag=0,label="";
-  let show=true;
+  if(resultFilter!=="all"){
+   if(!m || !m.stats) return;   /* 🔥 OPRAVA – jen odehrané */
+   const s=calc(m.stats);
 
-  if(m){
+   if(resultFilter==="win"){
+    if(selectedTeam===p[0] && s.hg<=s.ag) return;
+    if(selectedTeam===p[1] && s.ag<=s.hg) return;
+   }
+   if(resultFilter==="loss"){
+    if(selectedTeam===p[0] && s.hg>=s.ag) return;
+    if(selectedTeam===p[1] && s.ag>=s.hg) return;
+   }
+  }
+
+  let hg=0,ag=0,label="";
+  if(m && m.stats){
    const s=calc(m.stats);
    hg=s.hg; ag=s.ag;
-
-   if(resultFilter==="win" && selectedTeam!=="all"){
-    if(selectedTeam===p[0] && hg<=ag) show=false;
-    if(selectedTeam===p[1] && ag<=hg) show=false;
-   }
-   if(resultFilter==="loss" && selectedTeam!=="all"){
-    if(selectedTeam===p[0] && hg>=ag) show=false;
-    if(selectedTeam===p[1] && ag>=hg) show=false;
-   }
-
    if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
    else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
   }
-
-  if(!show) return;
-
-  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`;
 
   cont.innerHTML+=`
   <div class="matchRow">
    <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
    <div class="scoreBox">${hg}</div>
-   <div class="periods">
-     <div class="otLabel">${label}</div>
-   </div>
+   <div class="periods"><div class="otLabel">${label}</div></div>
    <div class="scoreBox">${ag}</div>
    <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
-   <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
+   <div><button class="statsBtn">Statistiky</button></div>
   </div>`;
  });
 }
@@ -401,51 +363,8 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
-
  renderSchedule(matches);
- renderStandings(calculateStandings(matches));
 });
-
-function calculateStandings(matches){
- let table={};
- teams.forEach(t=>{
-  table[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
- });
-
- matches.forEach(m=>{
-  if(!m.stats) return;
-  const s=calc(m.stats);
-  const h=table[m.homeTeam];
-  const a=table[m.awayTeam];
-  if(!h||!a) return;
-
-  h.z++; a.z++;
-  h.gf+=s.hg; h.ga+=s.ag;
-  a.gf+=s.ag; a.ga+=s.hg;
-
-  const isSN=(m.stats[20]==="1"||m.stats[20]==="2");
-  const isOT=(!isSN&&(m.stats[9]==="11"||m.stats[19]==="11"));
-
-  if(isSN){
-   if(s.hg>s.ag){h.vsn++;h.b+=2;a.psn++;a.b+=1;}
-   else{a.vsn++;a.b+=2;h.psn++;h.b+=1;}
-  }
-  else if(isOT){
-   if(s.hg>s.ag){h.vp++;h.b+=2;a.pp++;a.b+=1;}
-   else{a.vp++;a.b+=2;h.pp++;h.b+=1;}
-  }
-  else{
-   if(s.hg>s.ag){h.v++;h.b+=3;a.p++;}
-   else{a.v++;a.b+=3;h.p++;}
-  }
- });
-
- return Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b;
-  if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
-  return b.gf-a.gf;
- });
-}
 
 </script>
 </body>
