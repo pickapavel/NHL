@@ -11,56 +11,20 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA NOVÝ STYL ===== */
+.tableWrap{width:100%;overflow-x:auto;}
 
-.standings{
- display:flex;
- flex-direction:column;
- gap:8px;
+table{
+ width:100%;
+ border-collapse:collapse;
  margin-bottom:30px;
+ min-width:900px;
 }
 
-.standingRow{
- display:grid;
- grid-template-columns:50px 1fr auto;
- align-items:center;
- background:#e9ecef;
- padding:12px;
- border-radius:8px;
-}
+th,td{border:1px solid #999;padding:8px;text-align:center;}
+th{background:#2f9ec9;color:white;font-weight:bold;}
+td.team{text-align:left;}
 
-.standingLeft{
- display:flex;
- align-items:center;
- gap:12px;
- font-weight:bold;
-}
-
-.standingPos{
- font-size:18px;
- font-weight:bold;
- width:30px;
- text-align:center;
-}
-
-.standingStats{
- font-size:13px;
- color:#333;
- margin-top:2px;
-}
-
-.pointsBox{
- background:#0b2a3c;
- color:white;
- font-weight:bold;
- font-size:20px;
- padding:8px 14px;
- border-radius:6px;
- text-align:center;
- min-width:60px;
-}
-
-.logo{width:28px;height:28px;object-fit:contain}
+.logo{width:28px;height:28px;object-fit:contain;vertical-align:middle}
 
 /* ===== FILTR ===== */
 
@@ -143,12 +107,7 @@ h1{margin-top:0}
   justify-content:center;
   text-align:center;
  }
-
- .standingRow{
-  grid-template-columns:1fr auto;
- }
 }
-
 </style>
 </head>
 
@@ -157,7 +116,19 @@ h1{margin-top:0}
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<div id="standingsBody" class="standings"></div>
+<div class="tableWrap">
+<table>
+<thead>
+<tr>
+<th></th><th>#</th><th>Tým</th>
+<th>B</th><th>Skóre</th><th>+/-</th>
+<th>Z</th><th>V</th><th>P</th>
+<th>VP</th><th>PP</th><th>VSN</th><th>PSN</th>
+</tr>
+</thead>
+<tbody id="standingsBody"></tbody>
+</table>
+</div>
 
 <h2>Rozpis zápasů</h2>
 
@@ -316,23 +287,23 @@ function calculateStandings(matches){
 function renderStandings(arr){
  const body=document.getElementById("standingsBody");
  body.innerHTML="";
-
  arr.forEach((t,i)=>{
   body.innerHTML+=`
-   <div class="standingRow">
-     <div class="standingLeft">
-       <div class="standingPos">${i+1}</div>
-       <img class="logo" src="./logos/${logos[t.team]}">
-       <div>
-         <div>${t.team}</div>
-         <div class="standingStats">
-           Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} | Z ${t.z} | V ${t.v} | P ${t.p} | VP ${t.vp} | PP ${t.pp} | VSN ${t.vsn} | PSN ${t.psn}
-         </div>
-       </div>
-     </div>
-     <div class="pointsBox">${t.b}</div>
-   </div>
-  `;
+  <tr>
+   <td><img class="logo" src="./logos/${logos[t.team]}"></td>
+   <td>${i+1}</td>
+   <td class="team">${t.team}</td>
+   <td>${t.b}</td>
+   <td>${t.gf}:${t.ga}</td>
+   <td>${t.gf-t.ga}</td>
+   <td>${t.z}</td>
+   <td>${t.v}</td>
+   <td>${t.p}</td>
+   <td>${t.vp}</td>
+   <td>${t.pp}</td>
+   <td>${t.vsn}</td>
+   <td>${t.psn}</td>
+  </tr>`;
  });
 }
 
