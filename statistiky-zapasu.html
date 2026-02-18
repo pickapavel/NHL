@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Statistiky zápasu</title>
+<title>Match centrum</title>
 
 <style>
 *{box-sizing:border-box}
+
 body{
- font-family:Arial;
  margin:0;
+ font-family:Arial;
  background:#0b2a3c;
  color:white;
 }
@@ -17,7 +18,7 @@ body{
 .wrapper{
  max-width:1100px;
  margin:auto;
- padding:20px;
+ padding:25px;
 }
 
 .header{
@@ -25,9 +26,11 @@ body{
  justify-content:space-between;
  align-items:center;
  margin-bottom:30px;
+ flex-wrap:wrap;
+ gap:20px;
 }
 
-.teamBig{
+.teamBlock{
  display:flex;
  align-items:center;
  gap:15px;
@@ -35,9 +38,9 @@ body{
  font-weight:bold;
 }
 
-.teamBig img{
- width:70px;
- height:70px;
+.teamBlock img{
+ width:75px;
+ height:75px;
  object-fit:contain;
  background:white;
  padding:6px;
@@ -47,25 +50,25 @@ body{
 .scoreBig{
  font-size:60px;
  font-weight:bold;
+ text-align:center;
 }
 
 .periodInfo{
  text-align:center;
- margin-bottom:30px;
- font-size:16px;
+ margin-bottom:25px;
  opacity:0.9;
 }
 
 .sectionTitle{
- margin:30px 0 15px 0;
  font-size:22px;
  font-weight:bold;
+ margin:30px 0 15px 0;
  border-bottom:2px solid #2f9ec9;
  padding-bottom:6px;
 }
 
 .statRow{
- margin-bottom:18px;
+ margin-bottom:20px;
 }
 
 .statLabel{
@@ -74,23 +77,23 @@ body{
  font-weight:bold;
 }
 
-.barWrapper{
+.barWrap{
  display:flex;
  align-items:center;
  gap:10px;
 }
 
-.barSide{
- width:60px;
+.sideVal{
+ width:70px;
  text-align:center;
  font-weight:bold;
 }
 
 .barTrack{
  flex:1;
- height:20px;
- background:#1f3f52;
- border-radius:10px;
+ height:22px;
+ background:#1e3c4f;
+ border-radius:12px;
  overflow:hidden;
  display:flex;
 }
@@ -103,27 +106,26 @@ body{
  background:#e74c3c;
 }
 
-.footerBack{
+.backBtn{
  margin-top:40px;
  text-align:center;
 }
 
-.footerBack a{
+.backBtn a{
  background:#2f9ec9;
  padding:10px 18px;
  border-radius:6px;
- color:white;
  text-decoration:none;
+ color:white;
  font-weight:bold;
 }
 
 @media(max-width:700px){
  .header{
   flex-direction:column;
-  gap:20px;
  }
  .scoreBig{
-  font-size:40px;
+  font-size:42px;
  }
 }
 </style>
@@ -134,18 +136,17 @@ body{
 <div class="wrapper">
 
 <div class="header">
- <div class="teamBig" id="homeBlock"></div>
- <div class="scoreBig" id="scoreBlock">- : -</div>
- <div class="teamBig" id="awayBlock"></div>
+ <div id="homeTeam" class="teamBlock"></div>
+ <div id="score" class="scoreBig">- : -</div>
+ <div id="awayTeam" class="teamBlock"></div>
 </div>
 
-<div class="periodInfo" id="periodInfo"></div>
+<div id="periodInfo" class="periodInfo"></div>
 
-<div class="sectionTitle">Detailní statistiky</div>
-
+<div class="sectionTitle">Detailní statistiky zápasu</div>
 <div id="statsContainer"></div>
 
-<div class="footerBack">
+<div class="backBtn">
  <a href="extraliga.html">← Zpět na rozpis</a>
 </div>
 
@@ -185,32 +186,46 @@ function getParam(name){
 const home=getParam("home");
 const away=getParam("away");
 
-function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
- if(stats[20]==="1") hg++;
- if(stats[20]==="2") ag++;
- return {hg,ag};
+function timeToSeconds(t){
+ if(!t || !t.includes(":")) return 0;
+ const p=t.split(":");
+ return Number(p[0])*60+Number(p[1]);
+}
+
+function secondsToTime(sec){
+ const m=Math.floor(sec/60);
+ const s=sec%60;
+ return m+":"+String(s).padStart(2,"0");
+}
+
+function parsePK(value){
+ if(!value || !value.includes("/")) return {ga:0,pk:0};
+ const p=value.split("/");
+ return {ga:Number(p[0]),pk:Number(p[1])};
+}
+
+function calcGoals(stats){
+ const awayGoals=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+ const homeGoals=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+ return {homeGoals,awayGoals};
 }
 
 function renderBar(label,homeVal,awayVal){
 
- const total=Math.max(homeVal,awayVal);
- const homePerc= total ? (homeVal/total)*100 : 50;
- const awayPerc= total ? (awayVal/total)*100 : 50;
+ const max=Math.max(homeVal,awayVal,1);
+ const homePerc=(homeVal/max)*100;
+ const awayPerc=(awayVal/max)*100;
 
  return `
  <div class="statRow">
    <div class="statLabel">${label}</div>
-   <div class="barWrapper">
-     <div class="barSide">${homeVal}</div>
+   <div class="barWrap">
+     <div class="sideVal">${homeVal}</div>
      <div class="barTrack">
        <div class="barHome" style="width:${homePerc}%"></div>
        <div class="barAway" style="width:${awayPerc}%"></div>
      </div>
-     <div class="barSide">${awayVal}</div>
+     <div class="sideVal">${awayVal}</div>
    </div>
  </div>
  `;
@@ -225,32 +240,53 @@ async function loadMatch(){
  );
 
  const snap=await getDocs(q);
-
  if(snap.empty) return;
 
- const data=snap.docs[0].data();
- const stats=data.stats;
+ const m=snap.docs[0].data();
+ const stats=m.stats;
 
- const s=calc(stats);
+ const goals=calcGoals(stats);
 
- document.getElementById("homeBlock").innerHTML=
+ document.getElementById("homeTeam").innerHTML=
  `<img src="./logos/${teamsData[home]}">${home}`;
 
- document.getElementById("awayBlock").innerHTML=
+ document.getElementById("awayTeam").innerHTML=
  `${away}<img src="./logos/${teamsData[away]}">`;
 
- document.getElementById("scoreBlock").innerText=
- `${s.hg} : ${s.ag}`;
+ document.getElementById("score").innerText=
+ `${goals.homeGoals} : ${goals.awayGoals}`;
 
  document.getElementById("periodInfo").innerText=
  `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
 
- let html="";
+ const homeShots=Number(stats[10]);
+ const awayShots=Number(stats[0]);
 
- html+=renderBar("Střely", stats[12]||0, stats[2]||0);
- html+=renderBar("Vhazování %", stats[13]||0, stats[3]||0);
- html+=renderBar("Přesilovky", stats[14]||0, stats[4]||0);
- html+=renderBar("Trestné minuty", stats[15]||0, stats[5]||0);
+ const homeHits=Number(stats[11]);
+ const awayHits=Number(stats[1]);
+
+ const homeFaceoffs=Number(stats[12]);
+ const awayFaceoffs=Number(stats[2]);
+
+ const homeAttack=timeToSeconds(stats[13]);
+ const awayAttack=timeToSeconds(stats[3]);
+
+ const homePP=Number(stats[14]);
+ const awayPP=Number(stats[4]);
+
+ const homePK=parsePK(stats[15]);
+ const awayPK=parsePK(stats[5]);
+
+ let html="";
+ html+=renderBar("Střely",homeShots,awayShots);
+ html+=renderBar("Hity",homeHits,awayHits);
+ html+=renderBar("Vhazování",homeFaceoffs,awayFaceoffs);
+ html+=renderBar("Čas v útoku (min)",secondsToTime(homeAttack),secondsToTime(awayAttack));
+ html+=renderBar("Přesilovky",homePP,awayPP);
+ html+=renderBar("Oslabení (GA/PK)",
+   homePK.ga+"/"+homePK.pk,
+   awayPK.ga+"/"+awayPK.pk
+ );
 
  document.getElementById("statsContainer").innerHTML=html;
 }
