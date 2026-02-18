@@ -11,61 +11,68 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA NHL STYLE ===== */
+/* ===== TABULKA (KARTOVÝ NHL STYLE) ===== */
 
-.tableWrap{
- width:100%;
- overflow-x:auto;
- margin-bottom:30px;
+.standingsCard{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ background:#e9ecef;
+ border-radius:10px;
+ padding:14px 16px;
+ margin-bottom:10px;
 }
 
-.standingsTable{
- width:100%;
- border-collapse:collapse;
- min-width:900px;
-}
-
-.standingsTable thead th{
- background:#f3f5f7;
- color:#333;
- padding:10px;
+.rank{
+ width:30px;
  font-weight:bold;
- border-bottom:2px solid #ddd;
-}
-
-.standingsTable tbody td{
- padding:10px 8px;
+ font-size:18px;
  text-align:center;
- border-bottom:1px solid #e3e3e3;
 }
 
-.standingsTable tbody tr:hover{
- background:#f7f9fb;
-}
-
-/* tým doleva */
-.standingsTable td:nth-child(2),
-.standingsTable th:nth-child(2){
- text-align:left;
-}
-
-/* zvýraznění sloupce body */
-.standingsTable td:nth-child(3),
-.standingsTable th:nth-child(3){
- background:#d9ecf6;
- font-weight:bold;
-}
-
-.teamCell{
- font-weight:bold;
+.teamBlock{
+ display:flex;
+ align-items:center;
+ gap:14px;
+ flex:1;
 }
 
 .logo{
- width:24px;
- height:24px;
+ width:40px;
+ height:40px;
  object-fit:contain;
- vertical-align:middle;
- margin-right:6px;
+ filter:contrast(1.1) saturate(1.15);
+ box-shadow:0 2px 6px rgba(0,0,0,0.25);
+ border-radius:6px;
+ background:white;
+ padding:2px;
+}
+
+.teamInfo{
+ display:flex;
+ flex-direction:column;
+}
+
+.teamName{
+ font-weight:bold;
+ font-size:16px;
+}
+
+.teamStats{
+ font-size:13px;
+ color:#444;
+ margin-top:2px;
+}
+
+.pointsBox{
+ background:#0b2a3c;
+ color:white;
+ font-size:20px;
+ font-weight:bold;
+ padding:10px 16px;
+ border-radius:8px;
+ min-width:60px;
+ text-align:center;
 }
 
 /* ===== FILTR ===== */
@@ -74,7 +81,7 @@ h1{margin-top:0}
  display:flex;
  gap:10px;
  align-items:center;
- margin-bottom:15px;
+ margin:15px 0;
  flex-wrap:wrap;
 }
 
@@ -167,27 +174,7 @@ h1{margin-top:0}
 
 <h1>Extraliga - 2. sezóna</h1>
 
-<div class="tableWrap">
-<table class="standingsTable">
-<thead>
-<tr>
-<th>#</th>
-<th>Tým</th>
-<th>B</th>
-<th>Skóre</th>
-<th>+/-</th>
-<th>Z</th>
-<th>V</th>
-<th>P</th>
-<th>VP</th>
-<th>PP</th>
-<th>VSN</th>
-<th>PSN</th>
-</tr>
-</thead>
-<tbody id="standingsBody"></tbody>
-</table>
-</div>
+<div id="standingsBody"></div>
 
 <h2>Rozpis zápasů</h2>
 
@@ -343,24 +330,24 @@ function renderStandings(arr){
 
  arr.forEach((t,i)=>{
   body.innerHTML+=`
-   <tr>
-     <td>${i+1}</td>
-     <td class="teamCell">
-       <img class="logo" src="./logos/${logos[t.team]}">
-       ${t.team}
-     </td>
-     <td>${t.b}</td>
-     <td>${t.gf}:${t.ga}</td>
-     <td>${t.gf-t.ga}</td>
-     <td>${t.z}</td>
-     <td>${t.v}</td>
-     <td>${t.p}</td>
-     <td>${t.vp}</td>
-     <td>${t.pp}</td>
-     <td>${t.vsn}</td>
-     <td>${t.psn}</td>
-   </tr>
-  `;
+  <div class="standingsCard">
+    <div class="rank">${i+1}</div>
+
+    <div class="teamBlock">
+      <img class="logo" src="./logos/${logos[t.team]}">
+      <div class="teamInfo">
+        <div class="teamName">${t.team}</div>
+        <div class="teamStats">
+          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+          Z ${t.z} | V ${t.v} | P ${t.p} |
+          VP ${t.vp} | PP ${t.pp} |
+          VSN ${t.vsn} | PSN ${t.psn}
+        </div>
+      </div>
+    </div>
+
+    <div class="pointsBox">${t.b}</div>
+  </div>`;
  });
 }
 
