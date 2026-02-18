@@ -11,7 +11,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 h1{margin-top:0}
 
-/* ===== TABULKA ===== */
+/* ===== TABULKA NHL STYLE ===== */
 
 .tableWrap{
  width:100%;
@@ -26,31 +26,34 @@ h1{margin-top:0}
 }
 
 .standingsTable thead th{
- background:#2f9ec9;
- color:white;
+ background:#f3f5f7;
+ color:#333;
  padding:10px;
  font-weight:bold;
- border:none;
+ border-bottom:2px solid #ddd;
 }
 
 .standingsTable tbody td{
- padding:8px;
+ padding:10px 8px;
  text-align:center;
- border-bottom:1px solid #ddd;
-}
-
-.standingsTable tbody tr:nth-child(even){
- background:#f7f7f7;
+ border-bottom:1px solid #e3e3e3;
 }
 
 .standingsTable tbody tr:hover{
- background:#e9ecef;
+ background:#f7f9fb;
 }
 
-/* === SPRÁVNÉ ZAROVNÁNÍ SLOUPCE TÝM === */
+/* tým doleva */
 .standingsTable td:nth-child(2),
 .standingsTable th:nth-child(2){
  text-align:left;
+}
+
+/* zvýraznění sloupce body */
+.standingsTable td:nth-child(3),
+.standingsTable th:nth-child(3){
+ background:#d9ecf6;
+ font-weight:bold;
 }
 
 .teamCell{
@@ -346,7 +349,7 @@ function renderStandings(arr){
        <img class="logo" src="./logos/${logos[t.team]}">
        ${t.team}
      </td>
-     <td><b>${t.b}</b></td>
+     <td>${t.b}</td>
      <td>${t.gf}:${t.ga}</td>
      <td>${t.gf-t.ga}</td>
      <td>${t.z}</td>
