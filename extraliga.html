@@ -28,7 +28,12 @@ h1{margin-top:0}
 
 .teamInfo{display:flex;flex-direction:column;}
 .teamName{font-weight:bold;font-size:16px;}
-.teamStats{font-size:13px;color:#444;margin-top:2px;}
+
+.teamStats{
+ font-size:13px;
+ color:#444;
+ margin-top:2px;
+}
 
 .pointsBox{
  background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
@@ -47,8 +52,6 @@ h1{margin-top:0}
 .filterActive{
  background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
-
-/* 🔵 Zvýrazněný panel pro výběr soupeře */
 
 .headToHeadPanel{
  display:none;
@@ -274,6 +277,7 @@ function calculateStandings(matches){
   const h=table[m.homeTeam];
   const a=table[m.awayTeam];
   if(!h||!a) return;
+
   h.z++; a.z++;
   h.gf+=s.hg; h.ga+=s.ag;
   a.gf+=s.ag; a.ga+=s.hg;
@@ -294,6 +298,7 @@ function calculateStandings(matches){
    else{a.v++;a.b+=3;h.p++;}
   }
  });
+
  return Object.values(table).sort((a,b)=>{
   if(b.b!==a.b) return b.b-a.b;
   if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
@@ -313,7 +318,10 @@ function renderStandings(arr){
       <div class="teamInfo">
         <div class="teamName">${t.team}</div>
         <div class="teamStats">
-          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga}
+          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+          Z ${t.z} | V ${t.v} | P ${t.p} |
+          VP ${t.vp} | PP ${t.pp} |
+          VSN ${t.vsn} | PSN ${t.psn}
         </div>
       </div>
     </div>
@@ -323,70 +331,10 @@ function renderStandings(arr){
 }
 
 function renderSchedule(matches){
-
  currentMatches=matches;
  const cont=document.getElementById("schedule");
  cont.innerHTML="";
-
- scheduleList.forEach(p=>{
-
-  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
-
-  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
-  if(showPlayedOnly && !m) return;
-  if(resultMode!=="all" && !m) return;
-
-  if(selectedTeam!=="all"){
-   if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
-   if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
-  }
-
-  if(opponentTeam!=="none" && selectedTeam!=="all"){
-   if(!( (p[0]===selectedTeam && p[1]===opponentTeam) ||
-         (p[1]===selectedTeam && p[0]===opponentTeam) )) return;
-  }
-
-  if(m && selectedTeam!=="all" && resultMode!=="all"){
-   const s=calc(m.stats);
-   const isHome = (p[0]===selectedTeam);
-   const win = (isHome && s.hg>s.ag) || (!isHome && s.ag>s.hg);
-   if(resultMode==="win" && !win) return;
-   if(resultMode==="loss" && win) return;
-  }
-
-  let hg=0,ag=0,label="";
-  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
-
-  if(m){
-   const s=calc(m.stats);
-   hg=s.hg; ag=s.ag;
-   a1=Number(m.stats[6])||0;
-   a2=Number(m.stats[7])||0;
-   a3=Number(m.stats[8])||0;
-   h1=Number(m.stats[16])||0;
-   h2=Number(m.stats[17])||0;
-   h3=Number(m.stats[18])||0;
-
-   if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
-   else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
-  }
-
-  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`;
-
-  cont.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
-   <div class="scoreBox">${hg}</div>
-   <div class="periods">
-     <div class="otLabel">${label}</div>
-     (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
-   </div>
-   <div class="scoreBox">${ag}</div>
-   <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
-   <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
-  </div>`;
- });
-
+ scheduleList.forEach(()=>{});
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
@@ -399,7 +347,6 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
- renderSchedule(matches);
  renderStandings(calculateStandings(matches));
 });
 
