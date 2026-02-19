@@ -7,194 +7,85 @@
 
 <style>
 *{box-sizing:border-box}
-
-body{
- font-family:Arial;
- margin:0;
- background:#f2f2f2;
-}
-
-/* ===== HLAVNÍ LAYOUT S HRÁČEM ===== */
-
-.pageLayout{
- display:flex;
- justify-content:center;
- align-items:flex-start;
- gap:40px;
- padding:20px;
-}
-
-.wrapper{
- max-width:1200px;
- background:white;
- padding:20px;
- flex:1;
-}
-
-/* hráč vpravo */
-.sidePlayer{
- position:sticky;
- top:20px;
- height:calc(100vh - 40px);
- display:flex;
- align-items:flex-end;
-}
-
-.sidePlayer img{
- max-height:95vh;
- object-fit:contain;
-}
-
-/* ===== TABULKA ===== */
+body{font-family:Arial;margin:0;background:#f2f2f2;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+h1{margin-top:0}
 
 .standingsCard{
- display:flex;
- align-items:center;
- justify-content:space-between;
- background:#e9ecef;
- border-radius:10px;
- padding:14px 16px;
- margin-bottom:10px;
+ display:flex;align-items:center;justify-content:space-between;
+ background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
 }
 
-.rank{
- width:30px;
- font-weight:bold;
- font-size:18px;
- text-align:center;
-}
-
-.teamBlock{
- display:flex;
- align-items:center;
- gap:14px;
- flex:1;
-}
+.rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
+.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
- width:40px;
- height:40px;
- object-fit:contain;
+ width:40px;height:40px;object-fit:contain;
  filter:contrast(1.1) saturate(1.15);
  box-shadow:0 2px 6px rgba(0,0,0,0.25);
- border-radius:6px;
- background:white;
- padding:2px;
+ border-radius:6px;background:white;padding:2px;
 }
 
-.teamInfo{
- display:flex;
- flex-direction:column;
-}
-
-.teamName{
- font-weight:bold;
- font-size:16px;
-}
-
-.teamStats{
- font-size:13px;
- color:#444;
- margin-top:2px;
-}
+.teamInfo{display:flex;flex-direction:column;}
+.teamName{font-weight:bold;font-size:16px;}
+.teamStats{font-size:13px;color:#444;margin-top:2px;}
 
 .pointsBox{
- background:#0b2a3c;
- color:white;
- font-size:20px;
- font-weight:bold;
- padding:10px 16px;
- border-radius:8px;
- min-width:60px;
- text-align:center;
+ background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
+ padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
 
-/* ===== FILTRY ===== */
-
 .filterBar{
- display:flex;
- gap:10px;
- align-items:center;
- margin:15px 0;
- flex-wrap:wrap;
+ display:flex;gap:10px;align-items:center;margin:15px 0;flex-wrap:wrap;
 }
 
 .filterBar select,
 .filterBar button{
- padding:8px 10px;
- border-radius:6px;
- border:1px solid #ccc;
- font-weight:bold;
+ padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-weight:bold;
 }
 
 .filterActive{
- background:#2f9ec9;
- color:white;
- border-color:#2f9ec9;
+ background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
 
-/* ===== ROZPIS ===== */
+.headToHeadPanel{
+ display:none;
+ background:#e3f2f9;
+ padding:14px;
+ border-radius:8px;
+ margin-top:8px;
+ border:2px solid #2f9ec9;
+}
+
+.headToHeadTitle{
+ font-weight:bold;
+ font-size:15px;
+ margin-bottom:6px;
+ color:#0b2a3c;
+}
 
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr 120px;
- align-items:center;
- background:#e9ecef;
- padding:10px;
- margin-bottom:6px;
- border-radius:6px;
- gap:8px;
+ align-items:center;background:#e9ecef;
+ padding:10px;margin-bottom:6px;border-radius:6px;gap:8px;
 }
 
-.teamBox{
- display:flex;
- align-items:center;
- gap:10px;
- font-weight:bold;
-}
-
-.teamRight{
- justify-content:flex-end;
-}
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
+.teamRight{justify-content:flex-end;}
 
 .scoreBox{
- background:#0b2a3c;
- color:white;
- font-size:22px;
- font-weight:bold;
- padding:8px 0;
- border-radius:6px;
- text-align:center;
+ background:#0b2a3c;color:white;font-size:22px;font-weight:bold;
+ padding:8px 0;border-radius:6px;text-align:center;
 }
 
-.periods{
- text-align:center;
- font-size:14px;
-}
-
-.otLabel{
- font-weight:bold;
- font-size:13px;
- margin-bottom:2px;
-}
+.periods{text-align:center;font-size:14px}
+.otLabel{font-weight:bold;font-size:13px;margin-bottom:2px}
 
 .statsBtn{
- background:#2f9ec9;
- color:white;
- border:none;
- padding:8px 12px;
- border-radius:6px;
- cursor:pointer;
- font-weight:bold;
- width:100%;
-}
-
-/* ===== RESPONSIVE ===== */
-
-@media(max-width:1400px){
- .sidePlayer{
-  display:none;
- }
+ background:#2f9ec9;color:white;border:none;
+ padding:8px 12px;border-radius:6px;cursor:pointer;
+ font-weight:bold;width:100%;
 }
 
 @media (max-width:900px){
@@ -202,24 +93,14 @@ body{
   grid-template-columns:1fr auto;
   grid-template-rows:auto auto auto auto;
  }
-
- .teamBox,
- .scoreBox,
- .periods,
- .statsBtn{
-  grid-column:1/3;
-  justify-content:center;
-  text-align:center;
+ .teamBox,.scoreBox,.periods,.statsBtn{
+  grid-column:1/3;justify-content:center;text-align:center;
  }
 }
-
 </style>
 </head>
 
 <body>
-
-<div class="pageLayout">
-
 <div class="wrapper">
 
 <h1>Extraliga - 2. sezóna</h1>
@@ -253,13 +134,14 @@ body{
 
 </div>
 
+<div id="headToHeadPanel" class="headToHeadPanel">
+<div class="headToHeadTitle">Vyber soupeře:</div>
+<select id="opponentFilter">
+<option value="none">-- Vyber tým --</option>
+</select>
+</div>
+
 <div id="schedule"></div>
-
-</div>
-
-<div class="sidePlayer">
-  <img src="img/libor.png" alt="Libor">
-</div>
 
 </div>
 
@@ -309,6 +191,7 @@ let selectedTeam="all";
 let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
+let opponentTeam="none";
 let currentMatches=[];
 
 const teamFilter=document.getElementById("teamFilter");
@@ -319,10 +202,15 @@ teams.forEach(t=>{
  teamFilter.appendChild(opt);
 });
 
-teamFilter.onchange=()=>{
- selectedTeam=teamFilter.value;
- renderSchedule(currentMatches);
-};
+const opponentFilter=document.getElementById("opponentFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ opponentFilter.appendChild(opt);
+});
+
+teamFilter.onchange=()=>{ selectedTeam=teamFilter.value; renderSchedule(currentMatches); };
 
 document.getElementById("filterAll").onclick=()=>{
  showPlayedOnly=false;
@@ -348,6 +236,16 @@ document.getElementById("resultFilter").onchange=e=>{
  renderSchedule(currentMatches);
 };
 
+document.getElementById("headToHeadBtn").onclick=()=>{
+ const panel=document.getElementById("headToHeadPanel");
+ panel.style.display=panel.style.display==="block"?"none":"block";
+};
+
+opponentFilter.onchange=e=>{
+ opponentTeam=e.target.value;
+ renderSchedule(currentMatches);
+};
+
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
  let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
@@ -368,7 +266,6 @@ function createEmpty(){
 
 function calculateStandings(matches){
  let table=createEmpty();
-
  matches.forEach(m=>{
   if(!m.stats) return;
   const s=calc(m.stats);
@@ -407,7 +304,6 @@ function calculateStandings(matches){
 function renderStandings(arr){
  const body=document.getElementById("standingsBody");
  body.innerHTML="";
-
  arr.forEach((t,i)=>{
   body.innerHTML+=`
   <div class="standingsCard">
@@ -440,6 +336,25 @@ function renderSchedule(matches){
 
   if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
   if(showPlayedOnly && !m) return;
+  if(resultMode!=="all" && !m) return;
+
+  if(selectedTeam!=="all"){
+   if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
+   if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
+  }
+
+  if(opponentTeam!=="none" && selectedTeam!=="all"){
+   if(!( (p[0]===selectedTeam && p[1]===opponentTeam) ||
+         (p[1]===selectedTeam && p[0]===opponentTeam) )) return;
+  }
+
+  if(m && selectedTeam!=="all" && resultMode!=="all"){
+   const s=calc(m.stats);
+   const isHome = (p[0]===selectedTeam);
+   const win = (isHome && s.hg>s.ag) || (!isHome && s.ag>s.hg);
+   if(resultMode==="win" && !win) return;
+   if(resultMode==="loss" && win) return;
+  }
 
   let hg=0,ag=0,label="";
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
@@ -447,11 +362,9 @@ function renderSchedule(matches){
   if(m){
    const s=calc(m.stats);
    hg=s.hg; ag=s.ag;
-
    a1=Number(m.stats[6])||0;
    a2=Number(m.stats[7])||0;
    a3=Number(m.stats[8])||0;
-
    h1=Number(m.stats[16])||0;
    h2=Number(m.stats[17])||0;
    h3=Number(m.stats[18])||0;
@@ -475,6 +388,7 @@ function renderSchedule(matches){
    <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
   </div>`;
  });
+
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
@@ -487,12 +401,10 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
-
  renderSchedule(matches);
  renderStandings(calculateStandings(matches));
 });
 
 </script>
-
 </body>
 </html>
