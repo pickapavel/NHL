@@ -7,41 +7,27 @@
 
 <style>
 *{box-sizing:border-box}
-
-body{
- font-family:Arial;
- margin:0;
- background:#f2f2f2;
-}
-
-.wrapper{
- max-width:1200px;
- margin:auto;
- padding:20px;
- background:white;
-}
-
-/* ===== HLAVIČKA ===== */
+body{font-family:Arial;margin:0;background:#f2f2f2;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 
 .headerBar{
  display:flex;
  align-items:center;
  justify-content:space-between;
  background:#e9ecef;
- border-radius:12px;
- padding:18px;
- margin-bottom:25px;
- gap:25px;
+ border-radius:14px;
+ padding:20px;
+ margin-bottom:30px;
 }
 
 .logoSection{
  display:flex;
  align-items:center;
- gap:18px;
+ gap:20px;
 }
 
 .logoSection img{
- height:90px;
+ height:95px;
  object-fit:contain;
 }
 
@@ -50,16 +36,14 @@ body{
  color:white;
  font-size:24px;
  font-weight:bold;
- padding:12px 24px;
- border-radius:10px;
+ padding:12px 28px;
+ border-radius:12px;
 }
-
-/* ===== MINI MATCH BOXES ===== */
 
 .miniMatches{
  display:grid;
- grid-template-columns:repeat(2, auto);
- gap:10px 15px;
+ grid-template-columns:repeat(2,auto);
+ gap:10px 14px;
 }
 
 .miniBox{
@@ -68,13 +52,13 @@ body{
  gap:8px;
  background:white;
  padding:6px 10px;
- border-radius:8px;
- box-shadow:0 2px 6px rgba(0,0,0,0.15);
+ border-radius:10px;
+ box-shadow:0 3px 8px rgba(0,0,0,0.15);
 }
 
 .miniLogo{
- width:26px;
- height:26px;
+ width:28px;
+ height:28px;
  object-fit:contain;
 }
 
@@ -84,11 +68,9 @@ body{
  font-weight:bold;
  padding:4px 8px;
  border-radius:6px;
- min-width:34px;
+ min-width:36px;
  text-align:center;
 }
-
-/* ===== TABULKA ===== */
 
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
@@ -166,27 +148,18 @@ body{
  padding:8px 12px;border-radius:6px;cursor:pointer;
  font-weight:bold;width:100%;
 }
-
-@media(max-width:1000px){
- .headerBar{flex-direction:column;align-items:flex-start;}
-}
 </style>
 </head>
 
 <body>
-
 <div class="wrapper">
 
-<!-- ===== HLAVIČKA ===== -->
 <div class="headerBar">
-
-  <div class="logoSection">
-    <img src="img/extraliga.jpg" alt="Extraliga">
-    <div class="seasonCard">2. sezóna</div>
-  </div>
-
-  <div class="miniMatches" id="miniMatches"></div>
-
+ <div class="logoSection">
+   <img src="img/extraliga.jpg" alt="Extraliga">
+   <div class="seasonCard">2. sezóna</div>
+ </div>
+ <div class="miniMatches" id="miniMatches"></div>
 </div>
 
 <div id="standingsBody"></div>
@@ -194,11 +167,7 @@ body{
 <h2>Rozpis zápasů</h2>
 
 <div class="filterBar">
-
-<select id="teamFilter">
-<option value="all">Všechny týmy</option>
-</select>
-
+<select id="teamFilter"><option value="all">Všechny týmy</option></select>
 <button id="filterAll" class="filterActive">Všechny zápasy</button>
 <button id="filterPlayed">Jen odehrané</button>
 
@@ -215,7 +184,6 @@ body{
 </select>
 
 <button id="headToHeadBtn">Vzájemné zápasy</button>
-
 </div>
 
 <div id="headToHeadPanel" class="headToHeadPanel">
@@ -230,7 +198,6 @@ body{
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, query, orderBy, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -271,7 +238,64 @@ const scheduleIndex=[
 
 const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
 
+let selectedTeam="all";
+let showPlayedOnly=false;
+let homeAwayMode="both";
+let resultMode="all";
+let opponentTeam="none";
 let currentMatches=[];
+
+const teamFilter=document.getElementById("teamFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ teamFilter.appendChild(opt);
+});
+
+const opponentFilter=document.getElementById("opponentFilter");
+teams.forEach(t=>{
+ const opt=document.createElement("option");
+ opt.value=t;
+ opt.textContent=t;
+ opponentFilter.appendChild(opt);
+});
+
+teamFilter.onchange=()=>{ selectedTeam=teamFilter.value; renderSchedule(currentMatches); };
+
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false;
+ document.getElementById("filterAll").classList.add("filterActive");
+ document.getElementById("filterPlayed").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true;
+ document.getElementById("filterPlayed").classList.add("filterActive");
+ document.getElementById("filterAll").classList.remove("filterActive");
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("homeAwayFilter").onchange=e=>{
+ homeAwayMode=e.target.value;
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("resultFilter").onchange=e=>{
+ resultMode=e.target.value;
+ renderSchedule(currentMatches);
+};
+
+document.getElementById("headToHeadBtn").onclick=()=>{
+ const panel=document.getElementById("headToHeadPanel");
+ panel.style.display=panel.style.display==="block"?"none":"block";
+};
+
+opponentFilter.onchange=e=>{
+ opponentTeam=e.target.value;
+ renderSchedule(currentMatches);
+};
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
@@ -286,14 +310,8 @@ function calc(stats){
 function renderMiniMatches(matches){
  const container=document.getElementById("miniMatches");
  container.innerHTML="";
-
- const played=scheduleList
-   .map(p=>matches.find(m=>m.homeTeam===p[0]&&m.awayTeam===p[1]))
-   .filter(Boolean);
-
- const next=scheduleList
-   .filter(p=>!matches.find(m=>m.homeTeam===p[0]&&m.awayTeam===p[1]));
-
+ const played=scheduleList.map(p=>matches.find(m=>m.homeTeam===p[0]&&m.awayTeam===p[1])).filter(Boolean);
+ const next=scheduleList.filter(p=>!matches.find(m=>m.homeTeam===p[0]&&m.awayTeam===p[1]));
  const lastTwo=played.slice(-2);
  const nextTwo=next.slice(0,2);
 
@@ -317,9 +335,6 @@ function renderMiniMatches(matches){
  });
 }
 
-/* ===== ZBYTEK PŮVODNÍ LOGIKY BEZE ZMĚNY ===== */
-/* (tabulka, filtry, head-to-head, rozpis — zůstává přesně jak fungovalo) */
-
 const q=query(collection(db,"zapasy"),orderBy("created","asc"));
 
 onSnapshot(q,(snap)=>{
@@ -330,11 +345,10 @@ onSnapshot(q,(snap)=>{
    matches.push(m);
   }
  });
-
  currentMatches=matches;
  renderMiniMatches(matches);
+ renderSchedule(matches);
 });
-
 </script>
 
 </body>
