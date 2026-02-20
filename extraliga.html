@@ -147,10 +147,9 @@ body{
 
 <div class="wrapper">
 
-<!-- ===== NOVÁ HLAVIČKA ===== -->
 <div class="headerBar">
   <img src="img/extraliga.jpg" alt="Extraliga">
-  <div class="seasonCard">2. sezóna</div>
+  <div class="seasonCard" id="seasonLabel">2. sezóna</div>
 </div>
 
 <div id="standingsBody"></div>
@@ -158,6 +157,12 @@ body{
 <h2>Rozpis zápasů</h2>
 
 <div class="filterBar">
+
+<!-- NOVÝ FILTR SEZÓNY -->
+<select id="seasonFilter">
+<option value="Sezóna 1">Sezóna 1</option>
+<option value="Sezóna 2" selected>Sezóna 2</option>
+</select>
 
 <select id="teamFilter">
 <option value="all">Všechny týmy</option>
@@ -193,8 +198,6 @@ body{
 
 </div>
 
-<!-- ===== JS BEZE ZMĚNY ===== -->
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -209,6 +212,14 @@ const firebaseConfig={
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
+
+let selectedSeason="Sezóna 2"; // NOVÉ
+
+document.getElementById("seasonFilter").onchange=(e)=>{
+ selectedSeason=e.target.value;
+ document.getElementById("seasonLabel").textContent =
+  selectedSeason==="Sezóna 1" ? "1. sezóna" : "2. sezóna";
+};
 
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
@@ -447,7 +458,7 @@ onSnapshot(q,(snap)=>{
  let matches=[];
  snap.forEach(d=>{
   const m=d.data();
-  if(m.category?.startsWith("Extraliga") && m.season==="Sezóna 2"){
+  if(m.category?.startsWith("Extraliga") && m.season===selectedSeason){
    matches.push(m);
   }
  });
