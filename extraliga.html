@@ -427,7 +427,6 @@ function renderSchedule(matches){
  scheduleList.forEach(p=>{
 
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
-
   if(headToHeadMode && teamFilter.value==="all") return
 
   if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
@@ -437,14 +436,13 @@ function renderSchedule(matches){
 
   if(showPlayedOnly && (!m || !m.stats)) return
 
-  if(resultMode!=="all" && m && m.stats && teamFilter.value!=="all"){
+  if(resultMode!=="all" && m && m.stats){
 
    const s=calc(m.stats)
-   const isHome=teamFilter.value===p[0]
-   const isWin=isHome ? s.hg>s.ag : s.ag>s.hg
+   const win=s.hg>s.ag
 
-   if(resultMode==="win" && !isWin) return
-   if(resultMode==="loss" && isWin) return
+   if(resultMode==="win" && !win) return
+   if(resultMode==="loss" && win) return
 
   }
 
