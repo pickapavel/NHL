@@ -230,6 +230,17 @@ const teamsData={
 const teams=Object.keys(teamsData);
 const logos=teamsData;
 
+/* ===== DOPLNĚNÍ TÝMŮ DO FILTRU ===== */
+
+const teamFilter=document.getElementById("teamFilter");
+
+teams.forEach(team=>{
+ const option=document.createElement("option");
+ option.value=team;
+ option.textContent=team;
+ teamFilter.appendChild(option);
+});
+
 /* ===== ROZPIS ===== */
 
 const scheduleIndex=[
