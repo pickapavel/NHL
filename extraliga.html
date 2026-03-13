@@ -56,6 +56,14 @@ body{
 }
 
 .rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
+
+.ratingStand{
+ width:70px;
+ font-weight:bold;
+ font-size:14px;
+ text-align:center;
+}
+
 .teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
@@ -173,7 +181,6 @@ body{
 <option value="all">Všechny týmy</option>
 </select>
 
-<!-- NOVÝ dropdown -->
 <select id="teamFilter2" style="display:none">
 <option value="all">Druhý tým</option>
 </select>
@@ -260,11 +267,8 @@ teamFilter.onchange=()=>applySeasonFilter()
 teamFilter2.onchange=()=>applySeasonFilter()
 
 document.getElementById("headToHeadBtn").onclick=()=>{
-
  headToHeadMode=!headToHeadMode
-
  teamFilter2.style.display=headToHeadMode?"block":"none"
-
  applySeasonFilter()
 }
 
@@ -398,11 +402,15 @@ function renderStandings(arr){
 
  arr.forEach((t,i)=>{
 
+  const rating=Math.round(ratings[t.team]||1000)
+
   body.innerHTML+=`
 
   <div class="standingsCard">
 
    <div class="rank">${i+1}</div>
+
+   <div class="ratingStand">⭐ ${rating}</div>
 
    <div class="teamBlock">
 
@@ -435,6 +443,7 @@ function renderStandings(arr){
 }
 
 /* ===== ROZPIS ===== */
+/* (zbytek kódu zůstal úplně stejný) */
 
 function renderSchedule(matches){
 
