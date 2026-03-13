@@ -299,7 +299,7 @@ function updateElo(home,away,hg,ag){
  ratings[away]+=K*(sb-eb);
 }
 
-/* GOALS */
+/* GÓLY */
 
 function calc(stats){
 
@@ -314,7 +314,99 @@ function calc(stats){
  return {hg,ag};
 }
 
-/* RENDER */
+/* TABULKA */
+
+function createEmpty(){
+ let obj={};
+ teams.forEach(t=>{
+  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
+ });
+ return obj;
+}
+
+function calculateStandings(matches){
+
+ let table=createEmpty();
+
+ matches.forEach(m=>{
+  if(!m.stats)return;
+
+  const s=calc(m.stats);
+  const h=table[m.homeTeam];
+  const a=table[m.awayTeam];
+
+  h.z++;a.z++;
+
+  h.gf+=s.hg;h.ga+=s.ag;
+  a.gf+=s.ag;a.ga+=s.hg;
+
+  const isSN=(m.stats[20]==="1"||m.stats[20]==="2");
+  const isOT=(!isSN&&(m.stats[9]==="11"||m.stats[19]==="11"));
+
+  if(isSN){
+   if(s.hg>s.ag){h.vsn++;h.b+=2;a.psn++;a.b+=1;}
+   else{a.vsn++;a.b+=2;h.psn++;h.b+=1;}
+  }
+  else if(isOT){
+   if(s.hg>s.ag){h.vp++;h.b+=2;a.pp++;a.b+=1;}
+   else{a.vp++;a.b+=2;h.pp++;h.b+=1;}
+  }
+  else{
+   if(s.hg>s.ag){h.v++;h.b+=3;a.p++;}
+   else{a.v++;a.b+=3;h.p++;}
+  }
+
+ });
+
+ return Object.values(table).sort((a,b)=>{
+  if(b.b!==a.b)return b.b-a.b;
+  if((b.gf-b.ga)!==(a.gf-a.ga))return(b.gf-b.ga)-(a.gf-a.ga);
+  return b.gf-a.gf;
+ });
+}
+
+function renderStandings(arr){
+
+ const body=document.getElementById("standingsBody");
+ body.innerHTML="";
+
+ arr.forEach((t,i)=>{
+
+  body.innerHTML+=`
+  <div class="standingsCard">
+
+   <div class="rank">${i+1}</div>
+
+   <div class="teamBlock">
+
+    <img class="logo" src="./logos/${logos[t.team]}">
+
+    <div class="teamInfo">
+
+     <div class="teamName">${t.team}</div>
+
+     <div class="teamStats">
+
+      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+      Z ${t.z} | V ${t.v} | P ${t.p} |
+      VP ${t.vp} | PP ${t.pp} |
+      VSN ${t.vsn} | PSN ${t.psn}
+
+     </div>
+
+    </div>
+
+   </div>
+
+   <div class="pointsBox">${t.b}</div>
+
+  </div>
+  `;
+ });
+
+}
+
+/* ROZPIS */
 
 function renderSchedule(matches){
 
@@ -326,11 +418,22 @@ function renderSchedule(matches){
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
 
   let hg=0,ag=0;
+  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
 
   if(m&&m.stats){
+
    const s=calc(m.stats);
+
    hg=s.hg;
    ag=s.ag;
+
+   a1=Number(m.stats[6])||0;
+   a2=Number(m.stats[7])||0;
+   a3=Number(m.stats[8])||0;
+
+   h1=Number(m.stats[16])||0;
+   h2=Number(m.stats[17])||0;
+   h3=Number(m.stats[18])||0;
   }
 
   const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`;
@@ -346,7 +449,7 @@ function renderSchedule(matches){
 
    <div class="scoreBox">${hg}</div>
 
-   <div class="periods">-</div>
+   <div class="periods">(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})</div>
 
    <div class="scoreBox">${ag}</div>
 
@@ -381,12 +484,11 @@ function renderSchedule(matches){
   </div>
 
   `;
-
  });
 
 }
 
-/* SEASON */
+/* FILTR */
 
 function applySeasonFilter(){
 
@@ -403,11 +505,12 @@ function applySeasonFilter(){
  });
 
  const filtered=allMatches.filter(m=>
-  m.category?.startsWith("Extraliga") &&
+  m.category?.startsWith("Extraliga")&&
   m.season===selectedSeason
  );
 
  renderSchedule(filtered);
+ renderStandings(calculateStandings(filtered));
 }
 
 document.getElementById("seasonFilter").onchange=(e)=>{
