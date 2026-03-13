@@ -245,8 +245,16 @@ teamFilter.onchange=()=>applySeasonFilter()
 
 document.getElementById("headToHeadBtn").onclick=()=>{
  headToHeadMode=!headToHeadMode
+
+ const btn=document.getElementById("headToHeadBtn")
+
+ if(headToHeadMode) btn.classList.add("filterActive")
+ else btn.classList.remove("filterActive")
+
  applySeasonFilter()
 }
+
+/* ===== ROZPIS ===== */
 
 const scheduleIndex=[
  [0,1],[3,2],[5,4],[7,6],
@@ -261,6 +269,8 @@ const scheduleIndex=[
 
 const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
 
+/* ===== ZÁPASY ===== */
+
 function renderSchedule(matches){
 
  const cont=document.getElementById("schedule")
@@ -271,11 +281,7 @@ function renderSchedule(matches){
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
 
   if(headToHeadMode && teamFilter.value!=="all"){
-   const opponent = p[0]===teamFilter.value ? p[1] : p[0]
-   if(!scheduleList.some(x =>
-     (x[0]===teamFilter.value && x[1]===opponent) ||
-     (x[1]===teamFilter.value && x[0]===opponent)
-   )) return
+   if(p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
   }
 
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
@@ -306,15 +312,20 @@ function renderSchedule(matches){
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
 
   if(m){
+
    const s=calc(m.stats)
+
    hg=s.hg
    ag=s.ag
+
    a1=Number(m.stats[6])||0
    a2=Number(m.stats[7])||0
    a3=Number(m.stats[8])||0
+
    h1=Number(m.stats[16])||0
    h2=Number(m.stats[17])||0
    h3=Number(m.stats[18])||0
+
   }
 
   const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
@@ -353,6 +364,22 @@ function renderSchedule(matches){
  })
 
 }
+
+/* ===== FIREBASE ===== */
+
+const q=query(collection(db,"zapasy"),orderBy("created","asc"))
+
+onSnapshot(q,(snap)=>{
+
+ allMatches=[]
+
+ snap.forEach(d=>{
+  allMatches.push(d.data())
+ })
+
+ applySeasonFilter()
+
+})
 
 </script>
 
