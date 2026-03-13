@@ -435,17 +435,23 @@ function renderSchedule(matches){
 
   if(showPlayedOnly && (!m || !m.stats)) return
 
-  /* ===== OPRAVENÝ FILTR ===== */
-
   if(resultMode!=="all"){
 
    if(!m || !m.stats) return
 
    const s=calc(m.stats)
-   const win=s.hg>s.ag
 
-   if(resultMode==="win" && !win) return
-   if(resultMode==="loss" && win) return
+   let teamWin=false
+
+   if(teamFilter.value==="all"){
+     teamWin = s.hg > s.ag
+   }else{
+     if(p[0]===teamFilter.value) teamWin = s.hg > s.ag
+     if(p[1]===teamFilter.value) teamWin = s.ag > s.hg
+   }
+
+   if(resultMode==="win" && !teamWin) return
+   if(resultMode==="loss" && teamWin) return
 
   }
 
