@@ -213,6 +213,7 @@ const db=getFirestore(app);
 
 let selectedSeason="Sezóna 2";
 let allMatches=[];
+let showPlayedOnly=false;
 
 /* ===== TÝMY ===== */
 
@@ -418,7 +419,7 @@ function renderSchedule(matches){
 
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
-  let hg=0,ag=0,label=""
+  let hg=0,ag=0
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
 
   if(m){
@@ -470,23 +471,6 @@ function renderSchedule(matches){
 
   </div>
 
-  <div class="predictionRow">
-
-   <div class="ratingBox">${Math.round(ratings[p[0]]||BASE_RATING)} ⭐</div>
-
-   <div class="odds">V<br>-</div>
-   <div class="odds">OT<br>-</div>
-   <div class="odds">SN<br>-</div>
-   <div class="odds">P<br>-</div>
-
-   <div class="tipInput">
-   <input placeholder="Tvůj tip">
-   </div>
-
-   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]]||BASE_RATING)}</div>
-
-  </div>
-
   `
 
  })
@@ -509,14 +493,34 @@ function applySeasonFilter(){
   updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
  })
 
- const filtered=allMatches.filter(m=>
+ let filtered=allMatches.filter(m=>
   m.category?.startsWith("Extraliga") &&
   m.season===selectedSeason
  )
 
+ if(showPlayedOnly){
+  filtered=filtered.filter(m=>m.stats)
+ }
+
  renderSchedule(filtered)
  renderStandings(calculateStandings(filtered))
 
+}
+
+/* ===== FILTRY ===== */
+
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false
+ document.getElementById("filterAll").classList.add("filterActive")
+ document.getElementById("filterPlayed").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true
+ document.getElementById("filterPlayed").classList.add("filterActive")
+ document.getElementById("filterAll").classList.remove("filterActive")
+ applySeasonFilter()
 }
 
 document.getElementById("seasonFilter").onchange=(e)=>{
