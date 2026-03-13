@@ -146,7 +146,7 @@ body{
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard" id="seasonLabel">2. sezóna</div>
+<div class="seasonCard">2. sezóna</div>
 </div>
 
 <div id="standingsBody"></div>
@@ -258,36 +258,29 @@ function renderSchedule(matches){
  const cont=document.getElementById("schedule")
  cont.innerHTML=""
 
- matches.forEach(m=>{
-
-  const p=[m.homeTeam,m.awayTeam]
+ scheduleList.forEach(p=>{
 
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
+  if(headToHeadMode && teamFilter.value==="all") return
 
-  if(resultMode!=="all" && (!m || !m.stats)) return
+  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
-  if(resultMode!=="all" && m.stats){
-
+  if(resultMode!=="all"){
+   if(!m || !m.stats) return
    const s=calc(m.stats)
 
    let win
 
-   if(teamFilter.value==="all"){
-    win=s.hg>s.ag
-   }else if(teamFilter.value===p[0]){
-    win=s.hg>s.ag
-   }else{
-    win=s.ag>s.hg
-   }
+   if(teamFilter.value==="all") win=s.hg>s.ag
+   else if(teamFilter.value===p[0]) win=s.hg>s.ag
+   else win=s.ag>s.hg
 
    if(resultMode==="win" && !win) return
    if(resultMode==="loss" && win) return
-
   }
 
   let hg=0,ag=0
-
-  if(m.stats){
+  if(m && m.stats){
    const s=calc(m.stats)
    hg=s.hg
    ag=s.ag
@@ -320,11 +313,6 @@ function applySeasonFilter(){
 
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
- applySeasonFilter()
-}
-
-document.getElementById("seasonFilter").onchange=(e)=>{
- selectedSeason=e.target.value
  applySeasonFilter()
 }
 
