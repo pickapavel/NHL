@@ -435,7 +435,11 @@ function renderSchedule(matches){
 
   if(showPlayedOnly && (!m || !m.stats)) return
 
-  if(resultMode!=="all" && m && m.stats){
+  /* ===== OPRAVENÝ FILTR ===== */
+
+  if(resultMode!=="all"){
+
+   if(!m || !m.stats) return
 
    const s=calc(m.stats)
    const win=s.hg>s.ag
@@ -592,4 +596,3 @@ onSnapshot(q,(snap)=>{
 
 </body>
 </html>
-```
