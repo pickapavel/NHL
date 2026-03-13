@@ -217,6 +217,7 @@ let allMatches=[];
 let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
+let headToHeadMode=false;
 
 /* ===== TÝMY ===== */
 
@@ -244,6 +245,11 @@ teams.forEach(team=>{
 });
 
 teamFilter.onchange=()=>applySeasonFilter()
+
+document.getElementById("headToHeadBtn").onclick=()=>{
+ headToHeadMode=!headToHeadMode
+ applySeasonFilter()
+}
 
 /* ===== ROZPIS ===== */
 
@@ -421,6 +427,8 @@ function renderSchedule(matches){
  scheduleList.forEach(p=>{
 
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
+
+  if(headToHeadMode && teamFilter.value==="all") return
 
   if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
   if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
