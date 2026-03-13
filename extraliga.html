@@ -215,6 +215,7 @@ const db=getFirestore(app);
 let selectedSeason="Sezóna 2";
 let allMatches=[];
 let showPlayedOnly=false;
+let homeAwayMode="both";
 
 /* ===== TÝMY ===== */
 
@@ -416,6 +417,9 @@ function renderSchedule(matches){
 
  scheduleList.forEach(p=>{
 
+  if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
+  if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
+
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
   if(showPlayedOnly && (!m || !m.stats)) return
@@ -531,6 +535,11 @@ document.getElementById("filterPlayed").onclick=()=>{
  showPlayedOnly=true
  document.getElementById("filterPlayed").classList.add("filterActive")
  document.getElementById("filterAll").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("homeAwayFilter").onchange=(e)=>{
+ homeAwayMode=e.target.value
  applySeasonFilter()
 }
 
