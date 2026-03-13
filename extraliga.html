@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -21,6 +20,8 @@ body{
  padding:20px;
  background:white;
 }
+
+/* ===== HLAVIČKA ===== */
 
 .headerBar{
  display:flex;
@@ -47,6 +48,8 @@ body{
  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 
+/* ===== TABULKA ===== */
+
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
  background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
@@ -70,6 +73,8 @@ body{
  padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
 
+/* ===== FILTRY ===== */
+
 .filterBar{
  display:flex;gap:10px;align-items:center;margin:15px 0;flex-wrap:wrap;
 }
@@ -82,6 +87,8 @@ body{
 .filterActive{
  background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
+
+/* ===== ZÁPAS ===== */
 
 .matchRow{
  display:grid;
@@ -105,6 +112,8 @@ body{
  padding:8px 12px;border-radius:6px;cursor:pointer;
  font-weight:bold;width:100%;
 }
+
+/* ===== TIPOVÁNÍ ===== */
 
 .predictionRow{
  display:grid;
@@ -209,6 +218,8 @@ let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
 
+/* ===== TÝMY ===== */
+
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -239,6 +250,8 @@ document.getElementById("headToHeadBtn").onclick=()=>{
  applySeasonFilter()
 }
 
+/* ===== ROZPIS ===== */
+
 const scheduleIndex=[
  [0,1],[3,2],[5,4],[7,6],
  [2,0],[1,3],[6,5],[4,7],
@@ -251,6 +264,8 @@ const scheduleIndex=[
 ];
 
 const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
+
+/* ===== ELO ===== */
 
 const BASE_RATING=1000;
 const K=30;
@@ -269,6 +284,9 @@ function expected(ra,rb){
 
 function updateElo(home,away,hg,ag){
 
+ if(ratings[home]===undefined)ratings[home]=BASE_RATING
+ if(ratings[away]===undefined)ratings[away]=BASE_RATING
+
  let ra=ratings[home]+HOME_ADV
  let rb=ratings[away]
 
@@ -282,6 +300,8 @@ function updateElo(home,away,hg,ag){
  ratings[away]+=K*(sb-eb)
 
 }
+
+/* ===== GÓLY ===== */
 
 function calc(stats){
 
@@ -297,6 +317,107 @@ function calc(stats){
 
 }
 
+/* ===== TABULKA ===== */
+
+function createEmpty(){
+
+ let obj={}
+
+ teams.forEach(t=>{
+  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
+ })
+
+ return obj
+}
+
+function calculateStandings(matches){
+
+ let table=createEmpty()
+
+ matches.forEach(m=>{
+
+  if(!m.stats)return
+
+  const s=calc(m.stats)
+  const h=table[m.homeTeam]
+  const a=table[m.awayTeam]
+
+  h.z++;a.z++
+
+  h.gf+=s.hg;h.ga+=s.ag
+  a.gf+=s.ag;a.ga+=s.hg
+
+  const isSN=(m.stats[20]==="1"||m.stats[20]==="2")
+  const isOT=(!isSN&&(m.stats[9]==="11"||m.stats[19]==="11"))
+
+  if(isSN){
+   if(s.hg>s.ag){h.vsn++;h.b+=2;a.psn++;a.b+=1;}
+   else{a.vsn++;a.b+=2;h.psn++;h.b+=1;}
+  }
+  else if(isOT){
+   if(s.hg>s.ag){h.vp++;h.b+=2;a.pp++;a.b+=1;}
+   else{a.vp++;a.b+=2;h.pp++;h.b+=1;}
+  }
+  else{
+   if(s.hg>s.ag){h.v++;h.b+=3;a.p++;}
+   else{a.v++;a.b+=3;h.p++;}
+  }
+
+ })
+
+ return Object.values(table).sort((a,b)=>{
+  if(b.b!==a.b)return b.b-a.b
+  if((b.gf-b.ga)!==(a.gf-a.ga))return(b.gf-b.ga)-(a.gf-a.ga)
+  return b.gf-a.gf
+ })
+
+}
+
+function renderStandings(arr){
+
+ const body=document.getElementById("standingsBody")
+ body.innerHTML=""
+
+ arr.forEach((t,i)=>{
+
+  body.innerHTML+=`
+
+  <div class="standingsCard">
+
+   <div class="rank">${i+1}</div>
+
+   <div class="teamBlock">
+
+    <img class="logo" src="./logos/${logos[t.team]}">
+
+    <div class="teamInfo">
+
+     <div class="teamName">${t.team}</div>
+
+     <div class="teamStats">
+
+      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+      Z ${t.z} | V ${t.v} | P ${t.p} |
+      VP ${t.vp} | PP ${t.pp} |
+      VSN ${t.vsn} | PSN ${t.psn}
+
+     </div>
+
+    </div>
+
+   </div>
+
+   <div class="pointsBox">${t.b}</div>
+
+  </div>
+
+  `
+ })
+
+}
+
+/* ===== ROZPIS ===== */
+
 function renderSchedule(matches){
 
  const cont=document.getElementById("schedule")
@@ -307,6 +428,9 @@ function renderSchedule(matches){
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
   if(headToHeadMode && teamFilter.value==="all") return
 
+  if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
+  if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
+
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
   if(showPlayedOnly && (!m || !m.stats)) return
@@ -314,16 +438,7 @@ function renderSchedule(matches){
   if(resultMode!=="all" && m && m.stats){
 
    const s=calc(m.stats)
-
-   let win
-
-   if(teamFilter.value==="all"){
-    win=s.hg>s.ag
-   }else if(teamFilter.value===p[0]){
-    win=s.hg>s.ag
-   }else{
-    win=s.ag>s.hg
-   }
+   const win=s.hg>s.ag
 
    if(resultMode==="win" && !win) return
    if(resultMode==="loss" && win) return
@@ -400,15 +515,11 @@ function renderSchedule(matches){
   </div>
 
   `
-
  })
 
 }
 
-document.getElementById("resultFilter").onchange=(e)=>{
- resultMode=e.target.value
- applySeasonFilter()
-}
+/* ===== SEASON ===== */
 
 function applySeasonFilter(){
 
@@ -430,7 +541,37 @@ function applySeasonFilter(){
  )
 
  renderSchedule(filtered)
+ renderStandings(calculateStandings(filtered))
 
+}
+
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false
+ document.getElementById("filterAll").classList.add("filterActive")
+ document.getElementById("filterPlayed").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true
+ document.getElementById("filterPlayed").classList.add("filterActive")
+ document.getElementById("filterAll").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("homeAwayFilter").onchange=(e)=>{
+ homeAwayMode=e.target.value
+ applySeasonFilter()
+}
+
+document.getElementById("resultFilter").onchange=(e)=>{
+ resultMode=e.target.value
+ applySeasonFilter()
+}
+
+document.getElementById("seasonFilter").onchange=(e)=>{
+ selectedSeason=e.target.value
+ applySeasonFilter()
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
