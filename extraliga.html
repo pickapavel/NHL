@@ -67,13 +67,9 @@ body{
 .teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
- width:60px;
- height:60px;
- object-fit:contain;
+ width:40px;height:40px;object-fit:contain;
  box-shadow:0 2px 6px rgba(0,0,0,0.25);
- border-radius:6px;
- background:white;
- padding:2px;
+ border-radius:6px;background:white;padding:2px;
 }
 
 .teamInfo{display:flex;flex-direction:column;}
@@ -413,6 +409,7 @@ function renderStandings(arr){
   <div class="standingsCard">
 
    <div class="ratingStand">⭐ ${rating}</div>
+
    <div class="rank">${i+1}</div>
 
    <div class="teamBlock">
@@ -446,6 +443,7 @@ function renderStandings(arr){
 }
 
 /* ===== ROZPIS ===== */
+/* (zbytek kódu zůstal úplně stejný) */
 
 function renderSchedule(matches){
 
@@ -495,32 +493,32 @@ function renderSchedule(matches){
 
   }
 
-  const link=\`statistiky-zapasu.html?home=\${encodeURIComponent(p[0])}&away=\${encodeURIComponent(p[1])}\`
+  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
 
-  cont.innerHTML+=\`
+  cont.innerHTML+=`
 
   <div class="matchRow">
 
    <div class="teamBox">
-   <img class="logo" src="./logos/\${logos[p[0]]}">
-   \${p[0]}
+   <img class="logo" src="./logos/${logos[p[0]]}">
+   ${p[0]}
    </div>
 
-   <div class="scoreBox">\${hg}</div>
+   <div class="scoreBox">${hg}</div>
 
    <div class="periods">
-   (\${h1}:\${a1}, \${h2}:\${a2}, \${h3}:\${a3})
+   (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
    </div>
 
-   <div class="scoreBox">\${ag}</div>
+   <div class="scoreBox">${ag}</div>
 
    <div class="teamBox teamRight">
-   \${p[1]}
-   <img class="logo" src="./logos/\${logos[p[1]]}">
+   ${p[1]}
+   <img class="logo" src="./logos/${logos[p[1]]}">
    </div>
 
    <div>
-   <button class="statsBtn" onclick="window.location.href='\${link}'">
+   <button class="statsBtn" onclick="window.location.href='${link}'">
    Statistiky
    </button>
    </div>
@@ -529,7 +527,7 @@ function renderSchedule(matches){
 
   <div class="predictionRow">
 
-   <div class="ratingBox">\${Math.round(ratings[p[0]]||1000)} ⭐</div>
+   <div class="ratingBox">${Math.round(ratings[p[0]]||1000)} ⭐</div>
 
    <div class="odds">V<br>-</div>
    <div class="odds">OT<br>-</div>
@@ -540,11 +538,11 @@ function renderSchedule(matches){
    <input placeholder="Tvůj tip">
    </div>
 
-   <div class="ratingBox">⭐ \${Math.round(ratings[p[1]]||1000)}</div>
+   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]]||1000)}</div>
 
   </div>
 
-  \`
+  `
  })
 
 }
