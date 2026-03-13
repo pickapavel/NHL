@@ -21,7 +21,7 @@ body{
  background:white;
 }
 
-/* ===== HLAVIČKA S LOGEM ===== */
+/* ===== HLAVIČKA ===== */
 
 .headerBar{
  display:flex;
@@ -51,95 +51,203 @@ body{
 /* ===== TABULKA ===== */
 
 .standingsCard{
- display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ background:#e9ecef;
+ border-radius:10px;
+ padding:14px 16px;
+ margin-bottom:10px;
 }
 
 .rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
-.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
+
+.teamBlock{
+ display:flex;
+ align-items:center;
+ gap:14px;
+ flex:1;
+}
 
 .logo{
- width:40px;height:40px;object-fit:contain;
+ width:40px;
+ height:40px;
+ object-fit:contain;
  filter:contrast(1.1) saturate(1.15);
  box-shadow:0 2px 6px rgba(0,0,0,0.25);
- border-radius:6px;background:white;padding:2px;
+ border-radius:6px;
+ background:white;
+ padding:2px;
 }
 
 .teamInfo{display:flex;flex-direction:column;}
-.teamName{font-weight:bold;font-size:16px;}
-.teamStats{font-size:13px;color:#444;margin-top:2px;}
 
-.pointsBox{
- background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
- padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+.teamName{font-weight:bold;font-size:16px;}
+
+.teamStats{
+ font-size:13px;
+ color:#444;
+ margin-top:2px;
 }
 
+.pointsBox{
+ background:#0b2a3c;
+ color:white;
+ font-size:20px;
+ font-weight:bold;
+ padding:10px 16px;
+ border-radius:8px;
+ min-width:60px;
+ text-align:center;
+}
+
+/* ===== FILTRY ===== */
+
 .filterBar{
- display:flex;gap:10px;align-items:center;margin:15px 0;flex-wrap:wrap;
+ display:flex;
+ gap:10px;
+ align-items:center;
+ margin:15px 0;
+ flex-wrap:wrap;
 }
 
 .filterBar select,
 .filterBar button{
- padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-weight:bold;
+ padding:8px 10px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
 }
 
 .filterActive{
- background:#2f9ec9;color:white;border-color:#2f9ec9;
+ background:#2f9ec9;
+ color:white;
+ border-color:#2f9ec9;
 }
 
-.headToHeadPanel{
- display:none;
- background:#e3f2f9;
- padding:14px;
- border-radius:8px;
- margin-top:8px;
- border:2px solid #2f9ec9;
-}
-
-.headToHeadTitle{
- font-weight:bold;
- font-size:15px;
- margin-bottom:6px;
- color:#0b2a3c;
-}
+/* ===== MATCH ROW ===== */
 
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr 120px;
- align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:6px;border-radius:6px;gap:8px;
+ align-items:center;
+ background:#e9ecef;
+ padding:10px;
+ border-radius:6px;
+ gap:8px;
 }
 
-.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
+.teamBox{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ font-weight:bold;
+}
+
 .teamRight{justify-content:flex-end;}
 
 .scoreBox{
- background:#0b2a3c;color:white;font-size:22px;font-weight:bold;
- padding:8px 0;border-radius:6px;text-align:center;
+ background:#0b2a3c;
+ color:white;
+ font-size:22px;
+ font-weight:bold;
+ padding:8px 0;
+ border-radius:6px;
+ text-align:center;
 }
 
-.periods{text-align:center;font-size:14px}
-.otLabel{font-weight:bold;font-size:13px;margin-bottom:2px}
+.periods{
+ text-align:center;
+ font-size:14px;
+}
+
+.otLabel{
+ font-weight:bold;
+ font-size:13px;
+ margin-bottom:2px;
+}
 
 .statsBtn{
- background:#2f9ec9;color:white;border:none;
- padding:8px 12px;border-radius:6px;cursor:pointer;
- font-weight:bold;width:100%;
+ background:#2f9ec9;
+ color:white;
+ border:none;
+ padding:8px 12px;
+ border-radius:6px;
+ cursor:pointer;
+ font-weight:bold;
+ width:100%;
 }
 
-@media (max-width:900px){
- .matchRow{
-  grid-template-columns:1fr auto;
-  grid-template-rows:auto auto auto auto;
- }
- .teamBox,.scoreBox,.periods,.statsBtn{
-  grid-column:1/3;justify-content:center;text-align:center;
- }
- .headerBar{
-  flex-direction:column;
-  gap:15px;
- }
+/* ===== TIPOVÁNÍ ===== */
+
+.predictionRow{
+
+ display:grid;
+ grid-template-columns:140px 1fr 1fr 1fr 1fr 150px 120px;
+ gap:8px;
+
+ background:#f5f7f9;
+ border:2px solid #e1e4e8;
+
+ padding:10px;
+ border-radius:6px;
+ margin-bottom:10px;
+ align-items:center;
 }
+
+.ratingBox{
+ font-weight:bold;
+ text-align:center;
+ color:#0b2a3c;
+}
+
+.odds{
+ text-align:center;
+ background:white;
+ padding:6px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
+.tipInput input{
+ width:100%;
+ padding:6px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ text-align:center;
+ font-weight:bold;
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width:900px){
+
+.matchRow{
+ grid-template-columns:1fr auto;
+ grid-template-rows:auto auto auto auto;
+}
+
+.teamBox,
+.scoreBox,
+.periods,
+.statsBtn{
+ grid-column:1/3;
+ justify-content:center;
+ text-align:center;
+}
+
+.predictionRow{
+ grid-template-columns:1fr;
+}
+
+.headerBar{
+ flex-direction:column;
+ gap:15px;
+}
+
+}
+
 </style>
 </head>
 
@@ -148,8 +256,8 @@ body{
 <div class="wrapper">
 
 <div class="headerBar">
-  <img src="img/extraliga.jpg" alt="Extraliga">
-  <div class="seasonCard" id="seasonLabel">2. sezóna</div>
+<img src="img/extraliga.jpg">
+<div class="seasonCard" id="seasonLabel">2. sezóna</div>
 </div>
 
 <div id="standingsBody"></div>
@@ -186,13 +294,6 @@ body{
 
 </div>
 
-<div id="headToHeadPanel" class="headToHeadPanel">
-<div class="headToHeadTitle">Vyber soupeře:</div>
-<select id="opponentFilter">
-<option value="none">-- Vyber tým --</option>
-</select>
-</div>
-
 <div id="schedule"></div>
 
 </div>
@@ -215,7 +316,7 @@ const db=getFirestore(app);
 let selectedSeason="Sezóna 2";
 let allMatches=[];
 
-/* ---------------- TVŮJ PŮVODNÍ KÓD ZAČÍNÁ ---------------- */
+/* ===== TÝMY ===== */
 
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
@@ -230,6 +331,13 @@ const teamsData={
 
 const teams=Object.keys(teamsData);
 const logos=teamsData;
+
+/* ===== DEMO RATING ===== */
+
+let ratings={};
+teams.forEach(t=>ratings[t]=1000);
+
+/* ===== ROZPIS ===== */
 
 const scheduleIndex=[
  [0,1],[3,2],[5,4],[7,6],
@@ -251,230 +359,80 @@ let resultMode="all";
 let opponentTeam="none";
 let currentMatches=[];
 
-const teamFilter=document.getElementById("teamFilter");
-teams.forEach(t=>{
- const opt=document.createElement("option");
- opt.value=t;
- opt.textContent=t;
- teamFilter.appendChild(opt);
-});
-
-const opponentFilter=document.getElementById("opponentFilter");
-teams.forEach(t=>{
- const opt=document.createElement("option");
- opt.value=t;
- opt.textContent=t;
- opponentFilter.appendChild(opt);
-});
-
-teamFilter.onchange=()=>{ selectedTeam=teamFilter.value; renderSchedule(currentMatches); };
-
-document.getElementById("filterAll").onclick=()=>{
- showPlayedOnly=false;
- document.getElementById("filterAll").classList.add("filterActive");
- document.getElementById("filterPlayed").classList.remove("filterActive");
- renderSchedule(currentMatches);
-};
-
-document.getElementById("filterPlayed").onclick=()=>{
- showPlayedOnly=true;
- document.getElementById("filterPlayed").classList.add("filterActive");
- document.getElementById("filterAll").classList.remove("filterActive");
- renderSchedule(currentMatches);
-};
-
-document.getElementById("homeAwayFilter").onchange=e=>{
- homeAwayMode=e.target.value;
- renderSchedule(currentMatches);
-};
-
-document.getElementById("resultFilter").onchange=e=>{
- resultMode=e.target.value;
- renderSchedule(currentMatches);
-};
-
-document.getElementById("headToHeadBtn").onclick=()=>{
- const panel=document.getElementById("headToHeadPanel");
- panel.style.display=panel.style.display==="block"?"none":"block";
-};
-
-opponentFilter.onchange=e=>{
- opponentTeam=e.target.value;
- renderSchedule(currentMatches);
-};
-
-function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
- if(stats[20]==="1") hg++;
- if(stats[20]==="2") ag++;
- return {hg,ag};
-}
-
-function createEmpty(){
- let obj={};
- teams.forEach(t=>{
-  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0};
- });
- return obj;
-}
-
-function calculateStandings(matches){
- let table=createEmpty();
- matches.forEach(m=>{
-  if(!m.stats) return;
-  const s=calc(m.stats);
-  const h=table[m.homeTeam];
-  const a=table[m.awayTeam];
-  if(!h||!a) return;
-
-  h.z++; a.z++;
-  h.gf+=s.hg; h.ga+=s.ag;
-  a.gf+=s.ag; a.ga+=s.hg;
-
-  const isSN=(m.stats[20]==="1"||m.stats[20]==="2");
-  const isOT=(!isSN&&(m.stats[9]==="11"||m.stats[19]==="11"));
-
-  if(isSN){
-   if(s.hg>s.ag){h.vsn++;h.b+=2;a.psn++;a.b+=1;}
-   else{a.vsn++;a.b+=2;h.psn++;h.b+=1;}
-  }
-  else if(isOT){
-   if(s.hg>s.ag){h.vp++;h.b+=2;a.pp++;a.b+=1;}
-   else{a.vp++;a.b+=2;h.pp++;h.b+=1;}
-  }
-  else{
-   if(s.hg>s.ag){h.v++;h.b+=3;a.p++;}
-   else{a.v++;a.b+=3;h.p++;}
-  }
- });
-
- return Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b;
-  if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga);
-  return b.gf-a.gf;
- });
-}
-
-function renderStandings(arr){
- const body=document.getElementById("standingsBody");
- body.innerHTML="";
- arr.forEach((t,i)=>{
-  body.innerHTML+=`
-  <div class="standingsCard">
-    <div class="rank">${i+1}</div>
-    <div class="teamBlock">
-      <img class="logo" src="./logos/${logos[t.team]}">
-      <div class="teamInfo">
-        <div class="teamName">${t.team}</div>
-        <div class="teamStats">
-          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-          Z ${t.z} | V ${t.v} | P ${t.p} |
-          VP ${t.vp} | PP ${t.pp} |
-          VSN ${t.vsn} | PSN ${t.psn}
-        </div>
-      </div>
-    </div>
-    <div class="pointsBox">${t.b}</div>
-  </div>`;
- });
-}
+/* ===== RENDER ===== */
 
 function renderSchedule(matches){
- currentMatches=matches;
- const cont=document.getElementById("schedule");
- cont.innerHTML="";
 
- scheduleList.forEach(p=>{
+const cont=document.getElementById("schedule");
+cont.innerHTML="";
 
-  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1]);
+scheduleList.forEach(p=>{
 
-  if(selectedTeam!=="all" && p[0]!==selectedTeam && p[1]!==selectedTeam) return;
-  if(showPlayedOnly && !m) return;
-  if(resultMode!=="all" && !m) return;
+const home=p[0];
+const away=p[1];
 
-  if(selectedTeam!=="all"){
-   if(homeAwayMode==="home" && p[0]!==selectedTeam) return;
-   if(homeAwayMode==="away" && p[1]!==selectedTeam) return;
-  }
+const link=`statistiky-zapasu.html?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}`;
 
-  if(opponentTeam!=="none" && selectedTeam!=="all"){
-   if(!( (p[0]===selectedTeam && p[1]===opponentTeam) ||
-         (p[1]===selectedTeam && p[0]===opponentTeam) )) return;
-  }
+cont.innerHTML+=`
 
-  if(m && selectedTeam!=="all" && resultMode!=="all"){
-   const s=calc(m.stats);
-   const isHome = (p[0]===selectedTeam);
-   const win = (isHome && s.hg>s.ag) || (!isHome && s.ag>s.hg);
-   if(resultMode==="win" && !win) return;
-   if(resultMode==="loss" && win) return;
-  }
+<div class="matchRow">
 
-  let hg=0,ag=0,label="";
-  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0;
+<div class="teamBox">
+<img class="logo" src="./logos/${logos[home]}">
+${home}
+</div>
 
-  if(m){
-   const s=calc(m.stats);
-   hg=s.hg; ag=s.ag;
-   a1=Number(m.stats[6])||0;
-   a2=Number(m.stats[7])||0;
-   a3=Number(m.stats[8])||0;
-   h1=Number(m.stats[16])||0;
-   h2=Number(m.stats[17])||0;
-   h3=Number(m.stats[18])||0;
+<div class="scoreBox">0</div>
 
-   if(m.stats[20]==="1"||m.stats[20]==="2") label="SN";
-   else if(m.stats[9]==="11"||m.stats[19]==="11") label="OT";
-  }
+<div class="periods">(-:-,-:-,-:-)</div>
 
-  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`;
+<div class="scoreBox">0</div>
 
-  cont.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
-   <div class="scoreBox">${hg}</div>
-   <div class="periods">
-     <div class="otLabel">${label}</div>
-     (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
-   </div>
-   <div class="scoreBox">${ag}</div>
-   <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
-   <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
-  </div>`;
- });
+<div class="teamBox teamRight">
+${away}
+<img class="logo" src="./logos/${logos[away]}">
+</div>
 
-}
+<div>
+<button class="statsBtn" onclick="window.location.href='${link}'">
+Statistiky
+</button>
+</div>
 
-/* ---------------- PŘIDANÁ LOGIKA FILTRU SEZÓNY ---------------- */
+</div>
 
-function applySeasonFilter(){
- const filtered = allMatches.filter(m =>
-  m.category?.startsWith("Extraliga") &&
-  m.season===selectedSeason
- );
- renderSchedule(filtered);
- renderStandings(calculateStandings(filtered));
-}
 
-document.getElementById("seasonFilter").onchange=(e)=>{
- selectedSeason=e.target.value;
- document.getElementById("seasonLabel").textContent =
-  selectedSeason==="Sezóna 1" ? "1. sezóna" : "2. sezóna";
- applySeasonFilter();
-};
+<div class="predictionRow">
 
-const q=query(collection(db,"zapasy"),orderBy("created","asc"));
+<div class="ratingBox">
+${ratings[home]} ⭐
+</div>
 
-onSnapshot(q,(snap)=>{
- allMatches=[];
- snap.forEach(d=>{
-  allMatches.push(d.data());
- });
- applySeasonFilter();
+<div class="odds">V<br>1.85</div>
+
+<div class="odds">OT<br>3.40</div>
+
+<div class="odds">SN<br>4.10</div>
+
+<div class="odds">P<br>2.20</div>
+
+<div class="tipInput">
+<input placeholder="Tvůj tip">
+</div>
+
+<div class="ratingBox">
+⭐ ${ratings[away]}
+</div>
+
+</div>
+
+`;
+
 });
+
+}
+
+renderSchedule([]);
 
 </script>
 
