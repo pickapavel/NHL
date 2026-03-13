@@ -245,17 +245,8 @@ teams.forEach(team=>{
 
 teamFilter.onchange=()=>applySeasonFilter()
 
-const headBtn=document.getElementById("headToHeadBtn")
-
-headBtn.onclick=()=>{
+document.getElementById("headToHeadBtn").onclick=()=>{
  headToHeadMode=!headToHeadMode
-
- if(headToHeadMode){
-  headBtn.classList.add("filterActive")
- }else{
-  headBtn.classList.remove("filterActive")
- }
-
  applySeasonFilter()
 }
 
@@ -434,9 +425,12 @@ function renderSchedule(matches){
 
  scheduleList.forEach(p=>{
 
-  if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
+  if(headToHeadMode){
+   if(teamFilter.value==="all") return
+   if(p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
+  }
 
-  if(headToHeadMode && teamFilter.value==="all") return
+  if(teamFilter.value!=="all" && !headToHeadMode && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
 
   if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
   if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
