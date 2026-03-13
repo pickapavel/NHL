@@ -242,6 +242,8 @@ teams.forEach(team=>{
  teamFilter.appendChild(option);
 });
 
+teamFilter.onchange=()=>applySeasonFilter()
+
 /* ===== ROZPIS ===== */
 
 const scheduleIndex=[
@@ -416,6 +418,8 @@ function renderSchedule(matches){
  cont.innerHTML=""
 
  scheduleList.forEach(p=>{
+
+  if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
 
   if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
   if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
