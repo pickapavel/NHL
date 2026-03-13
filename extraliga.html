@@ -216,6 +216,7 @@ let selectedSeason="Sezóna 2";
 let allMatches=[];
 let showPlayedOnly=false;
 let homeAwayMode="both";
+let resultMode="all";
 
 /* ===== TÝMY ===== */
 
@@ -428,6 +429,17 @@ function renderSchedule(matches){
 
   if(showPlayedOnly && (!m || !m.stats)) return
 
+  if(resultMode!=="all" && m && m.stats && teamFilter.value!=="all"){
+
+   const s=calc(m.stats)
+   const isHome=teamFilter.value===p[0]
+   const isWin=isHome ? s.hg>s.ag : s.ag>s.hg
+
+   if(resultMode==="win" && !isWin) return
+   if(resultMode==="loss" && isWin) return
+
+  }
+
   let hg=0,ag=0
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
 
@@ -544,6 +556,11 @@ document.getElementById("filterPlayed").onclick=()=>{
 
 document.getElementById("homeAwayFilter").onchange=(e)=>{
  homeAwayMode=e.target.value
+ applySeasonFilter()
+}
+
+document.getElementById("resultFilter").onchange=(e)=>{
+ resultMode=e.target.value
  applySeasonFilter()
 }
 
