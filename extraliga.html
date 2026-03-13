@@ -22,6 +22,8 @@ body{
  background:white;
 }
 
+/* ===== HLAVIČKA ===== */
+
 .headerBar{
  display:flex;
  align-items:center;
@@ -47,6 +49,8 @@ body{
  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 
+/* ===== TABULKA ===== */
+
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
  background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
@@ -70,6 +74,8 @@ body{
  padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
 
+/* ===== FILTRY ===== */
+
 .filterBar{
  display:flex;gap:10px;align-items:center;margin:15px 0;flex-wrap:wrap;
 }
@@ -82,6 +88,8 @@ body{
 .filterActive{
  background:#2f9ec9;color:white;border-color:#2f9ec9;
 }
+
+/* ===== ZÁPAS ===== */
 
 .matchRow{
  display:grid;
@@ -105,6 +113,8 @@ body{
  padding:8px 12px;border-radius:6px;cursor:pointer;
  font-weight:bold;width:100%;
 }
+
+/* ===== TIPOVÁNÍ ===== */
 
 .predictionRow{
  display:grid;
@@ -146,7 +156,7 @@ body{
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard">2. sezóna</div>
+<div class="seasonCard" id="seasonLabel">2. sezóna</div>
 </div>
 
 <div id="standingsBody"></div>
@@ -209,6 +219,8 @@ let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
 
+/* ===== TÝMY ===== */
+
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -239,6 +251,59 @@ document.getElementById("headToHeadBtn").onclick=()=>{
  applySeasonFilter()
 }
 
+/* ===== ROZPIS ===== */
+
+const scheduleIndex=[
+ [0,1],[3,2],[5,4],[7,6],
+ [2,0],[1,3],[6,5],[4,7],
+ [0,5],[3,7],[1,4],[2,6],
+ [7,0],[4,2],[6,1],[5,3],
+ [1,0],[2,3],[4,5],[6,7],
+ [0,2],[3,1],[5,6],[7,4],
+ [5,0],[7,3],[4,1],[6,2],
+ [0,7],[2,4],[1,6],[3,5]
+];
+
+const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
+
+/* ===== ELO ===== */
+
+const BASE_RATING=1000;
+const K=30;
+const HOME_ADV=50;
+
+let ratings={};
+
+function resetRatings(){
+ ratings={}
+ teams.forEach(t=>ratings[t]=BASE_RATING)
+}
+
+function expected(ra,rb){
+ return 1/(1+Math.pow(10,(rb-ra)/400))
+}
+
+function updateElo(home,away,hg,ag){
+
+ if(ratings[home]===undefined)ratings[home]=BASE_RATING
+ if(ratings[away]===undefined)ratings[away]=BASE_RATING
+
+ let ra=ratings[home]+HOME_ADV
+ let rb=ratings[away]
+
+ let ea=expected(ra,rb)
+ let eb=expected(rb,ra)
+
+ let sa=hg>ag?1:0
+ let sb=ag>hg?1:0
+
+ ratings[home]+=K*(sa-ea)
+ ratings[away]+=K*(sb-eb)
+
+}
+
+/* ===== GÓLY ===== */
+
 function calc(stats){
 
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
@@ -253,6 +318,8 @@ function calc(stats){
 
 }
 
+/* ===== ROZPIS ===== */
+
 function renderSchedule(matches){
 
  const cont=document.getElementById("schedule")
@@ -263,10 +330,17 @@ function renderSchedule(matches){
   if(teamFilter.value!=="all" && p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
   if(headToHeadMode && teamFilter.value==="all") return
 
+  if(homeAwayMode==="home" && teamFilter.value!=="all" && p[0]!==teamFilter.value) return
+  if(homeAwayMode==="away" && teamFilter.value!=="all" && p[1]!==teamFilter.value) return
+
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
+  if(showPlayedOnly && (!m || !m.stats)) return
+
   if(resultMode!=="all"){
+
    if(!m || !m.stats) return
+
    const s=calc(m.stats)
 
    let win
@@ -277,30 +351,99 @@ function renderSchedule(matches){
 
    if(resultMode==="win" && !win) return
    if(resultMode==="loss" && win) return
+
   }
 
   let hg=0,ag=0
-  if(m && m.stats){
+  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
+
+  if(m){
+
    const s=calc(m.stats)
+
    hg=s.hg
    ag=s.ag
+
+   a1=Number(m.stats[6])||0
+   a2=Number(m.stats[7])||0
+   a3=Number(m.stats[8])||0
+
+   h1=Number(m.stats[16])||0
+   h2=Number(m.stats[17])||0
+   h3=Number(m.stats[18])||0
+
   }
 
+  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
+
   cont.innerHTML+=`
+
   <div class="matchRow">
-   <div class="teamBox">${p[0]}</div>
+
+   <div class="teamBox">
+   <img class="logo" src="./logos/${logos[p[0]]}">
+   ${p[0]}
+   </div>
+
    <div class="scoreBox">${hg}</div>
-   <div></div>
+
+   <div class="periods">
+   (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
+   </div>
+
    <div class="scoreBox">${ag}</div>
-   <div class="teamBox teamRight">${p[1]}</div>
-   <div><button class="statsBtn">Statistiky</button></div>
+
+   <div class="teamBox teamRight">
+   ${p[1]}
+   <img class="logo" src="./logos/${logos[p[1]]}">
+   </div>
+
+   <div>
+   <button class="statsBtn" onclick="window.location.href='${link}'">
+   Statistiky
+   </button>
+   </div>
+
   </div>
+
+  <div class="predictionRow">
+
+   <div class="ratingBox">${Math.round(ratings[p[0]]||1000)} ⭐</div>
+
+   <div class="odds">V<br>-</div>
+   <div class="odds">OT<br>-</div>
+   <div class="odds">SN<br>-</div>
+   <div class="odds">P<br>-</div>
+
+   <div class="tipInput">
+   <input placeholder="Tvůj tip">
+   </div>
+
+   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]]||1000)}</div>
+
+  </div>
+
   `
+
  })
 
 }
 
+/* ===== SEASON ===== */
+
 function applySeasonFilter(){
+
+ resetRatings()
+
+ const extraliga=allMatches.filter(m=>m.category?.startsWith("Extraliga"))
+
+ extraliga.sort((a,b)=>a.created-b.created)
+
+ extraliga.forEach(m=>{
+  if(!m.stats)return
+  const s=calc(m.stats)
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
+ })
 
  const filtered=allMatches.filter(m=>
   m.category?.startsWith("Extraliga") &&
@@ -311,8 +454,32 @@ function applySeasonFilter(){
 
 }
 
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false
+ document.getElementById("filterAll").classList.add("filterActive")
+ document.getElementById("filterPlayed").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true
+ document.getElementById("filterPlayed").classList.add("filterActive")
+ document.getElementById("filterAll").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("homeAwayFilter").onchange=(e)=>{
+ homeAwayMode=e.target.value
+ applySeasonFilter()
+}
+
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
+ applySeasonFilter()
+}
+
+document.getElementById("seasonFilter").onchange=(e)=>{
+ selectedSeason=e.target.value
  applySeasonFilter()
 }
 
