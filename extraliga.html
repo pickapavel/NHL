@@ -21,8 +21,6 @@ body{
  background:white;
 }
 
-/* ===== HLAVIČKA ===== */
-
 .headerBar{
  display:flex;
  align-items:center;
@@ -47,8 +45,6 @@ body{
  border-radius:10px;
  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
-
-/* ===== TABULKA ===== */
 
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
@@ -152,8 +148,8 @@ body{
 <div class="wrapper">
 
 <div class="headerBar">
-  <img src="img/extraliga.jpg">
-  <div class="seasonCard" id="seasonLabel">2. sezóna</div>
+<img src="img/extraliga.jpg">
+<div class="seasonCard" id="seasonLabel">2. sezóna</div>
 </div>
 
 <div id="standingsBody"></div>
@@ -210,6 +206,8 @@ const db=getFirestore(app);
 let selectedSeason="Sezóna 2";
 let allMatches=[];
 
+/* ===== TÝMY ===== */
+
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -224,53 +222,72 @@ const teamsData={
 const teams=Object.keys(teamsData);
 const logos=teamsData;
 
+/* ===== ROZPIS ===== */
+
+const scheduleIndex=[
+ [0,1],[3,2],[5,4],[7,6],
+ [2,0],[1,3],[6,5],[4,7],
+ [0,5],[3,7],[1,4],[2,6],
+ [7,0],[4,2],[6,1],[5,3],
+ [1,0],[2,3],[4,5],[6,7],
+ [0,2],[3,1],[5,6],[7,4],
+ [5,0],[7,3],[4,1],[6,2],
+ [0,7],[2,4],[1,6],[3,5]
+];
+
+const scheduleList=scheduleIndex.map(([h,a])=>[teams[h],teams[a]]);
+
 /* ===== ELO ===== */
 
 const BASE=1000;
 const K=30;
-const HOME=50;
+const HOME_ADV=50;
 
 let ratings={};
 
 function resetRatings(){
- ratings={};
- teams.forEach(t=>ratings[t]=BASE);
+ ratings={}
+ teams.forEach(t=>ratings[t]=BASE)
 }
 
 function expected(ra,rb){
- return 1/(1+Math.pow(10,(rb-ra)/400));
+ return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
 function updateElo(home,away,hg,ag){
 
- let ra=ratings[home]+HOME;
- let rb=ratings[away];
+ if(ratings[home]===undefined)ratings[home]=BASE
+ if(ratings[away]===undefined)ratings[away]=BASE
 
- let ea=expected(ra,rb);
- let eb=expected(rb,ra);
+ let ra=ratings[home]+HOME_ADV
+ let rb=ratings[away]
 
- let sa = hg>ag ? 1 : 0;
- let sb = ag>hg ? 1 : 0;
+ let ea=expected(ra,rb)
+ let eb=expected(rb,ra)
 
- ratings[home]+=K*(sa-ea);
- ratings[away]+=K*(sb-eb);
+ let sa=hg>ag?1:0
+ let sb=ag>hg?1:0
+
+ ratings[home]+=K*(sa-ea)
+ ratings[away]+=K*(sb-eb)
+
 }
 
 /* ===== GOALS ===== */
 
 function calc(stats){
 
- if(!stats) return {hg:0,ag:0};
+ if(!stats)return{hg:0,ag:0}
 
- let ag=Number(stats[6]||0)+Number(stats[7]||0)+Number(stats[8]||0);
- let hg=Number(stats[16]||0)+Number(stats[17]||0)+Number(stats[18]||0);
+ let ag=Number(stats[6]||0)+Number(stats[7]||0)+Number(stats[8]||0)
+ let hg=Number(stats[16]||0)+Number(stats[17]||0)+Number(stats[18]||0)
 
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
- if(stats[20]==="1") hg++;
- if(stats[20]==="2") ag++;
+ if(stats[9]==="11")ag++
+ if(stats[19]==="11")hg++
+ if(stats[20]==="1")hg++
+ if(stats[20]==="2")ag++
 
- return {hg,ag};
+ return{hg,ag}
 
 }
 
@@ -279,7 +296,7 @@ function calc(stats){
 function createEmpty(){
  let obj={}
  teams.forEach(t=>{
-  obj[t]={team:t,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
+  obj[t]={team:t,b:0,z:0,v:0,p:0,gf:0,ga:0}
  })
  return obj
 }
@@ -289,6 +306,7 @@ function calculateStandings(matches){
  let table=createEmpty()
 
  matches.forEach(m=>{
+
   if(!m.stats)return
 
   const s=calc(m.stats)
@@ -298,6 +316,7 @@ function calculateStandings(matches){
   if(!h||!a)return
 
   h.z++;a.z++
+
   h.gf+=s.hg;h.ga+=s.ag
   a.gf+=s.ag;a.ga+=s.hg
 
@@ -308,8 +327,7 @@ function calculateStandings(matches){
 
  return Object.values(table).sort((a,b)=>{
   if(b.b!==a.b)return b.b-a.b
-  if((b.gf-b.ga)!==(a.gf-a.ga))return(b.gf-b.ga)-(a.gf-a.ga)
-  return b.gf-a.gf
+  return(b.gf-b.ga)-(a.gf-a.ga)
  })
 
 }
@@ -322,34 +340,19 @@ function renderStandings(arr){
  arr.forEach((t,i)=>{
 
   body.innerHTML+=`
-
   <div class="standingsCard">
-
-    <div class="rank">${i+1}</div>
-
-    <div class="teamBlock">
-
-      <img class="logo" src="./logos/${logos[t.team]}">
-
-      <div class="teamInfo">
-
-        <div class="teamName">${t.team}</div>
-
-        <div class="teamStats">
-
-          Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-          Z ${t.z} | V ${t.v} | P ${t.p}
-
-        </div>
-
-      </div>
-
+   <div class="rank">${i+1}</div>
+   <div class="teamBlock">
+    <img class="logo" src="./logos/${logos[t.team]}">
+    <div class="teamInfo">
+     <div class="teamName">${t.team}</div>
+     <div class="teamStats">
+      Skóre ${t.gf}:${t.ga} | Z ${t.z} | V ${t.v} | P ${t.p}
+     </div>
     </div>
-
-    <div class="pointsBox">${t.b}</div>
-
+   </div>
+   <div class="pointsBox">${t.b}</div>
   </div>`
-
  })
 
 }
@@ -358,13 +361,22 @@ function renderStandings(arr){
 
 function renderSchedule(matches){
 
- const cont=document.getElementById("schedule");
- cont.innerHTML="";
+ const cont=document.getElementById("schedule")
+ cont.innerHTML=""
 
- matches.forEach(m=>{
+ scheduleList.forEach(p=>{
 
-  const p=[m.homeTeam,m.awayTeam];
-  const s=calc(m.stats);
+  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
+
+  let hg=0,ag=0
+
+  if(m&&m.stats){
+   const s=calc(m.stats)
+   hg=s.hg
+   ag=s.ag
+  }
+
+  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
 
   cont.innerHTML+=`
 
@@ -372,21 +384,21 @@ function renderSchedule(matches){
 
    <div class="teamBox"><img class="logo" src="./logos/${logos[p[0]]}">${p[0]}</div>
 
-   <div class="scoreBox">${s.hg}</div>
+   <div class="scoreBox">${hg}</div>
 
    <div class="periods">-</div>
 
-   <div class="scoreBox">${s.ag}</div>
+   <div class="scoreBox">${ag}</div>
 
    <div class="teamBox teamRight">${p[1]}<img class="logo" src="./logos/${logos[p[1]]}"></div>
 
-   <div><button class="statsBtn">Statistiky</button></div>
+   <div><button class="statsBtn" onclick="window.location.href='${link}'">Statistiky</button></div>
 
   </div>
 
   <div class="predictionRow">
 
-   <div class="ratingBox">${Math.round(ratings[p[0]])} ⭐</div>
+   <div class="ratingBox">${Math.round(ratings[p[0]]||BASE)} ⭐</div>
 
    <div class="odds">V<br>-</div>
    <div class="odds">OT<br>-</div>
@@ -397,7 +409,7 @@ function renderSchedule(matches){
    <input placeholder="Tvůj tip">
    </div>
 
-   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]])}</div>
+   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]]||BASE)}</div>
 
   </div>
 
@@ -411,24 +423,24 @@ function renderSchedule(matches){
 
 function applySeasonFilter(){
 
- resetRatings();
+ resetRatings()
 
- const extraliga=allMatches.filter(m=>m.category?.startsWith("Extraliga"));
+ const extraliga=allMatches.filter(m=>m.category?.startsWith("Extraliga"))
 
- extraliga.sort((a,b)=>a.created-b.created);
+ extraliga.sort((a,b)=>a.created-b.created)
 
  extraliga.forEach(m=>{
 
-  if(!m.stats)return;
+  if(!m.stats)return
 
-  const s=calc(m.stats);
+  const s=calc(m.stats)
 
-  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
 
- });
+ })
 
- const filtered = allMatches.filter(m =>
-  m.category?.startsWith("Extraliga") &&
+ const filtered=allMatches.filter(m=>
+  m.category?.startsWith("Extraliga")&&
   m.season===selectedSeason
  )
 
@@ -441,8 +453,8 @@ document.getElementById("seasonFilter").onchange=(e)=>{
 
  selectedSeason=e.target.value
 
- document.getElementById("seasonLabel").textContent =
-  selectedSeason==="Sezóna 1" ? "1. sezóna" : "2. sezóna"
+ document.getElementById("seasonLabel").textContent=
+ selectedSeason==="Sezóna 1"?"1. sezóna":"2. sezóna"
 
  applySeasonFilter()
 
