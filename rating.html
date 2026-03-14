@@ -23,14 +23,39 @@ h2{
 margin-top:0;
 }
 
+/* ===== TABULKA CELKOVÝ RATING ===== */
+
+.ratingTable{
+display:grid;
+grid-template-columns:1fr 120px;
+background:#e9ecef;
+padding:10px;
+border-radius:6px;
+margin-bottom:6px;
+font-weight:bold;
+}
+
+.ratingRow{
+display:grid;
+grid-template-columns:1fr 120px;
+background:#f4f4f4;
+padding:8px 10px;
+border-radius:6px;
+margin-bottom:4px;
+}
+
+/* ===== HLAVIČKA HISTORIE ===== */
+
 .header{
 display:grid;
-grid-template-columns:120px 1fr 120px 120px 120px;
+grid-template-columns:120px 1fr 80px 120px 120px;
 font-weight:bold;
 padding:10px;
 border-bottom:2px solid #ccc;
 margin-bottom:10px;
 }
+
+/* ===== ZÁPAS ===== */
 
 .match{
 background:#f7f7f7;
@@ -57,6 +82,7 @@ font-weight:bold;
 .score{
 font-weight:bold;
 text-align:center;
+font-size:18px;
 }
 
 .rating{
@@ -80,6 +106,10 @@ font-weight:bold;
 <body>
 
 <div class="wrapper">
+
+<h2>Celkový rating týmů</h2>
+
+<div id="ratingSummary"></div>
 
 <h2>Historie ratingu</h2>
 
@@ -110,15 +140,21 @@ projectId:"statistiky-6310a"
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
+/* ===== ELO ===== */
+
 const BASE_RATING=1000;
 const K=30;
 const HOME_ADV=50;
 
 let ratings={}
 
+/* ===== OČEKÁVANÝ VÝSLEDEK ===== */
+
 function expected(ra,rb){
 return 1/(1+Math.pow(10,(rb-ra)/400))
 }
+
+/* ===== VÝPOČET GÓLŮ ===== */
 
 function calc(stats){
 
@@ -134,12 +170,17 @@ return {hg,ag}
 
 }
 
+/* ===== RENDER ===== */
+
 function render(matches){
 
 ratings={}
 
 const list=document.getElementById("ratingList")
+const summary=document.getElementById("ratingSummary")
+
 list.innerHTML=""
+summary.innerHTML=""
 
 matches.forEach(m=>{
 
@@ -184,7 +225,7 @@ list.innerHTML+=`
 
 <div class="team">${m.homeTeam}</div>
 
-<div class="score">${s.hg}:${s.ag}</div>
+<div class="score">${s.hg}</div>
 
 <div class="rating">${signHome}</div>
 
@@ -198,7 +239,7 @@ list.innerHTML+=`
 
 <div class="team">${m.awayTeam}</div>
 
-<div class="score">${s.ag}:${s.hg}</div>
+<div class="score">${s.ag}</div>
 
 <div class="rating">${signAway}</div>
 
@@ -212,7 +253,29 @@ list.innerHTML+=`
 
 })
 
+/* ===== CELKOVÝ RATING ===== */
+
+Object.entries(ratings)
+.sort((a,b)=>b[1]-a[1])
+.forEach(t=>{
+
+summary.innerHTML+=`
+
+<div class="ratingRow">
+
+<div>${t[0]}</div>
+
+<div>${Math.round(t[1])}</div>
+
+</div>
+
+`
+
+})
+
 }
+
+/* ===== FIREBASE ===== */
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
