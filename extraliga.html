@@ -218,7 +218,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc }
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -236,10 +236,6 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
- let kreditK = 0
-let kreditP = 0
-
- 
 
 /* ===== TÝMY ===== */
 
@@ -325,44 +321,14 @@ function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
-async function saveTip(home,away){
+ function saveTip(home,away){
 
  const kTip=document.getElementById(`k_${home}_${away}`).value
  const pTip=document.getElementById(`p_${home}_${away}`).value
 
- const bet=100
+ if(!kTip && !pTip) return
 
- if(kTip){
-
-  if(kreditK<bet){
-   alert("K-Tip nemá dost kreditu")
-   return
-  }
-
-  kreditK-=bet
-
-  await updateDoc(doc(db,"hraci","KTip"),{
-   kredit:kreditK
-  })
-
- }
-
- if(pTip){
-
-  if(kreditP<bet){
-   alert("P-Tip nemá dost kreditu")
-   return
-  }
-
-  kreditP-=bet
-
-  await updateDoc(doc(db,"hraci","PTip"),{
-   kredit:kreditP
-  })
-
- }
-
- await addDoc(collection(db,"tipy"),{
+ addDoc(collection(db,"tipy"),{
   homeTeam:home,
   awayTeam:away,
   kTip:kTip,
@@ -370,10 +336,9 @@ async function saveTip(home,away){
   created:Date.now()
  })
 
- loadCredits()
+ alert("Tip uložen")
 
 }
-
 
 function updateElo(home,away,hg,ag){
 
@@ -391,30 +356,6 @@ function updateElo(home,away,hg,ag){
 
  ratings[home]+=K*(sa-ea)
  ratings[away]+=K*(sb-eb)
-
-}
-
- async function loadCredits(){
-
- const kDoc = await getDoc(doc(db,"hraci","KTip"))
- const pDoc = await getDoc(doc(db,"hraci","PTip"))
-
- kreditK = kDoc.data().kredit
- kreditP = pDoc.data().kredit
-
- renderCredits()
-
-}
-
- async function loadCredits(){
-
- const kDoc = await getDoc(doc(db,"hraci","KTip"))
- const pDoc = await getDoc(doc(db,"hraci","PTip"))
-
- kreditK = kDoc.data().kredit
- kreditP = pDoc.data().kredit
-
- renderCredits()
 
 }
 
@@ -695,17 +636,6 @@ Potvrdit
 
   </div>
 
-  <div id="creditsBar" style="
-width:100%;
-margin-top:6px;
-background:#f2f2f2;
-padding:8px;
-border-radius:6px;
-font-weight:bold;
-text-align:center;
-">
-</div>
-
   `
  })
 
@@ -769,8 +699,6 @@ onSnapshot(q,(snap)=>{
  applySeasonFilter()
 
 })
-
- loadCredits()
 
 </script>
 
