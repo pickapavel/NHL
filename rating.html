@@ -36,7 +36,6 @@ body{
 
 .headerBar img{
  height:110px;
- object-fit:contain;
 }
 
 .pageTitle{
@@ -57,44 +56,51 @@ body{
 }
 
 .filterBar select{
- padding:8px 10px;
+ padding:8px;
  border-radius:6px;
  border:1px solid #ccc;
  font-weight:bold;
 }
 
-/* ZÁPASY */
+/* TABULKA RATINGU */
 
-.ratingRow{
+.ratingStandings{
+ margin-bottom:30px;
+}
+
+.ratingTeam{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:#e9ecef;
+ padding:12px;
+ border-radius:8px;
+ margin-bottom:6px;
+}
+
+.ratingPoints{
+ background:#0b2a3c;
+ color:white;
+ padding:6px 14px;
+ border-radius:6px;
+ font-weight:bold;
+}
+
+/* HISTORIE */
+
+.matchRow{
  display:grid;
- grid-template-columns: 1fr 80px 80px 80px 120px;
+ grid-template-columns: 1fr 80px 80px 80px 80px;
  gap:10px;
  background:#e9ecef;
  padding:12px;
- margin-bottom:8px;
  border-radius:8px;
+ margin-bottom:6px;
  align-items:center;
 }
 
-.matchTeams{
- font-weight:bold;
-}
-
-.ratingBefore{
- text-align:center;
-}
-
-.ratingAfter{
- text-align:center;
-}
-
-.ratingDiff{
- text-align:center;
- font-weight:bold;
-}
-
-.plus{color:green}
-.minus{color:red}
+.plus{color:green;font-weight:bold}
+.minus{color:red;font-weight:bold}
 
 </style>
 </head>
@@ -114,7 +120,11 @@ body{
 </select>
 </div>
 
-<div id="ratingList"></div>
+<h2>Aktuální rating</h2>
+<div id="ratingStandings"></div>
+
+<h2>Historie ratingu</h2>
+<div id="ratingHistory"></div>
 
 </div>
 
@@ -149,10 +159,10 @@ const teams=[
 const teamFilter=document.getElementById("teamFilter");
 
 teams.forEach(t=>{
- const opt=document.createElement("option")
- opt.value=t
- opt.textContent=t
- teamFilter.appendChild(opt)
+ let o=document.createElement("option")
+ o.value=t
+ o.textContent=t
+ teamFilter.appendChild(o)
 })
 
 /* ELO */
@@ -192,8 +202,10 @@ function updateElo(home,away,hg,ag){
 
 function calc(stats){
 
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+ if(!stats) return null
+
+ let ag=(Number(stats[6])||0)+(Number(stats[7])||0)+(Number(stats[8])||0)
+ let hg=(Number(stats[16])||0)+(Number(stats[17])||0)+(Number(stats[18])||0)
 
  if(stats[9]==="11") ag++
  if(stats[19]==="11") hg++
@@ -201,24 +213,26 @@ function calc(stats){
  if(stats[20]==="2") ag++
 
  return {hg,ag}
+
 }
 
 /* RENDER */
 
 function render(matches){
 
- const list=document.getElementById("ratingList")
- list.innerHTML=""
+ resetRatings()
+
+ const history=document.getElementById("ratingHistory")
+ history.innerHTML=""
 
  const selectedTeam=teamFilter.value
 
- resetRatings()
-
  matches.forEach(m=>{
 
-  if(!m.stats)return
+  const goals=calc(m.stats)
+  if(!goals) return
 
-  const {hg,ag}=calc(m.stats)
+  const {hg,ag}=goals
 
   const beforeHome=Math.round(ratings[m.homeTeam])
   const beforeAway=Math.round(ratings[m.awayTeam])
@@ -231,7 +245,7 @@ function render(matches){
   const diffHome=afterHome-beforeHome
   const diffAway=afterAway-beforeAway
 
-  function createRow(team,before,after,diff,opponent){
+  function row(team,before,after,diff,opponent){
 
    if(selectedTeam!=="all" && selectedTeam!==team) return ""
 
@@ -239,33 +253,48 @@ function render(matches){
    const sign=diff>=0?"+":""
 
    return `
+   <div class="matchRow">
 
-   <div class="ratingRow">
-
-    <div class="matchTeams">
-    ${team} vs ${opponent}
-    </div>
-
-    <div class="ratingBefore">${before}</div>
-
-    <div class="ratingAfter">${after}</div>
-
-    <div class="ratingDiff ${cls}">
-    ${sign}${diff}
-    </div>
-
-    <div>
-    ${hg}:${ag}
-    </div>
+    <div>${team} vs ${opponent}</div>
+    <div>${before}</div>
+    <div>${after}</div>
+    <div class="${cls}">${sign}${diff}</div>
+    <div>${hg}:${ag}</div>
 
    </div>
-
    `
   }
 
-  list.innerHTML+=createRow(m.homeTeam,beforeHome,afterHome,diffHome,m.awayTeam)
-  list.innerHTML+=createRow(m.awayTeam,beforeAway,afterAway,diffAway,m.homeTeam)
+  history.innerHTML+=row(m.homeTeam,beforeHome,afterHome,diffHome,m.awayTeam)
+  history.innerHTML+=row(m.awayTeam,beforeAway,afterAway,diffAway,m.homeTeam)
 
+ })
+
+ renderStandings()
+
+}
+
+/* TABULKA */
+
+function renderStandings(){
+
+ const cont=document.getElementById("ratingStandings")
+ cont.innerHTML=""
+
+ const arr=Object.entries(ratings)
+ .map(([team,r])=>({team,r:Math.round(r)}))
+ .sort((a,b)=>b.r-a.r)
+
+ arr.forEach(t=>{
+
+  cont.innerHTML+=`
+
+  <div class="ratingTeam">
+   <div>${t.team}</div>
+   <div class="ratingPoints">${t.r}</div>
+  </div>
+
+  `
  })
 
 }
