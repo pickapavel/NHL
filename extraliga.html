@@ -218,7 +218,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot }
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -319,6 +319,25 @@ function resetRatings(){
 
 function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
+}
+
+ function saveTip(home,away){
+
+ const kTip=document.getElementById(`k_${home}_${away}`).value
+ const pTip=document.getElementById(`p_${home}_${away}`).value
+
+ if(!kTip && !pTip) return
+
+ addDoc(collection(db,"tipy"),{
+  homeTeam:home,
+  awayTeam:away,
+  kTip:kTip,
+  pTip:pTip,
+  created:Date.now()
+ })
+
+ alert("Tip uložen")
+
 }
 
 function updateElo(home,away,hg,ag){
@@ -600,9 +619,17 @@ function renderSchedule(matches){
 <div class="odds">V - OT/SN<br>${odds.o4}</div>
 <div class="odds">V<br>${odds.o3}</div>
 
-   <div class="tipInput">
-<input placeholder="K - Tip">
-<input placeholder="P - Tip" style="margin-top:4px;">
+<div class="tipInput">
+
+<input id="k_${p[0]}_${p[1]}" placeholder="K - Tip">
+
+<input id="p_${p[0]}_${p[1]}" placeholder="P - Tip" style="margin-top:4px;">
+
+<button onclick="saveTip('${p[0]}','${p[1]}')" 
+style="margin-top:4px;width:100%;background:#2f9ec9;color:white;border:none;padding:6px;border-radius:6px;font-weight:bold;cursor:pointer;">
+Potvrdit
+</button>
+
 </div>
 
    <div class="ratingBox"><a href="rating.html">⭐ ${Math.round(ratings[p[1]]||1000)}</a></div>
