@@ -274,7 +274,6 @@ document.getElementById("homeAwayFilter").onchange=(e)=>{
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
  applySeasonFilter()
- if(resultMode!=="all") showPlayedOnly=true
 }
 
 document.getElementById("headToHeadBtn").onclick=()=>{
@@ -419,7 +418,7 @@ function renderStandings(arr){
 
   <div class="standingsCard">
 
-   <div class="ratingStand">⭐ ${rating}</div>
+   <div class="ratingStand"><a href="rating.html">⭐ ${rating}</a></div>
 
    <div class="rank">${i+1}</div>
 
@@ -454,7 +453,6 @@ function renderStandings(arr){
 }
 
 /* ===== ROZPIS ===== */
-/* (zbytek kódu zůstal úplně stejný) */
 
 function renderSchedule(matches){
 
@@ -474,41 +472,41 @@ function renderSchedule(matches){
 
   }
 
-else if(teamFilter.value!=="all"){
+  else if(teamFilter.value!=="all"){
 
- const team=teamFilter.value
+   const team=teamFilter.value
 
- if(p[0]!==team && p[1]!==team) return
+   if(p[0]!==team && p[1]!==team) return
 
- if(homeAwayMode==="home" && p[0]!==team) return
- if(homeAwayMode==="away" && p[1]!==team) return
+   if(homeAwayMode==="home" && p[0]!==team) return
+   if(homeAwayMode==="away" && p[1]!==team) return
 
-}
+  }
+
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
   if(showPlayedOnly && (!m || !m.stats)) return
-  // filtr výsledku (výhra / prohra)
-if(resultMode!=="all"){
 
- if(!m || !m.stats) return
+  if(resultMode!=="all"){
 
- const s=calc(m.stats)
+   if(!m || !m.stats) return
 
- const team=teamFilter.value
+   const s=calc(m.stats)
+   const team=teamFilter.value
 
- if(team!=="all"){
+   if(team!=="all"){
 
-  let win=false
+    let win=false
 
-  if(m.homeTeam===team && s.hg>s.ag) win=true
-  if(m.awayTeam===team && s.ag>s.hg) win=true
+    if(m.homeTeam===team && s.hg>s.ag) win=true
+    if(m.awayTeam===team && s.ag>s.hg) win=true
 
-  if(resultMode==="win" && !win) return
-  if(resultMode==="loss" && win) return
+    if(resultMode==="win" && !win) return
+    if(resultMode==="loss" && win) return
 
- }
+   }
 
-}
+  }
 
   let hg=0,ag=0
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
@@ -564,7 +562,7 @@ if(resultMode!=="all"){
 
   <div class="predictionRow">
 
-   <div class="ratingBox">${Math.round(ratings[p[0]]||1000)} ⭐</div>
+   <div class="ratingBox"><a href="rating.html">${Math.round(ratings[p[0]]||1000)} ⭐</a></div>
 
    <div class="odds">V<br>-</div>
    <div class="odds">OT<br>-</div>
@@ -575,7 +573,7 @@ if(resultMode!=="all"){
    <input placeholder="Tvůj tip">
    </div>
 
-   <div class="ratingBox">⭐ ${Math.round(ratings[p[1]]||1000)}</div>
+   <div class="ratingBox"><a href="rating.html">⭐ ${Math.round(ratings[p[1]]||1000)}</a></div>
 
   </div>
 
