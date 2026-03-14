@@ -266,6 +266,16 @@ teams.forEach(team=>{
 teamFilter.onchange=()=>applySeasonFilter()
 teamFilter2.onchange=()=>applySeasonFilter()
 
+document.getElementById("homeAwayFilter").onchange=(e)=>{
+ homeAwayMode=e.target.value
+ applySeasonFilter()
+}
+
+document.getElementById("resultFilter").onchange=(e)=>{
+ resultMode=e.target.value
+ applySeasonFilter()
+}
+
 document.getElementById("headToHeadBtn").onclick=()=>{
  headToHeadMode=!headToHeadMode
  teamFilter2.style.display=headToHeadMode?"block":"none"
@@ -463,12 +473,16 @@ function renderSchedule(matches){
 
   }
 
-  else if(teamFilter.value!=="all"){
+else if(teamFilter.value!=="all"){
 
-   if(p[0]!==teamFilter.value && p[1]!==teamFilter.value) return
+ const team=teamFilter.value
 
-  }
+ if(p[0]!==team && p[1]!==team) return
 
+ if(homeAwayMode==="home" && p[0]!==team) return
+ if(homeAwayMode==="away" && p[1]!==team) return
+
+}
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
   if(showPlayedOnly && (!m || !m.stats)) return
