@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rating týmů</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+ font-family:Arial;
+ margin:0;
+ background:#f2f2f2;
+}
+
+.wrapper{
+ max-width:1200px;
+ margin:auto;
+ padding:20px;
+ background:white;
+}
+
+/* HLAVIČKA */
+
+.headerBar{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ background:#e9ecef;
+ border-radius:12px;
+ padding:20px;
+ margin-bottom:25px;
+}
+
+.headerBar img{
+ height:110px;
+ object-fit:contain;
+}
+
+.pageTitle{
+ background:#0b2a3c;
+ color:white;
+ font-size:26px;
+ font-weight:bold;
+ padding:14px 28px;
+ border-radius:10px;
+}
+
+/* FILTR */
+
+.filterBar{
+ display:flex;
+ gap:10px;
+ margin-bottom:20px;
+}
+
+.filterBar select{
+ padding:8px 10px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
+/* ZÁPASY */
+
+.ratingRow{
+ display:grid;
+ grid-template-columns: 1fr 80px 80px 80px 120px;
+ gap:10px;
+ background:#e9ecef;
+ padding:12px;
+ margin-bottom:8px;
+ border-radius:8px;
+ align-items:center;
+}
+
+.matchTeams{
+ font-weight:bold;
+}
+
+.ratingBefore{
+ text-align:center;
+}
+
+.ratingAfter{
+ text-align:center;
+}
+
+.ratingDiff{
+ text-align:center;
+ font-weight:bold;
+}
+
+.plus{color:green}
+.minus{color:red}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="headerBar">
+<img src="img/extraliga.jpg">
+<div class="pageTitle">Rating týmů</div>
+</div>
+
+<div class="filterBar">
+<select id="teamFilter">
+<option value="all">Všechny týmy</option>
+</select>
+</div>
+
+<div id="ratingList"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+ authDomain:"statistiky-6310a.firebaseapp.com",
+ projectId:"statistiky-6310a"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+/* TÝMY */
+
+const teams=[
+"HC Sparta Praha (P)",
+"HC Bílí Tygři Liberec (K)",
+"HC Dynamo Pardubice (K)",
+"HC Chemopetrol Litvínov (P)",
+"HC Geus Okna Kladno (P)",
+"HC Motor České Budějovice (K)",
+"HC Energie Karlovy Vary (P)",
+"HC Oceláři Třinec (K)"
+];
+
+const teamFilter=document.getElementById("teamFilter");
+
+teams.forEach(t=>{
+ const opt=document.createElement("option")
+ opt.value=t
+ opt.textContent=t
+ teamFilter.appendChild(opt)
+})
+
+/* ELO */
+
+const BASE_RATING=1000
+const K=30
+const HOME_ADV=50
+
+let ratings={}
+
+function resetRatings(){
+ ratings={}
+ teams.forEach(t=>ratings[t]=BASE_RATING)
+}
+
+function expected(ra,rb){
+ return 1/(1+Math.pow(10,(rb-ra)/400))
+}
+
+function updateElo(home,away,hg,ag){
+
+ let ra=ratings[home]+HOME_ADV
+ let rb=ratings[away]
+
+ let ea=expected(ra,rb)
+ let eb=expected(rb,ra)
+
+ let sa=hg>ag?1:0
+ let sb=ag>hg?1:0
+
+ ratings[home]+=K*(sa-ea)
+ ratings[away]+=K*(sb-eb)
+
+}
+
+/* GÓLY */
+
+function calc(stats){
+
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+
+ if(stats[9]==="11") ag++
+ if(stats[19]==="11") hg++
+ if(stats[20]==="1") hg++
+ if(stats[20]==="2") ag++
+
+ return {hg,ag}
+}
+
+/* RENDER */
+
+function render(matches){
+
+ const list=document.getElementById("ratingList")
+ list.innerHTML=""
+
+ const selectedTeam=teamFilter.value
+
+ resetRatings()
+
+ matches.forEach(m=>{
+
+  if(!m.stats)return
+
+  const {hg,ag}=calc(m.stats)
+
+  const beforeHome=Math.round(ratings[m.homeTeam])
+  const beforeAway=Math.round(ratings[m.awayTeam])
+
+  updateElo(m.homeTeam,m.awayTeam,hg,ag)
+
+  const afterHome=Math.round(ratings[m.homeTeam])
+  const afterAway=Math.round(ratings[m.awayTeam])
+
+  const diffHome=afterHome-beforeHome
+  const diffAway=afterAway-beforeAway
+
+  function createRow(team,before,after,diff,opponent){
+
+   if(selectedTeam!=="all" && selectedTeam!==team) return ""
+
+   const cls=diff>=0?"plus":"minus"
+   const sign=diff>=0?"+":""
+
+   return `
+
+   <div class="ratingRow">
+
+    <div class="matchTeams">
+    ${team} vs ${opponent}
+    </div>
+
+    <div class="ratingBefore">${before}</div>
+
+    <div class="ratingAfter">${after}</div>
+
+    <div class="ratingDiff ${cls}">
+    ${sign}${diff}
+    </div>
+
+    <div>
+    ${hg}:${ag}
+    </div>
+
+   </div>
+
+   `
+  }
+
+  list.innerHTML+=createRow(m.homeTeam,beforeHome,afterHome,diffHome,m.awayTeam)
+  list.innerHTML+=createRow(m.awayTeam,beforeAway,afterAway,diffAway,m.homeTeam)
+
+ })
+
+}
+
+/* FIREBASE */
+
+const q=query(collection(db,"zapasy"),orderBy("created","asc"))
+
+onSnapshot(q,(snap)=>{
+
+ let matches=[]
+
+ snap.forEach(d=>{
+  matches.push(d.data())
+ })
+
+ matches=matches.filter(m=>m.category?.startsWith("Extraliga"))
+
+ render(matches)
+
+})
+
+teamFilter.onchange=()=>{
+
+ const q=query(collection(db,"zapasy"),orderBy("created","asc"))
+
+ onSnapshot(q,(snap)=>{
+
+ let matches=[]
+
+ snap.forEach(d=>{
+  matches.push(d.data())
+ })
+
+ matches=matches.filter(m=>m.category?.startsWith("Extraliga"))
+
+ render(matches)
+
+ })
+
+}
+
+</script>
+
+</body>
+</html>
