@@ -274,6 +274,7 @@ document.getElementById("homeAwayFilter").onchange=(e)=>{
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
  applySeasonFilter()
+ if(resultMode!=="all") showPlayedOnly=true
 }
 
 document.getElementById("headToHeadBtn").onclick=()=>{
@@ -486,6 +487,28 @@ else if(teamFilter.value!=="all"){
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
   if(showPlayedOnly && (!m || !m.stats)) return
+  // filtr výsledku (výhra / prohra)
+if(resultMode!=="all"){
+
+ if(!m || !m.stats) return
+
+ const s=calc(m.stats)
+
+ const team=teamFilter.value
+
+ if(team!=="all"){
+
+  let win=false
+
+  if(m.homeTeam===team && s.hg>s.ag) win=true
+  if(m.awayTeam===team && s.ag>s.hg) win=true
+
+  if(resultMode==="win" && !win) return
+  if(resultMode==="loss" && win) return
+
+ }
+
+}
 
   let hg=0,ag=0
   let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
