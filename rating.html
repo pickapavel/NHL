@@ -34,7 +34,7 @@ border-radius:6px;
 margin-bottom:4px;
 }
 
-/* ===== HLAVIČKA HISTORIE ===== */
+/* ===== HLAVIČKA ===== */
 
 .header{
 display:grid;
@@ -44,10 +44,6 @@ padding:10px 10px 12px 10px;
 border-bottom:2px solid #ccc;
 margin-bottom:10px;
 column-gap:10px;
-}
-
-.header div{
-text-align:left;
 }
 
 .header div:nth-child(3),
@@ -119,7 +115,6 @@ font-weight:bold;
 <div class="wrapper">
 
 <h2>Celkový rating týmů</h2>
-
 <div id="ratingSummary"></div>
 
 <h2>Historie ratingu</h2>
@@ -195,7 +190,11 @@ summary.innerHTML=""
 
 /* pouze extraliga */
 
-const extraliga=matches.filter(m=>m.category?.startsWith("Extraliga"))
+const extraliga=matches
+.filter(m=>m.category?.startsWith("Extraliga"))
+.sort((a,b)=>a.created-b.created)   // chronologické pořadí
+
+let history=[]
 
 extraliga.forEach(m=>{
 
@@ -230,7 +229,7 @@ const diffAway=Math.round(afterAway-beforeAway)
 const signHome=diffHome>=0?`<span class="plus">+${diffHome}</span>`:`<span class="minus">${diffHome}</span>`
 const signAway=diffAway>=0?`<span class="plus">+${diffAway}</span>`:`<span class="minus">${diffAway}</span>`
 
-list.innerHTML+=`
+history.push(`
 
 <div class="match">
 
@@ -239,37 +238,31 @@ ${m.category || ""} – ${m.season || ""}
 </div>
 
 <div class="row">
-
 <div class="rating">${Math.round(beforeHome)}</div>
-
 <div class="team">${m.homeTeam}</div>
-
 <div class="score">${s.hg}</div>
-
 <div class="rating">${signHome}</div>
-
 <div class="rating">${afterHome}</div>
-
 </div>
 
 <div class="row">
-
 <div class="rating">${Math.round(beforeAway)}</div>
-
 <div class="team">${m.awayTeam}</div>
-
 <div class="score">${s.ag}</div>
-
 <div class="rating">${signAway}</div>
-
 <div class="rating">${afterAway}</div>
-
 </div>
 
 </div>
 
-`
+`)
 
+})
+
+/* historie obráceně (nejnovější nahoře) */
+
+history.reverse().forEach(h=>{
+list.innerHTML+=h
 })
 
 /* ===== CELKOVÝ RATING ===== */
@@ -281,11 +274,8 @@ Object.entries(ratings)
 summary.innerHTML+=`
 
 <div class="ratingRow">
-
 <div>${t[0]}</div>
-
 <div>${Math.round(t[1])}</div>
-
 </div>
 
 `
