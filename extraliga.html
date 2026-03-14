@@ -125,7 +125,7 @@ body{
 
 .predictionRow{
  display:grid;
- grid-template-columns:120px 1fr 1fr 1fr 1fr 150px 120px;
+ grid-template-columns:120px 1fr 1fr 1fr 1fr 180px 120px;
  gap:8px;
  background:#f5f7f9;
  border:2px solid #e1e4e8;
@@ -601,8 +601,9 @@ function renderSchedule(matches){
 <div class="odds">V<br>${odds.o3}</div>
 
    <div class="tipInput">
-   <input placeholder="Tvůj tip">
-   </div>
+<input placeholder="K - Tip">
+<input placeholder="P - Tip" style="margin-top:4px;">
+</div>
 
    <div class="ratingBox"><a href="rating.html">⭐ ${Math.round(ratings[p[1]]||1000)}</a></div>
 
