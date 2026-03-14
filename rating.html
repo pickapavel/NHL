@@ -2,105 +2,57 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rating týmů</title>
+<title>Historie ratingu</title>
 
 <style>
 
-*{box-sizing:border-box}
-
 body{
- font-family:Arial;
- margin:0;
- background:#f2f2f2;
+font-family:Arial;
+background:#f2f2f2;
+margin:0;
 }
 
 .wrapper{
- max-width:1200px;
- margin:auto;
- padding:20px;
- background:white;
+max-width:900px;
+margin:auto;
+background:white;
+padding:20px;
 }
 
-/* HLAVIČKA */
-
-.headerBar{
- display:flex;
- align-items:center;
- justify-content:space-between;
- background:#e9ecef;
- border-radius:12px;
- padding:20px;
- margin-bottom:25px;
+h2{
+margin-top:0;
 }
 
-.headerBar img{
- height:110px;
+.row{
+display:grid;
+grid-template-columns:1fr 80px 120px 120px;
+grid-template-rows:auto auto;
+align-items:center;
+background:#e9ecef;
+padding:10px;
+border-radius:6px;
+margin-top:6px;
+font-weight:bold;
+row-gap:4px;
 }
 
-.pageTitle{
- background:#0b2a3c;
- color:white;
- font-size:26px;
- font-weight:bold;
- padding:14px 28px;
- border-radius:10px;
+.sub{
+grid-column:1/5;
+font-size:13px;
+font-weight:normal;
+color:#555;
+margin-top:2px;
 }
 
-/* FILTR */
-
-.filterBar{
- display:flex;
- gap:10px;
- margin-bottom:20px;
+.plus{
+color:green;
+font-weight:bold;
 }
 
-.filterBar select{
- padding:8px;
- border-radius:6px;
- border:1px solid #ccc;
- font-weight:bold;
+.minus{
+color:red;
+font-weight:bold;
 }
-
-/* TABULKA RATINGU */
-
-.ratingStandings{
- margin-bottom:30px;
-}
-
-.ratingTeam{
- display:flex;
- justify-content:space-between;
- align-items:center;
- background:#e9ecef;
- padding:12px;
- border-radius:8px;
- margin-bottom:6px;
-}
-
-.ratingPoints{
- background:#0b2a3c;
- color:white;
- padding:6px 14px;
- border-radius:6px;
- font-weight:bold;
-}
-
-/* HISTORIE */
-
-.matchRow{
- display:grid;
- grid-template-columns: 1fr 80px 80px 80px 80px;
- gap:10px;
- background:#e9ecef;
- padding:12px;
- border-radius:8px;
- margin-bottom:6px;
- align-items:center;
-}
-
-.plus{color:green;font-weight:bold}
-.minus{color:red;font-weight:bold}
 
 </style>
 </head>
@@ -109,22 +61,9 @@ body{
 
 <div class="wrapper">
 
-<div class="headerBar">
-<img src="img/extraliga.jpg">
-<div class="pageTitle">Rating týmů</div>
-</div>
-
-<div class="filterBar">
-<select id="teamFilter">
-<option value="all">Všechny týmy</option>
-</select>
-</div>
-
-<h2>Aktuální rating</h2>
-<div id="ratingStandings"></div>
-
 <h2>Historie ratingu</h2>
-<div id="ratingHistory"></div>
+
+<div id="ratingList"></div>
 
 </div>
 
@@ -135,207 +74,127 @@ import { getFirestore, collection, query, orderBy, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
- apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
- authDomain:"statistiky-6310a.firebaseapp.com",
- projectId:"statistiky-6310a"
+apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+authDomain:"statistiky-6310a.firebaseapp.com",
+projectId:"statistiky-6310a"
 };
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* TÝMY */
-
-const teams=[
-"HC Sparta Praha (P)",
-"HC Bílí Tygři Liberec (K)",
-"HC Dynamo Pardubice (K)",
-"HC Chemopetrol Litvínov (P)",
-"HC Geus Okna Kladno (P)",
-"HC Motor České Budějovice (K)",
-"HC Energie Karlovy Vary (P)",
-"HC Oceláři Třinec (K)"
-];
-
-const teamFilter=document.getElementById("teamFilter");
-
-teams.forEach(t=>{
- let o=document.createElement("option")
- o.value=t
- o.textContent=t
- teamFilter.appendChild(o)
-})
-
-/* ELO */
-
-const BASE_RATING=1000
-const K=30
-const HOME_ADV=50
+const BASE_RATING=1000;
+const K=30;
+const HOME_ADV=50;
 
 let ratings={}
 
-function resetRatings(){
- ratings={}
- teams.forEach(t=>ratings[t]=BASE_RATING)
-}
-
 function expected(ra,rb){
- return 1/(1+Math.pow(10,(rb-ra)/400))
+return 1/(1+Math.pow(10,(rb-ra)/400))
 }
-
-function updateElo(home,away,hg,ag){
-
- let ra=ratings[home]+HOME_ADV
- let rb=ratings[away]
-
- let ea=expected(ra,rb)
- let eb=expected(rb,ra)
-
- let sa=hg>ag?1:0
- let sb=ag>hg?1:0
-
- ratings[home]+=K*(sa-ea)
- ratings[away]+=K*(sb-eb)
-
-}
-
-/* GÓLY */
 
 function calc(stats){
 
- if(!stats) return null
+let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
 
- let ag=(Number(stats[6])||0)+(Number(stats[7])||0)+(Number(stats[8])||0)
- let hg=(Number(stats[16])||0)+(Number(stats[17])||0)+(Number(stats[18])||0)
+if(stats[9]==="11") ag++
+if(stats[19]==="11") hg++
+if(stats[20]==="1") hg++
+if(stats[20]==="2") ag++
 
- if(stats[9]==="11") ag++
- if(stats[19]==="11") hg++
- if(stats[20]==="1") hg++
- if(stats[20]==="2") ag++
-
- return {hg,ag}
+return {hg,ag}
 
 }
-
-/* RENDER */
 
 function render(matches){
 
- resetRatings()
+ratings={}
 
- const history=document.getElementById("ratingHistory")
- history.innerHTML=""
+const list=document.getElementById("ratingList")
+list.innerHTML=""
 
- const selectedTeam=teamFilter.value
+matches.forEach(m=>{
 
- matches.forEach(m=>{
+if(!m.stats) return
 
-  const goals=calc(m.stats)
-  if(!goals) return
+if(!ratings[m.homeTeam]) ratings[m.homeTeam]=BASE_RATING
+if(!ratings[m.awayTeam]) ratings[m.awayTeam]=BASE_RATING
 
-  const {hg,ag}=goals
+const beforeHome=ratings[m.homeTeam]
+const beforeAway=ratings[m.awayTeam]
 
-  const beforeHome=Math.round(ratings[m.homeTeam])
-  const beforeAway=Math.round(ratings[m.awayTeam])
+const s=calc(m.stats)
 
-  updateElo(m.homeTeam,m.awayTeam,hg,ag)
+let ra=beforeHome+HOME_ADV
+let rb=beforeAway
 
-  const afterHome=Math.round(ratings[m.homeTeam])
-  const afterAway=Math.round(ratings[m.awayTeam])
+let ea=expected(ra,rb)
+let eb=expected(rb,ra)
 
-  const diffHome=afterHome-beforeHome
-  const diffAway=afterAway-beforeAway
+let sa=s.hg>s.ag?1:0
+let sb=s.ag>s.hg?1:0
 
-  function row(team,before,after,diff,opponent){
+ratings[m.homeTeam]+=K*(sa-ea)
+ratings[m.awayTeam]+=K*(sb-eb)
 
-   if(selectedTeam!=="all" && selectedTeam!==team) return ""
+const afterHome=Math.round(ratings[m.homeTeam])
+const afterAway=Math.round(ratings[m.awayTeam])
 
-   const cls=diff>=0?"plus":"minus"
-   const sign=diff>=0?"+":""
+const diffHome=Math.round(afterHome-beforeHome)
+const diffAway=Math.round(afterAway-beforeAway)
 
-   return `
-   <div class="matchRow">
+const signHome=diffHome>=0?`<span class="plus">+${diffHome}</span>`:`<span class="minus">${diffHome}</span>`
+const signAway=diffAway>=0?`<span class="plus">+${diffAway}</span>`:`<span class="minus">${diffAway}</span>`
 
-    <div>${team} vs ${opponent}</div>
-    <div>${before}</div>
-    <div>${after}</div>
-    <div class="${cls}">${sign}${diff}</div>
-    <div>${hg}:${ag}</div>
+list.innerHTML+=`
 
-   </div>
-   `
-  }
+<div class="row">
 
-  history.innerHTML+=row(m.homeTeam,beforeHome,afterHome,diffHome,m.awayTeam)
-  history.innerHTML+=row(m.awayTeam,beforeAway,afterAway,diffAway,m.homeTeam)
+<div>${m.homeTeam} ${s.hg}</div>
 
- })
+<div>${signHome}</div>
 
- renderStandings()
+<div>${Math.round(beforeHome)}</div>
 
-}
+<div>${afterHome}</div>
 
-/* TABULKA */
+<div class="sub">vs ${m.awayTeam} ${s.ag}</div>
 
-function renderStandings(){
+</div>
 
- const cont=document.getElementById("ratingStandings")
- cont.innerHTML=""
+<div class="row">
 
- const arr=Object.entries(ratings)
- .map(([team,r])=>({team,r:Math.round(r)}))
- .sort((a,b)=>b.r-a.r)
+<div>${m.awayTeam} ${s.ag}</div>
 
- arr.forEach(t=>{
+<div>${signAway}</div>
 
-  cont.innerHTML+=`
+<div>${Math.round(beforeAway)}</div>
 
-  <div class="ratingTeam">
-   <div>${t.team}</div>
-   <div class="ratingPoints">${t.r}</div>
-  </div>
+<div>${afterAway}</div>
 
-  `
- })
+<div class="sub">vs ${m.homeTeam} ${s.hg}</div>
+
+</div>
+
+`
+
+})
 
 }
-
-/* FIREBASE */
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
 onSnapshot(q,(snap)=>{
 
- let matches=[]
+let arr=[]
 
- snap.forEach(d=>{
-  matches.push(d.data())
- })
-
- matches=matches.filter(m=>m.category?.startsWith("Extraliga"))
-
- render(matches)
-
+snap.forEach(d=>{
+arr.push(d.data())
 })
 
-teamFilter.onchange=()=>{
+render(arr)
 
- const q=query(collection(db,"zapasy"),orderBy("created","asc"))
-
- onSnapshot(q,(snap)=>{
-
- let matches=[]
-
- snap.forEach(d=>{
-  matches.push(d.data())
- })
-
- matches=matches.filter(m=>m.category?.startsWith("Extraliga"))
-
- render(matches)
-
- })
-
-}
+})
 
 </script>
 
