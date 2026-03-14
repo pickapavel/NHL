@@ -65,6 +65,13 @@ padding:6px;
 margin-bottom:12px;
 }
 
+.matchInfo{
+font-size:13px;
+color:#555;
+padding:4px 8px;
+font-weight:bold;
+}
+
 .row{
 display:grid;
 grid-template-columns:120px 1fr 80px 120px 120px;
@@ -182,7 +189,11 @@ const summary=document.getElementById("ratingSummary")
 list.innerHTML=""
 summary.innerHTML=""
 
-matches.forEach(m=>{
+/* pouze extraliga */
+
+const extraliga=matches.filter(m=>m.category?.startsWith("Extraliga"))
+
+extraliga.forEach(m=>{
 
 if(!m.stats) return
 
@@ -218,6 +229,10 @@ const signAway=diffAway>=0?`<span class="plus">+${diffAway}</span>`:`<span class
 list.innerHTML+=`
 
 <div class="match">
+
+<div class="matchInfo">
+${m.category || ""} – ${m.season || ""}
+</div>
 
 <div class="row">
 
