@@ -25,16 +25,6 @@ margin-top:0;
 
 /* ===== TABULKA CELKOVÝ RATING ===== */
 
-.ratingTable{
-display:grid;
-grid-template-columns:1fr 120px;
-background:#e9ecef;
-padding:10px;
-border-radius:6px;
-margin-bottom:6px;
-font-weight:bold;
-}
-
 .ratingRow{
 display:grid;
 grid-template-columns:1fr 120px;
@@ -48,11 +38,22 @@ margin-bottom:4px;
 
 .header{
 display:grid;
-grid-template-columns:90px 420px 60px 120px 120px;
+grid-template-columns:90px 420px 80px 120px 120px;
 font-weight:bold;
-padding:10px;
+padding:10px 10px 12px 10px;
 border-bottom:2px solid #ccc;
 margin-bottom:10px;
+column-gap:10px;
+}
+
+.header div{
+text-align:left;
+}
+
+.header div:nth-child(3),
+.header div:nth-child(4),
+.header div:nth-child(5){
+text-align:center;
 }
 
 /* ===== ZÁPAS ===== */
@@ -72,14 +73,17 @@ padding:4px 8px;
 font-weight:bold;
 }
 
+/* ===== ŘÁDEK ===== */
+
 .row{
 display:grid;
-grid-template-columns:90px 420px 60px 120px 120px;
+grid-template-columns:90px 420px 80px 120px 120px;
 align-items:center;
 background:#e9ecef;
 padding:10px;
 border-radius:6px;
 margin:4px 0;
+column-gap:10px;
 }
 
 .team{
@@ -88,8 +92,8 @@ font-weight:bold;
 
 .score{
 font-weight:bold;
-text-align:left;
 font-size:18px;
+text-align:center;
 }
 
 .rating{
