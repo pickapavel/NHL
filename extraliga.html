@@ -637,23 +637,17 @@ function renderSchedule(matches){
 <div class="odds">V<br>${odds.o1}</div>
 <div class="odds">V - OT/SN<br>${odds.o2}</div>
 
-<div class="odds" style="background:#fff7d6;font-size:13px;">
-K: ${kreditK} Kč | P: ${kreditP} Kč
-</div>
-
 <div class="odds">V - OT/SN<br>${odds.o4}</div>
 <div class="odds">V<br>${odds.o3}</div>
 
 <div class="tipInput">
 
 <div style="font-size:13px;font-weight:bold;margin-bottom:4px;">
-Kredit K-Tip: ${kreditK} Kč
 </div>
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K - Tip">
 
 <div style="font-size:13px;font-weight:bold;margin-top:6px;margin-bottom:4px;">
-Kredit P-Tip: ${kreditP} Kč
 </div>
 
 <input id="p_${p[0]}_${p[1]}" placeholder="P - Tip" style="margin-top:4px;">
@@ -665,11 +659,11 @@ Potvrdit
 
 </div>
 
-  <div class="ratingBox">
+<div class="ratingBox" style="display:flex;align-items:center;gap:20px;">
 <a href="rating.html">⭐ ${Math.round(ratings[p[1]]||1000)}</a>
-<span style="margin-left:20px;font-size:14px;font-weight:bold;">
-| Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
-</span>
+<div style="font-weight:bold;">
+Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
+</div>
 </div>
 
   </div>
