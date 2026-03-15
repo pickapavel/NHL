@@ -741,9 +741,25 @@ document.getElementById("seasonFilter").onchange=(e)=>{
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
-await loadCredits()
+async function start(){
 
-onSnapshot(q,(snap)=>{
+ await loadCredits()
+
+ onSnapshot(q,(snap)=>{
+
+  allMatches=[]
+
+  snap.forEach(d=>{
+   allMatches.push(d.data())
+  })
+
+  applySeasonFilter()
+
+ })
+
+}
+
+start()
 
  allMatches=[]
 
