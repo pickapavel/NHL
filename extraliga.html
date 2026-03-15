@@ -218,7 +218,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc }
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -341,20 +341,38 @@ function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
- function saveTip(home,away){
+async function saveTip(home,away){
 
  const kTip=document.getElementById(`k_${home}_${away}`).value
  const pTip=document.getElementById(`p_${home}_${away}`).value
 
  if(!kTip && !pTip) return
 
- addDoc(collection(db,"tipy"),{
+ if(kTip){
+  kreditK -= Number(kTip)
+
+  await updateDoc(doc(db,"hraci","KTip"),{
+   kredit:kreditK
+  })
+ }
+
+ if(pTip){
+  kreditP -= Number(pTip)
+
+  await updateDoc(doc(db,"hraci","PTip"),{
+   kredit:kreditP
+  })
+ }
+
+ await addDoc(collection(db,"tipy"),{
   homeTeam:home,
   awayTeam:away,
   kTip:kTip,
   pTip:pTip,
   created:Date.now()
  })
+
+ applySeasonFilter()
 
  alert("Tip uložen")
 
