@@ -238,11 +238,11 @@ async function loadCredits(){
  const pDoc = await getDoc(doc(db,"hraci","PTip"))
 
  if(kDoc.exists()){
-  kreditK = kDoc.data().kredit
+  kreditK = Number(kDoc.data().kredit)
  }
 
  if(pDoc.exists()){
-  kreditP = pDoc.data().kredit
+  kreditP = Number(pDoc.data().kredit)
  }
 
  console.log("K-Tip kredit:", kreditK)
