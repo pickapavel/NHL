@@ -348,14 +348,24 @@ function expected(ra,rb){
 
 async function saveTip(home,away){
 
- const kTip=document.getElementById(`k_${home}_${away}`).value
- const pTip=document.getElementById(`p_${home}_${away}`).value
+ const kTip = document.getElementById(`k_${home}_${away}`).value
+ const kBet = document.getElementById(`kbet_${home}_${away}`).value
+
+ const pTip = document.getElementById(`p_${home}_${away}`).value
+ const pBet = document.getElementById(`pbet_${home}_${away}`).value
 
  if(!kTip && !pTip) return
 
-if(kTip){
+if(kTip && kBet){
 
- const bet = Number(kTip)
+ const bet = Number(kBet)
+ kreditK -= bet
+
+ await updateDoc(doc(db,"hraci","KTip"),{
+  kredit:kreditK
+ })
+
+}
 
  if(bet > kreditK){
   alert("Kubele nemá dostatečný kredit")
@@ -369,9 +379,16 @@ if(kTip){
   })
  }
 
-if(pTip){
+if(pTip && pBet){
 
- const bet = Number(pTip)
+ const bet = Number(pBet)
+ kreditP -= bet
+
+ await updateDoc(doc(db,"hraci","PTip"),{
+  kredit:kreditP
+ })
+
+}
 
  if(bet > kreditP){
   alert("Pici nemá dostatečný kredit")
