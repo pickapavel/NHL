@@ -232,13 +232,18 @@ const db=getFirestore(app);
 let kreditK = 0
 let kreditP = 0
 
- async function loadCredits(){
+async function loadCredits(){
 
  const kDoc = await getDoc(doc(db,"hraci","KTip"))
  const pDoc = await getDoc(doc(db,"hraci","PTip"))
 
- kreditK = kDoc.data().kredit
- kreditP = pDoc.data().kredit
+ if(kDoc.exists()){
+  kreditK = kDoc.data().kredit
+ }
+
+ if(pDoc.exists()){
+  kreditP = pDoc.data().kredit
+ }
 
  console.log("K-Tip kredit:", kreditK)
  console.log("P-Tip kredit:", kreditP)
