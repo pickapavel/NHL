@@ -353,16 +353,32 @@ async function saveTip(home,away){
 
  if(!kTip && !pTip) return
 
- if(kTip){
-  kreditK -= Number(kTip)
+if(kTip){
+
+ const bet = Number(kTip)
+
+ if(bet > kreditK){
+  alert("Kubele nemá dostatečný kredit")
+  return
+ }
+
+ kreditK -= bet
 
   await updateDoc(doc(db,"hraci","KTip"),{
    kredit:kreditK
   })
  }
 
- if(pTip){
-  kreditP -= Number(pTip)
+if(pTip){
+
+ const bet = Number(pTip)
+
+ if(bet > kreditP){
+  alert("Pici nemá dostatečný kredit")
+  return
+ }
+
+ kreditP -= bet
 
   await updateDoc(doc(db,"hraci","PTip"),{
    kredit:kreditP
