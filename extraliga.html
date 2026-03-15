@@ -349,64 +349,55 @@ function expected(ra,rb){
 async function saveTip(home,away){
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
- const kBet = document.getElementById(`kbet_${home}_${away}`).value
+ const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
 
  const pTip = document.getElementById(`p_${home}_${away}`).value
- const pBet = document.getElementById(`pbet_${home}_${away}`).value
+ const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
 
- if(!kTip && !pTip) return
-
-if(kTip && kBet){
-
- const bet = Number(kBet)
- kreditK -= bet
-
- await updateDoc(doc(db,"hraci","KTip"),{
-  kredit:kreditK
- })
-
-}
-
- if(bet > kreditK){
-  alert("Kubele nemá dostatečný kredit")
+ if(!kTip && !pTip){
+  alert("Zadej alespoň jeden tip")
   return
  }
 
- kreditK -= bet
+ // KUBELE
+ if(kTip && kBet){
+
+  if(kBet > kreditK){
+   alert("Kubele nemá dostatečný kredit")
+   return
+  }
+
+  kreditK -= kBet
 
   await updateDoc(doc(db,"hraci","KTip"),{
    kredit:kreditK
   })
+
  }
 
-if(pTip && pBet){
+ // PICI
+ if(pTip && pBet){
 
- const bet = Number(pBet)
- kreditP -= bet
+  if(pBet > kreditP){
+   alert("Pici nemá dostatečný kredit")
+   return
+  }
 
- await updateDoc(doc(db,"hraci","PTip"),{
-  kredit:kreditP
- })
-
-}
-
- if(bet > kreditP){
-  alert("Pici nemá dostatečný kredit")
-  return
- }
-
- kreditP -= bet
+  kreditP -= pBet
 
   await updateDoc(doc(db,"hraci","PTip"),{
    kredit:kreditP
   })
+
  }
 
  await addDoc(collection(db,"tipy"),{
   homeTeam:home,
   awayTeam:away,
   kTip:kTip,
+  kBet:kBet,
   pTip:pTip,
+  pBet:pBet,
   created:Date.now()
  })
 
