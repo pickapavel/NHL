@@ -392,15 +392,15 @@ async function saveTip(home,away){
 
  }
 
- await addDoc(collection(db,"tipy"),{
-  homeTeam:home,
-  awayTeam:away,
-  kTip:kTip,
-  kBet:kBet,
-  pTip:pTip,
-  pBet:pBet,
-  created:Date.now()
- })
+await addDoc(collection(db,"tipy"),{
+  homeTeam: home,
+  awayTeam: away,
+  kTip: kTip,
+  kBet: kBet,
+  pTip: pTip,
+  pBet: pBet,
+  created: Date.now()
+})
 
  applySeasonFilter()
 
