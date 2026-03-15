@@ -218,7 +218,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc }
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc, getDocs }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -231,6 +231,7 @@ const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 let kreditK = 0
 let kreditP = 0
+let savedTips = {}
 
 async function loadCredits(){
 
@@ -694,17 +695,13 @@ function renderSchedule(matches){
 <div style="font-size:13px;font-weight:bold;margin-bottom:4px;">
 </div>
 
-<input id="k_${p[0]}_${p[1]}" placeholder="K - Tip (1-4)">
-
-<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" style="margin-top:4px;">
-
+<input id="k_${p[0]}_${p[1]}" placeholder="K - Tip (1-4)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" style="margin-top:4px;" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 <div style="font-size:13px;font-weight:bold;margin-top:6px;margin-bottom:4px;">
 </div>
 
-<input id="p_${p[0]}_${p[1]}" placeholder="P - Tip (1-4)" style="margin-top:4px;">
-
-<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" style="margin-top:4px;">
-
+<input id="p_${p[0]}_${p[1]}" placeholder="P - Tip (1-4)" style="margin-top:4px;" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" style="margin-top:4px;" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
 <button onclick="saveTip('${p[0]}','${p[1]}')" 
 style="margin-top:4px;width:100%;background:#2f9ec9;color:white;border:none;padding:6px;border-radius:6px;font-weight:bold;cursor:pointer;">
 Potvrdit
@@ -778,6 +775,13 @@ const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 async function start(){
 
  await loadCredits()
+
+ const tipsSnap = await getDocs(collection(db,"tipy"))
+
+ tipsSnap.forEach(d=>{
+  const t = d.data()
+  savedTips[t.homeTeam+"_"+t.awayTeam] = t
+ })
 
  onSnapshot(q,(snap)=>{
 
