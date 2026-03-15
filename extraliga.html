@@ -741,7 +741,8 @@ document.getElementById("seasonFilter").onchange=(e)=>{
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
-loadCredits()
+await loadCredits()
+
 onSnapshot(q,(snap)=>{
 
  allMatches=[]
