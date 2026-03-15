@@ -237,6 +237,9 @@ async function loadCredits(){
  const kDoc = await getDoc(doc(db,"hraci","KTip"))
  const pDoc = await getDoc(doc(db,"hraci","PTip"))
 
+ console.log("KDoc exists:", kDoc.exists())
+ console.log("PDoc exists:", pDoc.exists())
+
  if(kDoc.exists()){
   kreditK = Number(kDoc.data().kredit)
  }
