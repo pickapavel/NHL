@@ -500,12 +500,12 @@ alert("Tip uložen")
 
 async function evaluateMatch(home,away,stats){
 
- const matchRef = doc(db,"zapasy", stats.matchId)
- const matchSnap = await getDoc(matchRef)
+const matchRef = doc(db,"zapasy", stats.matchId)
+const matchSnap = await getDoc(matchRef)
 
- if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
-  return
- }
+if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+ return
+}
 
  const resultTip = getMatchTip(stats)
 
@@ -513,7 +513,9 @@ async function evaluateMatch(home,away,stats){
 
  const odds = calculateOdds(home,away)
 
+ 
  for(const t of tips){
+ if(t.kResult || t.pResult) continue
 
   // KUBELE
   if(t.kTip && Number(t.kTip)===resultTip){
