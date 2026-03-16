@@ -161,7 +161,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs }
+import { getFirestore, doc, getDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -184,13 +184,7 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-function getParam(name){
- const url=new URL(window.location.href);
- return url.searchParams.get(name);
-}
 
-const home=getParam("home");
-const away=getParam("away");
 
 /* STEJNÁ FUNKCE JAKO V EXTRALIGA.HTML */
 function calc(stats){
@@ -234,17 +228,17 @@ function renderBar(label,homeVal,awayVal){
 
 async function loadMatch(){
 
- const q=query(
-   collection(db,"zapasy"),
-   where("homeTeam","==",home),
-   where("awayTeam","==",away)
- );
+ const params=new URLSearchParams(window.location.search);
+ const matchId=params.get("id");
 
- const snap=await getDocs(q);
- if(snap.empty) return;
+ const snap=await getDoc(doc(db,"zapasy",matchId));
+ if(!snap.exists()) return;
 
- const m=snap.docs[0].data();
+ const m=snap.data();
  const stats=m.stats;
+
+ const home=m.homeTeam;
+ const away=m.awayTeam;
 
  const s=calc(stats);
 
