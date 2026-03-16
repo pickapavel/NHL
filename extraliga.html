@@ -136,6 +136,35 @@ body{
  align-items:center;
 }
 
+ .predictionRow{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ grid-template-rows:auto auto auto;
+ gap:8px;
+ background:#f5f7f9;
+ border:2px solid #e1e4e8;
+ padding:10px;
+ border-radius:6px;
+ margin-bottom:10px;
+ align-items:center;
+}
+
+/* TIP INPUTY */
+.tip{
+ grid-row:2;
+}
+
+/* SÁZKA */
+.bet{
+ grid-row:3;
+}
+
+/* TLAČÍTKO */
+.confirm{
+ grid-column:5;
+ grid-row:2 / span 2;
+}
+ 
 .ratingBox{text-align:center;font-weight:bold;}
 
  .ratingStand a,
@@ -704,13 +733,13 @@ ${p[1]}
 <div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
 <div class="odds">Výhra<br>${odds.o3}</div>
 
-<input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
-<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+<input class="tip" id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+<input class="bet" id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 
-<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
-<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+<input class="tip" id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+<input class="bet" id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
 
-<button onclick="saveTip('${p[0]}','${p[1]}')" 
+<button class="confirm" onclick="saveTip('${p[0]}','${p[1]}')" 
 style="width:100%;background:#2f9ec9;color:white;border:none;padding:8px;border-radius:6px;font-weight:bold;">
 Potvrdit
 </button>
