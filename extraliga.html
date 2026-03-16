@@ -707,27 +707,26 @@ ${p[1]}
 
   </div>
 
-  <div class="predictionRow">
+<div class="predictionRow">
 
+<input class="kTip" id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+<input class="kBet" id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 
-<div class="odds">Výhra<br>${odds.o1}</div>
-<div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
+<input class="pTip" id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+<input class="pBet" id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
 
-<div class="odds">Remíza<br>${odds.draw}</div>
-
-<div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
-<div class="odds">Výhra<br>${odds.o3}</div>
-
-<input class="kTip" id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)">
-<input class="kBet" id="kbet_${p[0]}_${p[1]}" placeholder="Kč">
-
-<input class="pTip" id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)">
-<input class="pBet" id="pbet_${p[0]}_${p[1]}" placeholder="Kč">
-
-<button class="confirm" onclick="saveTip('${p[0]}','${p[1]}')" 
+<button class="confirm" onclick="saveTip('${p[0]}','${p[1]}')"
 style="width:100%;background:#2f9ec9;color:white;border:none;padding:8px;border-radius:6px;font-weight:bold;">
 Potvrdit
 </button>
+
+<div class="odds">Výhra<br>${odds.o1}</div>
+<div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
+<div class="odds">Remíza<br>${odds.draw}</div>
+<div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
+<div class="odds">Výhra<br>${odds.o3}</div>
+
+</div>
 
 </div>
 </div>
