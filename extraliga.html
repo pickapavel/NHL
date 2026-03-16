@@ -262,6 +262,7 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
+let savedTips={}
 
 /* ===== TÝMY ===== */
 
@@ -784,6 +785,21 @@ async function start(){
  })
 
  onSnapshot(q,(snap)=>{
+  const tipsQuery = query(collection(db,"tipy"))
+
+onSnapshot(tipsQuery,(snap)=>{
+
+ savedTips={}
+
+ snap.forEach(d=>{
+  const t=d.data()
+  const key=t.homeTeam+"_"+t.awayTeam
+  savedTips[key]=t
+ })
+
+ applySeasonFilter()
+
+})
 
   allMatches=[]
 
