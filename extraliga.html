@@ -125,7 +125,9 @@ body{
 
 .predictionRow{
  display:grid;
-grid-template-columns:1fr 1fr 1fr 1fr 1fr 180px;
+ grid-template-columns:repeat(5,1fr);
+ grid-template-rows:auto auto auto;
+ gap:8px;
  background:#f5f7f9;
  border:2px solid #e1e4e8;
  padding:10px;
@@ -702,7 +704,18 @@ ${p[1]}
 <div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
 <div class="odds">Výhra<br>${odds.o3}</div>
 
-<div class="tipInput">
+<input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+
+<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+
+<button onclick="saveTip('${p[0]}','${p[1]}')" 
+style="width:100%;background:#2f9ec9;color:white;border:none;padding:8px;border-radius:6px;font-weight:bold;">
+Potvrdit
+</button>
+
+
 
 <div style="font-size:13px;font-weight:bold;margin-bottom:4px;">
 </div>
