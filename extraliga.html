@@ -572,8 +572,6 @@ await updateDoc(doc(db,"hraci","PTip"),{
 
 }
 
-}
-
 function updateElo(home,away,hg,ag){
 
  if(ratings[home]===undefined)ratings[home]=BASE_RATING
@@ -612,11 +610,11 @@ if(kTip==="3") kOdds = Number(odds.draw)
 if(kTip==="4") kOdds = Number(odds.o4)
 if(kTip==="5") kOdds = Number(odds.o3)
 
-if(pTip==="1") pOdds = odds.o1
-if(pTip==="2") pOdds = odds.o2
-if(pTip==="3") pOdds = odds.draw
-if(pTip==="4") pOdds = odds.o4
-if(pTip==="5") pOdds = odds.o3
+if(pTip==="1") pOdds = Number(odds.o1)
+if(pTip==="2") pOdds = Number(odds.o2)
+if(pTip==="3") pOdds = Number(odds.draw)
+if(pTip==="4") pOdds = Number(odds.o4)
+if(pTip==="5") pOdds = Number(odds.o3)
 
  if(kBet && kOdds){
   document.getElementById(`kwin_${home}_${away}`).value =
