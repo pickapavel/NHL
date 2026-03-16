@@ -60,37 +60,6 @@ body{
  grid-template-columns:1fr 1fr 1fr 1fr;
  }
 
-/* první řádek */
-.predictionRow input:nth-of-type(1){
- grid-column:1;
- grid-row:1;
-}
-
-.predictionRow input:nth-of-type(2){
- grid-column:2;
- grid-row:1;
-}
-
-.predictionRow button:nth-of-type(1){
- grid-column:3;
- grid-row:1;
-}
-
-/* druhý řádek */
-.predictionRow input:nth-of-type(3){
- grid-column:1;
- grid-row:2;
-}
-
-.predictionRow input:nth-of-type(4){
- grid-column:2;
- grid-row:2;
-}
-
-.predictionRow button:nth-of-type(2){
- grid-column:3;
- grid-row:2;
-}
 
 .predictionRow input{
  width:100%;
@@ -109,6 +78,24 @@ body{
  font-weight:bold;
  cursor:pointer;
 }
+
+ .predictionRow{
+ display:grid;
+ grid-template-columns:1fr 1fr 1fr 120px;
+ gap:8px;
+}
+
+/* Kubele */
+.predictionRow input:nth-child(1){grid-column:1;grid-row:1;}
+.predictionRow input:nth-child(2){grid-column:2;grid-row:1;}
+.predictionRow input:nth-child(3){grid-column:3;grid-row:1;}
+.predictionRow button:nth-child(4){grid-column:4;grid-row:1;}
+
+/* Pici */
+.predictionRow input:nth-child(5){grid-column:1;grid-row:2;}
+.predictionRow input:nth-child(6){grid-column:2;grid-row:2;}
+.predictionRow input:nth-child(7){grid-column:3;grid-row:2;}
+.predictionRow button:nth-child(8){grid-column:4;grid-row:2;}
 
 /* ===== TABULKA ===== */
 
