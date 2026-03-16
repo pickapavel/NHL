@@ -416,7 +416,7 @@ function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
-async function saveTip(home,away){
+async function saveTip(home,away,player){
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
  const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
@@ -430,7 +430,7 @@ async function saveTip(home,away){
  }
 
  // KUBELE
- if(kTip && kBet){
+ if(player==="K" && kTip && kBet){
 
   if(kBet > kreditK){
    alert("Kubele nemá dostatečný kredit")
@@ -446,7 +446,7 @@ async function saveTip(home,away){
  }
 
  // PICI
- if(pTip && pBet){
+ if(player==="P" && pTip && pBet){
 
   if(pBet > kreditP){
    alert("Pici nemá dostatečný kredit")
@@ -933,11 +933,11 @@ ${p[1]}
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 <input id="kwin_${p[0]}_${p[1]}" placeholder="Výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
+<button onclick="saveTip('${p[0]}','${p[1]}','K')">Potvrdit</button>
 
 <input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}"><input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
 <input id="pwin_${p[0]}_${p[1]}" placeholder="Výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
+<button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
 
 </div>
 
