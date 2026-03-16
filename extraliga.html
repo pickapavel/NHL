@@ -478,6 +478,102 @@ await addDoc(collection(db,"tipy"),{
 }
  window.saveTip = saveTip
 
+ async function getTipsForMatch(home,away){
+
+ const snap = await getDocs(collection(db,"tipy"))
+
+ const tips = []
+
+ snap.forEach(doc=>{
+ const t = {id:doc.id,...doc.data()}
+
+  if(t.homeTeam===home && t.awayTeam===away){
+   tips.push(t)
+  }
+
+ })
+
+ return tips
+}
+
+async function evaluateMatch(home,away,stats){
+
+ const matchRef = doc(db,"zapasy", stats.matchId)
+ const matchSnap = await getDoc(matchRef)
+
+ if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+  return
+ }
+
+ const resultTip = getMatchTip(stats)
+
+ const tips = await getTipsForMatch(home,away)
+
+ const odds = calculateOdds(home,away)
+
+ for(const t of tips){
+
+  // KUBELE
+  if(t.kTip && Number(t.kTip)===resultTip){
+
+   let oddsValue = 0
+
+   if(resultTip===1) oddsValue = Number(odds.o1)
+   if(resultTip===2) oddsValue = Number(odds.o2)
+   if(resultTip===3) oddsValue = Number(odds.draw)
+   if(resultTip===4) oddsValue = Number(odds.o4)
+   if(resultTip===5) oddsValue = Number(odds.o3)
+
+   const win = Math.round(t.kBet * oddsValue)
+
+  await updateDoc(doc(db,"tipy",t.id),{
+ kWin: win,
+ kResult: "win"
+})
+
+const kDoc = await getDoc(doc(db,"hraci","KTip"))
+const current = Number(kDoc.data().kredit || 0)
+
+await updateDoc(doc(db,"hraci","KTip"),{
+ kredit: current + win
+})
+  }
+
+  // PICI
+  if(t.pTip && Number(t.pTip)===resultTip){
+
+   let oddsValue = 0
+
+   if(resultTip===1) oddsValue = Number(odds.o1)
+   if(resultTip===2) oddsValue = Number(odds.o2)
+   if(resultTip===3) oddsValue = Number(odds.draw)
+   if(resultTip===4) oddsValue = Number(odds.o4)
+   if(resultTip===5) oddsValue = Number(odds.o3)
+
+const win = Math.round(t.pBet * oddsValue)
+   await updateDoc(doc(db,"tipy",t.id),{
+ pWin: win,
+ pResult: "win"
+})
+
+const pDoc = await getDoc(doc(db,"hraci","PTip"))
+const current = Number(pDoc.data().kredit || 0)
+
+await updateDoc(doc(db,"hraci","PTip"),{
+ kredit: current + win
+})
+  }
+
+ }
+
+ await updateDoc(matchRef,{
+  vyhodnoceno:true
+ })
+
+}
+
+}
+
 function updateElo(home,away,hg,ag){
 
  if(ratings[home]===undefined)ratings[home]=BASE_RATING
@@ -576,6 +672,31 @@ function calc(stats){
 
  return {hg,ag}
 
+}
+
+ function getMatchTip(stats){
+
+ const s = calc(stats)
+
+ const isSN = (stats[20]==="1" || stats[20]==="2")
+ const isOT = (!isSN && (stats[9]==="11" || stats[19]==="11"))
+
+ if(!isSN && !isOT){
+  if(s.hg > s.ag) return 1
+  if(s.ag > s.hg) return 5
+ }
+
+ if(isOT){
+  if(s.hg > s.ag) return 2
+  if(s.ag > s.hg) return 4
+ }
+
+ if(isSN){
+  if(s.hg > s.ag) return 2
+  if(s.ag > s.hg) return 4
+ }
+
+ return 3
 }
 
 /* ===== TABULKA ===== */
@@ -825,8 +946,6 @@ ${p[1]}
 </div>
 </div>
 
-${setTimeout(()=>calcWin(p[0],p[1]),10)}
-
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
@@ -906,13 +1025,25 @@ async function start(){
  })
 
  // načtení zápasů
- onSnapshot(q,(snap)=>{
+onSnapshot(q,(snap)=>{
 
-  allMatches=[]
+ allMatches=[]
 
-  snap.forEach(d=>{
-   allMatches.push(d.data())
-  })
+ snap.forEach(d=>{
+
+const match = {id:d.id,...d.data()}
+
+  allMatches.push(match)
+
+  if(match.stats){
+ evaluateMatch(match.homeTeam,match.awayTeam,{...match.stats,matchId:match.id})
+  }
+
+ })
+
+ applySeasonFilter()
+
+})
 
   applySeasonFilter()
 
