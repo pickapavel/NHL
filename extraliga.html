@@ -125,7 +125,7 @@ body{
 
 .predictionRow{
  display:grid;
-grid-template-columns:1fr 1fr 1fr 1fr 180px; gap:8px;
+grid-template-columns:1fr 1fr 1fr 1fr 1fr 180px;
  background:#f5f7f9;
  border:2px solid #e1e4e8;
  padding:10px;
@@ -427,7 +427,7 @@ function updateElo(home,away,hg,ag){
 
 }
 
- function calculateOdds(home,away){
+function calculateOdds(home,away){
 
  let ra=(ratings[home]||1000)+HOME_ADV
  let rb=(ratings[away]||1000)
@@ -435,18 +435,21 @@ function updateElo(home,away,hg,ag){
  const pHome=1/(1+Math.pow(10,(rb-ra)/400))
  const pAway=1-pHome
 
- const pHomeReg=pHome*0.75
- const pHomeOT=pHome*0.25
+ const pDraw=0.22
 
- const pAwayReg=pAway*0.75
- const pAwayOT=pAway*0.25
+ const pHomeReg=pHome*0.60
+ const pHomeOT=pHome*0.18
+
+ const pAwayReg=pAway*0.60
+ const pAwayOT=pAway*0.18
 
  const o1=(1/pHomeReg).toFixed(2)
  const o2=(1/pHomeOT).toFixed(2)
  const o3=(1/pAwayReg).toFixed(2)
  const o4=(1/pAwayOT).toFixed(2)
+ const draw=(1/pDraw).toFixed(2)
 
- return {o1,o2,o3,o4}
+ return {o1,o2,draw,o4,o3}
 
 }
 
@@ -691,11 +694,13 @@ ${p[1]}
   <div class="predictionRow">
 
 
-<div class="odds">V<br>${odds.o1}</div>
-<div class="odds">V - OT/SN<br>${odds.o2}</div>
+<div class="odds">Výhra<br>${odds.o1}</div>
+<div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
 
-<div class="odds">V - OT/SN<br>${odds.o4}</div>
-<div class="odds">V<br>${odds.o3}</div>
+<div class="odds">Remíza<br>${odds.draw}</div>
+
+<div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
+<div class="odds">Výhra<br>${odds.o3}</div>
 
 <div class="tipInput">
 
