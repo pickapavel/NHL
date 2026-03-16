@@ -48,6 +48,20 @@ body{
  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 
+ .oddsRow{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:8px;
+ margin-bottom:6px;
+}
+
+.predictionRow{
+ display:grid;
+ grid-template-columns:1fr 1fr 140px;
+ grid-template-rows:auto auto;
+ gap:8px;
+}
+
 /* ===== TABULKA ===== */
 
 .standingsCard{
@@ -714,7 +728,7 @@ ${p[1]}
 
   </div>
 
-<div class="predictionRow">
+<div class="oddsRow">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
 <div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
@@ -722,13 +736,17 @@ ${p[1]}
 <div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
 <div class="odds">Výhra<br>${odds.o3}</div>
 
-<input class="kTip" id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
-<input class="kBet" id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
-<button class="kConfirm" onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
+</div>
 
-<input class="pTip" id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
-<input class="pBet" id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
-<button class="pConfirm" onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+<button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
+
+<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+<button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
 
 </div>
 
