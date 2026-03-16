@@ -125,7 +125,8 @@ body{
 
 .predictionRow{
  display:grid;
- grid-template-columns:1fr 1fr 1fr 1fr 140px;
+ grid-template-columns: 1fr 1fr 140px;
+ grid-template-rows: auto auto;
  gap:8px;
  background:#f5f7f9;
  border:2px solid #e1e4e8;
@@ -133,6 +134,17 @@ body{
  border-radius:6px;
  margin-bottom:10px;
  align-items:center;
+}
+
+.kTip{ grid-column:1; grid-row:1; }
+.kBet{ grid-column:2; grid-row:1; }
+
+.pTip{ grid-column:1; grid-row:2; }
+.pBet{ grid-column:2; grid-row:2; }
+
+.confirm{
+ grid-column:3;
+ grid-row:1 / span 2;
 }
 
 /* TIP INPUTY */
