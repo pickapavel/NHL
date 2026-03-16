@@ -125,8 +125,7 @@ body{
 
 .predictionRow{
  display:grid;
- grid-template-columns:120px 1fr 1fr 1fr 1fr 180px 120px;
- gap:8px;
+grid-template-columns:1fr 1fr 1fr 1fr 180px; gap:8px;
  background:#f5f7f9;
  border:2px solid #e1e4e8;
  padding:10px;
@@ -653,10 +652,15 @@ function renderSchedule(matches){
 
   <div class="matchRow">
 
-   <div class="teamBox">
-   <img class="logo" src="./logos/${logos[p[0]]}">
-   ${p[0]}
-   </div>
+  <div class="teamBox">
+<img class="logo" src="./logos/${logos[p[0]]}">
+<div>
+${p[0]}
+<div style="font-size:12px;color:#666;">
+⭐ ${Math.round(ratings[p[0]]||1000)}
+</div>
+</div>
+</div>
 
    <div class="scoreBox">${hg}</div>
 
@@ -666,10 +670,15 @@ function renderSchedule(matches){
 
    <div class="scoreBox">${ag}</div>
 
-   <div class="teamBox teamRight">
-   ${p[1]}
-   <img class="logo" src="./logos/${logos[p[1]]}">
-   </div>
+  <div class="teamBox teamRight">
+<div style="text-align:right">
+${p[1]}
+<div style="font-size:12px;color:#666;">
+⭐ ${Math.round(ratings[p[1]]||1000)}
+</div>
+</div>
+<img class="logo" src="./logos/${logos[p[1]]}">
+</div>
 
    <div>
    <button class="statsBtn" onclick="window.location.href='${link}'">
@@ -680,8 +689,6 @@ function renderSchedule(matches){
   </div>
 
   <div class="predictionRow">
-
-<div class="ratingBox"><a href="rating.html">${Math.round(ratings[p[0]]||1000)} ⭐</a></div>
 
 
 <div class="odds">V<br>${odds.o1}</div>
@@ -708,11 +715,6 @@ Potvrdit
 </button>
 
 </div>
-
-<div class="ratingBox">
-<a href="rating.html">⭐ ${Math.round(ratings[p[1]]||1000)}</a>
-</div>
-
 </div>
 
 <div style="margin-left:40px;font-weight:bold;">
