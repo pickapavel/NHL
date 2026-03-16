@@ -881,7 +881,7 @@ function renderSchedule(matches){
 
   }
 
-  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
+ const link=`statistiky-zapasu.html?id=${m?.id || ""}`
   const odds=calculateOdds(p[0],p[1])
 
   cont.innerHTML+=`
