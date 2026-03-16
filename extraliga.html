@@ -262,7 +262,6 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
-let savedTips={}
 
 /* ===== TÝMY ===== */
 
@@ -777,29 +776,25 @@ async function start(){
 
  await loadCredits()
 
- const tipsSnap = await getDocs(collection(db,"tipy"))
+ // načtení tipů
+ const tipsQuery = query(collection(db,"tipy"))
 
- tipsSnap.forEach(d=>{
-  const t = d.data()
-  savedTips[t.homeTeam+"_"+t.awayTeam] = t
+ onSnapshot(tipsQuery,(snap)=>{
+
+  savedTips={}
+
+  snap.forEach(d=>{
+   const t=d.data()
+   const key=t.homeTeam+"_"+t.awayTeam
+   savedTips[key]=t
+  })
+
+  applySeasonFilter()
+
  })
 
+ // načtení zápasů
  onSnapshot(q,(snap)=>{
-  const tipsQuery = query(collection(db,"tipy"))
-
-onSnapshot(tipsQuery,(snap)=>{
-
- savedTips={}
-
- snap.forEach(d=>{
-  const t=d.data()
-  const key=t.homeTeam+"_"+t.awayTeam
-  savedTips[key]=t
- })
-
- applySeasonFilter()
-
-})
 
   allMatches=[]
 
