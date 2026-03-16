@@ -57,10 +57,7 @@ body{
 
 .predictionRow{
  display:grid;
- grid-template-columns: 1fr 120px 120px;
- grid-template-rows: auto auto;
- gap:8px;
-}
+ grid-template-columns:1fr 1fr 1fr 1fr;
 
 /* první řádek */
 .predictionRow input:nth-of-type(1){
@@ -512,6 +509,43 @@ function updateElo(home,away,hg,ag){
 
 }
 
+ function calcWin(home,away){
+
+ const odds = calculateOdds(home,away)
+
+ const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
+ const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+
+ const kTip = document.getElementById(`k_${home}_${away}`).value
+ const pTip = document.getElementById(`p_${home}_${away}`).value
+
+ let kOdds = 0
+ let pOdds = 0
+
+ if(kTip==="1") kOdds = odds.o1
+ if(kTip==="2") kOdds = odds.o2
+ if(kTip==="3") kOdds = odds.draw
+ if(kTip==="4") kOdds = odds.o4
+ if(kTip==="5") kOdds = odds.o3
+
+ if(pTip==="1") pOdds = odds.o1
+ if(pTip==="2") pOdds = odds.o2
+ if(pTip==="3") pOdds = odds.draw
+ if(pTip==="4") pOdds = odds.o4
+ if(pTip==="5") pOdds = odds.o3
+
+ if(kBet && kOdds){
+  document.getElementById(`kwin_${home}_${away}`).value =
+   Math.round(kBet * kOdds) + " Kč"
+ }
+
+ if(pBet && pOdds){
+  document.getElementById(`pwin_${home}_${away}`).value =
+   Math.round(pBet * pOdds) + " Kč"
+ }
+
+}
+
 function calculateOdds(home,away){
 
  let ra=(ratings[home]||1000)+HOME_ADV
@@ -791,11 +825,13 @@ ${p[1]}
 <div class="predictionRow">
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
-<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+<input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+<input id="kwin_${p[0]}_${p[1]}" placeholder="Výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
 
 <input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
-<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+<input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+<input id="pwin_${p[0]}_${p[1]}" placeholder="Výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}')">Potvrdit</button>
 
 </div>
