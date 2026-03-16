@@ -471,9 +471,11 @@ await addDoc(collection(db,"tipy"),{
   created: Date.now()
 })
 
- applySeasonFilter()
+applySeasonFilter()
 
- alert("Tip uložen")
+calcWin(home,away)
+
+alert("Tip uložen")
 
 }
  window.saveTip = saveTip
