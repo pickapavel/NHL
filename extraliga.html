@@ -499,6 +499,7 @@ alert("Tip uložen")
 }
 
 async function evaluateMatch(home,away,stats){
+ console.log("evaluateMatch START", home, away, stats.matchId)
 
 const matchRef = doc(db,"zapasy", stats.matchId)
 const matchSnap = await getDoc(matchRef)
@@ -512,7 +513,7 @@ const tips = await getTipsForMatch(home,away)
 const odds = calculateOdds(home,away)
 
 for(const t of tips){
-
+console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
 if(t.kResult || t.pResult) continue
 
  // KUBELE
@@ -525,7 +526,7 @@ if(t.kResult || t.pResult) continue
   if(resultTip===3) oddsValue = Number(odds.draw)
   if(resultTip===4) oddsValue = Number(odds.o4)
   if(resultTip===5) oddsValue = Number(odds.o3)
-
+console.log("KUBELE WIN TRIGGERED", t.id)
   const win = Math.round(t.kBet * oddsValue)
 
   await updateDoc(doc(db,"tipy",t.id),{
