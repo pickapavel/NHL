@@ -501,37 +501,19 @@ alert("Tip uložen")
 async function evaluateMatch(home,away,stats){
 
 const matchRef = doc(db,"zapasy", stats.matchId)
+const matchSnap = await getDoc(matchRef)
 
-let alreadyDone = false
-
-await runTransaction(db, async (transaction) => {
-
- const snap = await transaction.get(matchRef)
-
- if(!snap.exists()) return
-
- if(snap.data().vyhodnoceno){
-  alreadyDone = true
-  return
- }
-
- transaction.update(matchRef,{
-  vyhodnoceno:true
- })
-
-})
-
-if(alreadyDone) return
+if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+ return
+}
 
 const resultTip = getMatchTip(stats)
-
 const tips = await getTipsForMatch(home,away)
-
 const odds = calculateOdds(home,away)
 
 for(const t of tips){
 
- if(t.kResult || t.pResult) continue
+ if(t.kResult === "win" || t.pResult === "win") continue
 
  // KUBELE
  if(t.kTip && Number(t.kTip)===resultTip){
@@ -586,6 +568,10 @@ for(const t of tips){
  }
 
 }
+
+await updateDoc(matchRef,{
+ vyhodnoceno:true
+})
 
 }
 
