@@ -513,7 +513,7 @@ const odds = calculateOdds(home,away)
 
 for(const t of tips){
 
- if(t.kResult === "win" || t.pResult === "win") continue
+if(t.kResult || t.pResult) continue
 
  // KUBELE
  if(t.kTip && Number(t.kTip)===resultTip){
