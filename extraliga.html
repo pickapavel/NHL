@@ -506,7 +506,10 @@ const matchSnap = await getDoc(matchRef)
 if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
  return
 }
-
+// okamžitě zamkneme zápas aby se nevyhodnotil 2x
+await updateDoc(matchRef,{
+ vyhodnoceno:true
+})
  const resultTip = getMatchTip(stats)
 
  const tips = await getTipsForMatch(home,away)
@@ -570,9 +573,6 @@ await updateDoc(doc(db,"hraci","PTip"),{
 
  }
 
- await updateDoc(matchRef,{
-  vyhodnoceno:true
- })
 
 }
 
