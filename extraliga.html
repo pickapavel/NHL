@@ -261,8 +261,10 @@ body{
 <option value="all">Druhý tým</option>
 </select>
 
-<button id="filterAll" class="filterActive">Všechny zápasy</button>
-<button id="filterPlayed">Jen odehrané</button>
+<select id="matchFilter">
+  <option value="all" selected>Všechny zápasy</option>
+  <option value="played">Jen odehrané</option>
+</select>
 <select id="viewMode">
   <option value="schedule" selected>Jen rozpis</option>
   <option value="bets">Sázky</option>
@@ -380,6 +382,11 @@ document.getElementById("homeAwayFilter").onchange=(e)=>{
 
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
+ applySeasonFilter()
+}
+
+ document.getElementById("matchFilter").onchange=(e)=>{
+ showPlayedOnly = (e.target.value === "played")
  applySeasonFilter()
 }
 
@@ -994,20 +1001,6 @@ function applySeasonFilter(){
  renderSchedule(filtered)
  renderStandings(calculateStandings(filtered))
 
-}
-
-document.getElementById("filterAll").onclick=()=>{
- showPlayedOnly=false
- document.getElementById("filterAll").classList.add("filterActive")
- document.getElementById("filterPlayed").classList.remove("filterActive")
- applySeasonFilter()
-}
-
-document.getElementById("filterPlayed").onclick=()=>{
- showPlayedOnly=true
- document.getElementById("filterPlayed").classList.add("filterActive")
- document.getElementById("filterAll").classList.remove("filterActive")
- applySeasonFilter()
 }
 
 document.getElementById("viewMode").onchange=(e)=>{
