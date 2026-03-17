@@ -208,7 +208,7 @@ select.innerHTML = '<option value="">Všechny týmy</option>'
 // získání unikátních týmů
 let teams = new Set()
 
-lastData.forEach(m=>{
+matches.forEach(m=>{
 if(m.homeTeam) teams.add(m.homeTeam)
 if(m.awayTeam) teams.add(m.awayTeam)
 })
@@ -235,8 +235,7 @@ const extraliga=matches
 .filter(m=>m.category?.startsWith("Extraliga"))
 .filter(m=>{
 if(!selectedTeam) return true
-return m.homeTeam.toLowerCase().includes(selectedTeam.toLowerCase())
-    || m.awayTeam.toLowerCase().includes(selectedTeam.toLowerCase())
+return m.homeTeam === selectedTeam || m.awayTeam === selectedTeam
 })
 .sort((a,b)=>a.created-b.created)
 
@@ -331,8 +330,6 @@ summary.innerHTML+=`
 }
 
 /* ===== FIREBASE ===== */
-
-let lastData = []
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
