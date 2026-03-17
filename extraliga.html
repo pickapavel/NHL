@@ -263,6 +263,7 @@ body{
 
 <button id="filterAll" class="filterActive">Všechny zápasy</button>
 <button id="filterPlayed">Jen odehrané</button>
+<button id="filterScheduleOnly">Jen rozpis</button>
 
 <select id="homeAwayFilter">
 <option value="both">Domácí i venkovní</option>
@@ -331,6 +332,7 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
+let scheduleOnly = false;
 
 /* ===== TÝMY ===== */
 
@@ -934,6 +936,7 @@ ${p[1]}
 
 </div>
 
+${!scheduleOnly ? `
 <div class="predictionRow">
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
@@ -945,6 +948,7 @@ ${p[1]}
 <button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
 
 </div>
+` : ``}
 
 </div>
 </div>
@@ -996,6 +1000,11 @@ document.getElementById("filterPlayed").onclick=()=>{
  showPlayedOnly=true
  document.getElementById("filterPlayed").classList.add("filterActive")
  document.getElementById("filterAll").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+ document.getElementById("filterScheduleOnly").onclick=()=>{
+ scheduleOnly = !scheduleOnly
  applySeasonFilter()
 }
 
