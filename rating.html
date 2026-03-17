@@ -120,9 +120,9 @@ font-weight:bold;
 <h2>Historie ratingu</h2>
 
 <div style="margin-bottom:15px;">
-<input type="text" id="teamFilter" placeholder="Zadej název týmu">
-<button onclick="applyFilter()">Filtrovat</button>
-<button onclick="clearFilter()">Zrušit filtr</button>
+<select id="teamFilter" onchange="applyFilter()">
+<option value="">Všechny týmy</option>
+</select>
 </div>
 
 <div class="header">
@@ -188,19 +188,38 @@ return {hg,ag}
 /* ===== FILTR ===== */
 
 function applyFilter(){
-selectedTeam = document.getElementById("teamFilter").value.trim()
+selectedTeam = document.getElementById("teamFilter").value
 render(lastData)
 }
 
-function clearFilter(){
-selectedTeam = ""
-document.getElementById("teamFilter").value = ""
-render(lastData)
-}
-  
 /* ===== RENDER ===== */
 
 function render(matches){
+
+// vytvoření seznamu týmů
+const select = document.getElementById("teamFilter")
+
+// uloží aktuální výběr
+const currentValue = select.value
+
+// vyčisti dropdown
+select.innerHTML = '<option value="">Všechny týmy</option>'
+
+// získání unikátních týmů
+let teams = new Set()
+
+matches.forEach(m=>{
+if(m.homeTeam) teams.add(m.homeTeam)
+if(m.awayTeam) teams.add(m.awayTeam)
+})
+
+// seřazení týmů
+[...teams].sort().forEach(team=>{
+select.innerHTML += `<option value="${team}">${team}</option>`
+})
+
+// vrátí zpět vybraný tým
+select.value = currentValue
 
 ratings={}
 
