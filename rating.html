@@ -71,9 +71,10 @@ font-weight:bold;
 
 /* ===== ŘÁDEK ===== */
 
+
 .row{
+grid-template-columns:150px 420px 80px 100px 120px 120px;
 display:grid;
-grid-template-columns:90px 420px 80px 120px 120px;
 align-items:center;
 background:#e9ecef;
 padding:10px;
@@ -278,6 +279,7 @@ let rows = ""
 if(!selectedTeam){
 rows += `
 <div class="row">
+<div class="team">${m.awayTeam}</div>
 <div class="team">${m.homeTeam}</div>
 <div class="score">${s.hg}</div>
 <div class="rating">${Math.round(beforeHome)}</div>
@@ -286,6 +288,7 @@ rows += `
 </div>
 
 <div class="row">
+<div class="team">${m.homeTeam}</div>
 <div class="team">${m.awayTeam}</div>
 <div class="score">${s.ag}</div>
 <div class="rating">${Math.round(beforeAway)}</div>
