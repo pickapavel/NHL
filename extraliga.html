@@ -440,12 +440,12 @@ function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
-async function saveTip(home,away,player){
+async function saveTip(home,away,player,index){
 
- const kTip = document.getElementById(`k_${home}_${away}`).value
+ const kTip = document.getElementById(`k_${home}_${away}_${index}`)?.value
  const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
 
- const pTip = document.getElementById(`p_${home}_${away}`).value
+ const pTip = document.getElementById(`p_${home}_${away}_${index}`)?.value
  const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
 
  if(!kTip && !pTip){
@@ -485,7 +485,7 @@ async function saveTip(home,away,player){
 
  }
 
-const tipRef = doc(db,"tipy",home+"_"+away)
+const tipRef = doc(db,"tipy",home+"_"+away+"_"+index)
 await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
@@ -620,40 +620,40 @@ function updateElo(home,away,hg,ag){
 
 }
 
-window.calcWin = function(home,away){
+window.calcWin = function(home,away,index){
 
  const odds = calculateOdds(home,away)
 
- const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
- const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+ const kBet = Number(document.getElementById(`kbet_${home}_${away}_${index}`)?.value)
+ const pBet = Number(document.getElementById(`pbet_${home}_${away}_${index}`)?.value)
 
- const kTip = document.getElementById(`k_${home}_${away}`).value
- const pTip = document.getElementById(`p_${home}_${away}`).value
+ const kTip = document.getElementById(`k_${home}_${away}_${index}`)?.value
+ const pTip = document.getElementById(`p_${home}_${away}_${index}`)?.value
 
  let kOdds = 0
  let pOdds = 0
 
-if(kTip==="1") kOdds = Number(odds.o1)
-if(kTip==="2") kOdds = Number(odds.o2)
-if(kTip==="3") kOdds = Number(odds.draw)
-if(kTip==="4") kOdds = Number(odds.o4)
-if(kTip==="5") kOdds = Number(odds.o3)
+ if(kTip==="1") kOdds = Number(odds.o1)
+ if(kTip==="2") kOdds = Number(odds.o2)
+ if(kTip==="3") kOdds = Number(odds.draw)
+ if(kTip==="4") kOdds = Number(odds.o4)
+ if(kTip==="5") kOdds = Number(odds.o3)
 
-if(pTip==="1") pOdds = Number(odds.o1)
-if(pTip==="2") pOdds = Number(odds.o2)
-if(pTip==="3") pOdds = Number(odds.draw)
-if(pTip==="4") pOdds = Number(odds.o4)
-if(pTip==="5") pOdds = Number(odds.o3)
+ if(pTip==="1") pOdds = Number(odds.o1)
+ if(pTip==="2") pOdds = Number(odds.o2)
+ if(pTip==="3") pOdds = Number(odds.draw)
+ if(pTip==="4") pOdds = Number(odds.o4)
+ if(pTip==="5") pOdds = Number(odds.o3)
 
-if(kBet && kOdds){
- document.getElementById(`kwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
-}
+ if(kBet && kOdds){
+  document.getElementById(`kwin_${home}_${away}_${index}`).value =
+   "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
+ }
 
-if(pBet && pOdds){
- document.getElementById(`pwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
-}
+ if(pBet && pOdds){
+  document.getElementById(`pwin_${home}_${away}_${index}`).value =
+   "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
+ }
 
 }
 
@@ -966,22 +966,67 @@ ${!scheduleOnly ? `
 ` : ``}
 
 ${!scheduleOnly ? `
+${!scheduleOnly ? `
+
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
-<input id="kwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','K')">Potvrdit</button>
+<input id="k_${p[0]}_${p[1]}_1" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)" value="${savedTips[p[0]+'_'+p[1]+'_1']?.kTip || ''}">
+<input id="kwin_${p[0]}_${p[1]}_1" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','K',1)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}"><input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
-<input id="pwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
-
-</div>
-` : ``}
+<input id="p_${p[0]}_${p[1]}_1" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)" value="${savedTips[p[0]+'_'+p[1]+'_1']?.pTip || ''}">
+<input id="pwin_${p[0]}_${p[1]}_1" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','P',1)">Potvrdit</button>
 
 </div>
+
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}_2" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)" value="${savedTips[p[0]+'_'+p[1]+'_2']?.kTip || ''}">
+<input id="kwin_${p[0]}_${p[1]}_2" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','K',2)">Potvrdit</button>
+
+<input id="p_${p[0]}_${p[1]}_2" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)" value="${savedTips[p[0]+'_'+p[1]+'_2']?.pTip || ''}">
+<input id="pwin_${p[0]}_${p[1]}_2" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','P',2)">Potvrdit</button>
+
 </div>
 
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}_3" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)" value="${savedTips[p[0]+'_'+p[1]+'_3']?.kTip || ''}">
+<input id="kwin_${p[0]}_${p[1]}_3" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','K',3)">Potvrdit</button>
+
+<input id="p_${p[0]}_${p[1]}_3" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)" value="${savedTips[p[0]+'_'+p[1]+'_3']?.pTip || ''}">
+<input id="pwin_${p[0]}_${p[1]}_3" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','P',3)">Potvrdit</button>
+
+</div>
+
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}_4" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)" value="${savedTips[p[0]+'_'+p[1]+'_4']?.kTip || ''}">
+<input id="kwin_${p[0]}_${p[1]}_4" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','K',4)">Potvrdit</button>
+
+<input id="p_${p[0]}_${p[1]}_4" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)" value="${savedTips[p[0]+'_'+p[1]+'_4']?.pTip || ''}">
+<input id="pwin_${p[0]}_${p[1]}_4" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','P',4)">Potvrdit</button>
+
+</div>
+
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}_5" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)" value="${savedTips[p[0]+'_'+p[1]+'_5']?.kTip || ''}">
+<input id="kwin_${p[0]}_${p[1]}_5" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','K',5)">Potvrdit</button>
+
+<input id="p_${p[0]}_${p[1]}_5" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)" value="${savedTips[p[0]+'_'+p[1]+'_5']?.pTip || ''}">
+<input id="pwin_${p[0]}_${p[1]}_5" placeholder="Možná výhra" readonly>
+<button onclick="saveTip('${p[0]}','${p[1]}','P',5)">Potvrdit</button>
+
+</div>
 ${!scheduleOnly ? `
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
@@ -1045,7 +1090,7 @@ async function start(){
 
 snap.forEach(d=>{
  const t=d.data()
- const key=t.homeTeam+"_"+t.awayTeam
+ const key=t.homeTeam+"_"+t.awayTeam+"_"+t.index
 
  if(!savedTips[key]) savedTips[key]={}
 
