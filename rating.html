@@ -233,7 +233,6 @@ summary.innerHTML=""
 
 const extraliga=matches
 .filter(m=>m.category?.startsWith("Extraliga"))
-.filter(m=>{
 if(!selectedTeam) return true
 return m.homeTeam === selectedTeam || m.awayTeam === selectedTeam
 })
