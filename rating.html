@@ -26,12 +26,35 @@ margin-top:0;
 /* ===== TABULKA CELKOVÝ RATING ===== */
 
 .ratingRow{
-display:grid;
-grid-template-columns:1fr 120px;
-background:#f4f4f4;
-padding:8px 10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#e9ecef;
+padding:10px 14px;
+border-radius:8px;
+margin-bottom:6px;
+}
+
+.teamBlockRating{
+display:flex;
+align-items:center;
+gap:10px;
+font-weight:bold;
+}
+
+.logoSmall{
+width:32px;
+height:32px;
+object-fit:contain;
+background:white;
+padding:3px;
 border-radius:6px;
-margin-bottom:4px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+.ratingValue{
+font-weight:bold;
+font-size:16px;
 }
 
 /* ===== HLAVIČKA ===== */
@@ -166,6 +189,17 @@ projectId:"statistiky-6310a"
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
+
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
+};
 
 /* ===== ELO ===== */
 
@@ -346,8 +380,11 @@ Object.entries(ratings)
 summary.innerHTML+=`
 
 <div class="ratingRow">
-<div>${t[0]}</div>
-<div>${Math.round(t[1])}</div>
+  <div class="teamBlockRating">
+    <img src="./logos/${teamsData[t[0]]}" class="logoSmall">
+    <span>${t[0]}</span>
+  </div>
+  <div class="ratingValue">${Math.round(t[1])}</div>
 </div>
 
 `
