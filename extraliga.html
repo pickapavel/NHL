@@ -473,16 +473,7 @@ if(player==="P" && pTip && pBet){
  await updateDoc(doc(db,"hraci","PTip"),{
   kredit:kreditP
  })
-
 }
-
-  kreditP -= pBet
-
-  await updateDoc(doc(db,"hraci","PTip"),{
-   kredit:kreditP
-  })
-
- }
 
 const tipRef = doc(db,"tipy",home+"_"+away+"_"+index)
 await setDoc(tipRef,{
