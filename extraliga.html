@@ -925,7 +925,8 @@ ${p[1]}
    </div>
 
   </div>
-
+  
+${!scheduleOnly ? `
 <div class="oddsRow">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
@@ -935,6 +936,7 @@ ${p[1]}
 <div class="odds">Výhra<br>${odds.o3}</div>
 
 </div>
+` : ``}
 
 ${!scheduleOnly ? `
 <div class="predictionRow">
