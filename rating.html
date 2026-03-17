@@ -119,6 +119,12 @@ font-weight:bold;
 
 <h2>Historie ratingu</h2>
 
+<div style="margin-bottom:15px;">
+<input type="text" id="teamFilter" placeholder="Zadej název týmu">
+<button onclick="applyFilter()">Filtrovat</button>
+<button onclick="clearFilter()">Zrušit filtr</button>
+</div>
+
 <div class="header">
 <div>Původní rating</div>
 <div>Tým</div>
@@ -154,6 +160,9 @@ const HOME_ADV=50;
 
 let ratings={}
 
+let selectedTeam = ""
+let lastData = []
+
 /* ===== OČEKÁVANÝ VÝSLEDEK ===== */
 
 function expected(ra,rb){
@@ -176,6 +185,19 @@ return {hg,ag}
 
 }
 
+/* ===== FILTR ===== */
+
+function applyFilter(){
+selectedTeam = document.getElementById("teamFilter").value.trim()
+render(lastData)
+}
+
+function clearFilter(){
+selectedTeam = ""
+document.getElementById("teamFilter").value = ""
+render(lastData)
+}
+  
 /* ===== RENDER ===== */
 
 function render(matches){
@@ -192,7 +214,12 @@ summary.innerHTML=""
 
 const extraliga=matches
 .filter(m=>m.category?.startsWith("Extraliga"))
-.sort((a,b)=>a.created-b.created)   // chronologické pořadí
+.filter(m=>{
+if(!selectedTeam) return true
+return m.homeTeam.toLowerCase().includes(selectedTeam.toLowerCase())
+    || m.awayTeam.toLowerCase().includes(selectedTeam.toLowerCase())
+})
+.sort((a,b)=>a.created-b.created)
 
 let history=[]
 
@@ -286,6 +313,8 @@ summary.innerHTML+=`
 
 /* ===== FIREBASE ===== */
 
+let lastData = []
+
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
 
 onSnapshot(q,(snap)=>{
@@ -296,6 +325,7 @@ snap.forEach(d=>{
 arr.push(d.data())
 })
 
+lastData = arr
 render(arr)
 
 })
