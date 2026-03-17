@@ -208,7 +208,7 @@ select.innerHTML = '<option value="">Všechny týmy</option>'
 // získání unikátních týmů
 let teams = new Set()
 
-matches.forEach(m=>{
+lastData.forEach(m=>{
 if(m.homeTeam) teams.add(m.homeTeam)
 if(m.awayTeam) teams.add(m.awayTeam)
 })
