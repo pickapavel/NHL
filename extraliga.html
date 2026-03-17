@@ -955,9 +955,11 @@ ${!scheduleOnly ? `
 </div>
 </div>
 
+${!scheduleOnly ? `
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
+` : ``}
 
 `
 setTimeout(()=>calcWin(p[0],p[1]),50)
