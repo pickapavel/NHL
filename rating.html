@@ -309,18 +309,6 @@ ${rows}
 </div>
 `)
 
-if(!selectedTeam || m.awayTeam === selectedTeam){
-rows += `
-<div class="row">
-<div class="rating">${Math.round(beforeAway)}</div>
-<div class="team">${m.awayTeam}</div>
-<div class="score">${s.ag}</div>
-<div class="rating">${signAway}</div>
-<div class="rating">${afterAway}</div>
-</div>
-`
-}
-
 history.push(`
 <div class="match">
 <div class="matchInfo">
