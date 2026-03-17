@@ -61,7 +61,7 @@ font-size:16px;
 
 .header{
 display:grid;
-grid-template-columns:150px 300px 80px 100px 120px 120px;
+grid-template-columns:300px 80px 100px 120px 120px;
 font-weight:bold;
 padding:10px 10px 12px 10px;
 border-bottom:2px solid #ccc;
@@ -104,7 +104,7 @@ font-weight:bold;
 
 .row{
 display:grid;
-grid-template-columns:150px 300px 80px 100px 120px 120px;
+grid-template-columns:300px 80px 100px 120px 120px;
 align-items:center;
 background:#e9ecef;
 padding:10px;
@@ -189,7 +189,6 @@ select{
 </div>
 
 <div class="header">
- <div>Soupeř</div>
  <div>Tým</div>
  <div>Výsledek</div>
  <div>Rating</div>
@@ -358,31 +357,32 @@ let rows = ""
 
 if(!selectedTeam || m.homeTeam === selectedTeam || m.awayTeam === selectedTeam){
 
+// DOMÁCÍ TÝM
 rows += `
-
 <div class="row">
-<div class="team">${m.awayTeam}</div>
 <div class="team">${m.homeTeam}</div>
 <div class="score">${s.hg}</div>
 <div class="rating">${Math.round(beforeHome)}</div>
 <div class="rating" style="color:${signHome.includes('-') ? 'red' : 'green'}">
-  ${signHome}
+${signHome}
 </div>
 <div class="rating">${afterHome}</div>
 </div>
+`
 
+// HOSTUJÍCÍ TÝM
+rows += `
 <div class="row">
-<div class="team">${m.homeTeam}</div>
 <div class="team">${m.awayTeam}</div>
 <div class="score">${s.ag}</div>
 <div class="rating">${Math.round(beforeAway)}</div>
 <div class="rating" style="color:${signAway.includes('-') ? 'red' : 'green'}">
-  ${signAway}
+${signAway}
 </div>
 <div class="rating">${afterAway}</div>
 </div>
-
 `
+
 }
 
 if(!selectedTeam || m.homeTeam === selectedTeam || m.awayTeam === selectedTeam){
