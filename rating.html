@@ -274,7 +274,8 @@ const signAway=diffAway>=0?`<span class="plus">+${diffAway}</span>`:`<span class
 
 let rows = ""
 
-if(!selectedTeam || m.homeTeam === selectedTeam){
+// pokud není filtr → ukaž vše (jako dřív)
+if(!selectedTeam){
 rows += `
 <div class="row">
 <div class="rating">${Math.round(beforeHome)}</div>
@@ -283,10 +284,28 @@ rows += `
 <div class="rating">${signHome}</div>
 <div class="rating">${afterHome}</div>
 </div>
+
+<div class="row">
+<div class="rating">${Math.round(beforeAway)}</div>
+<div class="team">${m.awayTeam}</div>
+<div class="score">${s.ag}</div>
+<div class="rating">${signAway}</div>
+<div class="rating">${afterAway}</div>
+</div>
 `
 }
 
-if(!selectedTeam || m.awayTeam === selectedTeam){rows += `
+// pokud je filtr → ukaž oba týmy, ale jen zápasy kde tým hrál
+else if(m.homeTeam === selectedTeam || m.awayTeam === selectedTeam){
+rows += `
+<div class="row">
+<div class="rating">${Math.round(beforeHome)}</div>
+<div class="team">${m.homeTeam}</div>
+<div class="score">${s.hg}</div>
+<div class="rating">${signHome}</div>
+<div class="rating">${afterHome}</div>
+</div>
+
 <div class="row">
 <div class="rating">${Math.round(beforeAway)}</div>
 <div class="team">${m.awayTeam}</div>
