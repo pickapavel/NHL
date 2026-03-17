@@ -954,27 +954,14 @@ ${p[1]}
   </div>
   
 ${!scheduleOnly ? `
-<div class="oddsRow">
-
-<div class="odds">Výhra<br>${odds.o1}</div>
-<div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
-<div class="odds">Remíza<br>${odds.draw}</div>
-<div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
-<div class="odds">Výhra<br>${odds.o3}</div>
-
-</div>
-` : ``}
-
-${!scheduleOnly ? `
-
 
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}_1" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)" value="${savedTips[p[0]+'_'+p[1]+'_1']?.kTip || ''}">
+<input id="k_${p[0]}_${p[1]}_1" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)">
 <input id="kwin_${p[0]}_${p[1]}_1" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','K',1)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}_1" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)" value="${savedTips[p[0]+'_'+p[1]+'_1']?.pTip || ''}">
+<input id="p_${p[0]}_${p[1]}_1" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',1)">
 <input id="pwin_${p[0]}_${p[1]}_1" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','P',1)">Potvrdit</button>
 
@@ -982,11 +969,11 @@ ${!scheduleOnly ? `
 
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}_2" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)" value="${savedTips[p[0]+'_'+p[1]+'_2']?.kTip || ''}">
+<input id="k_${p[0]}_${p[1]}_2" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)">
 <input id="kwin_${p[0]}_${p[1]}_2" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','K',2)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}_2" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)" value="${savedTips[p[0]+'_'+p[1]+'_2']?.pTip || ''}">
+<input id="p_${p[0]}_${p[1]}_2" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',2)">
 <input id="pwin_${p[0]}_${p[1]}_2" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','P',2)">Potvrdit</button>
 
@@ -994,11 +981,11 @@ ${!scheduleOnly ? `
 
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}_3" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)" value="${savedTips[p[0]+'_'+p[1]+'_3']?.kTip || ''}">
+<input id="k_${p[0]}_${p[1]}_3" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)">
 <input id="kwin_${p[0]}_${p[1]}_3" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','K',3)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}_3" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)" value="${savedTips[p[0]+'_'+p[1]+'_3']?.pTip || ''}">
+<input id="p_${p[0]}_${p[1]}_3" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',3)">
 <input id="pwin_${p[0]}_${p[1]}_3" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','P',3)">Potvrdit</button>
 
@@ -1006,11 +993,11 @@ ${!scheduleOnly ? `
 
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}_4" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)" value="${savedTips[p[0]+'_'+p[1]+'_4']?.kTip || ''}">
+<input id="k_${p[0]}_${p[1]}_4" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)">
 <input id="kwin_${p[0]}_${p[1]}_4" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','K',4)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}_4" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)" value="${savedTips[p[0]+'_'+p[1]+'_4']?.pTip || ''}">
+<input id="p_${p[0]}_${p[1]}_4" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',4)">
 <input id="pwin_${p[0]}_${p[1]}_4" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','P',4)">Potvrdit</button>
 
@@ -1018,22 +1005,22 @@ ${!scheduleOnly ? `
 
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}_5" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)" value="${savedTips[p[0]+'_'+p[1]+'_5']?.kTip || ''}">
+<input id="k_${p[0]}_${p[1]}_5" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)">
 <input id="kwin_${p[0]}_${p[1]}_5" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','K',5)">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}_5" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)" value="${savedTips[p[0]+'_'+p[1]+'_5']?.pTip || ''}">
+<input id="p_${p[0]}_${p[1]}_5" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}',5)">
 <input id="pwin_${p[0]}_${p[1]}_5" placeholder="Možná výhra" readonly>
 <button onclick="saveTip('${p[0]}','${p[1]}','P',5)">Potvrdit</button>
 
 </div>
-${!scheduleOnly ? `
+
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
+
 ` : ``}
 
-`
 setTimeout(()=>calcWin(p[0],p[1]),50)
  })
 
