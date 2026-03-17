@@ -231,11 +231,8 @@ summary.innerHTML=""
 
 /* pouze extraliga */
 
-const extraliga=matches
-.filter(m=>m.category?.startsWith("Extraliga"))
-if(!selectedTeam) return true
-return m.homeTeam === selectedTeam || m.awayTeam === selectedTeam
-})
+const extraliga = matches
+.filter(m => m.category?.startsWith("Extraliga"))
 .sort((a,b)=>a.created-b.created)
 
 let history=[]
