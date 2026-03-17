@@ -264,6 +264,7 @@ body{
 <select id="matchFilter">
   <option value="all" selected>Všechny zápasy</option>
   <option value="played">Jen odehrané</option>
+  <option value="unplayed">Jen neodehrané</option>
 </select>
 <select id="viewMode">
   <option value="schedule" selected>Jen rozpis</option>
@@ -385,8 +386,19 @@ document.getElementById("resultFilter").onchange=(e)=>{
  applySeasonFilter()
 }
 
- document.getElementById("matchFilter").onchange=(e)=>{
- showPlayedOnly = (e.target.value === "played")
+document.getElementById("matchFilter").onchange=(e)=>{
+ const val = e.target.value
+
+ if(val === "played"){
+  showPlayedOnly = true
+ } 
+ else if(val === "unplayed"){
+  showPlayedOnly = false
+ } 
+ else {
+  showPlayedOnly = false
+ }
+
  applySeasonFilter()
 }
 
@@ -850,7 +862,10 @@ function renderSchedule(matches){
 
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
-  if(showPlayedOnly && (!m || !m.stats)) return
+  const val = document.getElementById("matchFilter").value
+
+if(val === "played" && (!m || !m.stats)) return
+if(val === "unplayed" && (m && m.stats)) return
 
   if(resultMode!=="all"){
 
