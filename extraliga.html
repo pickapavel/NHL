@@ -795,7 +795,9 @@ function renderStandings(arr){
 
   <div class="standingsCard">
 
-   <div class="ratingStand"><a href="rating.html">⭐ ${rating}</a></div>
+   <div class="ratingStand">
+<a href="rating.html?team=${encodeURIComponent(t.team)}">⭐ ${rating}</a>
+</div>
 
    <div class="rank">${i+1}</div>
 
