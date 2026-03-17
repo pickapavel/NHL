@@ -263,7 +263,10 @@ body{
 
 <button id="filterAll" class="filterActive">Všechny zápasy</button>
 <button id="filterPlayed">Jen odehrané</button>
-<button id="filterScheduleOnly">Jen rozpis</button>
+<select id="viewMode">
+  <option value="schedule" selected>Jen rozpis</option>
+  <option value="bets">Sázky</option>
+</select>
 
 <select id="homeAwayFilter">
 <option value="both">Domácí i venkovní</option>
@@ -332,7 +335,7 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
-let scheduleOnly = false;
+let scheduleOnly = true;
 
 /* ===== TÝMY ===== */
 
@@ -1007,8 +1010,8 @@ document.getElementById("filterPlayed").onclick=()=>{
  applySeasonFilter()
 }
 
- document.getElementById("filterScheduleOnly").onclick=()=>{
- scheduleOnly = !scheduleOnly
+document.getElementById("viewMode").onchange=(e)=>{
+ scheduleOnly = (e.target.value === "schedule")
  applySeasonFilter()
 }
 
