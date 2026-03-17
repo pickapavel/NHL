@@ -276,12 +276,10 @@ const signAway=diffAway>=0?`<span class="plus">+${diffAway}</span>`:`<span class
 
 history.push(`
 
-<div class="match">
+let rows = ""
 
-<div class="matchInfo">
-${m.category || ""} – ${m.season || ""}
-</div>
-
+if(!selectedTeam || m.homeTeam === selectedTeam){
+rows += `
 <div class="row">
 <div class="rating">${Math.round(beforeHome)}</div>
 <div class="team">${m.homeTeam}</div>
@@ -289,7 +287,11 @@ ${m.category || ""} – ${m.season || ""}
 <div class="rating">${signHome}</div>
 <div class="rating">${afterHome}</div>
 </div>
+`
+}
 
+if(!selectedTeam || m.awayTeam === selectedTeam){
+rows += `
 <div class="row">
 <div class="rating">${Math.round(beforeAway)}</div>
 <div class="team">${m.awayTeam}</div>
@@ -297,9 +299,17 @@ ${m.category || ""} – ${m.season || ""}
 <div class="rating">${signAway}</div>
 <div class="rating">${afterAway}</div>
 </div>
+`
+}
 
+history.push(`
+<div class="match">
+<div class="matchInfo">
+${m.category || ""} – ${m.season || ""}
 </div>
-
+${rows}
+</div>
+`)
 `)
 
 })
