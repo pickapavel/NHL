@@ -126,7 +126,7 @@ font-weight:bold;
 </div>
 
 <div class="header">
-<div>Původní rating</div>
+<div>Soupeř</div>
 <div>Tým</div>
 <div>Výsledek</div>
 <div>Rating</div>
@@ -278,17 +278,17 @@ let rows = ""
 if(!selectedTeam){
 rows += `
 <div class="row">
-<div class="rating">${Math.round(beforeHome)}</div>
 <div class="team">${m.homeTeam}</div>
 <div class="score">${s.hg}</div>
+<div class="rating">${Math.round(beforeHome)}</div>
 <div class="rating">${signHome}</div>
 <div class="rating">${afterHome}</div>
 </div>
 
 <div class="row">
-<div class="rating">${Math.round(beforeAway)}</div>
 <div class="team">${m.awayTeam}</div>
 <div class="score">${s.ag}</div>
+<div class="rating">${Math.round(beforeAway)}</div>
 <div class="rating">${signAway}</div>
 <div class="rating">${afterAway}</div>
 </div>
