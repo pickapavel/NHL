@@ -295,7 +295,7 @@ if(!selectedTeam || m.awayTeam === selectedTeam){rows += `
 `
 }
 
-if(rows){
+if(!selectedTeam || m.homeTeam === selectedTeam || m.awayTeam === selectedTeam){
 history.push(`
 <div class="match">
 <div class="matchInfo">
