@@ -300,6 +300,7 @@ rows += `
 `
 }
 
+if(rows){
 history.push(`
 <div class="match">
 <div class="matchInfo">
@@ -308,6 +309,7 @@ ${m.category || ""} – ${m.season || ""}
 ${rows}
 </div>
 `)
+}
 
 })
 
