@@ -518,11 +518,17 @@ async function evaluateMatch(home,away,stats){
  console.log("evaluateMatch START", home, away, stats.matchId)
 
 const matchRef = doc(db,"zapasy", stats.matchId)
+
 const matchSnap = await getDoc(matchRef)
 
 if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
  return
 }
+
+// 🔒 LOCK – přidej
+await updateDoc(matchRef,{
+ vyhodnoceno: true
+})
 
 const resultTip = getMatchTip(stats)
 const tips = await getTipsForMatch(home,away)
@@ -585,10 +591,6 @@ console.log("KUBELE WIN TRIGGERED", t.id)
  }
 
 }
-
-await updateDoc(matchRef,{
- vyhodnoceno:true
-})
 
 }
 
