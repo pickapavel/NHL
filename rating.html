@@ -187,12 +187,13 @@ return {hg,ag}
 
 /* ===== FILTR ===== */
 
-function applyFilter(){
+window.applyFilter = function(){
 selectedTeam = document.getElementById("teamFilter").value
+
 console.log("SELECTED TEAM:", selectedTeam)
+
 render(lastData)
 }
-
 /* ===== RENDER ===== */
 
 function render(matches){
