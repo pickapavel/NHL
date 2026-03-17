@@ -214,8 +214,8 @@ if(m.awayTeam) teams.add(m.awayTeam)
 })
 
 // seřazení týmů
-[...teams].sort().forEach(team=>{
-select.innerHTML += `<option value="${team}">${team}</option>`
+Array.from(teams).sort().forEach(team=>{
+select.innerHTML += "<option value='" + team + "'>" + team + "</option>"
 })
 
 // vrátí zpět vybraný tým
