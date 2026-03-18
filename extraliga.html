@@ -534,10 +534,12 @@ if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
 }
 
 const resultTip = getMatchTip(stats)
- console.log("RESULT:", resultTip)
+
+const tips = await getTipsForMatch(home,away)
+
+console.log("RESULT:", resultTip)
 console.log("K TIP:", tips.map(t=>t.kTip))
 console.log("P TIP:", tips.map(t=>t.pTip))
-const tips = await getTipsForMatch(home,away)
  if(tips.length === 0){
  return
 }
