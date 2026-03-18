@@ -486,13 +486,32 @@ async function saveTip(home,away,player){
  }
 
 const tipRef = doc(db,"tipy",home+"_"+away)
+const odds = calculateOdds(home,away)
+
+let kOdds = null
+let pOdds = null
+
+if(kTip==="1") kOdds = odds.o1
+if(kTip==="2") kOdds = odds.o2
+if(kTip==="3") kOdds = odds.draw
+if(kTip==="4") kOdds = odds.o4
+if(kTip==="5") kOdds = odds.o3
+
+if(pTip==="1") pOdds = odds.o1
+if(pTip==="2") pOdds = odds.o2
+if(pTip==="3") pOdds = odds.draw
+if(pTip==="4") pOdds = odds.o4
+if(pTip==="5") pOdds = odds.o3
+
 await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
   kTip: kTip,
   kBet: kBet,
+  kOdds: kOdds,
   pTip: pTip,
   pBet: pBet,
+  pOdds: pOdds,
   created: Date.now()
 })
 
@@ -554,7 +573,7 @@ if(t.kResult === "win" && t.pResult === "win") continue
 
   let oddsValue = 0
 
-  if(resultTip===1) oddsValue = Number(odds.o1)
+ const oddsValue = Number(t.kOdds)
   if(resultTip===2) oddsValue = Number(odds.o2)
   if(resultTip===3) oddsValue = Number(odds.draw)
   if(resultTip===4) oddsValue = Number(odds.o4)
@@ -580,7 +599,7 @@ console.log("KUBELE WIN TRIGGERED", t.id)
 
   let oddsValue = 0
 
-  if(resultTip===1) oddsValue = Number(odds.o1)
+  const oddsValue = Number(t.pOdds)
   if(resultTip===2) oddsValue = Number(odds.o2)
   if(resultTip===3) oddsValue = Number(odds.draw)
   if(resultTip===4) oddsValue = Number(odds.o4)
@@ -629,8 +648,6 @@ function updateElo(home,away,hg,ag){
 }
 
 window.calcWin = function(home,away){
-
- const odds = calculateOdds(home,away)
 
  const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
  const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
