@@ -442,17 +442,10 @@ function expected(ra,rb){
 
 async function saveTip(home,away,player){
 
- const kTip = document.getElementById(`k_${home}_${away}`).value
- const kBetEl = document.getElementById(`kbet_${home}_${away}`)
-if(!kBetEl) return
-const kBet = Number(kBetEl.value)
+const kTip = document.getElementById(`k_${home}_${away}`).value
+const pTip = document.getElementById(`p_${home}_${away}`).value
 
-const pBetEl = document.getElementById(`pbet_${home}_${away}`)
-if(!pBetEl) return
-const pBet = Number(pBetEl.value)
-
- const pTip = document.getElementById(`p_${home}_${away}`).value
- const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
 if(!kBetEl) return
 const kBet = Number(kBetEl.value)
 
@@ -679,7 +672,9 @@ window.calcWin = function(home,away){
 const kBetEl = document.getElementById(`kbet_${home}_${away}`)
 if(!kBetEl) return
 const kBet = Number(kBetEl.value)
- const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
+if(!pBetEl) return
+const pBet = Number(pBetEl.value)
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
  const pTip = document.getElementById(`p_${home}_${away}`).value
