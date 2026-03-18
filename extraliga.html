@@ -545,7 +545,7 @@ const odds = calculateOdds(home,away)
 
 for(const t of tips){
 console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
-if(t.kResult || t.pResult) continue
+if(t.kResult === "win" && t.pResult === "win") continue
 
  // KUBELE
  if(t.kTip && Number(t.kTip)===resultTip){
@@ -558,7 +558,7 @@ if(t.kResult || t.pResult) continue
   if(resultTip===4) oddsValue = Number(odds.o4)
   if(resultTip===5) oddsValue = Number(odds.o3)
 console.log("KUBELE WIN TRIGGERED", t.id)
-  const win = Math.round(t.kBet * oddsValue)
+  const win = Math.round(Number(t.kBet) * oddsValue)
 
   await updateDoc(doc(db,"tipy",t.id),{
    kWin: win,
@@ -584,7 +584,7 @@ console.log("KUBELE WIN TRIGGERED", t.id)
   if(resultTip===4) oddsValue = Number(odds.o4)
   if(resultTip===5) oddsValue = Number(odds.o3)
 
-  const win = Math.round(t.pBet * oddsValue)
+  const win = Math.round(Number(t.pBet) * oddsValue)
 
   await updateDoc(doc(db,"tipy",t.id),{
    pWin: win,
