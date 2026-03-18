@@ -487,18 +487,7 @@ async function saveTip(home,away,player){
 
 const tipRef = doc(db,"tipy",home+"_"+away)
 
- const matchRows = document.querySelectorAll(".matchRow")
-const oddsRows = document.querySelectorAll(".oddsRow")
-
-let matchIndex = -1
-
-matchRows.forEach((row,i)=>{
- if(row.innerText.includes(home) && row.innerText.includes(away)){
-  matchIndex = i
- }
-})
-
-const oddsRow = oddsRows[matchIndex]
+const oddsRow = document.getElementById(`odds_${home}_${away}`)
 
 const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
  return Number(el.innerText.split("\n")[1])
@@ -985,7 +974,7 @@ ${p[1]}
   </div>
   
 ${!scheduleOnly ? `
-<div class="oddsRow">
+<div class="oddsRow" id="odds_${p[0]}_${p[1]}">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
 <div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
