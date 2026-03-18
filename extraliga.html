@@ -1060,10 +1060,31 @@ snap.forEach(d=>{
 })
 
   applySeasonFilter()
+  tryEvaluateAll()
 
  })
 
  // načtení zápasů
+
+async function tryEvaluateAll(){
+
+ for(const match of allMatches){
+
+  if(!match.stats) continue
+
+  const key = match.homeTeam + "_" + match.awayTeam
+
+  if(!savedTips[key]) continue
+
+  await evaluateMatch(
+   match.homeTeam,
+   match.awayTeam,
+   {...match.stats, matchId: match.id}
+  )
+ }
+}
+
+ 
 onSnapshot(q,(snap)=>{
 
  allMatches=[]
@@ -1074,9 +1095,7 @@ const match = {id:d.id,...d.data()}
 
   allMatches.push(match)
 
-  if(match.stats){
- evaluateMatch(match.homeTeam,match.awayTeam,{...match.stats,matchId:match.id})
-  }
+
 
  })
 
