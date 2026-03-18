@@ -518,6 +518,7 @@ await setDoc(tipRef,{
 applySeasonFilter()
 
 calcWin(home,away)
+ const odds = calculateOdds(home,away)
 
 alert("Tip uložen")
 
@@ -573,14 +574,9 @@ if(t.kResult === "win" && t.pResult === "win") continue
 
   let oddsValue = 0
 
- const oddsValue = Number(t.kOdds)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
-console.log("KUBELE WIN TRIGGERED", t.id)
-  const win = Math.round(Number(t.kBet) * oddsValue)
+let oddsValue = 0
 
+const oddsValue = Number(t.kOdds)
   await updateDoc(doc(db,"tipy",t.id),{
    kWin: win,
    kResult: "win"
@@ -597,13 +593,7 @@ console.log("KUBELE WIN TRIGGERED", t.id)
  // PICI
  if(t.pTip && Number(t.pTip)===resultTip){
 
-  let oddsValue = 0
-
-  const oddsValue = Number(t.pOdds)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
+const oddsValue = Number(t.pOdds)
 
   const win = Math.round(Number(t.pBet) * oddsValue)
 
