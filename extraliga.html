@@ -529,12 +529,15 @@ async function evaluateMatch(home,away,stats){
 const matchRef = doc(db,"zapasy", stats.matchId)
 const matchSnap = await getDoc(matchRef)
 
-if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
  return
 }
 
 const resultTip = getMatchTip(stats)
 const tips = await getTipsForMatch(home,away)
+ if(tips.length === 0){
+ return
+}
 const odds = calculateOdds(home,away)
 
 for(const t of tips){
