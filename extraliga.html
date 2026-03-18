@@ -590,9 +590,6 @@ console.log("TIP ID:", t.id)
 console.log("ULOŽENÝ KURZ:", t.kOdds)
 console.log("SÁZKA:", t.kBet)
 
-const oddsValue = Number(t.kOdds)
-const win = Math.round(Number(t.kBet) * oddsValue)
-
 console.log("VÝPOČET:", t.kBet, "*", oddsValue, "=", win)
  await updateDoc(doc(db,"tipy",t.id),{
   kWin: win,
@@ -612,16 +609,22 @@ await updateDoc(doc(db,"hraci","KTip"),{
 }
 
  // PICI
- if(t.pTip && Number(t.pTip)===resultTip){
+if(t.pTip && Number(t.pTip)===resultTip){
 
-const oddsValue = Number(t.pOdds)
+ const oddsValue = Number(t.pOdds)
 
-  const win = Math.round(Number(t.pBet) * oddsValue)
+ const win = Math.round(Number(t.pBet) * oddsValue)
 
-  await updateDoc(doc(db,"tipy",t.id),{
-   pWin: win,
-   pResult: "win"
-  })
+ console.log("----- PICI -----")
+ console.log("TIP ID:", t.id)
+ console.log("ULOŽENÝ KURZ:", t.pOdds)
+ console.log("SÁZKA:", t.pBet)
+ console.log("VÝPOČET:", t.pBet, "*", t.pOdds, "=", win)
+
+ await updateDoc(doc(db,"tipy",t.id),{
+  pWin: win,
+  pResult: "win"
+ })
 
 const pDoc = await getDoc(doc(db,"hraci","PTip"))
 const current = Number(pDoc.data().kredit || 0)
