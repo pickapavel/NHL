@@ -443,10 +443,22 @@ function expected(ra,rb){
 async function saveTip(home,away,player){
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
- const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
+ const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+if(!kBetEl) return
+const kBet = Number(kBetEl.value)
+
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
+if(!pBetEl) return
+const pBet = Number(pBetEl.value)
 
  const pTip = document.getElementById(`p_${home}_${away}`).value
- const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+ const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+if(!kBetEl) return
+const kBet = Number(kBetEl.value)
+
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
+if(!pBetEl) return
+const pBet = Number(pBetEl.value)
 
  if(!kTip && !pTip){
   alert("Zadej alespoň jeden tip")
@@ -578,7 +590,7 @@ console.log("P TIP:", tips.map(t=>t.pTip))
 
 for(const t of tips){
 console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
-if(t.kResult === "win" && t.pResult === "win") continue
+if(t.kResult === "win" || t.pResult === "win") continue
 
  // KUBELE
 if(t.kTip && Number(t.kTip)===resultTip){
@@ -664,7 +676,9 @@ function updateElo(home,away,hg,ag){
 window.calcWin = function(home,away){
  const odds = calculateOdds(home,away)
 
- const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+if(!kBetEl) return
+const kBet = Number(kBetEl.value)
  const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
