@@ -487,25 +487,18 @@ async function saveTip(home,away,player){
 
 const tipRef = doc(db,"tipy",home+"_"+away)
 
-// 🔥 SPRÁVNÝ RATING PŘED ZÁPASEM
-resetRatings()
+ const matchRows = document.querySelectorAll(".matchRow")
+const oddsRows = document.querySelectorAll(".oddsRow")
 
-const extraliga = allMatches.filter(m=>m.category?.startsWith("Extraliga"))
-extraliga.sort((a,b)=>a.created-b.created)
+let matchIndex = -1
 
-for(const m of extraliga){
- if(!m.stats) continue
- if(m.homeTeam===home && m.awayTeam===away) break
+matchRows.forEach((row,i)=>{
+ if(row.innerText.includes(home) && row.innerText.includes(away)){
+  matchIndex = i
+ }
+})
 
- const s = calc(m.stats)
- updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
-}
-
-const oddsEls = document.querySelectorAll(`#schedule .oddsRow`)
-
-// najdi správný zápas podle pořadí
-const matchIndex = scheduleList.findIndex(p=>p[0]===home && p[1]===away)
-const oddsRow = oddsEls[matchIndex]
+const oddsRow = oddsRows[matchIndex]
 
 const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
  return Number(el.innerText.split("\n")[1])
@@ -525,6 +518,8 @@ if(pTip==="2") pOdds = oddsValues[1]
 if(pTip==="3") pOdds = oddsValues[2]
 if(pTip==="4") pOdds = oddsValues[3]
 if(pTip==="5") pOdds = oddsValues[4]
+
+
 
 await setDoc(tipRef,{
   homeTeam: home,
