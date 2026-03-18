@@ -501,22 +501,30 @@ for(const m of extraliga){
  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
 }
 
-const odds = calculateOdds(home,away)
+const oddsEls = document.querySelectorAll(`#schedule .oddsRow`)
+
+// najdi správný zápas podle pořadí
+const matchIndex = scheduleList.findIndex(p=>p[0]===home && p[1]===away)
+const oddsRow = oddsEls[matchIndex]
+
+const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
+ return Number(el.innerText.split("\n")[1])
+})
 
 let kOdds = null
 let pOdds = null
 
-if(kTip==="1") kOdds = odds.o1
-if(kTip==="2") kOdds = odds.o2
-if(kTip==="3") kOdds = odds.draw
-if(kTip==="4") kOdds = odds.o4
-if(kTip==="5") kOdds = odds.o3
+if(kTip==="1") kOdds = oddsValues[0]
+if(kTip==="2") kOdds = oddsValues[1]
+if(kTip==="3") kOdds = oddsValues[2]
+if(kTip==="4") kOdds = oddsValues[3]
+if(kTip==="5") kOdds = oddsValues[4]
 
-if(pTip==="1") pOdds = odds.o1
-if(pTip==="2") pOdds = odds.o2
-if(pTip==="3") pOdds = odds.draw
-if(pTip==="4") pOdds = odds.o4
-if(pTip==="5") pOdds = odds.o3
+if(pTip==="1") pOdds = oddsValues[0]
+if(pTip==="2") pOdds = oddsValues[1]
+if(pTip==="3") pOdds = oddsValues[2]
+if(pTip==="4") pOdds = oddsValues[3]
+if(pTip==="5") pOdds = oddsValues[4]
 
 await setDoc(tipRef,{
   homeTeam: home,
