@@ -518,9 +518,8 @@ await setDoc(tipRef,{
 applySeasonFilter()
 
 calcWin(home,away)
- const odds = calculateOdds(home,away)
 
-alert("Tip uložen")
+ alert("Tip uložen")
 
 }
  window.saveTip = saveTip
@@ -570,25 +569,23 @@ console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
 if(t.kResult === "win" && t.pResult === "win") continue
 
  // KUBELE
- if(t.kTip && Number(t.kTip)===resultTip){
+if(t.kTip && Number(t.kTip)===resultTip){
 
-  let oddsValue = 0
+ const oddsValue = Number(t.kOdds)
+ const win = Math.round(Number(t.kBet) * oddsValue)
 
-let oddsValue = 0
+ await updateDoc(doc(db,"tipy",t.id),{
+  kWin: win,
+  kResult: "win"
+ })
 
-const oddsValue = Number(t.kOdds)
-  await updateDoc(doc(db,"tipy",t.id),{
-   kWin: win,
-   kResult: "win"
-  })
+ const kDoc = await getDoc(doc(db,"hraci","KTip"))
+ const current = Number(kDoc.data().kredit || 0)
 
-  const kDoc = await getDoc(doc(db,"hraci","KTip"))
-  const current = Number(kDoc.data().kredit || 0)
-
-  await updateDoc(doc(db,"hraci","KTip"),{
-   kredit: current + win
-  })
- }
+ await updateDoc(doc(db,"hraci","KTip"),{
+  kredit: current + win
+ })
+}
 
  // PICI
  if(t.pTip && Number(t.pTip)===resultTip){
@@ -638,6 +635,7 @@ function updateElo(home,away,hg,ag){
 }
 
 window.calcWin = function(home,away){
+ const odds = calculateOdds(home,away)
 
  const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
  const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
