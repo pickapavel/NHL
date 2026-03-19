@@ -561,7 +561,8 @@ if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
 
 const resultTip = getMatchTip(stats)
 
-const tips = await getTipsForMatch(home,away)
+const tips = await getTipsForMatch(home,away
+ console.log("TIPS:", tips)
  console.log("ULOŽENÉ ODDS:", tips.map(t => ({
   kOdds: t.kOdds,
   pOdds: t.pOdds
