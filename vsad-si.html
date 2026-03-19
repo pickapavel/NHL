@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vsaď si</title>
+
+<style>
+body{
+ margin:0;
+ font-family:Arial;
+ background:#0b2a3c;
+ color:white;
+}
+
+.wrapper{
+ max-width:900px;
+ margin:auto;
+ padding:25px;
+}
+
+.header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:20px;
+}
+
+.teamBlock{
+ display:flex;
+ align-items:center;
+ gap:15px;
+ font-size:22px;
+ font-weight:bold;
+}
+
+.teamBlock img{
+ width:75px;
+ height:75px;
+ object-fit:contain;
+ background:white;
+ padding:6px;
+ border-radius:10px;
+}
+
+.scoreBig{
+ font-size:60px;
+ font-weight:bold;
+ text-align:center;
+}
+
+.periodInfo{
+ text-align:center;
+ margin-top:10px;
+ opacity:0.9;
+}
+
+.backBtn{
+ margin-top:40px;
+ text-align:center;
+}
+
+.backBtn a{
+ background:#2f9ec9;
+ padding:10px 18px;
+ border-radius:6px;
+ text-decoration:none;
+ color:white;
+ font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="header">
+ <div id="homeTeam" class="teamBlock"></div>
+
+ <div>
+   <div id="score" class="scoreBig">- : -</div>
+ </div>
+
+ <div id="awayTeam" class="teamBlock"></div>
+</div>
+
+<div id="periodInfo" class="periodInfo"></div>
+
+<div class="backBtn">
+ <a href="extraliga.html">← Zpět</a>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+ authDomain:"statistiky-6310a.firebaseapp.com",
+ projectId:"statistiky-6310a"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
+};
+
+function calc(stats){
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+
+ if(stats[9]==="11") ag++;
+ if(stats[19]==="11") hg++;
+
+ if(stats[20]==="1") hg++;
+ if(stats[20]==="2") ag++;
+
+ return {hg,ag};
+}
+
+async function loadMatch(){
+
+ const params=new URLSearchParams(window.location.search);
+ const matchId=params.get("id");
+
+ const snap=await getDoc(doc(db,"zapasy",matchId));
+ if(!snap.exists()) return;
+
+ const m=snap.data();
+ const stats=m.stats;
+
+ const home=m.homeTeam;
+ const away=m.awayTeam;
+
+ const s=calc(stats);
+
+ document.getElementById("homeTeam").innerHTML=
+ `<img src="./logos/${teamsData[home]}">${home}`;
+
+ document.getElementById("awayTeam").innerHTML=
+ `${away}<img src="./logos/${teamsData[away]}">`;
+
+ document.getElementById("score").innerText=
+ `${s.hg} : ${s.ag}`;
+
+ document.getElementById("periodInfo").innerText=
+ `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
+
+}
+
+loadMatch();
+
+</script>
+
+</body>
+</html>
