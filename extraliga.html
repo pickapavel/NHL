@@ -1063,6 +1063,31 @@ ${!scheduleOnly ? `
 
 }
 
+function applySeasonFilter(){
+
+ resetRatings()
+
+ const extraliga = allMatches.filter(m =>
+  m.category?.startsWith("Extraliga")
+ )
+
+ extraliga.sort((a,b)=>a.created-b.created)
+
+ extraliga.forEach(m=>{
+  if(!m.stats) return
+  const s = calc(m.stats)
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
+ })
+
+ const filtered = allMatches.filter(m =>
+  m.category?.startsWith("Extraliga") &&
+  m.season === selectedSeason
+ )
+
+ renderSchedule(filtered)
+ renderStandings(calculateStandings(filtered))
+}
+
 document.getElementById("viewMode").onchange=(e)=>{
  scheduleOnly = (e.target.value === "schedule")
  applySeasonFilter()
