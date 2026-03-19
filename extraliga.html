@@ -261,15 +261,8 @@ body{
 <option value="all">Druhý tým</option>
 </select>
 
-<select id="matchFilter">
-  <option value="all" selected>Všechny zápasy</option>
-  <option value="played">Jen odehrané</option>
-  <option value="unplayed">Jen neodehrané</option>
-</select>
-<select id="viewMode">
-  <option value="schedule" selected>Jen rozpis</option>
-  <option value="bets">Sázky</option>
-</select>
+<button id="filterAll" class="filterActive">Všechny zápasy</button>
+<button id="filterPlayed">Jen odehrané</button>
 
 <select id="homeAwayFilter">
 <option value="both">Domácí i venkovní</option>
@@ -338,7 +331,6 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
-let scheduleOnly = true;
 
 /* ===== TÝMY ===== */
 
@@ -383,22 +375,6 @@ document.getElementById("homeAwayFilter").onchange=(e)=>{
 
 document.getElementById("resultFilter").onchange=(e)=>{
  resultMode=e.target.value
- applySeasonFilter()
-}
-
-document.getElementById("matchFilter").onchange=(e)=>{
- const val = e.target.value
-
- if(val === "played"){
-  showPlayedOnly = true
- } 
- else if(val === "unplayed"){
-  showPlayedOnly = false
- } 
- else {
-  showPlayedOnly = false
- }
-
  applySeasonFilter()
 }
 
@@ -862,10 +838,7 @@ function renderSchedule(matches){
 
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
-  const val = document.getElementById("matchFilter").value
-
-if(val === "played" && (!m || !m.stats)) return
-if(val === "unplayed" && (m && m.stats)) return
+  if(showPlayedOnly && (!m || !m.stats)) return
 
   if(resultMode!=="all"){
 
@@ -950,8 +923,7 @@ ${p[1]}
    </div>
 
   </div>
-  
-${!scheduleOnly ? `
+
 <div class="oddsRow">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
@@ -961,9 +933,7 @@ ${!scheduleOnly ? `
 <div class="odds">Výhra<br>${odds.o3}</div>
 
 </div>
-` : ``}
 
-${!scheduleOnly ? `
 <div class="predictionRow">
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
@@ -975,16 +945,13 @@ ${!scheduleOnly ? `
 <button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
 
 </div>
-` : ``}
 
 </div>
 </div>
 
-${!scheduleOnly ? `
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
-` : ``}
 
 `
 setTimeout(()=>calcWin(p[0],p[1]),50)
@@ -1018,8 +985,17 @@ function applySeasonFilter(){
 
 }
 
-document.getElementById("viewMode").onchange=(e)=>{
- scheduleOnly = (e.target.value === "schedule")
+document.getElementById("filterAll").onclick=()=>{
+ showPlayedOnly=false
+ document.getElementById("filterAll").classList.add("filterActive")
+ document.getElementById("filterPlayed").classList.remove("filterActive")
+ applySeasonFilter()
+}
+
+document.getElementById("filterPlayed").onclick=()=>{
+ showPlayedOnly=true
+ document.getElementById("filterPlayed").classList.add("filterActive")
+ document.getElementById("filterAll").classList.remove("filterActive")
  applySeasonFilter()
 }
 
