@@ -1059,9 +1059,6 @@ ${!scheduleOnly ? `
  onclick="saveTip('${p[0]}','${p[1]}','P')">
  ${savedTips[p[0]+'_'+p[1]]?.locked ? "Uzamčeno" : "Potvrdit"}
 </button>
-
-</div>
-
 </div>
 ` : ``}
 
@@ -1133,20 +1130,20 @@ snap.forEach(d=>{
  const t=d.data()
  const key=t.homeTeam+"_"+t.awayTeam
 
-if(!savedTips[key]) savedTips[key]={}
+ if(!savedTips[key]) savedTips[key]={}
 
-savedTips[key].locked = t.locked || false
+ savedTips[key].locked = t.locked || false
 
-if(t.kTip) savedTips[key].kTip = t.kTip
-if(t.kBet) savedTips[key].kBet = t.kBet
+ if(t.kTip) savedTips[key].kTip = t.kTip
+ if(t.kBet) savedTips[key].kBet = t.kBet
 
-if(t.pTip) savedTips[key].pTip = t.pTip
-if(t.pBet) savedTips[key].pBet = t.pBet
+ if(t.pTip) savedTips[key].pTip = t.pTip
+ if(t.pBet) savedTips[key].pBet = t.pBet
+})
 
-  applySeasonFilter()
-  tryEvaluateAll()
-
- })
+// ✅ AŽ TADY:
+applySeasonFilter()
+tryEvaluateAll()
 
  // načtení zápasů
 
