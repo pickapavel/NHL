@@ -500,25 +500,20 @@ alert("Tip uložen")
 
 async function evaluateMatch(home,away,stats){
 
-const matchRef = doc(db,"zapasy", stats.matchId)
-const matchSnap = await getDoc(matchRef)
+ const matchRef = doc(db,"zapasy", stats.matchId)
+ const matchSnap = await getDoc(matchRef)
 
-if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
- return
-}
-// okamžitě zamkneme zápas aby se nevyhodnotil 2x
-await updateDoc(matchRef,{
- vyhodnoceno:true
-})
+ if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+  return
+ }
+
  const resultTip = getMatchTip(stats)
 
  const tips = await getTipsForMatch(home,away)
 
  const odds = calculateOdds(home,away)
 
- 
  for(const t of tips){
- if(t.kResult || t.pResult) continue
 
   // KUBELE
   if(t.kTip && Number(t.kTip)===resultTip){
@@ -573,6 +568,9 @@ await updateDoc(doc(db,"hraci","PTip"),{
 
  }
 
+ await updateDoc(matchRef,{
+  vyhodnoceno:true
+ })
 
 }
 
@@ -620,15 +618,15 @@ if(pTip==="3") pOdds = Number(odds.draw)
 if(pTip==="4") pOdds = Number(odds.o4)
 if(pTip==="5") pOdds = Number(odds.o3)
 
-if(kBet && kOdds){
- document.getElementById(`kwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
-}
+ if(kBet && kOdds){
+  document.getElementById(`kwin_${home}_${away}`).value =
+   Math.round(kBet * kOdds) + " Kč"
+ }
 
-if(pBet && pOdds){
- document.getElementById(`pwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
-}
+ if(pBet && pOdds){
+  document.getElementById(`pwin_${home}_${away}`).value =
+   Math.round(pBet * pOdds) + " Kč"
+ }
 
 }
 
@@ -953,7 +951,7 @@ Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
 
 `
-setTimeout(()=>calcWin(p[0],p[1]),50)
+
  })
 
 }
@@ -1016,18 +1014,11 @@ async function start(){
 
   savedTips={}
 
-snap.forEach(d=>{
- const t=d.data()
- const key=t.homeTeam+"_"+t.awayTeam
-
- if(!savedTips[key]) savedTips[key]={}
-
- if(t.kTip) savedTips[key].kTip = t.kTip
- if(t.kBet) savedTips[key].kBet = t.kBet
-
- if(t.pTip) savedTips[key].pTip = t.pTip
- if(t.pBet) savedTips[key].pBet = t.pBet
-})
+  snap.forEach(d=>{
+   const t=d.data()
+   const key=t.homeTeam+"_"+t.awayTeam
+   savedTips[key]=t
+  })
 
   applySeasonFilter()
 
