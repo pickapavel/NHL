@@ -493,8 +493,10 @@ await setDoc(tipRef,{
   kBet: kBet,
   pTip: pTip,
   pBet: pBet,
+  kLocked: player==="K" ? true : false,
+  pLocked: player==="P" ? true : false,
   created: Date.now()
-})
+},{ merge:true })
 
 applySeasonFilter()
 
@@ -1039,26 +1041,29 @@ async function start(){
  // načtení tipů
  const tipsQuery = query(collection(db,"tipy"))
 
- onSnapshot(tipsQuery,(snap)=>{
+onSnapshot(tipsQuery,(snap)=>{
 
-  savedTips={}
+  savedTips = {}
 
-snap.forEach(d=>{
- const t=d.data()
- const key=t.homeTeam+"_"+t.awayTeam
+  snap.forEach(d=>{
+    const t = d.data()
+    const key = t.homeTeam + "_" + t.awayTeam
 
- if(!savedTips[key]) savedTips[key]={}
+    if(!savedTips[key]) savedTips[key] = {}
 
- if(t.kTip) savedTips[key].kTip = t.kTip
- if(t.kBet) savedTips[key].kBet = t.kBet
+    // KUBELE
+    if(t.kTip) savedTips[key].kTip = t.kTip
+    if(t.kBet) savedTips[key].kBet = t.kBet
+    if(t.kLocked) savedTips[key].kLocked = true
 
- if(t.pTip) savedTips[key].pTip = t.pTip
- if(t.pBet) savedTips[key].pBet = t.pBet
-})
+    // PICI
+    if(t.pTip) savedTips[key].pTip = t.pTip
+    if(t.pBet) savedTips[key].pBet = t.pBet
+    if(t.pLocked) savedTips[key].pLocked = true
+  })
 
   applySeasonFilter()
-
- })
+})
 
  // načtení zápasů
 onSnapshot(q,(snap)=>{
