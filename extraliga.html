@@ -1095,8 +1095,6 @@ async function tryEvaluateAll(){
 
   const key = match.homeTeam + "_" + match.awayTeam
 
-  if(!savedTips[key]) continue
-
   await evaluateMatch(
    match.homeTeam,
    match.awayTeam,
