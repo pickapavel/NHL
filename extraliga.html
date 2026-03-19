@@ -56,6 +56,8 @@ body{
 }
 
 
+
+
 .predictionRow input{
  width:100%;
  padding:6px;
@@ -73,6 +75,8 @@ body{
  font-weight:bold;
  cursor:pointer;
 }
+
+ 
 
 /* Kubele */
 .predictionRow input:nth-child(1){grid-column:1;grid-row:1;}
@@ -172,6 +176,8 @@ body{
  margin-bottom:10px;
  align-items:center;
 }
+
+
 
 .kTip{ grid-column:1; grid-row:1; }
 .kBet{ grid-column:2; grid-row:1; }
@@ -370,15 +376,15 @@ document.getElementById("resultFilter").onchange=(e)=>{
 document.getElementById("matchFilter").onchange=(e)=>{
  const val = e.target.value
 
- if(val === "played"){
-  showPlayedOnly = true
- } 
- else if(val === "unplayed"){
-  showPlayedOnly = false
- } 
- else {
-  showPlayedOnly = false
- }
+if(val === "played"){
+ showPlayedOnly = "played"
+} 
+else if(val === "unplayed"){
+ showPlayedOnly = "unplayed"
+} 
+else {
+ showPlayedOnly = "all"
+}
 
  applySeasonFilter()
 }
@@ -867,6 +873,208 @@ function renderStandings(arr){
 
 }
 
+/* ===== ROZPIS ===== */
+
+function renderSchedule(matches){
+
+ const cont=document.getElementById("schedule")
+ cont.innerHTML=""
+
+ scheduleList.forEach(p=>{
+
+  if(headToHeadMode){
+
+   const t1=teamFilter.value
+   const t2=teamFilter2.value
+
+   if(t1==="all"||t2==="all") return
+
+   if(!((p[0]===t1&&p[1]===t2)||(p[0]===t2&&p[1]===t1))) return
+
+  }
+
+  else if(teamFilter.value!=="all"){
+
+   const team=teamFilter.value
+
+   if(p[0]!==team && p[1]!==team) return
+
+   if(homeAwayMode==="home" && p[0]!==team) return
+   if(homeAwayMode==="away" && p[1]!==team) return
+
+  }
+
+  const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
+
+  const val = document.getElementById("matchFilter").value
+
+if(val === "played" && (!m || !m.stats)) return
+if(val === "unplayed" && (m && m.stats)) return
+
+  if(resultMode!=="all"){
+
+   if(!m || !m.stats) return
+
+   const s=calc(m.stats)
+   const team=teamFilter.value
+
+   if(team!=="all"){
+
+    let win=false
+
+    if(m.homeTeam===team && s.hg>s.ag) win=true
+    if(m.awayTeam===team && s.ag>s.hg) win=true
+
+    if(resultMode==="win" && !win) return
+    if(resultMode==="loss" && win) return
+
+   }
+
+  }
+
+  let hg=0,ag=0
+  let h1=0,h2=0,h3=0,a1=0,a2=0,a3=0
+
+  if(m){
+
+   const s=calc(m.stats)
+
+   hg=s.hg
+   ag=s.ag
+
+   a1=Number(m.stats[6])||0
+   a2=Number(m.stats[7])||0
+   a3=Number(m.stats[8])||0
+
+   h1=Number(m.stats[16])||0
+   h2=Number(m.stats[17])||0
+   h3=Number(m.stats[18])||0
+
+  }
+
+ const link=`statistiky-zapasu.html?id=${m?.id || ""}`
+  const odds=calculateOdds(p[0],p[1])
+
+  cont.innerHTML+=`
+
+  <div class="matchRow">
+
+  <div class="teamBox">
+<img class="logo" src="./logos/${logos[p[0]]}">
+<div>
+${p[0]}
+<div style="font-size:12px;color:#666;">
+⭐ ${Math.round(ratings[p[0]]||1000)}
+</div>
+</div>
+</div>
+
+   <div class="scoreBox">${hg}</div>
+
+   <div class="periods">
+   (${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})
+   </div>
+
+   <div class="scoreBox">${ag}</div>
+
+  <div class="teamBox teamRight">
+<div style="text-align:right">
+${p[1]}
+<div style="font-size:12px;color:#666;">
+⭐ ${Math.round(ratings[p[1]]||1000)}
+</div>
+</div>
+<img class="logo" src="./logos/${logos[p[1]]}">
+</div>
+
+   <div>
+   <button class="statsBtn" onclick="window.location.href='${link}'">
+   Statistiky
+   </button>
+   </div>
+
+  </div>
+  
+${!scheduleOnly ? `
+<div class="oddsRow" id="odds_${p[0]}_${p[1]}">
+
+<div class="odds">Výhra<br>${odds.o1}</div>
+<div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
+<div class="odds">Remíza<br>${odds.draw}</div>
+<div class="odds">Výhra (OT/SN)<br>${odds.o4}</div>
+<div class="odds">Výhra<br>${odds.o3}</div>
+
+</div>
+` : ``}
+
+${!scheduleOnly ? `
+<div class="predictionRow">
+
+<input id="k_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""}
+ placeholder="K tip (1-5)" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+
+<input id="kbet_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""}
+ placeholder="Kč" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+
+<input id="kwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
+
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','K')">
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "Uzamčeno" : "Potvrdit"}
+</button>
+
+<input id="p_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""}
+ placeholder="P tip (1-5)" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+
+<input id="pbet_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""}
+ placeholder="Kč" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+
+<input id="pwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
+
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','P')">
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "Uzamčeno" : "Potvrdit"}
+</button>
+
+</div>
+` : ``}
+
+ resetRatings()
+
+ const extraliga=allMatches.filter(m=>m.category?.startsWith("Extraliga"))
+
+ extraliga.sort((a,b)=>a.created-b.created)
+
+ extraliga.forEach(m=>{
+  if(!m.stats)return
+  const s=calc(m.stats)
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
+ })
+
+ const filtered=allMatches.filter(m=>
+  m.category?.startsWith("Extraliga") &&
+  m.season===selectedSeason
+ )
+
+ renderSchedule(filtered)
+ renderStandings(calculateStandings(filtered))
+
+}
+
 document.getElementById("viewMode").onchange=(e)=>{
  scheduleOnly = (e.target.value === "schedule")
  applySeasonFilter()
@@ -927,6 +1135,12 @@ savedTips[key].pLocked = t.pLocked || false
 applySeasonFilter()
 tryEvaluateAll()
  
+
+
+
+
+})
+
 onSnapshot(q,(snap)=>{
 
  allMatches=[]
@@ -937,24 +1151,9 @@ onSnapshot(q,(snap)=>{
  })
 
  applySeasonFilter()
- tryEvaluateAll() // ✅ SEM to patří
+ tryEvaluateAll()
 })
 
- allMatches=[]
-
- snap.forEach(d=>{
-
-const match = {id:d.id,...d.data()}
-
-  allMatches.push(match)
-
-
-
- })
-
- applySeasonFilter()
-
-})
 }
 start()
 
