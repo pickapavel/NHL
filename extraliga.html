@@ -618,15 +618,15 @@ if(pTip==="3") pOdds = Number(odds.draw)
 if(pTip==="4") pOdds = Number(odds.o4)
 if(pTip==="5") pOdds = Number(odds.o3)
 
- if(kBet && kOdds){
-  document.getElementById(`kwin_${home}_${away}`).value =
-   Math.round(kBet * kOdds) + " Kč"
- }
+if(kBet && kOdds){
+ document.getElementById(`kwin_${home}_${away}`).value =
+  "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
+}
 
- if(pBet && pOdds){
-  document.getElementById(`pwin_${home}_${away}`).value =
-   Math.round(pBet * pOdds) + " Kč"
- }
+if(pBet && pOdds){
+ document.getElementById(`pwin_${home}_${away}`).value =
+  "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
+}
 
 }
 
