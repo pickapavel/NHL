@@ -1014,11 +1014,18 @@ async function start(){
 
   savedTips={}
 
-  snap.forEach(d=>{
-   const t=d.data()
-   const key=t.homeTeam+"_"+t.awayTeam
-   savedTips[key]=t
-  })
+snap.forEach(d=>{
+ const t=d.data()
+ const key=t.homeTeam+"_"+t.awayTeam
+
+ if(!savedTips[key]) savedTips[key]={}
+
+ if(t.kTip) savedTips[key].kTip = t.kTip
+ if(t.kBet) savedTips[key].kBet = t.kBet
+
+ if(t.pTip) savedTips[key].pTip = t.pTip
+ if(t.pBet) savedTips[key].pBet = t.pBet
+})
 
   applySeasonFilter()
 
