@@ -492,11 +492,15 @@ const pBet = Number(pBetEl.value)
 
 const tipRef = doc(db,"tipy",home+"_"+away)
 
-const oddsRow = document.getElementById(`odds_${home}_${away}`)
+const odds = calculateOdds(home,away)
 
-const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
- return Number(el.innerText.split("\n")[1])
-})
+const oddsValues = [
+ Number(odds.o1),
+ Number(odds.o2),
+ Number(odds.draw),
+ Number(odds.o4),
+ Number(odds.o3)
+]
 
 let kOdds = null
 let pOdds = null
@@ -531,8 +535,6 @@ await setDoc(tipRef,{
   pOdds: pOdds,
   created: Date.now()
 })
-
-applySeasonFilter()
 
 calcWin(home,away)
 
