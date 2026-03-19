@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
@@ -441,14 +442,14 @@ function expected(ra,rb){
 
 async function saveTip(home,away,player){
 
-const kTip = document.getElementById(k_${home}_${away}).value
-const pTip = document.getElementById(p_${home}_${away}).value
+const kTip = document.getElementById(`k_${home}_${away}`).value
+const pTip = document.getElementById(`p_${home}_${away}`).value
 
-const kBetEl = document.getElementById(kbet_${home}_${away})
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
 if(!kBetEl) return
 const kBet = Number(kBetEl.value)
 
-const pBetEl = document.getElementById(pbet_${home}_${away})
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
 if(!pBetEl) return
 const pBet = Number(pBetEl.value)
 
@@ -491,7 +492,7 @@ const pBet = Number(pBetEl.value)
 
 const tipRef = doc(db,"tipy",home+"_"+away)
 
-const oddsRow = document.getElementById(odds_${home}_${away})
+const oddsRow = document.getElementById(`odds_${home}_${away}`)
 
 const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
  return Number(el.innerText.split("\n")[1])
@@ -671,15 +672,15 @@ function updateElo(home,away,hg,ag){
 window.calcWin = function(home,away){
  const odds = calculateOdds(home,away)
 
-const kBetEl = document.getElementById(kbet_${home}_${away})
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
 if(!kBetEl) return
 const kBet = Number(kBetEl.value)
-const pBetEl = document.getElementById(pbet_${home}_${away})
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
 if(!pBetEl) return
 const pBet = Number(pBetEl.value)
 
- const kTip = document.getElementById(k_${home}_${away}).value
- const pTip = document.getElementById(p_${home}_${away}).value
+ const kTip = document.getElementById(`k_${home}_${away}`).value
+ const pTip = document.getElementById(`p_${home}_${away}`).value
 
  let kOdds = 0
  let pOdds = 0
@@ -697,12 +698,12 @@ if(pTip==="4") pOdds = Number(odds.o4)
 if(pTip==="5") pOdds = Number(odds.o3)
 
 if(kBet && kOdds){
- document.getElementById(kwin_${home}_${away}).value =
+ document.getElementById(`kwin_${home}_${away}`).value =
   "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
 }
 
 if(pBet && pOdds){
- document.getElementById(pwin_${home}_${away}).value =
+ document.getElementById(`pwin_${home}_${away}`).value =
   "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
 }
 
@@ -842,7 +843,7 @@ function renderStandings(arr){
 
   const rating=Math.round(ratings[t.team]||1000)
 
-  body.innerHTML+=
+  body.innerHTML+=`
 
   <div class="standingsCard">
 
@@ -877,7 +878,7 @@ function renderStandings(arr){
 
   </div>
 
-  
+  `
  })
 
 }
@@ -961,10 +962,10 @@ if(val === "unplayed" && (m && m.stats)) return
 
   }
 
- const link=statistiky-zapasu.html?id=${m?.id || ""}
+ const link=`statistiky-zapasu.html?id=${m?.id || ""}`
   const odds=calculateOdds(p[0],p[1])
 
-  cont.innerHTML+=
+  cont.innerHTML+=`
 
   <div class="matchRow">
 
@@ -1004,7 +1005,7 @@ ${p[1]}
 
   </div>
   
-${!scheduleOnly ? 
+${!scheduleOnly ? `
 <div class="oddsRow" id="odds_${p[0]}_${p[1]}">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
@@ -1014,9 +1015,9 @@ ${!scheduleOnly ?
 <div class="odds">Výhra<br>${odds.o3}</div>
 
 </div>
- : }
+` : ``}
 
-${!scheduleOnly ? 
+${!scheduleOnly ? `
 <div class="predictionRow">
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
@@ -1028,18 +1029,18 @@ ${!scheduleOnly ?
 <button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
 
 </div>
- : }
+` : ``}
 
 </div>
 </div>
 
-${!scheduleOnly ? 
+${!scheduleOnly ? `
 <div style="margin-left:40px;font-weight:bold;">
 Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
 </div>
- : }
+` : ``}
 
-
+`
 setTimeout(()=>calcWin(p[0],p[1]),50)
  })
 
