@@ -1025,8 +1025,9 @@ ${!scheduleOnly ? `
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 <input id="kwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
 <button 
+ <button 
  ${savedTips[p[0]+'_'+p[1]]?.locked ? "disabled" : ""} 
- onclick="saveTip('${p[0]}','${p[1]}','K')">
+ onclick="saveTip('${p[0]}','${p[1]}','P')">
  ${savedTips[p[0]+'_'+p[1]]?.locked ? "Uzamčeno" : "Potvrdit"}
 </button>
 
