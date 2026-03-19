@@ -529,13 +529,15 @@ await setDoc(tipRef,{
   pTip: pTip,
   pBet: pBet,
   pOdds: pOdds,
+  locked: true,
   created: Date.now()
 })
 
 applySeasonFilter()
 
 calcWin(home,away)
-
+const key = home + "_" + away
+if(savedTips[key]?.locked) return
  alert("Tip uložen")
 
 }
@@ -1022,11 +1024,30 @@ ${!scheduleOnly ? `
 
 <input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
 <input id="kwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','K')">Potvrdit</button>
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','K')">
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "Uzamčeno" : "Potvrdit"}
+</button>
 
-<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}"><input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
-<input id="pwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
+<input id="p_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "disabled" : ""} 
+ placeholder="P tip (1-5)" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+
+<input id="pbet_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "disabled" : ""} 
+ placeholder="Kč" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','P')">
+ ${savedTips[p[0]+'_'+p[1]]?.locked ? "Uzamčeno" : "Potvrdit"}
+</button>+'_'+p[1]]?.locked ? "Uzamčeno" : "Potvrdit"}
+</button>
 
 </div>
 ` : ``}
@@ -1099,14 +1120,15 @@ snap.forEach(d=>{
  const t=d.data()
  const key=t.homeTeam+"_"+t.awayTeam
 
- if(!savedTips[key]) savedTips[key]={}
+if(!savedTips[key]) savedTips[key]={}
 
- if(t.kTip) savedTips[key].kTip = t.kTip
- if(t.kBet) savedTips[key].kBet = t.kBet
+savedTips[key].locked = t.locked || false
 
- if(t.pTip) savedTips[key].pTip = t.pTip
- if(t.pBet) savedTips[key].pBet = t.pBet
-})
+if(t.kTip) savedTips[key].kTip = t.kTip
+if(t.kBet) savedTips[key].kBet = t.kBet
+
+if(t.pTip) savedTips[key].pTip = t.pTip
+if(t.pBet) savedTips[key].pBet = t.pBet
 
   applySeasonFilter()
   tryEvaluateAll()
