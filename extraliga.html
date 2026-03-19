@@ -1158,29 +1158,19 @@ snap.forEach(d=>{
 // ✅ AŽ TADY:
 applySeasonFilter()
 tryEvaluateAll()
-
- // načtení zápasů
-
-async function tryEvaluateAll(){
-
- for(const match of allMatches){
-
-  if(!match.stats) continue
-
-  const key = match.homeTeam + "_" + match.awayTeam
-
-  if(!savedTips[key]) continue
-
-  await evaluateMatch(
-   match.homeTeam,
-   match.awayTeam,
-   {...match.stats, matchId: match.id}
-  )
- }
-}
-
  
 onSnapshot(q,(snap)=>{
+
+ allMatches=[]
+
+ snap.forEach(d=>{
+  const match = {id:d.id,...d.data()}
+  allMatches.push(match)
+ })
+
+ applySeasonFilter()
+ tryEvaluateAll() // ✅ SEM to patří
+})
 
  allMatches=[]
 
