@@ -314,6 +314,9 @@ async function loadCredits(){
  const kDoc = await getDoc(doc(db,"hraci","KTip"))
  const pDoc = await getDoc(doc(db,"hraci","PTip"))
 
+ console.log("KDoc exists:", kDoc.exists())
+ console.log("PDoc exists:", pDoc.exists())
+
  if(kDoc.exists()){
   kreditK = Number(kDoc.data().kredit)
  }
@@ -322,7 +325,10 @@ async function loadCredits(){
   kreditP = Number(pDoc.data().kredit)
  }
 
-  applySeasonFilter()
+ console.log("K-Tip kredit:", kreditK)
+ console.log("P-Tip kredit:", kreditP)
+
+ applySeasonFilter()
 
 }
 
@@ -436,16 +442,11 @@ function expected(ra,rb){
 
 async function saveTip(home,away,player){
 
-const kTip = document.getElementById(`k_${home}_${away}`).value
-const pTip = document.getElementById(`p_${home}_${away}`).value
+ const kTip = document.getElementById(`k_${home}_${away}`).value
+ const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
 
-const kBetEl = document.getElementById(`kbet_${home}_${away}`)
-if(!kBetEl) return
-const kBet = Number(kBetEl.value)
-
-const pBetEl = document.getElementById(`pbet_${home}_${away}`)
-if(!pBetEl) return
-const pBet = Number(pBetEl.value)
+ const pTip = document.getElementById(`p_${home}_${away}`).value
+ const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
 
  if(!kTip && !pTip){
   alert("Zadej alespoň jeden tip")
@@ -485,48 +486,21 @@ const pBet = Number(pBetEl.value)
  }
 
 const tipRef = doc(db,"tipy",home+"_"+away)
-
-const odds = calculateOdds(home,away)
-
-const oddsValues = [
- Number(odds.o1),
- Number(odds.o2),
- Number(odds.draw),
- Number(odds.o4),
- Number(odds.o3)
-]
-
-let kOdds = null
-let pOdds = null
-
-if(kTip==="1") kOdds = oddsValues[0]
-if(kTip==="2") kOdds = oddsValues[1]
-if(kTip==="3") kOdds = oddsValues[2]
-if(kTip==="4") kOdds = oddsValues[3]
-if(kTip==="5") kOdds = oddsValues[4]
-
-if(pTip==="1") pOdds = oddsValues[0]
-if(pTip==="2") pOdds = oddsValues[1]
-if(pTip==="3") pOdds = oddsValues[2]
-if(pTip==="4") pOdds = oddsValues[3]
-if(pTip==="5") pOdds = oddsValues[4]
-
-
 await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
   kTip: kTip,
   kBet: kBet,
-  kOdds: kOdds,
   pTip: pTip,
   pBet: pBet,
-  pOdds: pOdds,
   created: Date.now()
 })
 
+applySeasonFilter()
+
 calcWin(home,away)
 
- alert("Tip uložen")
+alert("Tip uložen")
 
 }
  window.saveTip = saveTip
@@ -555,64 +529,68 @@ async function evaluateMatch(home,away,stats){
 const matchRef = doc(db,"zapasy", stats.matchId)
 const matchSnap = await getDoc(matchRef)
 
-if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
+if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
  return
 }
 
 const resultTip = getMatchTip(stats)
-
-const tips = await getTipsForMatch(home,away
- console.log("TIPS:", tips)
- console.log("ULOŽENÉ ODDS:", tips.map(t => ({
-  kOdds: t.kOdds,
-  pOdds: t.pOdds
-})))
-
-
- if(tips.length === 0){
- return
-}
-
+const tips = await getTipsForMatch(home,away)
+const odds = calculateOdds(home,away)
 
 for(const t of tips){
- if(t.processed === true) continue
-if(t.kResult === "win" || t.pResult === "win") continue
+console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
+if(t.kResult || t.pResult) continue
 
  // KUBELE
-if(t.kTip && Number(t.kTip)===resultTip){
+ if(t.kTip && Number(t.kTip)===resultTip){
 
-const oddsValue = Number(t.kOdds || 0)
- const win = Math.round(Number(t.kBet) * oddsValue)
-await updateDoc(doc(db,"tipy",t.id),{
-  kWin: win,
-  kResult: "win",
-  processed: true
-})
+  let oddsValue = 0
 
-const kDoc = await getDoc(doc(db,"hraci","KTip"))
-const current = Number(kDoc.data().kredit || 0)
+  if(resultTip===1) oddsValue = Number(odds.o1)
+  if(resultTip===2) oddsValue = Number(odds.o2)
+  if(resultTip===3) oddsValue = Number(odds.draw)
+  if(resultTip===4) oddsValue = Number(odds.o4)
+  if(resultTip===5) oddsValue = Number(odds.o3)
+console.log("KUBELE WIN TRIGGERED", t.id)
+  const win = Math.round(t.kBet * oddsValue)
 
-await updateDoc(doc(db,"hraci","KTip"),{
- kredit: current + win
-})
-}
+  await updateDoc(doc(db,"tipy",t.id),{
+   kWin: win,
+   kResult: "win"
+  })
+
+  const kDoc = await getDoc(doc(db,"hraci","KTip"))
+  const current = Number(kDoc.data().kredit || 0)
+
+  await updateDoc(doc(db,"hraci","KTip"),{
+   kredit: current + win
+  })
+ }
 
  // PICI
-if(t.pTip && Number(t.pTip)===resultTip){
+ if(t.pTip && Number(t.pTip)===resultTip){
 
-const oddsValue = Number(t.pOdds || 0)
- const win = Math.round(Number(t.pBet) * oddsValue)
+  let oddsValue = 0
 
-await updateDoc(doc(db,"tipy",t.id),{
-  pWin: win,
-  pResult: "win",
-  processed: true
-})
+  if(resultTip===1) oddsValue = Number(odds.o1)
+  if(resultTip===2) oddsValue = Number(odds.o2)
+  if(resultTip===3) oddsValue = Number(odds.draw)
+  if(resultTip===4) oddsValue = Number(odds.o4)
+  if(resultTip===5) oddsValue = Number(odds.o3)
 
-const pDoc = await getDoc(doc(db,"hraci","PTip"))
-const current = Number(pDoc.data().kredit || 0)
+  const win = Math.round(t.pBet * oddsValue)
 
+  await updateDoc(doc(db,"tipy",t.id),{
+   pWin: win,
+   pResult: "win"
+  })
 
+  const pDoc = await getDoc(doc(db,"hraci","PTip"))
+  const current = Number(pDoc.data().kredit || 0)
+
+  await updateDoc(doc(db,"hraci","PTip"),{
+   kredit: current + win
+  })
  }
 
 }
@@ -643,14 +621,11 @@ function updateElo(home,away,hg,ag){
 }
 
 window.calcWin = function(home,away){
+
  const odds = calculateOdds(home,away)
 
-const kBetEl = document.getElementById(`kbet_${home}_${away}`)
-if(!kBetEl) return
-const kBet = Number(kBetEl.value)
-const pBetEl = document.getElementById(`pbet_${home}_${away}`)
-if(!pBetEl) return
-const pBet = Number(pBetEl.value)
+ const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
+ const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
  const pTip = document.getElementById(`p_${home}_${away}`).value
@@ -820,9 +795,7 @@ function renderStandings(arr){
 
   <div class="standingsCard">
 
-   <div class="ratingStand">
-<a href="rating.html?team=${encodeURIComponent(t.team)}">⭐ ${rating}</a>
-</div>
+   <div class="ratingStand"><a href="rating.html">⭐ ${rating}</a></div>
 
    <div class="rank">${i+1}</div>
 
@@ -979,7 +952,7 @@ ${p[1]}
   </div>
   
 ${!scheduleOnly ? `
-<div class="oddsRow" id="odds_${p[0]}_${p[1]}">
+<div class="oddsRow">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
 <div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
@@ -1082,29 +1055,10 @@ snap.forEach(d=>{
 })
 
   applySeasonFilter()
-  tryEvaluateAll()
 
  })
 
  // načtení zápasů
-
-async function tryEvaluateAll(){
-
- for(const match of allMatches){
-
-  if(!match.stats) continue
-
-  const key = match.homeTeam + "_" + match.awayTeam
-
-  await evaluateMatch(
-   match.homeTeam,
-   match.awayTeam,
-   {...match.stats, matchId: match.id}
-  )
- }
-}
-
- 
 onSnapshot(q,(snap)=>{
 
  allMatches=[]
@@ -1115,7 +1069,9 @@ const match = {id:d.id,...d.data()}
 
   allMatches.push(match)
 
-
+  if(match.stats){
+ evaluateMatch(match.homeTeam,match.awayTeam,{...match.stats,matchId:match.id})
+  }
 
  })
 
