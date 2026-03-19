@@ -1084,15 +1084,17 @@ onSnapshot(tipsQuery,(snap)=>{
 
     if(!savedTips[key]) savedTips[key] = {}
 
-    // KUBELE
-    if(t.kTip) savedTips[key].kTip = t.kTip
-    if(t.kBet) savedTips[key].kBet = t.kBet
-    if(t.kLocked) savedTips[key].kLocked = true
+// KUBELE
+if(t.kTip) savedTips[key].kTip = t.kTip
+if(t.kBet) savedTips[key].kBet = t.kBet
+if(t.kWin) savedTips[key].kWin = t.kWin
+if(t.kLocked) savedTips[key].kLocked = true
 
-    // PICI
-    if(t.pTip) savedTips[key].pTip = t.pTip
-    if(t.pBet) savedTips[key].pBet = t.pBet
-    if(t.pLocked) savedTips[key].pLocked = true
+// PICI
+if(t.pTip) savedTips[key].pTip = t.pTip
+if(t.pBet) savedTips[key].pBet = t.pBet
+if(t.pWin) savedTips[key].pWin = t.pWin
+if(t.pLocked) savedTips[key].pLocked = true
   })
 
   applySeasonFilter()
