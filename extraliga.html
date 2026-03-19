@@ -287,7 +287,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, getDocs, setDoc }
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc, getDocs }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -461,8 +461,7 @@ async function saveTip(home,away,player){
 
  }
 
-const tipRef = doc(db,"tipy",home+"_"+away)
-await setDoc(tipRef,{
+await addDoc(collection(db,"tipy"),{
   homeTeam: home,
   awayTeam: away,
   kTip: kTip,
@@ -500,7 +499,6 @@ alert("Tip uložen")
 }
 
 async function evaluateMatch(home,away,stats){
- console.log("evaluateMatch START", home, away, stats.matchId)
 
 const matchRef = doc(db,"zapasy", stats.matchId)
 const matchSnap = await getDoc(matchRef)
@@ -508,72 +506,73 @@ const matchSnap = await getDoc(matchRef)
 if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
  return
 }
-
-const resultTip = getMatchTip(stats)
-const tips = await getTipsForMatch(home,away)
-const odds = calculateOdds(home,away)
-
-for(const t of tips){
-console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
-if(t.kResult || t.pResult) continue
-
- // KUBELE
- if(t.kTip && Number(t.kTip)===resultTip){
-
-  let oddsValue = 0
-
-  if(resultTip===1) oddsValue = Number(odds.o1)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
-console.log("KUBELE WIN TRIGGERED", t.id)
-  const win = Math.round(t.kBet * oddsValue)
-
-  await updateDoc(doc(db,"tipy",t.id),{
-   kWin: win,
-   kResult: "win"
-  })
-
-  const kDoc = await getDoc(doc(db,"hraci","KTip"))
-  const current = Number(kDoc.data().kredit || 0)
-
-  await updateDoc(doc(db,"hraci","KTip"),{
-   kredit: current + win
-  })
- }
-
- // PICI
- if(t.pTip && Number(t.pTip)===resultTip){
-
-  let oddsValue = 0
-
-  if(resultTip===1) oddsValue = Number(odds.o1)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
-
-  const win = Math.round(t.pBet * oddsValue)
-
-  await updateDoc(doc(db,"tipy",t.id),{
-   pWin: win,
-   pResult: "win"
-  })
-
-  const pDoc = await getDoc(doc(db,"hraci","PTip"))
-  const current = Number(pDoc.data().kredit || 0)
-
-  await updateDoc(doc(db,"hraci","PTip"),{
-   kredit: current + win
-  })
- }
-
-}
-
+// okamžitě zamkneme zápas aby se nevyhodnotil 2x
 await updateDoc(matchRef,{
  vyhodnoceno:true
 })
+ const resultTip = getMatchTip(stats)
+
+ const tips = await getTipsForMatch(home,away)
+
+ const odds = calculateOdds(home,away)
+
+ 
+ for(const t of tips){
+ if(t.kResult || t.pResult) continue
+
+  // KUBELE
+  if(t.kTip && Number(t.kTip)===resultTip){
+
+   let oddsValue = 0
+
+   if(resultTip===1) oddsValue = Number(odds.o1)
+   if(resultTip===2) oddsValue = Number(odds.o2)
+   if(resultTip===3) oddsValue = Number(odds.draw)
+   if(resultTip===4) oddsValue = Number(odds.o4)
+   if(resultTip===5) oddsValue = Number(odds.o3)
+
+   const win = Math.round(t.kBet * oddsValue)
+
+  await updateDoc(doc(db,"tipy",t.id),{
+ kWin: win,
+ kResult: "win"
+})
+
+const kDoc = await getDoc(doc(db,"hraci","KTip"))
+const current = Number(kDoc.data().kredit || 0)
+
+await updateDoc(doc(db,"hraci","KTip"),{
+ kredit: current + win
+})
+  }
+
+  // PICI
+  if(t.pTip && Number(t.pTip)===resultTip){
+
+   let oddsValue = 0
+
+   if(resultTip===1) oddsValue = Number(odds.o1)
+   if(resultTip===2) oddsValue = Number(odds.o2)
+   if(resultTip===3) oddsValue = Number(odds.draw)
+   if(resultTip===4) oddsValue = Number(odds.o4)
+   if(resultTip===5) oddsValue = Number(odds.o3)
+
+const win = Math.round(t.pBet * oddsValue)
+   await updateDoc(doc(db,"tipy",t.id),{
+ pWin: win,
+ pResult: "win"
+})
+
+const pDoc = await getDoc(doc(db,"hraci","PTip"))
+const current = Number(pDoc.data().kredit || 0)
+
+await updateDoc(doc(db,"hraci","PTip"),{
+ kredit: current + win
+})
+  }
+
+ }
+
 
 }
 
@@ -881,7 +880,7 @@ function renderSchedule(matches){
 
   }
 
- const link=`statistiky-zapasu.html?id=${m?.id || ""}`
+  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
   const odds=calculateOdds(p[0],p[1])
 
   cont.innerHTML+=`
