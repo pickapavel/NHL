@@ -55,10 +55,7 @@ body{
  margin-bottom:6px;
 }
 
-.predictionRow{
- display:grid;
- grid-template-columns:1fr 1fr 1fr 1fr;
- }
+
 
 
 .predictionRow input{
@@ -79,23 +76,7 @@ body{
  cursor:pointer;
 }
 
- .predictionRow{
- display:grid;
- grid-template-columns:1fr 1fr 1fr 120px;
- gap:8px;
-}
-
-/* Kubele */
-.predictionRow input:nth-child(1){grid-column:1;grid-row:1;}
-.predictionRow input:nth-child(2){grid-column:2;grid-row:1;}
-.predictionRow input:nth-child(3){grid-column:3;grid-row:1;}
-.predictionRow button:nth-child(4){grid-column:4;grid-row:1;}
-
-/* Pici */
-.predictionRow input:nth-child(5){grid-column:1;grid-row:2;}
-.predictionRow input:nth-child(6){grid-column:2;grid-row:2;}
-.predictionRow input:nth-child(7){grid-column:3;grid-row:2;}
-.predictionRow button:nth-child(8){grid-column:4;grid-row:2;}
+ 
 
 /* ===== TABULKA ===== */
 
@@ -184,13 +165,7 @@ body{
  align-items:center;
 }
 
-.kTip{grid-column:1;grid-row:2;}
-.kBet{grid-column:2;grid-row:2;}
-.kConfirm{grid-column:3;grid-row:2;}
 
-.pTip{grid-column:1;grid-row:3;}
-.pBet{grid-column:2;grid-row:3;}
-.pConfirm{grid-column:3;grid-row:3;}
 
 .kTip{ grid-column:1; grid-row:1; }
 .kBet{ grid-column:2; grid-row:1; }
@@ -261,8 +236,15 @@ body{
 <option value="all">Druhý tým</option>
 </select>
 
-<button id="filterAll" class="filterActive">Všechny zápasy</button>
-<button id="filterPlayed">Jen odehrané</button>
+<select id="matchFilter">
+  <option value="all" selected>Všechny zápasy</option>
+  <option value="played">Jen odehrané</option>
+  <option value="unplayed">Jen neodehrané</option>
+</select>
+<select id="viewMode">
+  <option value="schedule" selected>Jen rozpis</option>
+  <option value="bets">Sázky</option>
+</select>
 
 <select id="homeAwayFilter">
 <option value="both">Domácí i venkovní</option>
@@ -287,7 +269,7 @@ body{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc, getDocs, runTransaction }
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, getDocs, setDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -331,6 +313,7 @@ let showPlayedOnly=false;
 let homeAwayMode="both";
 let resultMode="all";
 let headToHeadMode=false;
+let scheduleOnly = true;
 
 /* ===== TÝMY ===== */
 
@@ -378,6 +361,22 @@ document.getElementById("resultFilter").onchange=(e)=>{
  applySeasonFilter()
 }
 
+document.getElementById("matchFilter").onchange=(e)=>{
+ const val = e.target.value
+
+if(val === "played"){
+ showPlayedOnly = "played"
+} 
+else if(val === "unplayed"){
+ showPlayedOnly = "unplayed"
+} 
+else {
+ showPlayedOnly = "all"
+}
+
+ applySeasonFilter()
+}
+
 document.getElementById("headToHeadBtn").onclick=()=>{
  headToHeadMode=!headToHeadMode
  teamFilter2.style.display=headToHeadMode?"block":"none"
@@ -418,11 +417,16 @@ function expected(ra,rb){
 
 async function saveTip(home,away,player){
 
- const kTip = document.getElementById(`k_${home}_${away}`).value
- const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
+const kTip = document.getElementById(`k_${home}_${away}`).value
+const pTip = document.getElementById(`p_${home}_${away}`).value
 
- const pTip = document.getElementById(`p_${home}_${away}`).value
- const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+if(!kBetEl) return
+const kBet = Number(kBetEl.value)
+
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
+if(!pBetEl) return
+const pBet = Number(pBetEl.value)
 
  if(!kTip && !pTip){
   alert("Zadej alespoň jeden tip")
@@ -461,21 +465,56 @@ async function saveTip(home,away,player){
 
  }
 
-await addDoc(collection(db,"tipy"),{
+const tipRef = doc(db,"tipy",home+"_"+away)
+
+const oddsRow = document.getElementById(`odds_${home}_${away}`)
+
+const oddsValues = Array.from(oddsRow.querySelectorAll(".odds")).map(el=>{
+ return Number(el.innerText.split("\n")[1])
+})
+
+let kOdds = null
+let pOdds = null
+
+if(kTip==="1") kOdds = oddsValues[0]
+if(kTip==="2") kOdds = oddsValues[1]
+if(kTip==="3") kOdds = oddsValues[2]
+if(kTip==="4") kOdds = oddsValues[3]
+if(kTip==="5") kOdds = oddsValues[4]
+
+if(pTip==="1") pOdds = oddsValues[0]
+if(pTip==="2") pOdds = oddsValues[1]
+if(pTip==="3") pOdds = oddsValues[2]
+if(pTip==="4") pOdds = oddsValues[3]
+if(pTip==="5") pOdds = oddsValues[4]
+
+
+console.log("ULOŽENÍ TIPU:")
+console.log("kTip:", kTip)
+console.log("kBet:", kBet)
+console.log("kOdds (ULOŽENO):", kOdds)
+console.log("VÝHRA (ULOŽENO):", Math.round(kBet * kOdds))
+ 
+await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
   kTip: kTip,
   kBet: kBet,
+  kOdds: kOdds,
   pTip: pTip,
   pBet: pBet,
+  pOdds: pOdds,
+  kLocked: player === "K" ? true : (savedTips[home+"_"+away]?.kLocked || false),
+pLocked: player === "P" ? true : (savedTips[home+"_"+away]?.pLocked || false),
   created: Date.now()
 })
 
 applySeasonFilter()
 
 calcWin(home,away)
-
-alert("Tip uložen")
+const key = home + "_" + away
+if(savedTips[key]?.locked) return
+ alert("Tip uložen")
 
 }
  window.saveTip = saveTip
@@ -499,72 +538,86 @@ alert("Tip uložen")
 }
 
 async function evaluateMatch(home,away,stats){
+ console.log("evaluateMatch START", home, away, stats.matchId)
 
 const matchRef = doc(db,"zapasy", stats.matchId)
 const matchSnap = await getDoc(matchRef)
 
-if(matchSnap.exists() && matchSnap.data().vyhodnoceno){
+if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
  return
 }
 
 const resultTip = getMatchTip(stats)
+
 const tips = await getTipsForMatch(home,away)
-const odds = calculateOdds(home,away)
+
+console.log("RESULT:", resultTip)
+console.log("K TIP:", tips.map(t=>t.kTip))
+console.log("P TIP:", tips.map(t=>t.pTip))
+ if(tips.length === 0){
+ return
+}
+
 
 for(const t of tips){
-
-if(t.kResult || t.pResult) continue
+ if(t.processed === true) continue
+console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
+if(t.kResult === "win" || t.pResult === "win") continue
 
  // KUBELE
- if(t.kTip && Number(t.kTip)===resultTip){
+if(t.kTip && Number(t.kTip)===resultTip){
 
-  let oddsValue = 0
+ const oddsValue = Number(t.kOdds)
+ const win = Math.round(Number(t.kBet) * oddsValue)
+console.log("----- VYHODNOCENÍ -----")
+console.log("TIP ID:", t.id)
+console.log("ULOŽENÝ KURZ:", t.kOdds)
+console.log("SÁZKA:", t.kBet)
 
-  if(resultTip===1) oddsValue = Number(odds.o1)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
+console.log("VÝPOČET:", t.kBet, "*", oddsValue, "=", win)
+await updateDoc(doc(db,"tipy",t.id),{
+  kWin: win,
+  kResult: "win",
+  processed: true
+})
 
-  const win = Math.round(t.kBet * oddsValue)
+const kDoc = await getDoc(doc(db,"hraci","KTip"))
+const current = Number(kDoc.data().kredit || 0)
 
-  await updateDoc(doc(db,"tipy",t.id),{
-   kWin: win,
-   kResult: "win"
-  })
+console.log("KREDIT PŘED:", current)
+console.log("PŘIČÍTÁM:", win)
+console.log("KREDIT PO:", current + win)
 
-  const kDoc = await getDoc(doc(db,"hraci","KTip"))
-  const current = Number(kDoc.data().kredit || 0)
-
-  await updateDoc(doc(db,"hraci","KTip"),{
-   kredit: current + win
-  })
- }
+await updateDoc(doc(db,"hraci","KTip"),{
+ kredit: current + win
+})
+}
 
  // PICI
- if(t.pTip && Number(t.pTip)===resultTip){
+if(t.pTip && Number(t.pTip)===resultTip){
 
-  let oddsValue = 0
+ const oddsValue = Number(t.pOdds)
 
-  if(resultTip===1) oddsValue = Number(odds.o1)
-  if(resultTip===2) oddsValue = Number(odds.o2)
-  if(resultTip===3) oddsValue = Number(odds.draw)
-  if(resultTip===4) oddsValue = Number(odds.o4)
-  if(resultTip===5) oddsValue = Number(odds.o3)
+ const win = Math.round(Number(t.pBet) * oddsValue)
 
-  const win = Math.round(t.pBet * oddsValue)
+ console.log("----- PICI -----")
+ console.log("TIP ID:", t.id)
+ console.log("ULOŽENÝ KURZ:", t.pOdds)
+ console.log("SÁZKA:", t.pBet)
+ console.log("VÝPOČET:", t.pBet, "*", t.pOdds, "=", win)
 
-  await updateDoc(doc(db,"tipy",t.id),{
-   pWin: win,
-   pResult: "win"
-  })
+await updateDoc(doc(db,"tipy",t.id),{
+  pWin: win,
+  pResult: "win",
+  processed: true
+})
 
-  const pDoc = await getDoc(doc(db,"hraci","PTip"))
-  const current = Number(pDoc.data().kredit || 0)
+const pDoc = await getDoc(doc(db,"hraci","PTip"))
+const current = Number(pDoc.data().kredit || 0)
 
-  await updateDoc(doc(db,"hraci","PTip"),{
-   kredit: current + win
-  })
+console.log("P KREDIT PŘED:", current)
+console.log("P PŘIČÍTÁM:", win)
+console.log("P KREDIT PO:", current + win)
  }
 
 }
@@ -595,11 +648,14 @@ function updateElo(home,away,hg,ag){
 }
 
 window.calcWin = function(home,away){
-
  const odds = calculateOdds(home,away)
 
- const kBet = Number(document.getElementById(`kbet_${home}_${away}`).value)
- const pBet = Number(document.getElementById(`pbet_${home}_${away}`).value)
+const kBetEl = document.getElementById(`kbet_${home}_${away}`)
+if(!kBetEl) return
+const kBet = Number(kBetEl.value)
+const pBetEl = document.getElementById(`pbet_${home}_${away}`)
+if(!pBetEl) return
+const pBet = Number(pBetEl.value)
 
  const kTip = document.getElementById(`k_${home}_${away}`).value
  const pTip = document.getElementById(`p_${home}_${away}`).value
@@ -769,7 +825,9 @@ function renderStandings(arr){
 
   <div class="standingsCard">
 
-   <div class="ratingStand"><a href="rating.html">⭐ ${rating}</a></div>
+   <div class="ratingStand">
+<a href="rating.html?team=${encodeURIComponent(t.team)}">⭐ ${rating}</a>
+</div>
 
    <div class="rank">${i+1}</div>
 
@@ -836,7 +894,10 @@ function renderSchedule(matches){
 
   const m=matches.find(x=>x.homeTeam===p[0]&&x.awayTeam===p[1])
 
-  if(showPlayedOnly && (!m || !m.stats)) return
+  const val = document.getElementById("matchFilter").value
+
+if(val === "played" && (!m || !m.stats)) return
+if(val === "unplayed" && (m && m.stats)) return
 
   if(resultMode!=="all"){
 
@@ -879,7 +940,7 @@ function renderSchedule(matches){
 
   }
 
-  const link=`statistiky-zapasu.html?home=${encodeURIComponent(p[0])}&away=${encodeURIComponent(p[1])}`
+ const link=`statistiky-zapasu.html?id=${m?.id || ""}`
   const odds=calculateOdds(p[0],p[1])
 
   cont.innerHTML+=`
@@ -921,8 +982,9 @@ ${p[1]}
    </div>
 
   </div>
-
-<div class="oddsRow">
+  
+${!scheduleOnly ? `
+<div class="oddsRow" id="odds_${p[0]}_${p[1]}">
 
 <div class="odds">Výhra<br>${odds.o1}</div>
 <div class="odds">Výhra (OT/SN)<br>${odds.o2}</div>
@@ -931,69 +993,83 @@ ${p[1]}
 <div class="odds">Výhra<br>${odds.o3}</div>
 
 </div>
+` : ``} //
 
+${!scheduleOnly ? `
 <div class="predictionRow">
 
-<input id="k_${p[0]}_${p[1]}" placeholder="K tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}"><input id="kbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+<input id="k_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""}
+ placeholder="K tip (1-5)" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.kTip || ''}">
+
+<input id="kbet_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""}
+ placeholder="Kč" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.kBet || ''}">
+
 <input id="kwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','K')">Potvrdit</button>
 
-<input id="p_${p[0]}_${p[1]}" placeholder="P tip (1-5)" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}"><input id="pbet_${p[0]}_${p[1]}" placeholder="Kč" oninput="calcWin('${p[0]}','${p[1]}')" value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','K')">
+ ${savedTips[p[0]+'_'+p[1]]?.kLocked ? "Uzamčeno" : "Potvrdit"}
+</button>
+
+<input id="p_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""}
+ placeholder="P tip (1-5)" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pTip || ''}">
+
+<input id="pbet_${p[0]}_${p[1]}" 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""}
+ placeholder="Kč" 
+ oninput="calcWin('${p[0]}','${p[1]}')" 
+ value="${savedTips[p[0]+'_'+p[1]]?.pBet || ''}">
+
 <input id="pwin_${p[0]}_${p[1]}" placeholder="Možná výhra" readonly>
-<button onclick="saveTip('${p[0]}','${p[1]}','P')">Potvrdit</button>
+
+<button 
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "disabled" : ""} 
+ onclick="saveTip('${p[0]}','${p[1]}','P')">
+ ${savedTips[p[0]+'_'+p[1]]?.pLocked ? "Uzamčeno" : "Potvrdit"}
+</button>
 
 </div>
-
-</div>
-</div>
-
-<div style="margin-left:40px;font-weight:bold;">
-Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč
-</div>
-
-`
-setTimeout(()=>calcWin(p[0],p[1]),50)
- })
+` : ``}
 
 }
-
-/* ===== SEASON ===== */
 
 function applySeasonFilter(){
 
  resetRatings()
 
- const extraliga=allMatches.filter(m=>m.category?.startsWith("Extraliga"))
+ const extraliga = allMatches.filter(m =>
+  m.category?.startsWith("Extraliga")
+ )
 
  extraliga.sort((a,b)=>a.created-b.created)
 
  extraliga.forEach(m=>{
-  if(!m.stats)return
-  const s=calc(m.stats)
+  if(!m.stats) return
+  const s = calc(m.stats)
   updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
  })
 
- const filtered=allMatches.filter(m=>
+ const filtered = allMatches.filter(m =>
   m.category?.startsWith("Extraliga") &&
-  m.season===selectedSeason
+  m.season === selectedSeason
  )
 
  renderSchedule(filtered)
  renderStandings(calculateStandings(filtered))
-
 }
 
-document.getElementById("filterAll").onclick=()=>{
- showPlayedOnly=false
- document.getElementById("filterAll").classList.add("filterActive")
- document.getElementById("filterPlayed").classList.remove("filterActive")
- applySeasonFilter()
-}
-
-document.getElementById("filterPlayed").onclick=()=>{
- showPlayedOnly=true
- document.getElementById("filterPlayed").classList.add("filterActive")
- document.getElementById("filterAll").classList.remove("filterActive")
+document.getElementById("viewMode").onchange=(e)=>{
+ scheduleOnly = (e.target.value === "schedule")
  applySeasonFilter()
 }
 
@@ -1003,6 +1079,23 @@ document.getElementById("seasonFilter").onchange=(e)=>{
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
+ async function tryEvaluateAll(){
+
+ for(const match of allMatches){
+
+  if(!match.stats) continue
+
+  const key = match.homeTeam + "_" + match.awayTeam
+
+  if(!savedTips[key]) continue
+
+  await evaluateMatch(
+   match.homeTeam,
+   match.awayTeam,
+   {...match.stats, matchId: match.id}
+  )
+ }
+}
 
 async function start(){
 
@@ -1021,6 +1114,9 @@ snap.forEach(d=>{
 
  if(!savedTips[key]) savedTips[key]={}
 
+savedTips[key].kLocked = t.kLocked || false
+savedTips[key].pLocked = t.pLocked || false
+
  if(t.kTip) savedTips[key].kTip = t.kTip
  if(t.kBet) savedTips[key].kBet = t.kBet
 
@@ -1028,30 +1124,29 @@ snap.forEach(d=>{
  if(t.pBet) savedTips[key].pBet = t.pBet
 })
 
-  applySeasonFilter()
+// ✅ AŽ TADY:
+applySeasonFilter()
+tryEvaluateAll()
+ 
 
- })
 
- // načtení zápasů
+
+
+})
+
 onSnapshot(q,(snap)=>{
 
  allMatches=[]
 
  snap.forEach(d=>{
-
-const match = {id:d.id,...d.data()}
-
+  const match = {id:d.id,...d.data()}
   allMatches.push(match)
-
-  if(match.stats){
- evaluateMatch(match.homeTeam,match.awayTeam,{...match.stats,matchId:match.id})
-  }
-
  })
 
  applySeasonFilter()
-
+ tryEvaluateAll()
 })
+
 }
 start()
 
