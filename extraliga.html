@@ -486,15 +486,38 @@ async function saveTip(home,away,player){
  }
 
 const tipRef = doc(db,"tipy",home+"_"+away)
+const odds = calculateOdds(home,away)
+
+// KUBELE
+let kOdds = 0
+if(kTip==="1") kOdds = Number(odds.o1)
+if(kTip==="2") kOdds = Number(odds.o2)
+if(kTip==="3") kOdds = Number(odds.draw)
+if(kTip==="4") kOdds = Number(odds.o4)
+if(kTip==="5") kOdds = Number(odds.o3)
+
+const kWin = kBet && kOdds ? Math.round(kBet * kOdds) : 0
+
+// PICI
+let pOdds = 0
+if(pTip==="1") pOdds = Number(odds.o1)
+if(pTip==="2") pOdds = Number(odds.o2)
+if(pTip==="3") pOdds = Number(odds.draw)
+if(pTip==="4") pOdds = Number(odds.o4)
+if(pTip==="5") pOdds = Number(odds.o3)
+
+const pWin = pBet && pOdds ? Math.round(pBet * pOdds) : 0
+
 await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
-  kTip: kTip,
-  kBet: kBet,
-  pTip: pTip,
-  pBet: pBet,
-  kLocked: player==="K" ? true : false,
-  pLocked: player==="P" ? true : false,
+
+  kTip, kBet, kOdds, kWin,
+  pTip, pBet, pOdds, pWin,
+
+  kLocked: player==="K",
+  pLocked: player==="P",
+
   created: Date.now()
 },{ merge:true })
 
@@ -622,7 +645,10 @@ function updateElo(home,away,hg,ag){
 
 }
 
+
 window.calcWin = function(home,away){
+
+ const saved = savedTips[home+"_"+away]
 
  const odds = calculateOdds(home,away)
 
@@ -635,28 +661,35 @@ window.calcWin = function(home,away){
  let kOdds = 0
  let pOdds = 0
 
-if(kTip==="1") kOdds = Number(odds.o1)
-if(kTip==="2") kOdds = Number(odds.o2)
-if(kTip==="3") kOdds = Number(odds.draw)
-if(kTip==="4") kOdds = Number(odds.o4)
-if(kTip==="5") kOdds = Number(odds.o3)
+ if(kTip==="1") kOdds = Number(odds.o1)
+ if(kTip==="2") kOdds = Number(odds.o2)
+ if(kTip==="3") kOdds = Number(odds.draw)
+ if(kTip==="4") kOdds = Number(odds.o4)
+ if(kTip==="5") kOdds = Number(odds.o3)
 
-if(pTip==="1") pOdds = Number(odds.o1)
-if(pTip==="2") pOdds = Number(odds.o2)
-if(pTip==="3") pOdds = Number(odds.draw)
-if(pTip==="4") pOdds = Number(odds.o4)
-if(pTip==="5") pOdds = Number(odds.o3)
+ if(pTip==="1") pOdds = Number(odds.o1)
+ if(pTip==="2") pOdds = Number(odds.o2)
+ if(pTip==="3") pOdds = Number(odds.draw)
+ if(pTip==="4") pOdds = Number(odds.o4)
+ if(pTip==="5") pOdds = Number(odds.o3)
 
-if(kBet && kOdds){
- document.getElementById(`kwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
-}
+ if(saved?.kLocked){
+  document.getElementById(`kwin_${home}_${away}`).value =
+   "Výhra: " + (saved.kWin || 0) + " Kč"
+ } 
+ else if(kBet && kOdds){
+  document.getElementById(`kwin_${home}_${away}`).value =
+   "Možná výhra: " + Math.round(kBet * kOdds) + " Kč"
+ }
 
-if(pBet && pOdds){
- document.getElementById(`pwin_${home}_${away}`).value =
-  "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
-}
-
+ if(saved?.pLocked){
+  document.getElementById(`pwin_${home}_${away}`).value =
+   "Výhra: " + (saved.pWin || 0) + " Kč"
+ } 
+ else if(pBet && pOdds){
+  document.getElementById(`pwin_${home}_${away}`).value =
+   "Možná výhra: " + Math.round(pBet * pOdds) + " Kč"
+ }
 }
 
 function calculateOdds(home,away){
