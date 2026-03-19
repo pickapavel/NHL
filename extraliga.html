@@ -314,9 +314,6 @@ async function loadCredits(){
  const kDoc = await getDoc(doc(db,"hraci","KTip"))
  const pDoc = await getDoc(doc(db,"hraci","PTip"))
 
- console.log("KDoc exists:", kDoc.exists())
- console.log("PDoc exists:", pDoc.exists())
-
  if(kDoc.exists()){
   kreditK = Number(kDoc.data().kredit)
  }
@@ -325,10 +322,7 @@ async function loadCredits(){
   kreditP = Number(pDoc.data().kredit)
  }
 
- console.log("K-Tip kredit:", kreditK)
- console.log("P-Tip kredit:", kreditP)
-
- applySeasonFilter()
+  applySeasonFilter()
 
 }
 
@@ -518,12 +512,6 @@ if(pTip==="4") pOdds = oddsValues[3]
 if(pTip==="5") pOdds = oddsValues[4]
 
 
-console.log("ULOŽENÍ TIPU:")
-console.log("kTip:", kTip)
-console.log("kBet:", kBet)
-console.log("kOdds (ULOŽENO):", kOdds)
-console.log("VÝHRA (ULOŽENO):", Math.round(kBet * kOdds))
- 
 await setDoc(tipRef,{
   homeTeam: home,
   awayTeam: away,
@@ -574,10 +562,12 @@ if(matchSnap.exists() && matchSnap.data().vyhodnoceno === true){
 const resultTip = getMatchTip(stats)
 
 const tips = await getTipsForMatch(home,away)
+ console.log("ULOŽENÉ ODDS:", tips.map(t => ({
+  kOdds: t.kOdds,
+  pOdds: t.pOdds
+})))
 
-console.log("RESULT:", resultTip)
-console.log("K TIP:", tips.map(t=>t.kTip))
-console.log("P TIP:", tips.map(t=>t.pTip))
+
  if(tips.length === 0){
  return
 }
@@ -585,20 +575,13 @@ console.log("P TIP:", tips.map(t=>t.pTip))
 
 for(const t of tips){
  if(t.processed === true) continue
-console.log("TIP CHECK", t.id, t.kTip, t.pTip, t.kResult, t.pResult)
 if(t.kResult === "win" || t.pResult === "win") continue
 
  // KUBELE
 if(t.kTip && Number(t.kTip)===resultTip){
 
- const oddsValue = Number(t.kOdds)
+const oddsValue = Number(t.kOdds || 0)
  const win = Math.round(Number(t.kBet) * oddsValue)
-console.log("----- VYHODNOCENÍ -----")
-console.log("TIP ID:", t.id)
-console.log("ULOŽENÝ KURZ:", t.kOdds)
-console.log("SÁZKA:", t.kBet)
-
-console.log("VÝPOČET:", t.kBet, "*", oddsValue, "=", win)
 await updateDoc(doc(db,"tipy",t.id),{
   kWin: win,
   kResult: "win",
@@ -608,10 +591,6 @@ await updateDoc(doc(db,"tipy",t.id),{
 const kDoc = await getDoc(doc(db,"hraci","KTip"))
 const current = Number(kDoc.data().kredit || 0)
 
-console.log("KREDIT PŘED:", current)
-console.log("PŘIČÍTÁM:", win)
-console.log("KREDIT PO:", current + win)
-
 await updateDoc(doc(db,"hraci","KTip"),{
  kredit: current + win
 })
@@ -620,15 +599,8 @@ await updateDoc(doc(db,"hraci","KTip"),{
  // PICI
 if(t.pTip && Number(t.pTip)===resultTip){
 
- const oddsValue = Number(t.pOdds)
-
+const oddsValue = Number(t.pOdds || 0)
  const win = Math.round(Number(t.pBet) * oddsValue)
-
- console.log("----- PICI -----")
- console.log("TIP ID:", t.id)
- console.log("ULOŽENÝ KURZ:", t.pOdds)
- console.log("SÁZKA:", t.pBet)
- console.log("VÝPOČET:", t.pBet, "*", t.pOdds, "=", win)
 
 await updateDoc(doc(db,"tipy",t.id),{
   pWin: win,
@@ -639,9 +611,7 @@ await updateDoc(doc(db,"tipy",t.id),{
 const pDoc = await getDoc(doc(db,"hraci","PTip"))
 const current = Number(pDoc.data().kredit || 0)
 
-console.log("P KREDIT PŘED:", current)
-console.log("P PŘIČÍTÁM:", win)
-console.log("P KREDIT PO:", current + win)
+
  }
 
 }
