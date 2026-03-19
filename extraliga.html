@@ -1111,6 +1111,23 @@ document.getElementById("seasonFilter").onchange=(e)=>{
 }
 
 const q=query(collection(db,"zapasy"),orderBy("created","asc"))
+ async function tryEvaluateAll(){
+
+ for(const match of allMatches){
+
+  if(!match.stats) continue
+
+  const key = match.homeTeam + "_" + match.awayTeam
+
+  if(!savedTips[key]) continue
+
+  await evaluateMatch(
+   match.homeTeam,
+   match.awayTeam,
+   {...match.stats, matchId: match.id}
+  )
+ }
+}
 
 async function start(){
 
