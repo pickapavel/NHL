@@ -40,6 +40,11 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
  font-weight:bold;
 }
 
+.rating{
+ font-size:13px;
+ opacity:0.8;
+}
+
 /* ===== BET ===== */
 
 .betBox{
@@ -190,6 +195,8 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
+/* ===== TÝMY ===== */
+
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -201,19 +208,42 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-let home,away,currentOdds={},kTip=null,pTip=null;
+const BASE=1000, K=30, HOME_ADV=50;
+let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
 
-/* ===== ODDS ===== */
+function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
 
-function calculateOdds(){
+function updateElo(h,a,hg,ag){
+ let ra=ratings[h]+HOME_ADV, rb=ratings[a];
+ let ea=expected(ra,rb), sa=hg>ag?1:0;
+ ratings[h]+=K*(sa-ea);
+ ratings[a]+=K*((1-sa)-(1-ea));
+}
+
+function calc(s){
+ let ag=+s[6]+ +s[7]+ +s[8];
+ let hg=+s[16]+ +s[17]+ +s[18];
+ if(s[9]==="11")ag++; if(s[19]==="11")hg++;
+ if(s[20]==="1")hg++; if(s[20]==="2")ag++;
+ return {hg,ag}
+}
+
+function calculateOdds(home,away){
+ let ra=(ratings[home]||1000)+HOME_ADV;
+ let rb=(ratings[away]||1000);
+
+ const pH=1/(1+Math.pow(10,(rb-ra)/400));
+ const pA=1-pH;
+ const pD=0.2;
+
  return {
- 1:2.9,
- 2:9.7,
- 6:2.2,
- 3:5.0,
- 7:2.9,
- 4:12.9,
- 5:3.8
+ 1:(1/(pH*0.6)).toFixed(2),
+ 2:(1/(pH*0.18)).toFixed(2),
+ 6:(1/(pH*0.78)).toFixed(2),
+ 3:(1/pD).toFixed(2),
+ 7:(1/(pA*0.78)).toFixed(2),
+ 4:(1/(pA*0.18)).toFixed(2),
+ 5:(1/(pA*0.6)).toFixed(2)
  }
 }
 
@@ -225,16 +255,40 @@ async function load(){
  home=params.get("home");
  away=params.get("away");
 
- homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}`;
- awayTeam.innerHTML=`${away}<img src="./logos/${teamsData[away]}">`;
+ const snap=await getDocs(collection(db,"zapasy"));
+ let matches=[];
+ snap.forEach(d=>matches.push({id:d.id,...d.data()}));
 
- currentOdds=calculateOdds();
+ Object.keys(teamsData).forEach(t=>ratings[t]=BASE);
+
+ matches
+ .filter(m=>m.category?.startsWith("Extraliga"))
+ .sort((a,b)=>a.created-b.created)
+ .forEach(m=>{
+  if(!m.stats)return;
+  const s=calc(m.stats);
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+ });
+
+ homeTeam.innerHTML=`
+ <img src="./logos/${teamsData[home]}">
+ <div>
+ ${home}
+ <div class="rating">⭐ ${Math.round(ratings[home])}</div>
+ </div>`;
+
+ awayTeam.innerHTML=`
+ <div>
+ ${away}
+ <div class="rating">⭐ ${Math.round(ratings[away])}</div>
+ </div>
+ <img src="./logos/${teamsData[away]}">`;
+
+ currentOdds=calculateOdds(home,away);
 
  for(const key in currentOdds){
-  if(document.getElementById("ko"+key))
-   document.getElementById("ko"+key).innerText=currentOdds[key];
-  if(document.getElementById("po"+key))
-   document.getElementById("po"+key).innerText=currentOdds[key];
+  document.getElementById("ko"+key).innerText=currentOdds[key];
+  document.getElementById("po"+key).innerText=currentOdds[key];
  }
 
  loadCredits();
