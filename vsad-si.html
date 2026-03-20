@@ -30,9 +30,15 @@ body{
 }
 
 .score{
- font-size:30px;
+ font-size:32px;
  font-weight:bold;
  margin:10px 0;
+}
+
+.notPlayed{
+ font-size:16px;
+ color:#666;
+ margin-top:10px;
 }
 </style>
 </head>
@@ -67,6 +73,7 @@ const away = params.get("away")
 
 const container = document.getElementById("match")
 
+// výpočet skóre
 function calc(stats){
  let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
  let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
@@ -79,12 +86,11 @@ function calc(stats){
  return {hg,ag}
 }
 
-// 🔍 NAJDI ZÁPAS
 async function loadMatch(){
 
  let data = null
 
- // 1️⃣ pokud máme ID → načti přímo
+// 1️⃣ pokus podle ID
  if(matchId){
   const ref = doc(db,"zapasy",matchId)
   const snap = await getDoc(ref)
@@ -94,7 +100,7 @@ async function loadMatch(){
   }
  }
 
- // 2️⃣ fallback → hledej podle týmů
+// 2️⃣ fallback podle týmů (jen pokud není ID)
  if(!data && home && away){
 
   const snap = await getDocs(collection(db,"zapasy"))
@@ -108,24 +114,42 @@ async function loadMatch(){
   })
  }
 
- // 3️⃣ výsledek
+// ===== VYKRESLENÍ =====
+
+// ❌ zápas není vůbec ve Firebase → ještě se nehrál
  if(!data){
-  container.innerHTML = "<b>Zápas zatím neexistuje (ještě nebyl vytvořen ve Firebase)</b>"
+  container.innerHTML = `
+   <div class="matchBox">
+    <h3>${home} vs ${away}</h3>
+    <div class="notPlayed">Zápas zatím nebyl odehrán</div>
+   </div>
+  `
   return
  }
 
- let scoreHTML = "Zápas ještě nebyl odehrán"
+// ✅ zápas existuje
+ let content = `<h3>${home} vs ${away}</h3>`
 
+// 🟢 odehraný zápas
  if(data.stats){
   const s = calc(data.stats)
-  scoreHTML = `<div class="score">${s.hg} : ${s.ag}</div>`
+
+  content += `
+   <div class="score">${s.hg} : ${s.ag}</div>
+  `
+ }
+
+// ⏳ neodehraný (existuje, ale bez stats)
+ else{
+  content += `
+   <div class="notPlayed">Zápas zatím nebyl odehrán</div>
+  `
  }
 
  container.innerHTML = `
- <div class="matchBox">
-  <h3>${home} vs ${away}</h3>
-  ${scoreHTML}
- </div>
+  <div class="matchBox">
+   ${content}
+  </div>
  `
 }
 
