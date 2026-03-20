@@ -157,7 +157,7 @@ input{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc }
+import { getFirestore, doc, getDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -180,35 +180,8 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-/* ===== ELO ===== */
-
-const BASE_RATING=1000;
-const K=30;
-const HOME_ADV=50;
-
-let ratings={};
-
-function expected(ra,rb){
- return 1/(1+Math.pow(10,(rb-ra)/400))
-}
-
-function updateElo(home,away,hg,ag){
-
- if(!ratings[home])ratings[home]=BASE_RATING
- if(!ratings[away])ratings[away]=BASE_RATING
-
- let ra=ratings[home]+HOME_ADV
- let rb=ratings[away]
-
- let ea=expected(ra,rb)
- let eb=expected(rb,ra)
-
- let sa=hg>ag?1:0
- let sb=ag>hg?1:0
-
- ratings[home]+=K*(sa-ea)
- ratings[away]+=K*(sb-eb)
-}
+let selectedTip=null;
+let currentOdds={};
 
 /* ===== GÓLY ===== */
 
@@ -224,24 +197,26 @@ function calc(stats){
  return {hg,ag};
 }
 
-/* ===== KURZY ===== */
+/* ===== KURZY (STEJNÉ JAKO EXTRALIGA) ===== */
 
-function calculateOdds(home,away){
+const HOME_ADV=50;
 
- let ra=(ratings[home]||1000)+HOME_ADV
- let rb=(ratings[away]||1000)
+function calculateOdds(homeRating,awayRating){
 
- const diff=Math.abs(ra-rb)
+ let ra=homeRating + HOME_ADV;
+ let rb=awayRating;
 
- const pHome=1/(1+Math.pow(10,(rb-ra)/400))
- const pAway=1-pHome
+ const diff=Math.abs(ra-rb);
 
- const pDraw=Math.max(0.12,0.28-diff/4000)
+ const pHome=1/(1+Math.pow(10,(rb-ra)/400));
+ const pAway=1-pHome;
 
- const pHomeReg=pHome*0.60
- const pHomeOT=pHome*0.18
- const pAwayReg=pAway*0.60
- const pAwayOT=pAway*0.18
+ const pDraw=Math.max(0.12,0.28-diff/4000);
+
+ const pHomeReg=pHome*0.60;
+ const pHomeOT=pHome*0.18;
+ const pAwayReg=pAway*0.60;
+ const pAwayOT=pAway*0.18;
 
  return {
   1:(1/pHomeReg).toFixed(2),
@@ -249,13 +224,10 @@ function calculateOdds(home,away){
   3:(1/pDraw).toFixed(2),
   4:(1/pAwayOT).toFixed(2),
   5:(1/pAwayReg).toFixed(2)
- }
+ };
 }
 
 /* ===== LOAD ===== */
-
-let selectedTip=null;
-let currentOdds={};
 
 async function loadMatch(){
 
@@ -263,32 +235,38 @@ async function loadMatch(){
  const matchId=params.get("id");
 
  const matchSnap=await getDoc(doc(db,"zapasy",matchId));
+ if(!matchSnap.exists()) return;
+
  const match=matchSnap.data();
+ const stats=match.stats;
 
- const allSnap=await getDocs(collection(db,"zapasy"));
+ const home=match.homeTeam;
+ const away=match.awayTeam;
 
- allSnap.forEach(d=>{
-  const m=d.data();
-  if(!m.stats) return;
-  const s=calc(m.stats);
-  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
- });
+ const s=calc(stats);
 
- const s=calc(match.stats);
+ /* NAČTENÍ RATINGŮ */
+ const homeDoc=await getDoc(doc(db,"ratings",home));
+ const awayDoc=await getDoc(doc(db,"ratings",away));
 
+ const homeRating = homeDoc.exists() ? Number(homeDoc.data().rating) : 1000;
+ const awayRating = awayDoc.exists() ? Number(awayDoc.data().rating) : 1000;
+
+ /* HEADER */
  document.getElementById("homeTeam").innerHTML=
- `<img src="./logos/${teamsData[match.homeTeam]}"><div>${match.homeTeam}</div>`;
+ `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}</div>`;
 
  document.getElementById("awayTeam").innerHTML=
- `<img src="./logos/${teamsData[match.awayTeam]}"><div>${match.awayTeam}</div>`;
+ `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}</div>`;
 
  document.getElementById("score").innerText=
  `${s.hg} : ${s.ag}`;
 
  document.getElementById("periodInfo").innerText=
- `Třetiny: (${match.stats[16]}:${match.stats[6]}, ${match.stats[17]}:${match.stats[7]}, ${match.stats[18]}:${match.stats[8]})`;
+ `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
 
- currentOdds=calculateOdds(match.homeTeam,match.awayTeam);
+ /* KURZY */
+ currentOdds = calculateOdds(homeRating,awayRating);
 
  o1.innerText=currentOdds[1];
  o2.innerText=currentOdds[2];
@@ -299,7 +277,7 @@ async function loadMatch(){
 
 loadMatch();
 
-/* klik */
+/* UI */
 
 document.querySelectorAll(".odds").forEach(el=>{
  el.onclick=()=>{
@@ -310,7 +288,7 @@ document.querySelectorAll(".odds").forEach(el=>{
  }
 });
 
-document.getElementById("betAmount").oninput=updateWin;
+betAmount.oninput=updateWin;
 
 function updateWin(){
  const amount=Number(betAmount.value);
@@ -328,6 +306,7 @@ function updateWin(){
 window.placeBet=function(){
  if(!selectedTip)return alert("Vyber tip");
  if(!betAmount.value)return alert("Zadej částku");
+
  alert("Sázka OK");
 }
 
