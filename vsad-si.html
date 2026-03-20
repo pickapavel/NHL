@@ -26,64 +26,39 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 .oddsRow{
  display:grid;
  grid-template-columns:repeat(5,1fr);
- gap:8px;
- margin-bottom:10px;
+ gap:8px;margin-bottom:10px;
 }
 
 .odds{
- background:white;
- color:black;
- text-align:center;
- padding:8px;
- border-radius:8px;
- cursor:pointer;
- font-weight:bold;
- user-select:none;
+ background:white;color:black;text-align:center;
+ padding:8px;border-radius:8px;cursor:pointer;font-weight:bold;
 }
 
 .odds.active{background:#27ae60;color:white;}
 
 input{
- width:100%;
- padding:10px;
- border-radius:8px;
- border:none;
- text-align:center;
- margin:8px 0;
- box-sizing:border-box;
+ width:100%;padding:10px;border-radius:8px;
+ border:none;text-align:center;margin:8px 0;
 }
 
 .betInfo{
- background:#0b2a3c;
- padding:10px;
- border-radius:10px;
- display:flex;
- justify-content:space-between;
+ background:#0b2a3c;padding:10px;border-radius:10px;
+ display:flex;justify-content:space-between;
 }
 
 .betBtn{
- width:100%;
- padding:12px;
- background:#27ae60;
- border:none;
- border-radius:8px;
- color:white;
- font-weight:bold;
- margin-top:10px;
- cursor:pointer;
+ width:100%;padding:12px;background:#27ae60;
+ border:none;border-radius:8px;color:white;
+ font-weight:bold;margin-top:10px;
 }
 
 .section{margin-top:20px;}
-
 .title{font-weight:bold;margin-bottom:5px;}
 
 .creditBox{
- margin-top:15px;
- padding:10px;
- background:#0b2a3c;
- border-radius:10px;
- text-align:center;
- font-weight:bold;
+ margin-top:15px;padding:10px;
+ background:#0b2a3c;border-radius:10px;
+ text-align:center;font-weight:bold;
 }
 </style>
 </head>
@@ -92,344 +67,201 @@ input{
 
 <div class="wrapper">
 
-  <div class="matchHeader">
-    <div class="team" id="homeTeam"></div>
-    <div class="scoreBig">- : -</div>
-    <div class="team" id="awayTeam"></div>
-  </div>
+<div class="matchHeader">
+ <div class="team" id="homeTeam"></div>
+ <div class="scoreBig">- : -</div>
+ <div class="team" id="awayTeam"></div>
+</div>
 
-  <div class="betBox">
+<div class="betBox">
 
-    <!-- KUBELE -->
-    <div class="section">
-      <div class="title">Kubele</div>
+<div class="section">
+<div class="title">Kubele</div>
 
-      <div class="oddsRow" id="kOddsRow">
-        <div class="odds" data-tip="1">1<br><span id="ko1"></span></div>
-        <div class="odds" data-tip="2">10<br><span id="ko2"></span></div>
-        <div class="odds" data-tip="3">0<br><span id="ko3"></span></div>
-        <div class="odds" data-tip="4">02<br><span id="ko4"></span></div>
-        <div class="odds" data-tip="5">2<br><span id="ko5"></span></div>
-      </div>
+<div class="oddsRow" id="kOddsRow">
+ <div class="odds" data-tip="1">1<br><span id="ko1"></span></div>
+ <div class="odds" data-tip="2">10<br><span id="ko2"></span></div>
+ <div class="odds" data-tip="3">0<br><span id="ko3"></span></div>
+ <div class="odds" data-tip="4">02<br><span id="ko4"></span></div>
+ <div class="odds" data-tip="5">2<br><span id="ko5"></span></div>
+</div>
 
-      <input id="kBet" placeholder="Vklad (Kč)" type="number" min="0">
+<input id="kBet" placeholder="Vklad (Kč)" type="number">
 
-      <div class="betInfo">
-        <div>Kurz: <span id="kFinalOdds">0</span></div>
-        <div>Výhra: <span id="kWin">0 Kč</span></div>
-      </div>
+<div class="betInfo">
+ <div>Kurz: <span id="kFinalOdds">0</span></div>
+ <div>Výhra: <span id="kWin">0 Kč</span></div>
+</div>
 
-      <button class="betBtn" onclick="placeBet('K')">VSADIT</button>
-    </div>
+<button class="betBtn" onclick="placeBet('K')">VSADIT</button>
+</div>
 
-    <!-- PICI -->
-    <div class="section">
-      <div class="title">Pici</div>
+<div class="section">
+<div class="title">Pici</div>
 
-      <div class="oddsRow" id="pOddsRow">
-        <div class="odds" data-tip="1">1<br><span id="po1"></span></div>
-        <div class="odds" data-tip="2">10<br><span id="po2"></span></div>
-        <div class="odds" data-tip="3">0<br><span id="po3"></span></div>
-        <div class="odds" data-tip="4">02<br><span id="po4"></span></div>
-        <div class="odds" data-tip="5">2<br><span id="po5"></span></div>
-      </div>
+<div class="oddsRow" id="pOddsRow">
+ <div class="odds" data-tip="1">1<br><span id="po1"></span></div>
+ <div class="odds" data-tip="2">10<br><span id="po2"></span></div>
+ <div class="odds" data-tip="3">0<br><span id="po3"></span></div>
+ <div class="odds" data-tip="4">02<br><span id="po4"></span></div>
+ <div class="odds" data-tip="5">2<br><span id="po5"></span></div>
+</div>
 
-      <input id="pBet" placeholder="Vklad (Kč)" type="number" min="0">
+<input id="pBet" placeholder="Vklad (Kč)" type="number">
 
-      <div class="betInfo">
-        <div>Kurz: <span id="pFinalOdds">0</span></div>
-        <div>Výhra: <span id="pWin">0 Kč</span></div>
-      </div>
+<div class="betInfo">
+ <div>Kurz: <span id="pFinalOdds">0</span></div>
+ <div>Výhra: <span id="pWin">0 Kč</span></div>
+</div>
 
-      <button class="betBtn" onclick="placeBet('P')">VSADIT</button>
-    </div>
+<button class="betBtn" onclick="placeBet('P')">VSADIT</button>
+</div>
 
-    <div id="creditBox" class="creditBox"></div>
+<div id="creditBox" class="creditBox"></div>
 
-  </div>
+</div>
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey: "AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
-  authDomain: "statistiky-6310a.firebaseapp.com",
-  projectId: "statistiky-6310a"
+const app=initializeApp({
+ apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
+ authDomain:"statistiky-6310a.firebaseapp.com",
+ projectId:"statistiky-6310a"
 });
+const db=getFirestore(app);
 
-const db = getFirestore(app);
+/* ===== DATA ===== */
 
-/* ===== TÝMY ===== */
-const teamsData = {
-  "HC Sparta Praha (P)": "sparta.png",
-  "HC Bílí Tygři Liberec (K)": "liberec.png",
-  "HC Dynamo Pardubice (K)": "pardubice.png",
-  "HC Chemopetrol Litvínov (P)": "litvinov.png",
-  "HC Geus Okna Kladno (P)": "kladno.png",
-  "HC Motor České Budějovice (K)": "budejovice.png",
-  "HC Energie Karlovy Vary (P)": "vary.png",
-  "HC Oceláři Třinec (K)": "trinec.png"
-};
+const BASE=1000,K=30,HOME=50;
+let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
 
-const BASE = 1000;
-const K = 30;
-const HOME = 50;
+function ensure(t){ if(typeof ratings[t]!=="number")ratings[t]=BASE; }
 
-let ratings = {};
-let currentOdds = {};
-let home = "";
-let away = "";
-let kTip = null;
-let pTip = null;
+function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
 
-const homeTeamEl = document.getElementById("homeTeam");
-const awayTeamEl = document.getElementById("awayTeam");
-const creditBox = document.getElementById("creditBox");
-const kBet = document.getElementById("kBet");
-const pBet = document.getElementById("pBet");
-const kFinalOdds = document.getElementById("kFinalOdds");
-const pFinalOdds = document.getElementById("pFinalOdds");
-const kWin = document.getElementById("kWin");
-const pWin = document.getElementById("pWin");
-
-function ensureRating(team) {
-  if (!team) return BASE;
-  if (typeof ratings[team] !== "number" || Number.isNaN(ratings[team])) {
-    ratings[team] = BASE;
-  }
-  return ratings[team];
+function updateElo(h,a,hg,ag){
+ ensure(h);ensure(a);
+ let ra=ratings[h]+HOME, rb=ratings[a];
+ let ea=expected(ra,rb), sa=hg>ag?1:0;
+ ratings[h]+=K*(sa-ea);
+ ratings[a]+=K*((1-sa)-(1-ea));
 }
 
-function expected(a, b) {
-  return 1 / (1 + Math.pow(10, (b - a) / 400));
+function calc(s){
+ let ag=(+s[6]||0)+(+s[7]||0)+(+s[8]||0);
+ let hg=(+s[16]||0)+(+s[17]||0)+(+s[18]||0);
+ return {hg,ag}
 }
 
-function updateElo(h, a, hg, ag) {
-  ensureRating(h);
-  ensureRating(a);
+function odds(h,a){
+ ensure(h);ensure(a);
+ let ra=ratings[h]+HOME;
+ let rb=ratings[a];
+ let pH=1/(1+Math.pow(10,(rb-ra)/400));
+ let pA=1-pH;
+ let pD=0.2;
 
-  const ra = ratings[h] + HOME;
-  const rb = ratings[a];
-  const ea = expected(ra, rb);
-  const sa = hg > ag ? 1 : 0;
-
-  ratings[h] = ratings[h] + K * (sa - ea);
-  ratings[a] = ratings[a] + K * ((1 - sa) - (1 - ea));
+ return {
+ 1:(1/(pH*0.6)).toFixed(2),
+ 2:(1/(pH*0.18)).toFixed(2),
+ 3:(1/pD).toFixed(2),
+ 4:(1/(pA*0.18)).toFixed(2),
+ 5:(1/(pA*0.6)).toFixed(2)
+ }
 }
 
-function calc(s) {
-  let ag = (+s[6] || 0) + (+s[7] || 0) + (+s[8] || 0);
-  let hg = (+s[16] || 0) + (+s[17] || 0) + (+s[18] || 0);
+/* ===== LOAD ===== */
 
-  if (s[9] === "11") ag++;
-  if (s[19] === "11") hg++;
+async function load(){
+ const params=new URLSearchParams(location.search);
+ home=params.get("home");
+ away=params.get("away");
 
-  if (s[20] === "1") hg++;
-  if (s[20] === "2") ag++;
+ const snap=await getDocs(collection(db,"zapasy"));
+ snap.forEach(d=>{
+  const m=d.data();
+  if(!m.stats)return;
+  const s=calc(m.stats);
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+ });
 
-  return { hg, ag };
-}
+ ensure(home);ensure(away);
 
-function odds(h, a) {
-  const ra = ensureRating(h) + HOME;
-  const rb = ensureRating(a);
-  const diff = Math.abs(ra - rb);
+ currentOdds=odds(home,away);
 
-  const pH = 1 / (1 + Math.pow(10, (rb - ra) / 400));
-  const pA = 1 - pH;
-  const pD = Math.max(0.12, 0.28 - diff / 4000);
+ for(let i=1;i<=5;i++){
+  document.getElementById("ko"+i).innerText=currentOdds[i];
+  document.getElementById("po"+i).innerText=currentOdds[i];
+ }
 
-  return {
-    1: (1 / (pH * 0.6)).toFixed(2),
-    2: (1 / (pH * 0.18)).toFixed(2),
-    3: (1 / pD).toFixed(2),
-    4: (1 / (pA * 0.18)).toFixed(2),
-    5: (1 / (pA * 0.6)).toFixed(2)
-  };
-}
-
-function setTeamBox(el, teamName) {
-  const logo = teamsData[teamName] || "";
-  const rating = Math.round(ensureRating(teamName));
-  el.innerHTML = `
-    <img src="./logos/${logo}" alt="">
-    <div>${teamName}</div>
-    <div>⭐ ${rating}</div>
-  `;
-}
-
-async function load() {
-  const params = new URLSearchParams(location.search);
-  home = params.get("home");
-  away = params.get("away");
-
-  if (!home || !away) {
-    homeTeamEl.textContent = "Chybí home/away v URL";
-    awayTeamEl.textContent = "";
-    creditBox.textContent = "";
-    return;
-  }
-
-  ensureRating(home);
-  ensureRating(away);
-
-  const snap = await getDocs(collection(db, "zapasy"));
-  const matches = [];
-  snap.forEach(d => matches.push({ id: d.id, ...d.data() }));
-
-  matches
-    .filter(m => m.category?.startsWith("Extraliga"))
-    .sort((a, b) => (a.created || 0) - (b.created || 0))
-    .forEach(m => {
-      if (!m.stats) return;
-      const s = calc(m.stats);
-      ensureRating(m.homeTeam);
-      ensureRating(m.awayTeam);
-      updateElo(m.homeTeam, m.awayTeam, s.hg, s.ag);
-    });
-
-  setTeamBox(homeTeamEl, home);
-  setTeamBox(awayTeamEl, away);
-
-  currentOdds = odds(home, away);
-
-  for (let i = 1; i <= 5; i++) {
-    const ko = document.getElementById("ko" + i);
-    const po = document.getElementById("po" + i);
-    if (ko) ko.innerText = currentOdds[i];
-    if (po) po.innerText = currentOdds[i];
-  }
-
-  await loadCredits();
-  await loadSaved();
+ loadSaved();
 }
 
 load();
 
-/* ===== CLICK ===== */
-document.querySelectorAll("#kOddsRow .odds").forEach(el => {
-  el.onclick = () => {
-    document.querySelectorAll("#kOddsRow .odds").forEach(o => o.classList.remove("active"));
-    el.classList.add("active");
-    kTip = el.dataset.tip;
-    calcWin("K");
-  };
-});
+/* ===== BET ===== */
 
-document.querySelectorAll("#pOddsRow .odds").forEach(el => {
-  el.onclick = () => {
-    document.querySelectorAll("#pOddsRow .odds").forEach(o => o.classList.remove("active"));
-    el.classList.add("active");
-    pTip = el.dataset.tip;
-    calcWin("P");
-  };
-});
+window.placeBet=async function(player){
 
-/* ===== CALC ===== */
-kBet.oninput = () => calcWin("K");
-pBet.oninput = () => calcWin("P");
+ const tip=player==="K"?kTip:pTip;
+ const bet=Number(player==="K"?kBet.value:pBet.value);
 
-function calcWin(player) {
-  const tip = player === "K" ? kTip : pTip;
-  const bet = Number(player === "K" ? kBet.value : pBet.value);
-  const o = Number(currentOdds[tip] || 0);
+ if(!tip||!bet)return;
 
-  if (player === "K") {
-    kFinalOdds.innerText = o || 0;
-    kWin.innerText = bet && o ? Math.round(bet * o) + " Kč" : "0 Kč";
-  } else {
-    pFinalOdds.innerText = o || 0;
-    pWin.innerText = bet && o ? Math.round(bet * o) + " Kč" : "0 Kč";
-  }
+ const o=Number(currentOdds[tip]);
+ const win=Math.round(bet*o);
+
+ const ref=doc(db,"tipy",home+"_"+away);
+
+ let data={};
+
+ if(player==="K"){
+  data.kTip=tip;
+  data.kBet=bet;
+  data.kOdds=o;   // FIX
+  data.kWin=win;  // FIX
+ }
+
+ if(player==="P"){
+  data.pTip=tip;
+  data.pBet=bet;
+  data.pOdds=o;   // FIX
+  data.pWin=win;  // FIX
+ }
+
+ await setDoc(ref,data,{merge:true});
+ alert("Uloženo");
+ loadSaved();
 }
-
-/* ===== SAVE ===== */
-window.placeBet = async function(player) {
-  const tip = player === "K" ? kTip : pTip;
-  const bet = Number(player === "K" ? kBet.value : pBet.value);
-
-  if (!tip || !bet || bet <= 0) return alert("Vyplň vše");
-
-  const o = Number(currentOdds[tip] || 0);
-  if (!o) return alert("Kurz není dostupný");
-
-  const win = Math.round(bet * o);
-  const ref = doc(db, "tipy", home + "_" + away);
-
-  let data = { homeTeam: home, awayTeam: away };
-
-  if (player === "K") {
-    data.kTip = tip;
-    data.kBet = bet;
-    data.kWin = win;
-
-    const kRef = doc(db, "hraci", "KTip");
-    const snap = await getDoc(kRef);
-    const kred = Number(snap.exists() ? snap.data().kredit : 0) || 0;
-    await updateDoc(kRef, { kredit: kred - bet });
-  }
-
-  if (player === "P") {
-    data.pTip = tip;
-    data.pBet = bet;
-    data.pWin = win;
-
-    const pRef = doc(db, "hraci", "PTip");
-    const snap = await getDoc(pRef);
-    const kred = Number(snap.exists() ? snap.data().kredit : 0) || 0;
-    await updateDoc(pRef, { kredit: kred - bet });
-  }
-
-  await setDoc(ref, data, { merge: true });
-  alert("Uloženo");
-  await loadSaved();
-  await loadCredits();
-};
 
 /* ===== LOAD SAVED ===== */
-async function loadSaved() {
-  const snap = await getDoc(doc(db, "tipy", home + "_" + away));
-  if (!snap.exists()) return;
 
-  const d = snap.data();
+async function loadSaved(){
+ const snap=await getDoc(doc(db,"tipy",home+"_"+away));
+ if(!snap.exists())return;
 
-  if (d.kTip) {
-    kTip = d.kTip;
-    kBet.value = d.kBet;
-    const el = document.querySelector(`#kOddsRow .odds[data-tip="${d.kTip}"]`);
-    if (el) el.classList.add("active");
-    calcWin("K");
-  }
+ const d=snap.data();
 
-  if (d.pTip) {
-    pTip = d.pTip;
-    pBet.value = d.pBet;
-    const el = document.querySelector(`#pOddsRow .odds[data-tip="${d.pTip}"]`);
-    if (el) el.classList.add("active");
-    calcWin("P");
-  }
+ if(d.kTip){
+  kTip=d.kTip;
+  kBet.value=d.kBet;
+  kFinalOdds.innerText=d.kOdds;
+  kWin.innerText=d.kWin+" Kč";
+ }
+
+ if(d.pTip){
+  pTip=d.pTip;
+  pBet.value=d.pBet;
+  pFinalOdds.innerText=d.pOdds;
+  pWin.innerText=d.pWin+" Kč";
+ }
 }
 
-/* ===== CREDIT ===== */
-async function loadCredits() {
-  const k = await getDoc(doc(db, "hraci", "KTip"));
-  const p = await getDoc(doc(db, "hraci", "PTip"));
-
-  const kk = Number(k.exists() ? k.data().kredit : 0) || 0;
-  const pp = Number(p.exists() ? p.data().kredit : 0) || 0;
-
-  creditBox.innerText = `Kubele: ${kk} Kč | Pici: ${pp} Kč`;
-}
 </script>
 
 </body>
