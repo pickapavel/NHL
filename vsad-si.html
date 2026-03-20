@@ -40,17 +40,14 @@ body{
 <body>
 
 <div class="wrapper">
-
 <h2>Detail zápasu</h2>
-
 <div id="match"></div>
-
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
@@ -61,7 +58,7 @@ const firebaseConfig={
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ===== PARAMETRY Z URL =====
+// PARAMETRY
 const params = new URLSearchParams(window.location.search)
 
 const matchId = params.get("id")
@@ -70,9 +67,7 @@ const away = params.get("away")
 
 const container = document.getElementById("match")
 
-// ===== VÝPOČET GÓLŮ =====
 function calc(stats){
-
  let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
  let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
 
@@ -84,23 +79,40 @@ function calc(stats){
  return {hg,ag}
 }
 
-// ===== NAČTENÍ ZÁPASU =====
+// 🔍 NAJDI ZÁPAS
 async function loadMatch(){
 
- if(!matchId){
-  container.innerHTML = "<b>Chybí ID zápasu</b>"
-  return
+ let data = null
+
+ // 1️⃣ pokud máme ID → načti přímo
+ if(matchId){
+  const ref = doc(db,"zapasy",matchId)
+  const snap = await getDoc(ref)
+
+  if(snap.exists()){
+   data = snap.data()
+  }
  }
 
- const ref = doc(db,"zapasy",matchId)
- const snap = await getDoc(ref)
+ // 2️⃣ fallback → hledej podle týmů
+ if(!data && home && away){
 
- if(!snap.exists()){
-  container.innerHTML = "<b>Zápas nenalezen</b>"
-  return
+  const snap = await getDocs(collection(db,"zapasy"))
+
+  snap.forEach(d=>{
+   const m = d.data()
+
+   if(m.homeTeam === home && m.awayTeam === away){
+    data = m
+   }
+  })
  }
 
- const data = snap.data()
+ // 3️⃣ výsledek
+ if(!data){
+  container.innerHTML = "<b>Zápas zatím neexistuje (ještě nebyl vytvořen ve Firebase)</b>"
+  return
+ }
 
  let scoreHTML = "Zápas ještě nebyl odehrán"
 
