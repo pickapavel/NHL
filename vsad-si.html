@@ -9,8 +9,6 @@
 body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 .wrapper{max-width:900px;margin:auto;padding:20px;}
 
-/* ===== HEADER ===== */
-
 .matchHeader{
  display:flex;
  justify-content:space-between;
@@ -26,11 +24,15 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 }
 
 .team img{
- width:50px;
- height:50px;
+ width:50px;height:50px;
  background:white;
  padding:6px;
  border-radius:10px;
+}
+
+.teamRight{
+ flex-direction:row-reverse;
+ text-align:right;
 }
 
 .scoreBig{
@@ -38,7 +40,7 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
  font-weight:bold;
 }
 
-/* ===== BET BOX ===== */
+/* ===== BET ===== */
 
 .betBox{
  background:#112f44;
@@ -64,7 +66,6 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
  border-radius:8px;
  cursor:pointer;
  font-weight:bold;
- font-size:14px;
 }
 
 .odds.active{
@@ -118,7 +119,7 @@ input{
 <div class="matchHeader">
  <div class="team" id="homeTeam"></div>
  <div class="scoreBig">- : -</div>
- <div class="team" id="awayTeam"></div>
+ <div class="team teamRight" id="awayTeam"></div>
 </div>
 
 <div class="betBox">
@@ -130,11 +131,11 @@ input{
 <div class="oddsRow" id="kOddsRow">
  <div class="odds" data-tip="1">1<br><span id="ko1"></span></div>
  <div class="odds" data-tip="2">10<br><span id="ko2"></span></div>
+ <div class="odds" data-tip="6">11<br><span id="ko6"></span></div>
  <div class="odds" data-tip="3">0<br><span id="ko3"></span></div>
+ <div class="odds" data-tip="7">22<br><span id="ko7"></span></div>
  <div class="odds" data-tip="4">02<br><span id="ko4"></span></div>
  <div class="odds" data-tip="5">2<br><span id="ko5"></span></div>
- <div class="odds" data-tip="6">11<br><span id="ko6"></span></div>
- <div class="odds" data-tip="7">22<br><span id="ko7"></span></div>
 </div>
 
 <input id="kBet" placeholder="Vklad (Kč)" type="number">
@@ -154,11 +155,11 @@ input{
 <div class="oddsRow" id="pOddsRow">
  <div class="odds" data-tip="1">1<br><span id="po1"></span></div>
  <div class="odds" data-tip="2">10<br><span id="po2"></span></div>
+ <div class="odds" data-tip="6">11<br><span id="po6"></span></div>
  <div class="odds" data-tip="3">0<br><span id="po3"></span></div>
+ <div class="odds" data-tip="7">22<br><span id="po7"></span></div>
  <div class="odds" data-tip="4">02<br><span id="po4"></span></div>
  <div class="odds" data-tip="5">2<br><span id="po5"></span></div>
- <div class="odds" data-tip="6">11<br><span id="po6"></span></div>
- <div class="odds" data-tip="7">22<br><span id="po7"></span></div>
 </div>
 
 <input id="pBet" placeholder="Vklad (Kč)" type="number">
@@ -204,21 +205,15 @@ let home,away,currentOdds={},kTip=null,pTip=null;
 
 /* ===== ODDS ===== */
 
-function calculateOdds(h,a){
- let ra=1050, rb=1000; // zjednodušeno (bereš z extraligy)
-
- let pH=1/(1+Math.pow(10,(rb-ra)/400));
- let pA=1-pH;
- let pD=0.2;
-
+function calculateOdds(){
  return {
- 1:(1/(pH*0.6)).toFixed(2),
- 2:(1/(pH*0.18)).toFixed(2),
- 3:(1/pD).toFixed(2),
- 4:(1/(pA*0.18)).toFixed(2),
- 5:(1/(pA*0.6)).toFixed(2),
- 6:(1/(pH*0.78)).toFixed(2), // 11
- 7:(1/(pA*0.78)).toFixed(2)  // 22
+ 1:2.9,
+ 2:9.7,
+ 6:2.2,
+ 3:5.0,
+ 7:2.9,
+ 4:12.9,
+ 5:3.8
  }
 }
 
@@ -231,13 +226,15 @@ async function load(){
  away=params.get("away");
 
  homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}`;
- awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}">${away}`;
+ awayTeam.innerHTML=`${away}<img src="./logos/${teamsData[away]}">`;
 
- currentOdds=calculateOdds(home,away);
+ currentOdds=calculateOdds();
 
- for(let i=1;i<=7;i++){
-  document.getElementById("ko"+i).innerText=currentOdds[i];
-  document.getElementById("po"+i).innerText=currentOdds[i];
+ for(const key in currentOdds){
+  if(document.getElementById("ko"+key))
+   document.getElementById("ko"+key).innerText=currentOdds[key];
+  if(document.getElementById("po"+key))
+   document.getElementById("po"+key).innerText=currentOdds[key];
  }
 
  loadCredits();
