@@ -2,20 +2,38 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Tipsport</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sázky na zápas</title>
 
 <style>
-body{font-family:Arial;background:#0b2a3c;color:white;margin:0}
-.wrapper{max-width:900px;margin:auto;padding:20px}
-.box{background:#112f44;padding:15px;border-radius:10px;margin-bottom:15px}
-h2{text-align:center}
-.match{background:#0b2a3c;padding:10px;border-radius:8px;margin-bottom:10px}
-.oddsRow{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.odds{background:white;color:black;padding:6px;text-align:center;border-radius:6px;cursor:pointer}
-.active{background:#27ae60;color:white}
-input{width:100%;padding:8px;margin-top:5px;border-radius:6px;border:none;text-align:center}
-button{width:100%;padding:10px;margin-top:5px;background:#27ae60;color:white;border:none;border-radius:6px}
-.small{font-size:12px;text-align:center}
+body{
+ font-family:Arial;
+ background:#f2f2f2;
+ margin:0;
+}
+
+.wrapper{
+ max-width:800px;
+ margin:auto;
+ background:white;
+ padding:20px;
+ border-radius:10px;
+ margin-top:40px;
+}
+
+.matchBox{
+ background:#e9ecef;
+ padding:20px;
+ border-radius:10px;
+ text-align:center;
+ margin-bottom:20px;
+}
+
+.score{
+ font-size:30px;
+ font-weight:bold;
+ margin:10px 0;
+}
 </style>
 </head>
 
@@ -23,22 +41,16 @@ button{width:100%;padding:10px;margin-top:5px;background:#27ae60;color:white;bor
 
 <div class="wrapper">
 
-<h2>Tipsport – sázení</h2>
+<h2>Detail zápasu</h2>
 
-<div class="box" id="credit"></div>
-
-<div id="matches"></div>
-
-<h2>Historie sázek</h2>
-<div id="bets"></div>
+<div id="match"></div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
@@ -46,238 +58,66 @@ const firebaseConfig={
  projectId:"statistiky-6310a"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const BASE=1000
-const HOME_ADV=50
+// ===== PARAMETRY Z URL =====
+const params = new URLSearchParams(window.location.search)
 
-/* ===== ELO ===== */
+const matchId = params.get("id")
+const home = params.get("home")
+const away = params.get("away")
 
-function expected(ra,rb){
- return 1/(1+Math.pow(10,(rb-ra)/400))
-}
+const container = document.getElementById("match")
 
-function calcOdds(rh,ra){
-
- let raH=rh+HOME_ADV
-
- const pH=expected(raH,ra)
- const pA=1-pH
- const pDraw=0.2
-
- return {
-  1:(1/(pH*0.6)).toFixed(2),
-  2:(1/(pH*0.2)).toFixed(2),
-  3:(1/pDraw).toFixed(2),
-  4:(1/(pA*0.2)).toFixed(2),
-  5:(1/(pA*0.6)).toFixed(2)
- }
-}
-
-/* ===== KREDIT ===== */
-
-async function loadCredit(){
- const snap=await getDoc(doc(db,"hraci","KTip"))
- const k=snap.exists()?snap.data().kredit:0
- credit.innerText="Kredit: "+k+" Kč"
-}
-
-/* ===== VÝPOČET SKÓRE ===== */
-
+// ===== VÝPOČET GÓLŮ =====
 function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+
+ let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
+ let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
+
+ if(stats[9]==="11") ag++
+ if(stats[19]==="11") hg++
+ if(stats[20]==="1") hg++
+ if(stats[20]==="2") ag++
+
  return {hg,ag}
 }
 
-/* ===== NAČTENÍ ZÁPASŮ ===== */
+// ===== NAČTENÍ ZÁPASU =====
+async function loadMatch(){
 
-async function loadMatches(){
-
- const snap=await getDocs(collection(db,"zapasy"))
- const ratingsSnap=await getDoc(doc(db,"ratings","global"))
- const ratings=ratingsSnap.exists()?ratingsSnap.data():{}
-
- matches.innerHTML=""
-
- snap.forEach(async d=>{
-
-  const m=d.data()
-  const id=d.id
-
-  if(!m.homeTeam) return
-
-  const rh=ratings[m.homeTeam]||BASE
-  const ra=ratings[m.awayTeam]||BASE
-
-  // 🔥 kurzy uložené před zápasem
-  const oddsRef=doc(db,"odds",id)
-  let odds
-
-  const oSnap=await getDoc(oddsRef)
-
-  if(oSnap.exists()){
-   odds=oSnap.data()
-  }else{
-   odds=calcOdds(rh,ra)
-   await setDoc(oddsRef,odds)
-  }
-
-  let score="- : -"
-  if(m.stats){
-   const s=calc(m.stats)
-   score=s.hg+" : "+s.ag
-  }
-
-  matches.innerHTML+=`
-  <div class="match">
-
-  <b>${m.homeTeam} vs ${m.awayTeam}</b><br>
-  ${score}
-
-  <div class="oddsRow" id="odds_${id}"></div>
-
-  <input id="bet_${id}" placeholder="Vklad Kč">
-  <button onclick="bet('${id}')">Vsadit</button>
-
-  </div>
-  `
-
-  renderOdds(id,odds)
-
-  // vyhodnocení po zápase
-  if(m.stats){
-   evaluate(id,m,odds)
-  }
-
- })
-
-}
-
-/* ===== RENDER KURZŮ ===== */
-
-function renderOdds(id,odds){
-
- const cont=document.getElementById("odds_"+id)
-
- Object.entries(odds).forEach(([k,v])=>{
-  cont.innerHTML+=`<div class="odds" data-id="${id}" data-tip="${k}">${k}<br>${v}</div>`
- })
-
- document.querySelectorAll(`#odds_${id} .odds`).forEach(o=>{
-  o.onclick=()=>{
-   document.querySelectorAll(`#odds_${id} .odds`).forEach(x=>x.classList.remove("active"))
-   o.classList.add("active")
-  }
- })
-}
-
-/* ===== SÁZKA ===== */
-
-window.bet=async function(id){
-
- const betInput=document.getElementById("bet_"+id)
- const bet=Number(betInput.value)
-
- const selected=document.querySelector(`#odds_${id} .active`)
- if(!selected)return alert("Vyber tip")
-
- const tip=selected.dataset.tip
-
- const pRef=doc(db,"hraci","KTip")
- const snap=await getDoc(pRef)
-
- let kredit=snap.data().kredit||0
-
- if(bet>kredit)return alert("Nedostatek kreditu")
-
- kredit-=bet
-
- await updateDoc(pRef,{kredit})
-
- const oddsSnap=await getDoc(doc(db,"odds",id))
- const odds=oddsSnap.data()
-
- const o=Number(odds[tip])
- const win=Math.round(bet*o)
-
- await setDoc(doc(db,"bets","KTip_"+id),{
-  matchId:id,
-  tip,
-  bet,
-  odds:o,
-  win,
-  evaluated:false
- })
-
- loadCredit()
- loadBets()
-
- alert("Vsazeno")
-}
-
-/* ===== VYHODNOCENÍ ===== */
-
-async function evaluate(id,m,odds){
-
- const ref=doc(db,"bets","KTip_"+id)
- const snap=await getDoc(ref)
-
- if(!snap.exists())return
- if(snap.data().evaluated)return
-
- const s=calc(m.stats)
-
- let result=3
- if(s.hg>s.ag) result=1
- if(s.ag>s.hg) result=5
-
- const d=snap.data()
-
- if(Number(d.tip)===result){
-
-  const pRef=doc(db,"hraci","KTip")
-  const pSnap=await getDoc(pRef)
-
-  await updateDoc(pRef,{
-   kredit:(pSnap.data().kredit||0)+d.win
-  })
+ if(!matchId){
+  container.innerHTML = "<b>Chybí ID zápasu</b>"
+  return
  }
 
- await updateDoc(ref,{evaluated:true})
+ const ref = doc(db,"zapasy",matchId)
+ const snap = await getDoc(ref)
 
- loadCredit()
- loadBets()
+ if(!snap.exists()){
+  container.innerHTML = "<b>Zápas nenalezen</b>"
+  return
+ }
+
+ const data = snap.data()
+
+ let scoreHTML = "Zápas ještě nebyl odehrán"
+
+ if(data.stats){
+  const s = calc(data.stats)
+  scoreHTML = `<div class="score">${s.hg} : ${s.ag}</div>`
+ }
+
+ container.innerHTML = `
+ <div class="matchBox">
+  <h3>${home} vs ${away}</h3>
+  ${scoreHTML}
+ </div>
+ `
 }
 
-/* ===== HISTORIE ===== */
-
-async function loadBets(){
-
- const snap=await getDocs(collection(db,"bets"))
-
- bets.innerHTML=""
-
- snap.forEach(d=>{
-  const b=d.data()
-
-  bets.innerHTML+=`
-  <div class="box small">
-  Tip: ${b.tip} | Vklad: ${b.bet} Kč<br>
-  Kurz: ${b.odds} | Výhra: ${b.win} Kč<br>
-  ${b.evaluated ? "✔ Vyhodnoceno" : "Čeká"}
-  </div>
-  `
- })
-
-}
-
-/* ===== INIT ===== */
-
-loadCredit()
-loadMatches()
-loadBets()
+loadMatch()
 
 </script>
 
