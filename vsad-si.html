@@ -197,7 +197,7 @@ function calc(stats){
  return {hg,ag};
 }
 
-/* ===== KURZY (STEJNÉ JAKO EXTRALIGA) ===== */
+/* ===== KURZY ===== */
 
 const HOME_ADV=50;
 
@@ -238,34 +238,42 @@ async function loadMatch(){
  if(!matchSnap.exists()) return;
 
  const match=matchSnap.data();
- const stats=match.stats;
 
  const home=match.homeTeam;
  const away=match.awayTeam;
 
- const s=calc(stats);
+ const stats = match.stats;
 
- /* NAČTENÍ RATINGŮ */
+ let hg = "-";
+ let ag = "-";
+ let periods = "";
+
+ if(stats){
+  const s = calc(stats);
+  hg = s.hg;
+  ag = s.ag;
+
+  periods = `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
+ }
+
+ /* ratingy */
  const homeDoc=await getDoc(doc(db,"ratings",home));
  const awayDoc=await getDoc(doc(db,"ratings",away));
 
  const homeRating = homeDoc.exists() ? Number(homeDoc.data().rating) : 1000;
  const awayRating = awayDoc.exists() ? Number(awayDoc.data().rating) : 1000;
 
- /* HEADER */
+ /* UI */
  document.getElementById("homeTeam").innerHTML=
- `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}</div>`;
+ `<img src="./logos/${teamsData[home]}"><div class="teamName">${home} ⭐ ${homeRating}</div>`;
 
  document.getElementById("awayTeam").innerHTML=
- `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}</div>`;
+ `<img src="./logos/${teamsData[away]}"><div class="teamName">${away} ⭐ ${awayRating}</div>`;
 
- document.getElementById("score").innerText=
- `${s.hg} : ${s.ag}`;
+ document.getElementById("score").innerText=`${hg} : ${ag}`;
+ document.getElementById("periodInfo").innerText=periods;
 
- document.getElementById("periodInfo").innerText=
- `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
-
- /* KURZY */
+ /* kurzy */
  currentOdds = calculateOdds(homeRating,awayRating);
 
  o1.innerText=currentOdds[1];
