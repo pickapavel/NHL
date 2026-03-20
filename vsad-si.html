@@ -55,12 +55,6 @@ body{
  text-align:center;
 }
 
-.periodInfo{
- text-align:center;
- margin-bottom:15px;
- opacity:0.8;
-}
-
 .betBox{
  background:#112f44;
  padding:20px;
@@ -134,11 +128,9 @@ input{
 
 <div class="matchHeader">
  <div class="team" id="homeTeam"></div>
- <div class="scoreBig" id="score">- : -</div>
+ <div class="scoreBig">- : -</div>
  <div class="team" id="awayTeam"></div>
 </div>
-
-<div id="periodInfo" class="periodInfo"></div>
 
 <div class="betBox">
 
@@ -170,7 +162,7 @@ Kubele: 0 Kč | Pici: 0 Kč
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -211,9 +203,6 @@ function expected(ra,rb){
 }
 
 function updateElo(home,away,hg,ag){
- if(ratings[home]===undefined)ratings[home]=BASE_RATING
- if(ratings[away]===undefined)ratings[away]=BASE_RATING
-
  let ra=ratings[home]+HOME_ADV
  let rb=ratings[away]
 
@@ -242,11 +231,11 @@ function calculateOdds(home,away){
  let ra=(ratings[home]||1000)+HOME_ADV
  let rb=(ratings[away]||1000)
 
- const diff = Math.abs(ra-rb)
+ const diff=Math.abs(ra-rb)
 
  const pHome=1/(1+Math.pow(10,(rb-ra)/400))
  const pAway=1-pHome
- const pDraw = Math.max(0.12, 0.28 - diff/4000)
+ const pDraw=Math.max(0.12,0.28-diff/4000)
 
  return {
   1:(1/(pHome*0.6)).toFixed(2),
@@ -270,15 +259,14 @@ async function load(){
 
  resetRatings()
 
- const snap = await getDocs(collection(db,"zapasy"));
+ const snap=await getDocs(collection(db,"zapasy"))
 
- let matches = [];
-
+ let matches=[]
  snap.forEach(d=>{
   matches.push({id:d.id,...d.data()})
- });
+ })
 
- const extraliga = matches
+ const extraliga=matches
   .filter(m=>m.category?.startsWith("Extraliga"))
   .sort((a,b)=>a.created-b.created)
 
@@ -291,11 +279,8 @@ async function load(){
  const homeRating=Math.round(ratings[home]||1000)
  const awayRating=Math.round(ratings[away]||1000)
 
- document.getElementById("homeTeam").innerHTML=
- `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`
-
- document.getElementById("awayTeam").innerHTML=
- `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`
+ homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`
+ awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`
 
  currentOdds=calculateOdds(home,away)
 
@@ -314,14 +299,13 @@ load()
 
 async function loadCredits(){
 
- const kDoc = await getDoc(doc(db,"hraci","KTip"))
- const pDoc = await getDoc(doc(db,"hraci","PTip"))
+ const kDoc=await getDoc(doc(db,"hraci","KTip"))
+ const pDoc=await getDoc(doc(db,"hraci","PTip"))
 
- let kreditK = kDoc.exists()?Number(kDoc.data().kredit):0
- let kreditP = pDoc.exists()?Number(pDoc.data().kredit):0
+ const kreditK=kDoc.exists()?Number(kDoc.data().kredit):0
+ const kreditP=pDoc.exists()?Number(pDoc.data().kredit):0
 
- document.getElementById("creditBox").innerText=
- `Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč`
+ creditBox.innerText=`Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč`
 }
 
 /* ===== UI ===== */
@@ -342,19 +326,37 @@ function updateWin(){
  const odds=Number(currentOdds[selectedTip]||0)
 
  finalOdds.innerText=odds||0
-
- if(amount&&odds){
-  winAmount.innerText=Math.round(amount*odds)+" Kč"
- }else{
-  winAmount.innerText="0 Kč"
- }
+ winAmount.innerText=amount&&odds?Math.round(amount*odds)+" Kč":"0 Kč"
 }
 
-window.placeBet=function(){
+/* ===== ULOŽENÍ SÁZKY ===== */
+
+window.placeBet=async function(){
+
+ const params=new URLSearchParams(window.location.search);
+ const home=params.get("home");
+ const away=params.get("away");
+
  if(!selectedTip)return alert("Vyber tip")
  if(!betAmount.value)return alert("Zadej částku")
 
- alert("Sázka OK")
+ const bet=Number(betAmount.value)
+ const odds=Number(currentOdds[selectedTip])
+ const win=Math.round(bet*odds)
+
+ const ref=doc(db,"tipy",home+"_"+away)
+
+ await setDoc(ref,{
+  homeTeam:home,
+  awayTeam:away,
+  tip:selectedTip,
+  bet:bet,
+  odds:odds,
+  possibleWin:win,
+  created:Date.now()
+ },{merge:true})
+
+ alert("Sázka uložena ✅")
 }
 
 </script>
