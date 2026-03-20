@@ -75,7 +75,6 @@ input{
 
 <div class="betBox">
 
-<!-- KUBELE -->
 <div class="section">
 <div class="title">Kubele</div>
 
@@ -97,7 +96,6 @@ input{
 <button class="betBtn" onclick="placeBet('K')">VSADIT</button>
 </div>
 
-<!-- PICI -->
 <div class="section">
 <div class="title">Pici</div>
 
@@ -127,7 +125,7 @@ input{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app=initializeApp({
@@ -209,7 +207,6 @@ async function load(){
 
  ensure(home);ensure(away);
 
- /* 🔥 TÝMY + RATING */
  homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}<br>⭐ ${Math.round(ratings[home])}`;
  awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}">${away}<br>⭐ ${Math.round(ratings[away])}`;
 
@@ -286,6 +283,10 @@ window.placeBet=async function(player){
   data.kBet=bet;
   data.kOdds=o;
   data.kWin=win;
+
+  const refK=doc(db,"hraci","KTip");
+  const snap=await getDoc(refK);
+  await updateDoc(refK,{kredit:snap.data().kredit - bet});
  }
 
  if(player==="P"){
@@ -293,11 +294,16 @@ window.placeBet=async function(player){
   data.pBet=bet;
   data.pOdds=o;
   data.pWin=win;
+
+  const refP=doc(db,"hraci","PTip");
+  const snap=await getDoc(refP);
+  await updateDoc(refP,{kredit:snap.data().kredit - bet});
  }
 
  await setDoc(ref,data,{merge:true});
  alert("Uloženo");
  loadSaved();
+ loadCredits();
 }
 
 /* ===== LOAD SAVED ===== */
@@ -328,7 +334,6 @@ async function loadSaved(){
 async function loadCredits(){
  const k=await getDoc(doc(db,"hraci","KTip"));
  const p=await getDoc(doc(db,"hraci","PTip"));
-
  creditBox.innerText=`Kubele: ${k.data().kredit} Kč | Pici: ${p.data().kredit} Kč`;
 }
 
