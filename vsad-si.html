@@ -28,7 +28,7 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;text-align:ce
 
 <div class="matchHeader">
  <div class="team" id="homeTeam"></div>
- <div class="scoreBig">- : -</div>
+ <div class="scoreBig" id="scoreBig">- : -</div>
  <div class="team" id="awayTeam"></div>
 </div>
 
@@ -64,17 +64,33 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;text-align:ce
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
- apiKey:"AIzaSy...",
+ apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
  authDomain:"statistiky-6310a.firebaseapp.com",
  projectId:"statistiky-6310a"
 };
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
+
+/* ===== FUNKCE PRO SKÓRE ===== */
+
+function calc(stats){
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+
+ if(stats[9]==="11") ag++
+ if(stats[19]==="11") hg++
+ if(stats[20]==="1") hg++
+ if(stats[20]==="2") ag++
+
+ return {hg,ag}
+}
+
+/* ===== GLOBAL ===== */
 
 let selectedTip=null;
 let currentOdds={
@@ -93,8 +109,8 @@ async function load(){
  const home=params.get("home");
  const away=params.get("away");
 
- homeTeam.innerHTML=home
- awayTeam.innerHTML=away
+ homeTeam.innerText=home
+ awayTeam.innerText=away
 
  o1.innerText=currentOdds[1]
  o2.innerText=currentOdds[2]
@@ -104,9 +120,30 @@ async function load(){
 
  await loadCredits()
  await loadExistingBet()
+ await loadScore(home,away)
 }
 
 load()
+
+/* ===== SCORE ===== */
+
+async function loadScore(home,away){
+
+ const snap=await getDocs(collection(db,"zapasy"))
+
+ snap.forEach(d=>{
+  const data=d.data()
+
+  if(data.homeTeam===home && data.awayTeam===away){
+
+   if(!data.stats)return
+
+   const s=calc(data.stats)
+
+   scoreBig.innerText = s.hg + " : " + s.ag
+  }
+ })
+}
 
 /* ===== KREDIT ===== */
 
@@ -130,7 +167,6 @@ window.loadExistingBet=async function(){
  const away=params.get("away");
  const playerId=player.value;
 
- // RESET UI !!!
  selectedTip=null;
  betAmount.value="";
  document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"))
@@ -217,7 +253,7 @@ window.placeBet=async function(){
  })
 
  await loadCredits()
- await loadExistingBet()   // 🔥 KLÍČOVÉ
+ await loadExistingBet()
 
  alert("Sázka uložena ✅")
 }
