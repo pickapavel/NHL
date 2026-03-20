@@ -180,111 +180,167 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-const BASE=1000;
+/* ===== ELO (STEJNÉ JAKO EXTRALIGA) ===== */
+
+const BASE_RATING=1000;
 const K=30;
 const HOME_ADV=50;
 
 let ratings={};
 
-/* ELO */
 function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
 
 function updateElo(home,away,hg,ag){
 
- if(!ratings[home])ratings[home]=BASE;
- if(!ratings[away])ratings[away]=BASE;
+ if(ratings[home]===undefined)ratings[home]=BASE_RATING
+ if(ratings[away]===undefined)ratings[away]=BASE_RATING
 
- let ra=ratings[home]+HOME_ADV;
- let rb=ratings[away];
+ let ra=ratings[home]+HOME_ADV
+ let rb=ratings[away]
 
- let ea=expected(ra,rb);
- let eb=expected(rb,ra);
+ let ea=expected(ra,rb)
+ let eb=expected(rb,ra)
 
- let sa=hg>ag?1:0;
- let sb=ag>hg?1:0;
+ let sa=hg>ag?1:0
+ let sb=ag>hg?1:0
 
- ratings[home]+=K*(sa-ea);
- ratings[away]+=K*(sb-eb);
+ ratings[home]+=K*(sa-ea)
+ ratings[away]+=K*(sb-eb)
 }
 
 function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
 
- return {hg,ag};
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+
+ if(stats[9]==="11") ag++
+ if(stats[19]==="11") hg++
+ if(stats[20]==="1") hg++
+ if(stats[20]==="2") ag++
+
+ return {hg,ag}
 }
+
+/* ===== KURZY (STEJNÉ JAKO EXTRALIGA) ===== */
 
 function calculateOdds(home,away){
 
- let ra=(ratings[home]||1000)+HOME_ADV;
- let rb=(ratings[away]||1000);
+ let ra=(ratings[home]||1000)+HOME_ADV
+ let rb=(ratings[away]||1000)
 
- const pHome=1/(1+Math.pow(10,(rb-ra)/400));
- const pAway=1-pHome;
+ const diff = Math.abs(ra-rb)
 
- const pDraw=0.2;
+ const pHome=1/(1+Math.pow(10,(rb-ra)/400))
+ const pAway=1-pHome
+
+ const pDraw = Math.max(0.12, 0.28 - diff/4000)
+
+ const pHomeReg=pHome*0.60
+ const pHomeOT=pHome*0.18
+
+ const pAwayReg=pAway*0.60
+ const pAwayOT=pAway*0.18
 
  return {
-  1:(1/(pHome*0.6)).toFixed(2),
-  2:(1/(pHome*0.2)).toFixed(2),
+  1:(1/pHomeReg).toFixed(2),
+  2:(1/pHomeOT).toFixed(2),
   3:(1/pDraw).toFixed(2),
-  4:(1/(pAway*0.2)).toFixed(2),
-  5:(1/(pAway*0.6)).toFixed(2)
- };
+  4:(1/pAwayOT).toFixed(2),
+  5:(1/pAwayReg).toFixed(2)
+ }
 }
 
-/* LOAD */
+/* ===== LOAD ===== */
+
+let selectedTip=null;
+let currentOdds={};
+
 async function load(){
 
  const params=new URLSearchParams(window.location.search);
  const home=params.get("home");
  const away=params.get("away");
 
- const snap=await getDocs(collection(db,"zapasy"));
+ if(!home || !away){
+  alert("Chybí data zápasu");
+  return;
+ }
+
+ /* NAČTI ZÁPASY */
+ const snap = await getDocs(collection(db,"zapasy"));
+
+ let matches = [];
 
  snap.forEach(d=>{
-  const m=d.data();
-  if(!m.stats)return;
+  matches.push(d.data());
+ });
 
-  const s=calc(m.stats);
+ /* STEJNÁ LOGIKA JAKO EXTRALIGA */
+ const extraliga = matches
+  .filter(m => m.category?.startsWith("Extraliga"))
+  .sort((a,b)=>a.created - b.created);
+
+ extraliga.forEach(m=>{
+  if(!m.stats) return;
+
+  const s = calc(m.stats);
   updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
  });
 
- const homeRating=Math.round(ratings[home]||1000);
- const awayRating=Math.round(ratings[away]||1000);
+ const homeRating = Math.round(ratings[home]||1000);
+ const awayRating = Math.round(ratings[away]||1000);
 
- document.getElementById("homeTeam").innerHTML=
+ /* UI */
+ document.getElementById("homeTeam").innerHTML =
  `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`;
 
- document.getElementById("awayTeam").innerHTML=
+ document.getElementById("awayTeam").innerHTML =
  `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`;
 
- const odds=calculateOdds(home,away);
+ /* kurzy */
+ currentOdds = calculateOdds(home,away);
 
- o1.innerText=odds[1];
- o2.innerText=odds[2];
- o3.innerText=odds[3];
- o4.innerText=odds[4];
- o5.innerText=odds[5];
+ o1.innerText=currentOdds[1];
+ o2.innerText=currentOdds[2];
+ o3.innerText=currentOdds[3];
+ o4.innerText=currentOdds[4];
+ o5.innerText=currentOdds[5];
 }
 
 load();
 
 /* UI */
-let selectedTip=null;
-let currentOdds={};
 
 document.querySelectorAll(".odds").forEach(el=>{
  el.onclick=()=>{
   document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"));
   el.classList.add("active");
   selectedTip=el.dataset.tip;
+  updateWin();
  }
 });
 
+betAmount.oninput=updateWin;
+
+function updateWin(){
+ const amount=Number(betAmount.value);
+ const odds=Number(currentOdds[selectedTip]||0);
+
+ finalOdds.innerText=odds||0;
+
+ if(amount&&odds){
+  winAmount.innerText=Math.round(amount*odds)+" Kč";
+ }else{
+  winAmount.innerText="0 Kč";
+ }
+}
+
 window.placeBet=function(){
+ if(!selectedTip)return alert("Vyber tip");
+ if(!betAmount.value)return alert("Zadej částku");
+
  alert("Sázka OK");
 }
 
