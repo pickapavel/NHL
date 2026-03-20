@@ -188,6 +188,11 @@ const HOME_ADV=50;
 
 let ratings={};
 
+function resetRatings(){
+ ratings={}
+ Object.keys(teamsData).forEach(t=>ratings[t]=BASE_RATING)
+}
+
 function expected(ra,rb){
  return 1/(1+Math.pow(10,(rb-ra)/400))
 }
@@ -223,7 +228,7 @@ function calc(stats){
  return {hg,ag}
 }
 
-/* ===== KURZY (STEJNÉ JAKO EXTRALIGA) ===== */
+/* ===== KURZY ===== */
 
 function calculateOdds(home,away){
 
@@ -268,16 +273,20 @@ async function load(){
   return;
  }
 
- /* NAČTI ZÁPASY */
+ resetRatings()
+
  const snap = await getDocs(collection(db,"zapasy"));
 
  let matches = [];
 
  snap.forEach(d=>{
-  matches.push(d.data());
+  matches.push({
+   id: d.id,
+   ...d.data()
+  });
  });
 
- /* STEJNÁ LOGIKA JAKO EXTRALIGA */
+ /* IDENTICKÉ JAKO EXTRALIGA */
  const extraliga = matches
   .filter(m => m.category?.startsWith("Extraliga"))
   .sort((a,b)=>a.created - b.created);
@@ -292,14 +301,12 @@ async function load(){
  const homeRating = Math.round(ratings[home]||1000);
  const awayRating = Math.round(ratings[away]||1000);
 
- /* UI */
  document.getElementById("homeTeam").innerHTML =
  `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`;
 
  document.getElementById("awayTeam").innerHTML =
  `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`;
 
- /* kurzy */
  currentOdds = calculateOdds(home,away);
 
  o1.innerText=currentOdds[1];
