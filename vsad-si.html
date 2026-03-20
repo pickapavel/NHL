@@ -32,32 +32,51 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 .odds{
  background:white;color:black;
  text-align:center;padding:8px;
- border-radius:8px;cursor:pointer;
- font-weight:bold;
+ border-radius:8px;font-weight:bold;
 }
 
-.odds.active{background:#27ae60;color:white;}
+.betRow{
+ background:#0b2a3c;
+ padding:12px;
+ border-radius:10px;
+ margin-top:10px;
+}
 
 input{
- width:100%;padding:10px;border-radius:8px;
- border:none;text-align:center;margin-bottom:15px;
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+ text-align:center;
+ margin-top:8px;
 }
 
-.betInfo{
- background:#0b2a3c;padding:10px;border-radius:10px;
- display:flex;justify-content:space-between;
+.info{
+ display:flex;
+ justify-content:space-between;
+ margin-top:8px;
 }
 
-.betBtn{
- width:100%;padding:12px;background:#27ae60;
- border:none;border-radius:8px;color:white;
- font-weight:bold;margin-top:10px;
+.btn{
+ width:100%;
+ padding:10px;
+ margin-top:8px;
+ border:none;
+ border-radius:8px;
+ font-weight:bold;
+ cursor:pointer;
 }
+
+.k{background:#2f9ec9;color:white;}
+.p{background:#e67e22;color:white;}
 
 .creditBox{
- margin-top:15px;padding:10px;
- background:#0b2a3c;border-radius:10px;
- text-align:center;font-weight:bold;
+ margin-top:15px;
+ padding:10px;
+ background:#0b2a3c;
+ border-radius:10px;
+ text-align:center;
+ font-weight:bold;
 }
 </style>
 </head>
@@ -75,26 +94,40 @@ input{
 <div class="betBox">
 
 <div class="oddsRow">
- <div class="odds" data-tip="1">1<br><span id="o1"></span></div>
- <div class="odds" data-tip="2">10<br><span id="o2"></span></div>
- <div class="odds" data-tip="3">0<br><span id="o3"></span></div>
- <div class="odds" data-tip="4">02<br><span id="o4"></span></div>
- <div class="odds" data-tip="5">2<br><span id="o5"></span></div>
+ <div class="odds">1<br><span id="o1"></span></div>
+ <div class="odds">10<br><span id="o2"></span></div>
+ <div class="odds">0<br><span id="o3"></span></div>
+ <div class="odds">02<br><span id="o4"></span></div>
+ <div class="odds">2<br><span id="o5"></span></div>
 </div>
 
-<input id="betAmount" placeholder="Vklad (Kč)" type="number">
-
-<div class="betInfo">
- <div>Kurz: <span id="finalOdds">0</span></div>
- <div>Výhra: <span id="winAmount">0 Kč</span></div>
+<!-- KUBELE -->
+<div class="betRow">
+<b>Kubele</b>
+<input id="kTip" placeholder="Tip (1-5)">
+<input id="kBet" placeholder="Kč" type="number">
+<div class="info">
+<span id="kOdds">Kurz: 0</span>
+<span id="kWin">Výhra: 0 Kč</span>
+</div>
+<button class="btn k" onclick="saveBet('K')">Vsadit</button>
 </div>
 
-<button class="betBtn" onclick="placeBet()">VSADIT</button>
+<!-- PICI -->
+<div class="betRow">
+<b>Pici</b>
+<input id="pTip" placeholder="Tip (1-5)">
+<input id="pBet" placeholder="Kč" type="number">
+<div class="info">
+<span id="pOdds">Kurz: 0</span>
+<span id="pWin">Výhra: 0 Kč</span>
+</div>
+<button class="btn p" onclick="saveBet('P')">Vsadit</button>
+</div>
 
 <div id="creditBox" class="creditBox"></div>
 
 </div>
-
 </div>
 
 <script type="module">
@@ -110,31 +143,17 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
-const teamsData={
- "HC Sparta Praha (P)":"sparta.png",
- "HC Bílí Tygři Liberec (K)":"liberec.png",
- "HC Dynamo Pardubice (K)":"pardubice.png",
- "HC Chemopetrol Litvínov (P)":"litvinov.png",
- "HC Geus Okna Kladno (P)":"kladno.png",
- "HC Motor České Budějovice (K)":"budejovice.png",
- "HC Energie Karlovy Vary (P)":"vary.png",
- "HC Oceláři Třinec (K)":"trinec.png"
-};
+let home,away,ratings={},currentOdds={};
 
-const BASE_RATING=1000, K=30, HOME_ADV=50;
-let ratings={}, selectedTip=null, currentOdds={};
+const BASE=1000,K=30,HOME=50;
 
-function resetRatings(){
- ratings={}; Object.keys(teamsData).forEach(t=>ratings[t]=BASE_RATING);
-}
+function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
 
-function expected(ra,rb){return 1/(1+Math.pow(10,(rb-ra)/400))}
-
-function updateElo(home,away,hg,ag){
- let ra=ratings[home]+HOME_ADV, rb=ratings[away];
+function updateElo(h,a,hg,ag){
+ let ra=ratings[h]+HOME, rb=ratings[a];
  let ea=expected(ra,rb), sa=hg>ag?1:0;
- ratings[home]+=K*(sa-ea);
- ratings[away]+=K*((1-sa)-(1-ea));
+ ratings[h]+=K*(sa-ea);
+ ratings[a]+=K*((1-sa)-(1-ea));
 }
 
 function calc(s){
@@ -145,25 +164,22 @@ function calc(s){
  return {hg,ag}
 }
 
-function calculateOdds(home,away){
- let ra=(ratings[home]||1000)+HOME_ADV;
- let rb=(ratings[away]||1000);
- const diff=Math.abs(ra-rb);
- const pH=1/(1+Math.pow(10,(rb-ra)/400));
- const pA=1-pH;
- const pD=Math.max(0.12,0.28-diff/4000);
+function odds(h,a){
+ let ra=(ratings[h]||1000)+HOME;
+ let rb=(ratings[a]||1000);
+ let diff=Math.abs(ra-rb);
+ let pH=1/(1+Math.pow(10,(rb-ra)/400));
+ let pA=1-pH;
+ let pD=Math.max(0.12,0.28-diff/4000);
+
  return {
-  1:(1/(pH*0.6)).toFixed(2),
-  2:(1/(pH*0.18)).toFixed(2),
-  3:(1/pD).toFixed(2),
-  4:(1/(pA*0.18)).toFixed(2),
-  5:(1/(pA*0.6)).toFixed(2)
+ 1:(1/(pH*0.6)).toFixed(2),
+ 2:(1/(pH*0.18)).toFixed(2),
+ 3:(1/pD).toFixed(2),
+ 4:(1/(pA*0.18)).toFixed(2),
+ 5:(1/(pA*0.6)).toFixed(2)
  }
 }
-
-/* ===== LOAD ===== */
-
-let home,away;
 
 async function load(){
 
@@ -171,11 +187,11 @@ async function load(){
  home=params.get("home");
  away=params.get("away");
 
- resetRatings();
-
  const snap=await getDocs(collection(db,"zapasy"));
  let matches=[];
  snap.forEach(d=>matches.push({id:d.id,...d.data()}));
+
+ Object.keys(matches).forEach(()=>{})
 
  matches
  .filter(m=>m.category?.startsWith("Extraliga"))
@@ -186,10 +202,10 @@ async function load(){
   updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
  });
 
- homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}<br>⭐ ${Math.round(ratings[home])}`;
- awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}">${away}<br>⭐ ${Math.round(ratings[away])}`;
+ homeTeam.innerHTML=`<img src="./logos/${home}.png">${home}<br>⭐ ${Math.round(ratings[home])}`;
+ awayTeam.innerHTML=`<img src="./logos/${away}.png">${away}<br>⭐ ${Math.round(ratings[away])}`;
 
- currentOdds=calculateOdds(home,away);
+ currentOdds=odds(home,away);
 
  o1.innerText=currentOdds[1];
  o2.innerText=currentOdds[2];
@@ -198,32 +214,88 @@ async function load(){
  o5.innerText=currentOdds[5];
 
  loadCredits();
- loadSavedBet();
+ loadSaved();
 }
 
 load();
 
-/* ===== LOAD SAVED TIP ===== */
+/* ===== LIVE UPDATE ===== */
 
-async function loadSavedBet(){
+kTip.oninput=kBet.oninput=()=>calcWin("K");
+pTip.oninput=pBet.oninput=()=>calcWin("P");
+
+function calcWin(player){
+
+ const tip=player==="K"?kTip.value:pTip.value;
+ const bet=Number(player==="K"?kBet.value:pBet.value);
+
+ const oddsVal=Number(currentOdds[tip]||0);
+
+ if(player==="K"){
+  kOdds.innerText="Kurz: "+oddsVal;
+  kWin.innerText="Výhra: "+(bet&&oddsVal?Math.round(bet*oddsVal):0)+" Kč";
+ }else{
+  pOdds.innerText="Kurz: "+oddsVal;
+  pWin.innerText="Výhra: "+(bet&&oddsVal?Math.round(bet*oddsVal):0)+" Kč";
+ }
+}
+
+/* ===== SAVE ===== */
+
+window.saveBet=async function(player){
+
+ const tip=player==="K"?kTip.value:pTip.value;
+ const bet=Number(player==="K"?kBet.value:pBet.value);
+
+ if(!tip||!bet)return alert("Vyplň vše");
+
+ const oddsVal=Number(currentOdds[tip]);
+ const win=Math.round(bet*oddsVal);
 
  const ref=doc(db,"tipy",home+"_"+away);
- const snap=await getDoc(ref);
 
- if(!snap.exists()) return;
+ let data={homeTeam:home,awayTeam:away};
 
- const data=snap.data();
+ if(player==="K"){
+  data.kTip=tip;
+  data.kBet=bet;
+  data.kOdds=oddsVal;
+  data.kWin=win;
+ }
 
- selectedTip=data.tip;
- betAmount.value=data.bet;
+ if(player==="P"){
+  data.pTip=tip;
+  data.pBet=bet;
+  data.pOdds=oddsVal;
+  data.pWin=win;
+ }
 
- document.querySelectorAll(".odds").forEach(el=>{
-  if(el.dataset.tip===data.tip){
-   el.classList.add("active");
-  }
- });
+ await setDoc(ref,data,{merge:true});
 
- updateWin();
+ alert("Uloženo");
+ loadSaved();
+}
+
+/* ===== LOAD SAVED ===== */
+
+async function loadSaved(){
+
+ const snap=await getDoc(doc(db,"tipy",home+"_"+away));
+ if(!snap.exists())return;
+
+ const d=snap.data();
+
+ if(d.kTip){
+  kTip.value=d.kTip;
+  kBet.value=d.kBet;
+  calcWin("K");
+ }
+
+ if(d.pTip){
+  pTip.value=d.pTip;
+  pBet.value=d.pBet;
+  calcWin("P");
+ }
 }
 
 /* ===== CREDIT ===== */
@@ -232,50 +304,6 @@ async function loadCredits(){
  const k=await getDoc(doc(db,"hraci","KTip"));
  const p=await getDoc(doc(db,"hraci","PTip"));
  creditBox.innerText=`Kubele: ${k.data().kredit} Kč | Pici: ${p.data().kredit} Kč`;
-}
-
-/* ===== UI ===== */
-
-document.querySelectorAll(".odds").forEach(el=>{
- el.onclick=()=>{
-  document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"));
-  el.classList.add("active");
-  selectedTip=el.dataset.tip;
-  updateWin();
- }
-});
-
-betAmount.oninput=updateWin;
-
-function updateWin(){
- const a=+betAmount.value;
- const o=+currentOdds[selectedTip]||0;
- finalOdds.innerText=o;
- winAmount.innerText=a&&o?Math.round(a*o)+" Kč":"0 Kč";
-}
-
-/* ===== SAVE ===== */
-
-window.placeBet=async function(){
-
- if(!selectedTip)return alert("Vyber tip");
- if(!betAmount.value)return alert("Zadej částku");
-
- const bet=+betAmount.value;
- const odds=+currentOdds[selectedTip];
- const win=Math.round(bet*odds);
-
- await setDoc(doc(db,"tipy",home+"_"+away),{
-  homeTeam:home,
-  awayTeam:away,
-  tip:selectedTip,
-  bet:bet,
-  odds:odds,
-  possibleWin:win,
-  created:Date.now()
- },{merge:true});
-
- alert("Uloženo ✅");
 }
 
 </script>
