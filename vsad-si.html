@@ -64,7 +64,7 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;text-align:ce
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc }
+import { getFirestore, doc, getDoc, setDoc, updateDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -76,7 +76,7 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== SCORE CALC ===== */
+/* ===== SCORE ===== */
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
@@ -125,36 +125,27 @@ async function load(){
 
 load()
 
-/* ===== SCORE (FIXED) ===== */
+/* ===== SCORE FIXED 🔥 ===== */
 
 async function loadScore(home,away){
 
- const snap=await getDocs(collection(db,"zapasy"))
+ const id = home + "_" + away
+ const ref = doc(db,"zapasy",id)
+ const snap = await getDoc(ref)
 
- let matches=[]
+ if(!snap.exists()){
+  scoreBig.innerText = "- : -"
+  return
+ }
 
- snap.forEach(d=>{
-  const data=d.data()
+ const data = snap.data()
 
-  if(
-   data.homeTeam===home &&
-   data.awayTeam===away &&
-   data.category?.startsWith("Extraliga 2")
-  ){
-   matches.push(data)
-  }
- })
+ if(!data.stats){
+  scoreBig.innerText = "- : -"
+  return
+ }
 
- if(matches.length===0) return
-
- // vezmeme NEJNOVĚJŠÍ zápas
- matches.sort((a,b)=>b.created-a.created)
-
- const match=matches[0]
-
- if(!match.stats) return
-
- const s=calc(match.stats)
+ const s = calc(data.stats)
 
  scoreBig.innerText = s.hg + " : " + s.ag
 }
