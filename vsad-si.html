@@ -183,20 +183,6 @@ const teamsData={
 let selectedTip=null;
 let currentOdds={};
 
-/* ===== GÓLY ===== */
-
-function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
-
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
- if(stats[20]==="1") hg++;
- if(stats[20]==="2") ag++;
-
- return {hg,ag};
-}
-
 /* ===== KURZY ===== */
 
 const HOME_ADV=50;
@@ -231,56 +217,65 @@ function calculateOdds(homeRating,awayRating){
 
 async function loadMatch(){
 
- const params=new URLSearchParams(window.location.search);
- const matchId=params.get("id");
+ const params = new URLSearchParams(window.location.search);
 
- const matchSnap=await getDoc(doc(db,"zapasy",matchId));
- if(!matchSnap.exists()) return;
+ const home = params.get("home");
+ const away = params.get("away");
 
- const match=matchSnap.data();
+ if(!home || !away){
+  alert("Chybí data zápasu");
+  return;
+ }
 
- const home=match.homeTeam;
- const away=match.awayTeam;
+ let match = null;
 
- const stats = match.stats;
+ const snap = await getDoc(doc(db,"zapasy",home+"_"+away));
+
+ if(snap.exists()){
+  match = snap.data();
+ }
 
  let hg = "-";
  let ag = "-";
  let periods = "";
 
- if(stats){
-  const s = calc(stats);
-  hg = s.hg;
-  ag = s.ag;
+ if(match && match.stats){
+  const stats = match.stats;
+
+  let a = Number(stats[6])+Number(stats[7])+Number(stats[8]);
+  let h = Number(stats[16])+Number(stats[17])+Number(stats[18]);
+
+  hg = h;
+  ag = a;
 
   periods = `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
  }
 
  /* ratingy */
- const homeDoc=await getDoc(doc(db,"ratings",home));
- const awayDoc=await getDoc(doc(db,"ratings",away));
+ const homeDoc = await getDoc(doc(db,"ratings",home));
+ const awayDoc = await getDoc(doc(db,"ratings",away));
 
  const homeRating = homeDoc.exists() ? Number(homeDoc.data().rating) : 1000;
  const awayRating = awayDoc.exists() ? Number(awayDoc.data().rating) : 1000;
 
  /* UI */
- document.getElementById("homeTeam").innerHTML=
- `<img src="./logos/${teamsData[home]}"><div class="teamName">${home} ⭐ ${homeRating}</div>`;
+ document.getElementById("homeTeam").innerHTML =
+ `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`;
 
- document.getElementById("awayTeam").innerHTML=
- `<img src="./logos/${teamsData[away]}"><div class="teamName">${away} ⭐ ${awayRating}</div>`;
+ document.getElementById("awayTeam").innerHTML =
+ `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`;
 
- document.getElementById("score").innerText=`${hg} : ${ag}`;
- document.getElementById("periodInfo").innerText=periods;
+ document.getElementById("score").innerText = `${hg} : ${ag}`;
+ document.getElementById("periodInfo").innerText = periods;
 
  /* kurzy */
  currentOdds = calculateOdds(homeRating,awayRating);
 
- o1.innerText=currentOdds[1];
- o2.innerText=currentOdds[2];
- o3.innerText=currentOdds[3];
- o4.innerText=currentOdds[4];
- o5.innerText=currentOdds[5];
+ o1.innerText = currentOdds[1];
+ o2.innerText = currentOdds[2];
+ o3.innerText = currentOdds[3];
+ o4.innerText = currentOdds[4];
+ o5.innerText = currentOdds[5];
 }
 
 loadMatch();
