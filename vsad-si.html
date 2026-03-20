@@ -157,7 +157,7 @@ input{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc }
+import { getFirestore, collection, getDocs }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -180,136 +180,111 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-let selectedTip=null;
-let currentOdds={};
-
-/* ===== KURZY ===== */
-
+const BASE=1000;
+const K=30;
 const HOME_ADV=50;
 
-function calculateOdds(homeRating,awayRating){
+let ratings={};
 
- let ra=homeRating + HOME_ADV;
- let rb=awayRating;
+/* ELO */
+function expected(ra,rb){
+ return 1/(1+Math.pow(10,(rb-ra)/400))
+}
 
- const diff=Math.abs(ra-rb);
+function updateElo(home,away,hg,ag){
+
+ if(!ratings[home])ratings[home]=BASE;
+ if(!ratings[away])ratings[away]=BASE;
+
+ let ra=ratings[home]+HOME_ADV;
+ let rb=ratings[away];
+
+ let ea=expected(ra,rb);
+ let eb=expected(rb,ra);
+
+ let sa=hg>ag?1:0;
+ let sb=ag>hg?1:0;
+
+ ratings[home]+=K*(sa-ea);
+ ratings[away]+=K*(sb-eb);
+}
+
+function calc(stats){
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+
+ return {hg,ag};
+}
+
+function calculateOdds(home,away){
+
+ let ra=(ratings[home]||1000)+HOME_ADV;
+ let rb=(ratings[away]||1000);
 
  const pHome=1/(1+Math.pow(10,(rb-ra)/400));
  const pAway=1-pHome;
 
- const pDraw=Math.max(0.12,0.28-diff/4000);
-
- const pHomeReg=pHome*0.60;
- const pHomeOT=pHome*0.18;
- const pAwayReg=pAway*0.60;
- const pAwayOT=pAway*0.18;
+ const pDraw=0.2;
 
  return {
-  1:(1/pHomeReg).toFixed(2),
-  2:(1/pHomeOT).toFixed(2),
+  1:(1/(pHome*0.6)).toFixed(2),
+  2:(1/(pHome*0.2)).toFixed(2),
   3:(1/pDraw).toFixed(2),
-  4:(1/pAwayOT).toFixed(2),
-  5:(1/pAwayReg).toFixed(2)
+  4:(1/(pAway*0.2)).toFixed(2),
+  5:(1/(pAway*0.6)).toFixed(2)
  };
 }
 
-/* ===== LOAD ===== */
+/* LOAD */
+async function load(){
 
-async function loadMatch(){
+ const params=new URLSearchParams(window.location.search);
+ const home=params.get("home");
+ const away=params.get("away");
 
- const params = new URLSearchParams(window.location.search);
+ const snap=await getDocs(collection(db,"zapasy"));
 
- const home = params.get("home");
- const away = params.get("away");
+ snap.forEach(d=>{
+  const m=d.data();
+  if(!m.stats)return;
 
- if(!home || !away){
-  alert("Chybí data zápasu");
-  return;
- }
+  const s=calc(m.stats);
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+ });
 
- let match = null;
+ const homeRating=Math.round(ratings[home]||1000);
+ const awayRating=Math.round(ratings[away]||1000);
 
- const snap = await getDoc(doc(db,"zapasy",home+"_"+away));
-
- if(snap.exists()){
-  match = snap.data();
- }
-
- let hg = "-";
- let ag = "-";
- let periods = "";
-
- if(match && match.stats){
-  const stats = match.stats;
-
-  let a = Number(stats[6])+Number(stats[7])+Number(stats[8]);
-  let h = Number(stats[16])+Number(stats[17])+Number(stats[18]);
-
-  hg = h;
-  ag = a;
-
-  periods = `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
- }
-
- /* ratingy */
- const homeDoc = await getDoc(doc(db,"ratings",home));
- const awayDoc = await getDoc(doc(db,"ratings",away));
-
- const homeRating = homeDoc.exists() ? Number(homeDoc.data().rating) : 1000;
- const awayRating = awayDoc.exists() ? Number(awayDoc.data().rating) : 1000;
-
- /* UI */
- document.getElementById("homeTeam").innerHTML =
+ document.getElementById("homeTeam").innerHTML=
  `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`;
 
- document.getElementById("awayTeam").innerHTML =
+ document.getElementById("awayTeam").innerHTML=
  `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`;
 
- document.getElementById("score").innerText = `${hg} : ${ag}`;
- document.getElementById("periodInfo").innerText = periods;
+ const odds=calculateOdds(home,away);
 
- /* kurzy */
- currentOdds = calculateOdds(homeRating,awayRating);
-
- o1.innerText = currentOdds[1];
- o2.innerText = currentOdds[2];
- o3.innerText = currentOdds[3];
- o4.innerText = currentOdds[4];
- o5.innerText = currentOdds[5];
+ o1.innerText=odds[1];
+ o2.innerText=odds[2];
+ o3.innerText=odds[3];
+ o4.innerText=odds[4];
+ o5.innerText=odds[5];
 }
 
-loadMatch();
+load();
 
 /* UI */
+let selectedTip=null;
+let currentOdds={};
 
 document.querySelectorAll(".odds").forEach(el=>{
  el.onclick=()=>{
   document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"));
   el.classList.add("active");
   selectedTip=el.dataset.tip;
-  updateWin();
  }
 });
 
-betAmount.oninput=updateWin;
-
-function updateWin(){
- const amount=Number(betAmount.value);
- const odds=Number(currentOdds[selectedTip]||0);
-
- finalOdds.innerText=odds||0;
-
- if(amount&&odds){
-  winAmount.innerText=Math.round(amount*odds)+" Kč";
- }else{
-  winAmount.innerText="0 Kč";
- }
-}
-
 window.placeBet=function(){
- if(!selectedTip)return alert("Vyber tip");
- if(!betAmount.value)return alert("Zadej částku");
-
  alert("Sázka OK");
 }
 
