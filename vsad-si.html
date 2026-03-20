@@ -57,7 +57,7 @@ body{
 
 .periodInfo{
  text-align:center;
- margin-bottom:25px;
+ margin-bottom:15px;
  opacity:0.8;
 }
 
@@ -116,6 +116,15 @@ input{
  font-weight:bold;
  margin-top:10px;
 }
+
+.creditBox{
+ margin-top:15px;
+ padding:10px;
+ background:#0b2a3c;
+ border-radius:10px;
+ text-align:center;
+ font-weight:bold;
+}
 </style>
 </head>
 
@@ -150,6 +159,10 @@ input{
 
 <button class="betBtn" onclick="placeBet()">VSADIT</button>
 
+<div id="creditBox" class="creditBox">
+Kubele: 0 Kč | Pici: 0 Kč
+</div>
+
 </div>
 
 </div>
@@ -157,7 +170,7 @@ input{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs }
+import { getFirestore, collection, getDocs, doc, getDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -180,7 +193,7 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-/* ===== ELO (STEJNÉ JAKO EXTRALIGA) ===== */
+/* ===== ELO ===== */
 
 const BASE_RATING=1000;
 const K=30;
@@ -198,7 +211,6 @@ function expected(ra,rb){
 }
 
 function updateElo(home,away,hg,ag){
-
  if(ratings[home]===undefined)ratings[home]=BASE_RATING
  if(ratings[away]===undefined)ratings[away]=BASE_RATING
 
@@ -206,17 +218,13 @@ function updateElo(home,away,hg,ag){
  let rb=ratings[away]
 
  let ea=expected(ra,rb)
- let eb=expected(rb,ra)
-
  let sa=hg>ag?1:0
- let sb=ag>hg?1:0
 
  ratings[home]+=K*(sa-ea)
- ratings[away]+=K*(sb-eb)
+ ratings[away]+=K*((1-sa)-(1-ea))
 }
 
 function calc(stats){
-
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
  let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
 
@@ -231,7 +239,6 @@ function calc(stats){
 /* ===== KURZY ===== */
 
 function calculateOdds(home,away){
-
  let ra=(ratings[home]||1000)+HOME_ADV
  let rb=(ratings[away]||1000)
 
@@ -239,21 +246,14 @@ function calculateOdds(home,away){
 
  const pHome=1/(1+Math.pow(10,(rb-ra)/400))
  const pAway=1-pHome
-
  const pDraw = Math.max(0.12, 0.28 - diff/4000)
 
- const pHomeReg=pHome*0.60
- const pHomeOT=pHome*0.18
-
- const pAwayReg=pAway*0.60
- const pAwayOT=pAway*0.18
-
  return {
-  1:(1/pHomeReg).toFixed(2),
-  2:(1/pHomeOT).toFixed(2),
+  1:(1/(pHome*0.6)).toFixed(2),
+  2:(1/(pHome*0.18)).toFixed(2),
   3:(1/pDraw).toFixed(2),
-  4:(1/pAwayOT).toFixed(2),
-  5:(1/pAwayReg).toFixed(2)
+  4:(1/(pAway*0.18)).toFixed(2),
+  5:(1/(pAway*0.6)).toFixed(2)
  }
 }
 
@@ -268,11 +268,6 @@ async function load(){
  const home=params.get("home");
  const away=params.get("away");
 
- if(!home || !away){
-  alert("Chybí data zápasu");
-  return;
- }
-
  resetRatings()
 
  const snap = await getDocs(collection(db,"zapasy"));
@@ -280,75 +275,86 @@ async function load(){
  let matches = [];
 
  snap.forEach(d=>{
-  matches.push({
-   id: d.id,
-   ...d.data()
-  });
+  matches.push({id:d.id,...d.data()})
  });
 
- /* IDENTICKÉ JAKO EXTRALIGA */
  const extraliga = matches
-  .filter(m => m.category?.startsWith("Extraliga"))
-  .sort((a,b)=>a.created - b.created);
+  .filter(m=>m.category?.startsWith("Extraliga"))
+  .sort((a,b)=>a.created-b.created)
 
  extraliga.forEach(m=>{
-  if(!m.stats) return;
+  if(!m.stats)return
+  const s=calc(m.stats)
+  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag)
+ })
 
-  const s = calc(m.stats);
-  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
- });
+ const homeRating=Math.round(ratings[home]||1000)
+ const awayRating=Math.round(ratings[away]||1000)
 
- const homeRating = Math.round(ratings[home]||1000);
- const awayRating = Math.round(ratings[away]||1000);
+ document.getElementById("homeTeam").innerHTML=
+ `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`
 
- document.getElementById("homeTeam").innerHTML =
- `<img src="./logos/${teamsData[home]}"><div class="teamName">${home}<br>⭐ ${homeRating}</div>`;
+ document.getElementById("awayTeam").innerHTML=
+ `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`
 
- document.getElementById("awayTeam").innerHTML =
- `<img src="./logos/${teamsData[away]}"><div class="teamName">${away}<br>⭐ ${awayRating}</div>`;
+ currentOdds=calculateOdds(home,away)
 
- currentOdds = calculateOdds(home,away);
+ o1.innerText=currentOdds[1]
+ o2.innerText=currentOdds[2]
+ o3.innerText=currentOdds[3]
+ o4.innerText=currentOdds[4]
+ o5.innerText=currentOdds[5]
 
- o1.innerText=currentOdds[1];
- o2.innerText=currentOdds[2];
- o3.innerText=currentOdds[3];
- o4.innerText=currentOdds[4];
- o5.innerText=currentOdds[5];
+ loadCredits()
 }
 
-load();
+load()
 
-/* UI */
+/* ===== KREDIT ===== */
+
+async function loadCredits(){
+
+ const kDoc = await getDoc(doc(db,"hraci","KTip"))
+ const pDoc = await getDoc(doc(db,"hraci","PTip"))
+
+ let kreditK = kDoc.exists()?Number(kDoc.data().kredit):0
+ let kreditP = pDoc.exists()?Number(pDoc.data().kredit):0
+
+ document.getElementById("creditBox").innerText=
+ `Kubele: ${kreditK} Kč | Pici: ${kreditP} Kč`
+}
+
+/* ===== UI ===== */
 
 document.querySelectorAll(".odds").forEach(el=>{
  el.onclick=()=>{
-  document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"));
-  el.classList.add("active");
-  selectedTip=el.dataset.tip;
-  updateWin();
+  document.querySelectorAll(".odds").forEach(o=>o.classList.remove("active"))
+  el.classList.add("active")
+  selectedTip=el.dataset.tip
+  updateWin()
  }
-});
+})
 
-betAmount.oninput=updateWin;
+betAmount.oninput=updateWin
 
 function updateWin(){
- const amount=Number(betAmount.value);
- const odds=Number(currentOdds[selectedTip]||0);
+ const amount=Number(betAmount.value)
+ const odds=Number(currentOdds[selectedTip]||0)
 
- finalOdds.innerText=odds||0;
+ finalOdds.innerText=odds||0
 
  if(amount&&odds){
-  winAmount.innerText=Math.round(amount*odds)+" Kč";
+  winAmount.innerText=Math.round(amount*odds)+" Kč"
  }else{
-  winAmount.innerText="0 Kč";
+  winAmount.innerText="0 Kč"
  }
 }
 
 window.placeBet=function(){
- if(!selectedTip)return alert("Vyber tip");
- if(!betAmount.value)return alert("Zadej částku");
+ if(!selectedTip)return alert("Vyber tip")
+ if(!betAmount.value)return alert("Zadej částku")
 
- alert("Sázka OK");
+ alert("Sázka OK")
 }
 
 </script>
