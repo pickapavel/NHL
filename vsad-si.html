@@ -9,6 +9,8 @@
 body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 .wrapper{max-width:900px;margin:auto;padding:20px;}
 
+/* ===== HEADER ===== */
+
 .matchHeader{
  display:flex;
  justify-content:space-between;
@@ -24,15 +26,11 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
 }
 
 .team img{
- width:50px;height:50px;
+ width:50px;
+ height:50px;
  background:white;
  padding:6px;
  border-radius:10px;
-}
-
-.teamRight{
- flex-direction:row-reverse;
- text-align:right;
 }
 
 .scoreBig{
@@ -40,12 +38,7 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
  font-weight:bold;
 }
 
-.rating{
- font-size:13px;
- opacity:0.8;
-}
-
-/* ===== BET ===== */
+/* ===== BET BOX ===== */
 
 .betBox{
  background:#112f44;
@@ -71,6 +64,7 @@ body{margin:0;font-family:Arial;background:#0b2a3c;color:white;}
  border-radius:8px;
  cursor:pointer;
  font-weight:bold;
+ font-size:14px;
 }
 
 .odds.active{
@@ -124,7 +118,7 @@ input{
 <div class="matchHeader">
  <div class="team" id="homeTeam"></div>
  <div class="scoreBig">- : -</div>
- <div class="team teamRight" id="awayTeam"></div>
+ <div class="team" id="awayTeam"></div>
 </div>
 
 <div class="betBox">
@@ -136,11 +130,11 @@ input{
 <div class="oddsRow" id="kOddsRow">
  <div class="odds" data-tip="1">1<br><span id="ko1"></span></div>
  <div class="odds" data-tip="2">10<br><span id="ko2"></span></div>
- <div class="odds" data-tip="6">11<br><span id="ko6"></span></div>
  <div class="odds" data-tip="3">0<br><span id="ko3"></span></div>
- <div class="odds" data-tip="7">22<br><span id="ko7"></span></div>
  <div class="odds" data-tip="4">02<br><span id="ko4"></span></div>
  <div class="odds" data-tip="5">2<br><span id="ko5"></span></div>
+ <div class="odds" data-tip="6">11<br><span id="ko6"></span></div>
+ <div class="odds" data-tip="7">22<br><span id="ko7"></span></div>
 </div>
 
 <input id="kBet" placeholder="Vklad (Kč)" type="number">
@@ -160,11 +154,11 @@ input{
 <div class="oddsRow" id="pOddsRow">
  <div class="odds" data-tip="1">1<br><span id="po1"></span></div>
  <div class="odds" data-tip="2">10<br><span id="po2"></span></div>
- <div class="odds" data-tip="6">11<br><span id="po6"></span></div>
  <div class="odds" data-tip="3">0<br><span id="po3"></span></div>
- <div class="odds" data-tip="7">22<br><span id="po7"></span></div>
  <div class="odds" data-tip="4">02<br><span id="po4"></span></div>
  <div class="odds" data-tip="5">2<br><span id="po5"></span></div>
+ <div class="odds" data-tip="6">11<br><span id="po6"></span></div>
+ <div class="odds" data-tip="7">22<br><span id="po7"></span></div>
 </div>
 
 <input id="pBet" placeholder="Vklad (Kč)" type="number">
@@ -195,8 +189,6 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
-/* ===== TÝMY ===== */
-
 const teamsData={
  "HC Sparta Praha (P)":"sparta.png",
  "HC Bílí Tygři Liberec (K)":"liberec.png",
@@ -208,42 +200,25 @@ const teamsData={
  "HC Oceláři Třinec (K)":"trinec.png"
 };
 
-const BASE=1000, K=30, HOME_ADV=50;
-let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
+let home,away,currentOdds={},kTip=null,pTip=null;
 
-function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
+/* ===== ODDS ===== */
 
-function updateElo(h,a,hg,ag){
- let ra=ratings[h]+HOME_ADV, rb=ratings[a];
- let ea=expected(ra,rb), sa=hg>ag?1:0;
- ratings[h]+=K*(sa-ea);
- ratings[a]+=K*((1-sa)-(1-ea));
-}
+function calculateOdds(h,a){
+ let ra=1050, rb=1000; // zjednodušeno (bereš z extraligy)
 
-function calc(s){
- let ag=+s[6]+ +s[7]+ +s[8];
- let hg=+s[16]+ +s[17]+ +s[18];
- if(s[9]==="11")ag++; if(s[19]==="11")hg++;
- if(s[20]==="1")hg++; if(s[20]==="2")ag++;
- return {hg,ag}
-}
-
-function calculateOdds(home,away){
- let ra=(ratings[home]||1000)+HOME_ADV;
- let rb=(ratings[away]||1000);
-
- const pH=1/(1+Math.pow(10,(rb-ra)/400));
- const pA=1-pH;
- const pD=0.2;
+ let pH=1/(1+Math.pow(10,(rb-ra)/400));
+ let pA=1-pH;
+ let pD=0.2;
 
  return {
  1:(1/(pH*0.6)).toFixed(2),
  2:(1/(pH*0.18)).toFixed(2),
- 6:(1/(pH*0.78)).toFixed(2),
  3:(1/pD).toFixed(2),
- 7:(1/(pA*0.78)).toFixed(2),
  4:(1/(pA*0.18)).toFixed(2),
- 5:(1/(pA*0.6)).toFixed(2)
+ 5:(1/(pA*0.6)).toFixed(2),
+ 6:(1/(pH*0.78)).toFixed(2), // 11
+ 7:(1/(pA*0.78)).toFixed(2)  // 22
  }
 }
 
@@ -255,40 +230,14 @@ async function load(){
  home=params.get("home");
  away=params.get("away");
 
- const snap=await getDocs(collection(db,"zapasy"));
- let matches=[];
- snap.forEach(d=>matches.push({id:d.id,...d.data()}));
-
- Object.keys(teamsData).forEach(t=>ratings[t]=BASE);
-
- matches
- .filter(m=>m.category?.startsWith("Extraliga"))
- .sort((a,b)=>a.created-b.created)
- .forEach(m=>{
-  if(!m.stats)return;
-  const s=calc(m.stats);
-  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
- });
-
- homeTeam.innerHTML=`
- <img src="./logos/${teamsData[home]}">
- <div>
- ${home}
- <div class="rating">⭐ ${Math.round(ratings[home])}</div>
- </div>`;
-
- awayTeam.innerHTML=`
- <div>
- ${away}
- <div class="rating">⭐ ${Math.round(ratings[away])}</div>
- </div>
- <img src="./logos/${teamsData[away]}">`;
+ homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}`;
+ awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}">${away}`;
 
  currentOdds=calculateOdds(home,away);
 
- for(const key in currentOdds){
-  document.getElementById("ko"+key).innerText=currentOdds[key];
-  document.getElementById("po"+key).innerText=currentOdds[key];
+ for(let i=1;i<=7;i++){
+  document.getElementById("ko"+i).innerText=currentOdds[i];
+  document.getElementById("po"+i).innerText=currentOdds[i];
  }
 
  loadCredits();
