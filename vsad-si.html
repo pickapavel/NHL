@@ -76,7 +76,7 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* ===== FUNKCE PRO SKÓRE ===== */
+/* ===== SCORE CALC ===== */
 
 function calc(stats){
  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
@@ -125,24 +125,38 @@ async function load(){
 
 load()
 
-/* ===== SCORE ===== */
+/* ===== SCORE (FIXED) ===== */
 
 async function loadScore(home,away){
 
  const snap=await getDocs(collection(db,"zapasy"))
 
+ let matches=[]
+
  snap.forEach(d=>{
   const data=d.data()
 
-  if(data.homeTeam===home && data.awayTeam===away){
-
-   if(!data.stats)return
-
-   const s=calc(data.stats)
-
-   scoreBig.innerText = s.hg + " : " + s.ag
+  if(
+   data.homeTeam===home &&
+   data.awayTeam===away &&
+   data.category?.startsWith("Extraliga 2")
+  ){
+   matches.push(data)
   }
  })
+
+ if(matches.length===0) return
+
+ // vezmeme NEJNOVĚJŠÍ zápas
+ matches.sort((a,b)=>b.created-a.created)
+
+ const match=matches[0]
+
+ if(!match.stats) return
+
+ const s=calc(match.stats)
+
+ scoreBig.innerText = s.hg + " : " + s.ag
 }
 
 /* ===== KREDIT ===== */
