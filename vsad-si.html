@@ -54,14 +54,9 @@ input{
  font-weight:bold;margin-top:10px;
 }
 
-.section{
- margin-top:20px;
-}
+.section{margin-top:20px;}
 
-.title{
- font-weight:bold;
- margin-bottom:5px;
-}
+.title{font-weight:bold;margin-bottom:5px;}
 
 .creditBox{
  margin-top:15px;padding:10px;
@@ -83,7 +78,7 @@ input{
 
 <div class="betBox">
 
-<!-- ===== KUBELE ===== -->
+<!-- KUBELE -->
 <div class="section">
 <div class="title">Kubele</div>
 
@@ -105,8 +100,7 @@ input{
 <button class="betBtn" onclick="placeBet('K')">VSADIT</button>
 </div>
 
-
-<!-- ===== PICI ===== -->
+<!-- PICI -->
 <div class="section">
 <div class="title">Pici</div>
 
@@ -146,9 +140,21 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
-let home,away,ratings={},currentOdds={},kTip=null,pTip=null;
+/* ===== TÝMY ===== */
+
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
+};
 
 const BASE=1000,K=30,HOME=50;
+let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
 
 function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
 
@@ -208,10 +214,10 @@ async function load(){
 
  currentOdds=odds(home,away);
 
- Object.values(currentOdds).forEach((v,i)=>{
-  document.getElementById("ko"+(i+1)).innerText=v;
-  document.getElementById("po"+(i+1)).innerText=v;
- });
+ for(let i=1;i<=5;i++){
+  document.getElementById("ko"+i).innerText=currentOdds[i];
+  document.getElementById("po"+i).innerText=currentOdds[i];
+ }
 
  loadCredits();
  loadSaved();
@@ -245,10 +251,9 @@ kBet.oninput=()=>calcWin("K");
 pBet.oninput=()=>calcWin("P");
 
 function calcWin(player){
-
- const tip = player==="K"?kTip:pTip;
- const bet = Number(player==="K"?kBet.value:pBet.value);
- const o = Number(currentOdds[tip]||0);
+ const tip=player==="K"?kTip:pTip;
+ const bet=Number(player==="K"?kBet.value:pBet.value);
+ const o=Number(currentOdds[tip]||0);
 
  if(player==="K"){
   kFinalOdds.innerText=o;
@@ -263,8 +268,8 @@ function calcWin(player){
 
 window.placeBet=async function(player){
 
- const tip = player==="K"?kTip:pTip;
- const bet = Number(player==="K"?kBet.value:pBet.value);
+ const tip=player==="K"?kTip:pTip;
+ const bet=Number(player==="K"?kBet.value:pBet.value);
 
  if(!tip||!bet)return alert("Vyplň vše");
 
@@ -278,6 +283,7 @@ window.placeBet=async function(player){
  if(player==="K"){
   data.kTip=tip; data.kBet=bet; data.kWin=win;
  }
+
  if(player==="P"){
   data.pTip=tip; data.pBet=bet; data.pWin=win;
  }
