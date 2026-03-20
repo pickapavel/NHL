@@ -31,7 +31,7 @@ input{width:100%;padding:10px;border-radius:8px;border:none;text-align:center;ma
 
 <div class="matchHeader">
  <div class="team" id="homeTeam"></div>
- <div class="scoreBig">- : -</div>
+ <div class="scoreBig" id="scoreBox">- : -</div>
  <div class="team" id="awayTeam"></div>
 </div>
 
@@ -89,11 +89,21 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
+const teamsData={
+ "HC Sparta Praha (P)":"sparta.png",
+ "HC Bílí Tygři Liberec (K)":"liberec.png",
+ "HC Dynamo Pardubice (K)":"pardubice.png",
+ "HC Chemopetrol Litvínov (P)":"litvinov.png",
+ "HC Geus Okna Kladno (P)":"kladno.png",
+ "HC Motor České Budějovice (K)":"budejovice.png",
+ "HC Energie Karlovy Vary (P)":"vary.png",
+ "HC Oceláři Třinec (K)":"trinec.png"
+};
+
 const BASE=1000,K=30,HOME=50;
 let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
 
 function ensure(t){ if(typeof ratings[t]!=="number")ratings[t]=BASE; }
-
 function expected(a,b){return 1/(1+Math.pow(10,(b-a)/400))}
 
 function updateElo(h,a,hg,ag){
@@ -137,89 +147,116 @@ async function load(){
 
  const snap=await getDocs(collection(db,"zapasy"));
 
+ let matchResult=null;
+
  snap.forEach(d=>{
   const m=d.data();
-  if(!m.stats)return;
-  const s=calc(m.stats);
-  updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+
+  if(m.stats){
+   const s=calc(m.stats);
+   updateElo(m.homeTeam,m.awayTeam,s.hg,s.ag);
+  }
+
+  if(m.homeTeam===home && m.awayTeam===away && m.stats){
+   matchResult=calc(m.stats);
+  }
  });
 
  ensure(home);ensure(away);
 
- homeTeam.innerHTML=`${home}<br>⭐ ${Math.round(ratings[home])}`;
- awayTeam.innerHTML=`${away}<br>⭐ ${Math.round(ratings[away])}`;
+ homeTeam.innerHTML=`<img src="./logos/${teamsData[home]}">${home}<br>⭐ ${Math.round(ratings[home])}`;
+ awayTeam.innerHTML=`<img src="./logos/${teamsData[away]}">${away}<br>⭐ ${Math.round(ratings[away])}`;
+
+ if(matchResult){
+  scoreBox.innerText=`${matchResult.hg} : ${matchResult.ag}`;
+ }
 
  currentOdds=odds(home,away);
 
  for(let i=1;i<=5;i++){
-  ko1.innerText=currentOdds[1];
-  ko2.innerText=currentOdds[2];
-  ko3.innerText=currentOdds[3];
-  ko4.innerText=currentOdds[4];
-  ko5.innerText=currentOdds[5];
-
-  po1.innerText=currentOdds[1];
-  po2.innerText=currentOdds[2];
-  po3.innerText=currentOdds[3];
-  po4.innerText=currentOdds[4];
-  po5.innerText=currentOdds[5];
+  document.getElementById("ko"+i).innerText=currentOdds[i];
+  document.getElementById("po"+i).innerText=currentOdds[i];
  }
 
- loadSaved();
  loadCredits();
- checkResult(); // 🔥 TADY JE KLÍČ
+ loadSaved();
+ checkResult();
 }
 
 load();
 
 /* ===== VYHODNOCENÍ ===== */
 
+function mapResult(r){
+ if(r.hg>r.ag) return "HOME";
+ if(r.hg<r.ag) return "AWAY";
+ return "DRAW";
+}
+
+function isWin(tip,type){
+ if(type==="HOME") return tip==="1"||tip==="2";
+ if(type==="DRAW") return tip==="3";
+ if(type==="AWAY") return tip==="4"||tip==="5";
+ return false;
+}
+
 async function checkResult(){
 
- const matchSnap=await getDocs(collection(db,"zapasy"));
- let result=null;
+ const snap=await getDocs(collection(db,"zapasy"));
+ let res=null;
 
- matchSnap.forEach(d=>{
+ snap.forEach(d=>{
   const m=d.data();
   if(m.homeTeam===home && m.awayTeam===away && m.stats){
-   result=calc(m.stats);
+   res=calc(m.stats);
   }
  });
 
- if(!result)return;
+ if(!res)return;
 
- const tipSnap=await getDoc(doc(db,"tipy",home+"_"+away));
- if(!tipSnap.exists())return;
+ const ref=doc(db,"tipy",home+"_"+away);
+ const s=await getDoc(ref);
+ if(!s.exists())return;
 
- const d=tipSnap.data();
- if(d.done)return; // 🔥 už vyhodnoceno
+ const d=s.data();
+ if(d.done)return;
 
- let realTip = result.hg>result.ag ? "1" : result.hg<result.ag ? "5" : "3";
+ const type=mapResult(res);
 
- if(d.kTip===realTip){
-  const ref=doc(db,"hraci","KTip");
-  const snap=await getDoc(ref);
-  await updateDoc(ref,{kredit:snap.data().kredit + d.kWin});
+ if(d.kTip && isWin(d.kTip,type)){
+  const r=doc(db,"hraci","KTip");
+  const snap=await getDoc(r);
+  await updateDoc(r,{kredit:snap.data().kredit + d.kWin});
  }
 
- if(d.pTip===realTip){
-  const ref=doc(db,"hraci","PTip");
-  const snap=await getDoc(ref);
-  await updateDoc(ref,{kredit:snap.data().kredit + d.pWin});
+ if(d.pTip && isWin(d.pTip,type)){
+  const r=doc(db,"hraci","PTip");
+  const snap=await getDoc(r);
+  await updateDoc(r,{kredit:snap.data().kredit + d.pWin});
  }
 
- await updateDoc(doc(db,"tipy",home+"_"+away),{done:true});
+ await updateDoc(ref,{done:true});
  loadCredits();
 }
 
-/* ===== ZBYTEK BEZE ZMĚNY ===== */
+/* CLICK */
 
 document.querySelectorAll("#kOddsRow .odds").forEach(el=>{
- el.onclick=()=>{document.querySelectorAll("#kOddsRow .odds").forEach(o=>o.classList.remove("active"));el.classList.add("active");kTip=el.dataset.tip;calcWin("K");}
+ el.onclick=()=>{
+  document.querySelectorAll("#kOddsRow .odds").forEach(o=>o.classList.remove("active"));
+  el.classList.add("active");
+  kTip=el.dataset.tip;
+  calcWin("K");
+ }
 });
 
 document.querySelectorAll("#pOddsRow .odds").forEach(el=>{
- el.onclick=()=>{document.querySelectorAll("#pOddsRow .odds").forEach(o=>o.classList.remove("active"));el.classList.add("active");pTip=el.dataset.tip;calcWin("P");}
+ el.onclick=()=>{
+  document.querySelectorAll("#pOddsRow .odds").forEach(o=>o.classList.remove("active"));
+  el.classList.add("active");
+  pTip=el.dataset.tip;
+  calcWin("P");
+ }
 });
 
 kBet.oninput=()=>calcWin("K");
@@ -238,6 +275,8 @@ function calcWin(player){
   pWin.innerText=bet&&o?Math.round(bet*o)+" Kč":"0 Kč";
  }
 }
+
+/* BET */
 
 window.placeBet=async function(player){
 
