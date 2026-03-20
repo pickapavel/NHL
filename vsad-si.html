@@ -10,6 +10,15 @@ const app=initializeApp({
  projectId:"statistiky-6310a"
 });
 const db=getFirestore(app);
+ const homeTeam = document.getElementById("homeTeam");
+const awayTeam = document.getElementById("awayTeam");
+const kBet = document.getElementById("kBet");
+const pBet = document.getElementById("pBet");
+const kFinalOdds = document.getElementById("kFinalOdds");
+const pFinalOdds = document.getElementById("pFinalOdds");
+const kWin = document.getElementById("kWin");
+const pWin = document.getElementById("pWin");
+const creditBox = document.getElementById("creditBox");
 
 const BASE=1000,K=30,HOME=50;
 let ratings={},currentOdds={},home,away,kTip=null,pTip=null;
