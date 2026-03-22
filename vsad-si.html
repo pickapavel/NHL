@@ -145,15 +145,15 @@ input{
 <div class="teams">
 
 <div class="team">
-<img src="">
-<div id="homeName">Domácí tým</div>
+<img id="homeLogo">
+<div id="homeName">...</div>
 </div>
 
 <div class="score" id="score">- : -</div>
 
 <div class="team">
-<img src="">
-<div id="awayName">Hosté</div>
+<img id="awayLogo">
+<div id="awayName">...</div>
 </div>
 
 </div>
@@ -171,27 +171,23 @@ Třetiny: (-:-, -:-, -:-)
 <h3>Vyber výsledek</h3>
 
 <div class="odds">
-
 <div class="odd" data-type="1">1</div>
 <div class="odd" data-type="2">10</div>
 <div class="odd" data-type="3">0</div>
 <div class="odd" data-type="4">02</div>
 <div class="odd" data-type="5">2</div>
-
 </div>
 
 <input type="number" id="bet" placeholder="Částka (Kč)">
 
 <div class="info">
-<div>Kurz: <span id="kurz">-</span></div>
-<div>Výhra: <span id="vyhra">-</span></div>
+<div>Kurz: <span>-</span></div>
+<div>Výhra: <span>-</span></div>
 </div>
 
 <button class="betBtn">VSADIT</button>
 
 </div>
-
-<!-- ===== ZPĚT ===== -->
 
 <div class="back">
 <button onclick="history.back()">← Zpět</button>
@@ -199,19 +195,68 @@ Třetiny: (-:-, -:-, -:-)
 
 </div>
 
-<script>
+<script type="module">
 
-// pouze UI výběr (žádná logika kurzů zatím)
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-let selected = null
+const supabase = createClient(
+  "https://qacobodrfsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
 
+// ID zápasu z URL
+const params = new URLSearchParams(window.location.search)
+const matchId = params.get("id")
+
+let teamMap = {}
+
+// LOAD
+async function load(){
+
+ // týmy
+ const { data: teams } = await supabase.from("teams").select("*")
+
+ teams.forEach(t=>{
+  teamMap[t.id] = t
+ })
+
+ // zápas
+ const { data: match } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
+
+ render(match)
+}
+
+// RENDER
+function render(m){
+
+ const home = teamMap[m.home_team]
+ const away = teamMap[m.away_team]
+
+ document.getElementById("homeName").innerText = home.name
+ document.getElementById("awayName").innerText = away.name
+
+ document.getElementById("homeLogo").src = "./logos/" + home.logo
+ document.getElementById("awayLogo").src = "./logos/" + away.logo
+
+ if(m.played){
+  document.getElementById("score").innerText =
+   m.home_score + " : " + m.away_score
+ }
+}
+
+// UI výběr tipu
 document.querySelectorAll(".odd").forEach(btn=>{
  btn.onclick = ()=>{
   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
   btn.classList.add("active")
-  selected = btn.dataset.type
  }
 })
+
+load()
 
 </script>
 
