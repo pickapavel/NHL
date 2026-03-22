@@ -108,8 +108,13 @@ function render(matches, teamMap){
 
  matches.forEach(m=>{
 
-  const home = teamMap[m.home_team]
-  const away = teamMap[m.away_team]
+const home = teamMap[m.home_team]
+const away = teamMap[m.away_team]
+
+if(!home || !away){
+ console.log("CHYBA TEAM:", m)
+ return
+}
 
   cont.innerHTML+=`
 
