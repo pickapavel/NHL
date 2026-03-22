@@ -95,19 +95,25 @@ body{
 
 // ===== TÝMY =====
 const teams = [
- "Sparta","Liberec","Pardubice","Litvínov",
- "Kladno","Budějovice","Vary","Třinec"
+ "HC Sparta Praha",
+ "HC Bílí Tygři Liberec",
+ "HC Dynamo Pardubice",
+ "HC Chemopetrol Litvínov",
+ "HC Geus Okna Kladno",
+ "HC Motor České Budějovice",
+ "HC Energie Karlovy Vary",
+ "HC Oceláři Třinec"
 ]
 
 const logos = {
- "Sparta":"sparta.png",
- "Liberec":"liberec.png",
- "Pardubice":"pardubice.png",
- "Litvínov":"litvinov.png",
- "Kladno":"kladno.png",
- "Budějovice":"budejovice.png",
- "Vary":"vary.png",
- "Třinec":"trinec.png"
+ "HC Sparta Praha":"sparta.png",
+ "HC Bílí Tygři Liberec":"liberec.png",
+ "HC Dynamo Pardubice":"pardubice.png",
+ "HC Chemopetrol Litvínov":"litvinov.png",
+ "HC Geus Okna Kladno":"kladno.png",
+ "HC Motor České Budějovice":"budejovice.png",
+ "HC Energie Karlovy Vary":"vary.png",
+ "HC Oceláři Třinec":"trinec.png"
 }
 
 // ===== ROZPIS =====
@@ -136,7 +142,12 @@ function render(){
 
    <div class="teamBox">
     <img class="logo" src="./logos/${logos[p[0]]}">
-    ${p[0]} ⭐ ${ratings[p[0]]}
+    <div>
+     ${p[0]}
+     <div style="font-size:12px;color:#666;">
+      ⭐ ${ratings[p[0]]}
+     </div>
+    </div>
    </div>
 
    <div class="scoreBox">-</div>
@@ -146,7 +157,12 @@ function render(){
    <div class="scoreBox">-</div>
 
    <div class="teamBox teamRight">
-    ${p[1]} ⭐ ${ratings[p[1]]}
+    <div style="text-align:right">
+     ${p[1]}
+     <div style="font-size:12px;color:#666;">
+      ⭐ ${ratings[p[1]]}
+     </div>
+    </div>
     <img class="logo" src="./logos/${logos[p[1]]}">
    </div>
 
