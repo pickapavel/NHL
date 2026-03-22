@@ -129,14 +129,14 @@ input{
 
 <div class="team">
 <img id="homeLogo">
-<div id="homeName">...</div>
+<div id="homeName"></div>
 </div>
 
-<div class="score" id="score">- : -</div>
+<div class="score">- : -</div>
 
 <div class="team">
 <img id="awayLogo">
-<div id="awayName">...</div>
+<div id="awayName"></div>
 </div>
 
 </div>
@@ -174,88 +174,35 @@ input{
 
 </div>
 
-<script type="module">
+<script>
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const supabase = createClient(
- "https://qacobodrfsaerxntfui.supabase.co",
- "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-)
-
+// ===== NAČTENÍ Z URL =====
 const params = new URLSearchParams(window.location.search)
-const matchId = params.get("id")
 
-let teamMap = {}
+const home = params.get("home")
+const away = params.get("away")
+const hlogo = params.get("hlogo")
+const alogo = params.get("alogo")
 
-// LOAD
-async function load(){
+// ===== VYKRESLENÍ =====
+document.getElementById("homeName").innerText = home || "Domácí"
+document.getElementById("awayName").innerText = away || "Hosté"
 
- // TEAMS
- const { data: teams, error: tErr } = await supabase
-  .from("teams")
-  .select("*")
-
- if(tErr){
-  console.error("TEAMS ERROR:", tErr)
-  return
- }
-
- console.log("TEAMS:", teams)
-
- teams.forEach(t=>{
-  teamMap[t.id] = t
- })
-
- // MATCH
- const { data: match, error: mErr } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
-
- if(mErr){
-  console.error("MATCH ERROR:", mErr)
-  return
- }
-
- console.log("MATCH:", match)
-
- render(match)
+if(hlogo){
+ document.getElementById("homeLogo").src = "./logos/" + hlogo
 }
 
-// RENDER
-function render(m){
-
- const home = teamMap[m.home_team]
- const away = teamMap[m.away_team]
-
- if(!home || !away){
-  console.error("CHYBA TEAM:", m)
-  return
- }
-
- document.getElementById("homeName").innerText = home.name
- document.getElementById("awayName").innerText = away.name
-
- document.getElementById("homeLogo").src = "./logos/" + home.logo
- document.getElementById("awayLogo").src = "./logos/" + away.logo
-
- if(m.played){
-  document.getElementById("score").innerText =
-   m.home_score + " : " + m.away_score
- }
+if(alogo){
+ document.getElementById("awayLogo").src = "./logos/" + alogo
 }
 
-// klikání na tip
+// klikání
 document.querySelectorAll(".odd").forEach(btn=>{
  btn.onclick = ()=>{
   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
   btn.classList.add("active")
  }
 })
-
-load()
 
 </script>
 
