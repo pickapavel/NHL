@@ -44,10 +44,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 0;border-radius:6px;text-align:center;
 }
 
-.statsBtn{
- background:#2f9ec9;color:white;border:none;
- padding:8px;border-radius:6px;cursor:pointer;width:100%;
+.btn{
+ border:none;
+ padding:8px;
+ border-radius:6px;
+ cursor:pointer;
+ width:100%;
+ margin-top:5px;
+ font-weight:bold;
 }
+
+.detailBtn{background:#2f9ec9;color:white;}
+.betBtn{background:#27ae60;color:white;}
+
 </style>
 </head>
 
@@ -70,8 +79,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+  "https://qacobodrfsaerxntfui.supabase.co",
+  "TVŮJ_PUBLISHABLE_KEY"
 )
 
 // ===== RATING =====
@@ -80,22 +89,17 @@ let ratings = {}
 // ===== LOAD =====
 async function load(){
 
- // načti týmy
  const { data: teams } = await supabase.from("teams").select("*")
 
- // mapování ID → data
  const teamMap = {}
  teams.forEach(t=>{
   teamMap[t.id] = t
   ratings[t.name] = 1000
  })
 
- // načti zápasy
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
-
- console.log("MATCHES:", matches)
 
  render(matches, teamMap)
 }
@@ -108,13 +112,10 @@ function render(matches, teamMap){
 
  matches.forEach(m=>{
 
-const home = teamMap[m.home_team]
-const away = teamMap[m.away_team]
+  const home = teamMap[m.home_team]
+  const away = teamMap[m.away_team]
 
-if(!home || !away){
- console.log("CHYBA TEAM:", m)
- return
-}
+  if(!home || !away) return
 
   cont.innerHTML+=`
 
@@ -147,9 +148,14 @@ if(!home || !away){
    </div>
 
    <div>
-    <button class="statsBtn"
-    onclick="window.location.href='vsad-si.html?id=${m.id}'">
-    Detail
+    <button class="btn detailBtn"
+     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+     Detail
+    </button>
+
+    <button class="btn betBtn"
+     onclick="window.location.href='vsad-si.html?id=${m.id}'">
+     Vsaď si
     </button>
    </div>
 
