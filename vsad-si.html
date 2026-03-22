@@ -8,52 +8,129 @@
 <style>
 body{
  font-family:Arial;
- background:#f2f2f2;
+ background:#0c2a38;
  margin:0;
+ color:white;
 }
 
 .wrapper{
- max-width:600px;
+ max-width:500px;
  margin:auto;
- background:white;
  padding:20px;
- border-radius:10px;
- margin-top:40px;
 }
 
+/* ===== ZÁPAS ===== */
+
 .matchBox{
- background:#e9ecef;
- padding:20px;
- border-radius:10px;
  text-align:center;
  margin-bottom:20px;
 }
 
 .teams{
- font-size:20px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.team{
+ width:40%;
+ text-align:center;
+}
+
+.team img{
+ width:70px;
+ height:70px;
+ background:white;
+ border-radius:10px;
+ padding:5px;
+}
+
+.score{
+ font-size:40px;
  font-weight:bold;
- margin-bottom:10px;
 }
 
-input, select{
- width:100%;
- padding:10px;
- margin:10px 0;
- border-radius:6px;
- border:1px solid #ccc;
+.periods{
+ margin-top:10px;
+ color:#ccc;
 }
 
-button{
- width:100%;
+/* ===== SÁZKY ===== */
+
+.betBox{
+ background:#16394d;
+ padding:20px;
+ border-radius:15px;
+}
+
+.betBox h3{
+ margin-top:0;
+}
+
+.odds{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:10px;
+ margin-bottom:15px;
+}
+
+.odd{
+ background:#eee;
+ color:black;
+ text-align:center;
  padding:12px;
+ border-radius:8px;
+ cursor:pointer;
+ font-weight:bold;
+}
+
+.odd.active{
  background:#27ae60;
  color:white;
+}
+
+input{
+ width:100%;
+ padding:10px;
+ border-radius:8px;
  border:none;
- border-radius:6px;
+ margin-bottom:10px;
+ font-size:16px;
+}
+
+.info{
+ display:flex;
+ justify-content:space-between;
+ margin-bottom:15px;
+}
+
+/* ===== BUTTONY ===== */
+
+.betBtn{
+ width:100%;
+ padding:15px;
+ background:#27ae60;
+ border:none;
+ border-radius:10px;
+ color:white;
+ font-size:18px;
  font-weight:bold;
  cursor:pointer;
 }
 
+.back{
+ margin-top:20px;
+ text-align:center;
+}
+
+.back button{
+ padding:10px 20px;
+ border:none;
+ border-radius:8px;
+ background:#2f9ec9;
+ color:white;
+ cursor:pointer;
+}
 </style>
 </head>
 
@@ -61,102 +138,80 @@ button{
 
 <div class="wrapper">
 
-<h2>Vsaď si na zápas</h2>
+<!-- ===== ZÁPAS ===== -->
 
-<div id="match"></div>
+<div class="matchBox">
 
-<select id="tip">
- <option value="">Vyber tip</option>
- <option value="1">Domácí výhra</option>
- <option value="2">Výhra po prodl.</option>
- <option value="3">Remíza</option>
- <option value="4">Výhra hosté prodl.</option>
- <option value="5">Hosté výhra</option>
-</select>
+<div class="teams">
 
-<input type="number" id="amount" placeholder="Částka (Kč)">
+<div class="team">
+<img src="">
+<div id="homeName">Domácí tým</div>
+</div>
 
-<button onclick="saveBet()">Potvrdit sázku</button>
+<div class="score" id="score">- : -</div>
+
+<div class="team">
+<img src="">
+<div id="awayName">Hosté</div>
+</div>
 
 </div>
 
-<script type="module">
+<div class="periods" id="periods">
+Třetiny: (-:-, -:-, -:-)
+</div>
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+</div>
 
-const supabase = createClient(
-  "https://qacobodrfsaerxntfui.supabase.co",
-  "TVŮJ_PUBLISHABLE_KEY"
-)
+<!-- ===== SÁZKY ===== -->
 
-// PARAMETR
-const params = new URLSearchParams(window.location.search)
-const matchId = params.get("id")
+<div class="betBox">
 
-const container = document.getElementById("match")
+<h3>Vyber výsledek</h3>
 
-let currentMatch = null
-let teamMap = {}
+<div class="odds">
 
-// LOAD
-async function load(){
+<div class="odd" data-type="1">1</div>
+<div class="odd" data-type="2">10</div>
+<div class="odd" data-type="3">0</div>
+<div class="odd" data-type="4">02</div>
+<div class="odd" data-type="5">2</div>
 
- // týmy
- const { data: teams } = await supabase.from("teams").select("*")
+</div>
 
- teams.forEach(t=>{
-  teamMap[t.id] = t
- })
+<input type="number" id="bet" placeholder="Částka (Kč)">
 
- // zápas
- const { data: match } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
+<div class="info">
+<div>Kurz: <span id="kurz">-</span></div>
+<div>Výhra: <span id="vyhra">-</span></div>
+</div>
 
- currentMatch = match
+<button class="betBtn">VSADIT</button>
 
- render()
-}
+</div>
 
-// RENDER
-function render(){
+<!-- ===== ZPĚT ===== -->
 
- const home = teamMap[currentMatch.home_team]
- const away = teamMap[currentMatch.away_team]
+<div class="back">
+<button onclick="history.back()">← Zpět</button>
+</div>
 
- container.innerHTML = `
-  <div class="matchBox">
-   <div class="teams">
-    ${home.name} vs ${away.name}
-   </div>
-  </div>
- `
-}
+</div>
 
-// SAVE
-async function saveBet(){
+<script>
 
- const tip = document.getElementById("tip").value
- const amount = Number(document.getElementById("amount").value)
+// pouze UI výběr (žádná logika kurzů zatím)
 
- if(!tip || !amount){
-  alert("Vyplň tip i částku")
-  return
+let selected = null
+
+document.querySelectorAll(".odd").forEach(btn=>{
+ btn.onclick = ()=>{
+  document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
+  btn.classList.add("active")
+  selected = btn.dataset.type
  }
-
- await supabase.from("bets").insert([{
-  match_id: matchId,
-  tip: tip,
-  amount: amount
- }])
-
- alert("Sázka uložena")
-
-}
-
-load()
+})
 
 </script>
 
