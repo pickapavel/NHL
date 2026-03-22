@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sázky na zápas</title>
+<title>Vsaď si</title>
 
 <style>
 body{
@@ -13,7 +13,7 @@ body{
 }
 
 .wrapper{
- max-width:800px;
+ max-width:600px;
  margin:auto;
  background:white;
  padding:20px;
@@ -29,131 +29,134 @@ body{
  margin-bottom:20px;
 }
 
-.score{
- font-size:32px;
+.teams{
+ font-size:20px;
  font-weight:bold;
- margin:10px 0;
+ margin-bottom:10px;
 }
 
-.notPlayed{
- font-size:16px;
- color:#666;
- margin-top:10px;
+input, select{
+ width:100%;
+ padding:10px;
+ margin:10px 0;
+ border-radius:6px;
+ border:1px solid #ccc;
 }
+
+button{
+ width:100%;
+ padding:12px;
+ background:#27ae60;
+ color:white;
+ border:none;
+ border-radius:6px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="wrapper">
-<h2>Detail zápasu</h2>
+
+<h2>Vsaď si na zápas</h2>
+
 <div id="match"></div>
+
+<select id="tip">
+ <option value="">Vyber tip</option>
+ <option value="1">Domácí výhra</option>
+ <option value="2">Výhra po prodl.</option>
+ <option value="3">Remíza</option>
+ <option value="4">Výhra hosté prodl.</option>
+ <option value="5">Hosté výhra</option>
+</select>
+
+<input type="number" id="amount" placeholder="Částka (Kč)">
+
+<button onclick="saveBet()">Potvrdit sázku</button>
+
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-const firebaseConfig={
- apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
- authDomain:"statistiky-6310a.firebaseapp.com",
- projectId:"statistiky-6310a"
-};
+const supabase = createClient(
+  "https://qacobodrfsaerxntfui.supabase.co",
+  "TVŮJ_PUBLISHABLE_KEY"
+)
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// PARAMETRY
+// PARAMETR
 const params = new URLSearchParams(window.location.search)
-
 const matchId = params.get("id")
-const home = params.get("home")
-const away = params.get("away")
 
 const container = document.getElementById("match")
 
-// výpočet skóre
-function calc(stats){
- let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
- let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
+let currentMatch = null
+let teamMap = {}
 
- if(stats[9]==="11") ag++
- if(stats[19]==="11") hg++
- if(stats[20]==="1") hg++
- if(stats[20]==="2") ag++
+// LOAD
+async function load(){
 
- return {hg,ag}
+ // týmy
+ const { data: teams } = await supabase.from("teams").select("*")
+
+ teams.forEach(t=>{
+  teamMap[t.id] = t
+ })
+
+ // zápas
+ const { data: match } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
+
+ currentMatch = match
+
+ render()
 }
 
-async function loadMatch(){
+// RENDER
+function render(){
 
- let data = null
-
-// 1️⃣ pokus podle ID
- if(matchId){
-  const ref = doc(db,"zapasy",matchId)
-  const snap = await getDoc(ref)
-
-  if(snap.exists()){
-   data = snap.data()
-  }
- }
-
-// 2️⃣ fallback podle týmů (jen pokud není ID)
- if(!data && home && away){
-
-  const snap = await getDocs(collection(db,"zapasy"))
-
-  snap.forEach(d=>{
-   const m = d.data()
-
-   if(m.homeTeam === home && m.awayTeam === away){
-    data = m
-   }
-  })
- }
-
-// ===== VYKRESLENÍ =====
-
-// ❌ zápas není vůbec ve Firebase → ještě se nehrál
- if(!data){
-  container.innerHTML = `
-   <div class="matchBox">
-    <h3>${home} vs ${away}</h3>
-    <div class="notPlayed">Zápas zatím nebyl odehrán</div>
-   </div>
-  `
-  return
- }
-
-// ✅ zápas existuje
- let content = `<h3>${home} vs ${away}</h3>`
-
-// 🟢 odehraný zápas
- if(data.stats){
-  const s = calc(data.stats)
-
-  content += `
-   <div class="score">${s.hg} : ${s.ag}</div>
-  `
- }
-
-// ⏳ neodehraný (existuje, ale bez stats)
- else{
-  content += `
-   <div class="notPlayed">Zápas zatím nebyl odehrán</div>
-  `
- }
+ const home = teamMap[currentMatch.home_team]
+ const away = teamMap[currentMatch.away_team]
 
  container.innerHTML = `
   <div class="matchBox">
-   ${content}
+   <div class="teams">
+    ${home.name} vs ${away.name}
+   </div>
   </div>
  `
 }
 
-loadMatch()
+// SAVE
+async function saveBet(){
+
+ const tip = document.getElementById("tip").value
+ const amount = Number(document.getElementById("amount").value)
+
+ if(!tip || !amount){
+  alert("Vyplň tip i částku")
+  return
+ }
+
+ await supabase.from("bets").insert([{
+  match_id: matchId,
+  tip: tip,
+  amount: amount
+ }])
+
+ alert("Sázka uložena")
+
+}
+
+load()
 
 </script>
 
