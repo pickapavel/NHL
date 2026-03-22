@@ -19,12 +19,9 @@ body{
  padding:20px;
 }
 
-/* ===== ZÁPAS ===== */
+/* MATCH */
 
-.matchBox{
- text-align:center;
- margin-bottom:20px;
-}
+.matchBox{text-align:center;margin-bottom:20px;}
 
 .teams{
  display:flex;
@@ -38,8 +35,7 @@ body{
 }
 
 .team img{
- width:70px;
- height:70px;
+ width:70px;height:70px;
  background:white;
  border-radius:10px;
  padding:5px;
@@ -50,21 +46,14 @@ body{
  font-weight:bold;
 }
 
-.periods{
- margin-top:10px;
- color:#ccc;
-}
+.periods{margin-top:10px;color:#ccc;}
 
-/* ===== SÁZKY ===== */
+/* BET */
 
 .betBox{
  background:#16394d;
  padding:20px;
  border-radius:15px;
-}
-
-.betBox h3{
- margin-top:0;
 }
 
 .odds{
@@ -77,9 +66,9 @@ body{
 .odd{
  background:#eee;
  color:black;
- text-align:center;
  padding:12px;
  border-radius:8px;
+ text-align:center;
  cursor:pointer;
  font-weight:bold;
 }
@@ -95,7 +84,6 @@ input{
  border-radius:8px;
  border:none;
  margin-bottom:10px;
- font-size:16px;
 }
 
 .info{
@@ -103,8 +91,6 @@ input{
  justify-content:space-between;
  margin-bottom:15px;
 }
-
-/* ===== BUTTONY ===== */
 
 .betBtn{
  width:100%;
@@ -114,7 +100,6 @@ input{
  border-radius:10px;
  color:white;
  font-size:18px;
- font-weight:bold;
  cursor:pointer;
 }
 
@@ -138,8 +123,6 @@ input{
 
 <div class="wrapper">
 
-<!-- ===== ZÁPAS ===== -->
-
 <div class="matchBox">
 
 <div class="teams">
@@ -158,31 +141,27 @@ input{
 
 </div>
 
-<div class="periods" id="periods">
-Třetiny: (-:-, -:-, -:-)
-</div>
+<div class="periods">Třetiny: (-:-, -:-, -:-)</div>
 
 </div>
-
-<!-- ===== SÁZKY ===== -->
 
 <div class="betBox">
 
 <h3>Vyber výsledek</h3>
 
 <div class="odds">
-<div class="odd" data-type="1">1</div>
-<div class="odd" data-type="2">10</div>
-<div class="odd" data-type="3">0</div>
-<div class="odd" data-type="4">02</div>
-<div class="odd" data-type="5">2</div>
+<div class="odd">1</div>
+<div class="odd">10</div>
+<div class="odd">0</div>
+<div class="odd">02</div>
+<div class="odd">2</div>
 </div>
 
-<input type="number" id="bet" placeholder="Částka (Kč)">
+<input placeholder="Částka (Kč)">
 
 <div class="info">
-<div>Kurz: <span>-</span></div>
-<div>Výhra: <span>-</span></div>
+<div>Kurz: -</div>
+<div>Výhra: -</div>
 </div>
 
 <button class="betBtn">VSADIT</button>
@@ -200,11 +179,10 @@ Třetiny: (-:-, -:-, -:-)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qacobodrfsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+ "https://qacobodrfsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ID zápasu z URL
 const params = new URLSearchParams(window.location.search)
 const matchId = params.get("id")
 
@@ -213,19 +191,35 @@ let teamMap = {}
 // LOAD
 async function load(){
 
- // týmy
- const { data: teams } = await supabase.from("teams").select("*")
+ // TEAMS
+ const { data: teams, error: tErr } = await supabase
+  .from("teams")
+  .select("*")
+
+ if(tErr){
+  console.error("TEAMS ERROR:", tErr)
+  return
+ }
+
+ console.log("TEAMS:", teams)
 
  teams.forEach(t=>{
   teamMap[t.id] = t
  })
 
- // zápas
- const { data: match } = await supabase
+ // MATCH
+ const { data: match, error: mErr } = await supabase
   .from("matches")
   .select("*")
   .eq("id", matchId)
   .single()
+
+ if(mErr){
+  console.error("MATCH ERROR:", mErr)
+  return
+ }
+
+ console.log("MATCH:", match)
 
  render(match)
 }
@@ -235,6 +229,11 @@ function render(m){
 
  const home = teamMap[m.home_team]
  const away = teamMap[m.away_team]
+
+ if(!home || !away){
+  console.error("CHYBA TEAM:", m)
+  return
+ }
 
  document.getElementById("homeName").innerText = home.name
  document.getElementById("awayName").innerText = away.name
@@ -248,7 +247,7 @@ function render(m){
  }
 }
 
-// UI výběr tipu
+// klikání na tip
 document.querySelectorAll(".odd").forEach(btn=>{
  btn.onclick = ()=>{
   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
