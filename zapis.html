@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistiky zápasu</title>
+
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.controls>*{flex:1;min-width:160px;padding:10px;font-size:16px;}
+.tableWrap{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;min-width:650px;}
+th,td{border:1px solid #999;padding:8px;}
+th{background:black;color:#ffff00;}
+.deleteBtn{background:#d9534f;color:white;border:none;padding:6px 10px;cursor:pointer;}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Statistiky zápasu</h1>
+
+<div class="controls">
+
+<input type="file" id="fileInput" accept=".txt">
+
+<select id="season"></select>
+<select id="category">
+<option disabled selected>Kategorie</option>
+<option>Extraliga - základní část</option>
+<option>Extraliga - čtvrtfinále</option>
+<option>Extraliga - semifinále</option>
+<option>Extraliga - finále</option>
+</select>
+
+<select id="homeTeam"></select>
+<select id="awayTeam"></select>
+
+<button onclick="saveMatch()">Uložit zápas</button>
+
+</div>
+
+<h2>Historie zápasů</h2>
+<div class="tableWrap">
+<table id="history">
+<thead>
+<tr>
+<th>Datum</th>
+<th>Sezóna</th>
+<th>Kategorie</th>
+<th>Domácí</th>
+<th>Hosté</th>
+<th>Skóre</th>
+<th>Akce</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+</div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qacobodrfsaerxntfui.supabase.co",
+  "TVŮJ_PUBLISHABLE_KEY"
+)
+
+let loadedLines=[]
+let allMatches=[]
+let teams=[]
+let seasons=[]
+let teamMapByName={}
+
+// ===== TXT LOAD =====
+document.getElementById("fileInput").addEventListener("change", e=>{
+ const reader=new FileReader()
+ reader.onload=ev=>{
+  loadedLines = ev.target.result.split(/\r?\n/).map(l=>l.trim()).filter(l=>l!=="")
+ }
+ reader.readAsText(e.target.files[0])
+})
+
+// ===== LOAD DATA =====
+async function load(){
+
+ // teams
+ const { data: t } = await supabase.from("teams").select("*")
+ teams = t
+
+ teams.forEach(team=>{
+  teamMapByName[team.name] = team.id
+ })
+
+ // seasons
+ const { data: s } = await supabase.from("seasons").select("*")
+ seasons = s
+
+ const seasonSelect=document.getElementById("season")
+ seasons.forEach(se=>{
+  seasonSelect.innerHTML+=`<option value="${se.id}">${se.name}</option>`
+ })
+
+ // matches
+ const { data: m } = await supabase
+  .from("matches")
+  .select("*")
+  .order("created_at",{ascending:false})
+
+ allMatches = m
+ render()
+}
+
+window.addEventListener("load", load)
+
+// ===== SCORE =====
+function calculateScore(stats){
+
+ let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+ let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+
+ return hg+" : "+ag
+}
+
+// ===== RENDER =====
+function render(){
+
+ const tbody=document.querySelector("#history tbody")
+ tbody.innerHTML=""
+
+ allMatches.forEach(m=>{
+
+  const home = teams.find(t=>t.id===m.home_team)
+  const away = teams.find(t=>t.id===m.away_team)
+
+  const tr=document.createElement("tr")
+
+  tr.innerHTML=`
+  <td>${new Date(m.created_at).toLocaleDateString()}</td>
+  <td>${m.season_id}</td>
+  <td>${m.stage_id || ""}</td>
+  <td>${home?.name || ""}</td>
+  <td>${away?.name || ""}</td>
+  <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
+  <td><button onclick="deleteMatch('${m.id}')">Smazat</button></td>
+  `
+
+  tbody.appendChild(tr)
+ })
+}
+
+// ===== SAVE =====
+window.saveMatch = async function(){
+
+ const homeName = homeTeam.value.split(" (")[0]
+ const awayName = awayTeam.value.split(" (")[0]
+
+ const home_id = teamMapByName[homeName]
+ const away_id = teamMapByName[awayName]
+
+ // spočítat skóre
+ let ag=Number(loadedLines[6])+Number(loadedLines[7])+Number(loadedLines[8])
+ let hg=Number(loadedLines[16])+Number(loadedLines[17])+Number(loadedLines[18])
+
+ await supabase.from("matches").insert([{
+  season_id: season.value,
+  home_team: home_id,
+  away_team: away_id,
+  home_score: hg,
+  away_score: ag,
+  played: true,
+  stats: loadedLines
+ }])
+
+ load()
+}
+
+// ===== DELETE =====
+window.deleteMatch = async function(id){
+ await supabase.from("matches").delete().eq("id", id)
+ load()
+}
+
+</script>
+
+</body>
+</html>
