@@ -68,11 +68,12 @@ th{
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+  "https://YOUR_PROJECT_ID.supabase.co",
+  "YOUR_ANON_KEY"
 )
 
 let loadedLines=[]
+let teamsMap = {} // 🔥 id -> name
 
 // ===== TXT =====
 fileInput.onchange = e=>{
@@ -83,7 +84,7 @@ fileInput.onchange = e=>{
  reader.readAsText(e.target.files[0])
 }
 
-// ===== LOAD =====
+// ===== LOAD SELECTS =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -91,11 +92,16 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
  const { data: stages } = await supabase.from("stages").select("*")
 
- competition.innerHTML="<option>Vyber soutěž</option>"
- season.innerHTML="<option>Vyber sezónu</option>"
- stage.innerHTML="<option>Fáze</option>"
- homeTeam.innerHTML="<option>Domácí tým</option>"
- awayTeam.innerHTML="<option>Hostující tým</option>"
+ // 🔥 vytvoření mapy ID -> název
+ teams?.forEach(t=>{
+  teamsMap[t.id] = t.name
+ })
+
+ competition.innerHTML="<option value=''>Vyber soutěž</option>"
+ season.innerHTML="<option value=''>Vyber sezónu</option>"
+ stage.innerHTML="<option value=''>Fáze</option>"
+ homeTeam.innerHTML="<option value=''>Domácí tým</option>"
+ awayTeam.innerHTML="<option value=''>Hostující tým</option>"
 
  comps?.forEach(c=>{
   competition.innerHTML+=`<option value="${c.id}">${c.name}</option>`
@@ -122,8 +128,8 @@ window.onload = load
 // ===== SAVE =====
 window.saveMatch = async function(){
 
- const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
- const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
+ const hg = Number(loadedLines[16]||0) + Number(loadedLines[17]||0) + Number(loadedLines[18]||0)
+ const ag = Number(loadedLines[6]||0) + Number(loadedLines[7]||0) + Number(loadedLines[8]||0)
 
  const { error } = await supabase.from("matches").insert([{
   competition_id: competition.value,
@@ -139,7 +145,6 @@ window.saveMatch = async function(){
  }])
 
  if(error){
-  console.log("INSERT ERROR:", error)
   alert("Chyba ❌")
  }else{
   alert("Uloženo 👍")
@@ -150,22 +155,22 @@ window.saveMatch = async function(){
 // ===== LOAD MATCHES =====
 async function loadMatches(){
 
- const { data, error } = await supabase
+ const { data } = await supabase
   .from("matches")
   .select("*")
   .order("id", { ascending:false })
 
- console.log("MATCHES:", data, error)
-
  matchesTable.innerHTML=""
 
- if(!data) return
+ data?.forEach(m=>{
 
- data.forEach(m=>{
+  const homeName = teamsMap[m.home_team] || m.home_team
+  const awayName = teamsMap[m.away_team] || m.away_team
+
   matchesTable.innerHTML += `
   <tr>
-    <td>${m.home_team}</td>
-    <td>${m.away_team}</td>
+    <td>${homeName}</td>
+    <td>${awayName}</td>
     <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
   </tr>
   `
