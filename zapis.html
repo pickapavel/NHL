@@ -53,6 +53,7 @@ th{
 <table>
 <thead>
 <tr>
+<th>Kolo</th>
 <th>Domácí</th>
 <th>Hosté</th>
 <th>Skóre</th>
@@ -68,12 +69,12 @@ th{
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+  "https://YOUR_PROJECT_ID.supabase.co",
+  "YOUR_ANON_KEY"
 )
 
 let loadedLines=[]
-let teamsMap = {} // 🔥 id -> name
+let teamsMap = {}
 
 // ===== TXT =====
 fileInput.onchange = e=>{
@@ -84,7 +85,7 @@ fileInput.onchange = e=>{
  reader.readAsText(e.target.files[0])
 }
 
-// ===== LOAD SELECTS =====
+// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -92,7 +93,6 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
  const { data: stages } = await supabase.from("stages").select("*")
 
- // 🔥 vytvoření mapy ID -> název
  teams?.forEach(t=>{
   teamsMap[t.id] = t.name
  })
@@ -140,7 +140,7 @@ window.saveMatch = async function(){
   home_score: hg,
   away_score: ag,
   played: true,
-  round: 1,
+  round: 1, // můžeš si změnit
   stats: JSON.stringify(loadedLines)
  }])
 
@@ -158,7 +158,7 @@ async function loadMatches(){
  const { data } = await supabase
   .from("matches")
   .select("*")
-  .order("id", { ascending:false })
+  .order("round", { ascending:true }) // 🔥 řazení podle kola
 
  matchesTable.innerHTML=""
 
@@ -169,6 +169,7 @@ async function loadMatches(){
 
   matchesTable.innerHTML += `
   <tr>
+    <td>${m.round ?? "-"}</td>
     <td>${homeName}</td>
     <td>${awayName}</td>
     <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
