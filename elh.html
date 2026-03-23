@@ -56,7 +56,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
-
 </style>
 </head>
 
@@ -100,6 +99,9 @@ async function load(){
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
+
+ // 🔥 KLÍČOVÁ OPRAVA – správné řazení podle round
+ matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
 }
@@ -153,10 +155,10 @@ function render(matches, teamMap){
      Detail
     </button>
 
-  <button class="btn betBtn"
-    onclick="window.location.href='vsad-si.html?id=${m.id}&home=${encodeURIComponent(home.name)}&away=${encodeURIComponent(away.name)}&hlogo=${home.logo}&alogo=${away.logo}'">
-    Vsaď si
-  </button>
+    <button class="btn betBtn"
+     onclick="window.location.href='vsad-si.html?id=${m.id}&home=${encodeURIComponent(home.name)}&away=${encodeURIComponent(away.name)}&hlogo=${home.logo}&alogo=${away.logo}'">
+     Vsaď si
+    </button>
    </div>
 
   </div>
