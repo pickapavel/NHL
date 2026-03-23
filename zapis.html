@@ -24,7 +24,9 @@ th,td{
 
 /* 🔥 jen týmy doleva */
 td:nth-child(5),
-t
+td:nth-child(6){
+ text-align:left;
+}
 
 th{
  background:black;
@@ -76,8 +78,8 @@ th{
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+  "https://YOUR_PROJECT_ID.supabase.co",
+  "YOUR_ANON_KEY"
 )
 
 let loadedLines=[]
