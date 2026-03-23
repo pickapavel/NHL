@@ -103,25 +103,29 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// 🔥 nastav si sezónu
 const SEASON_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 
 async function load(){
 
- // 🔥 jen extraligové týmy pro sezónu
+ // 🔥 season teams
  const { data: seasonTeams } = await supabase
   .from("season_teams")
   .select("team_id")
   .eq("season_id", SEASON_ID)
 
- const teamIds = seasonTeams.map(t => t.team_id)
+ const teamIds = (seasonTeams || []).map(t => t.team_id)
 
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
-  .in("id", teamIds)
+ // 🔥 fallback když nic není (aby se to nerozbilo)
+ let teams = []
+ if(teamIds.length > 0){
+  const res = await supabase
+   .from("teams")
+   .select("*")
+   .in("id", teamIds)
+  teams = res.data || []
+ }
 
- // 🔥 zápasy jen té sezóny
+ // 🔥 matches
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
@@ -130,18 +134,18 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- matches.sort((a,b)=> Number(a.round) - Number(b.round))
+ const safeMatches = matches || []
+ safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
- render(matches, teamMap)
- renderTable(matches, teamMap, teams)
+ render(safeMatches, teamMap)
+ renderTable(safeMatches, teamMap, teams)
 }
 
-// 🔥 TABULKA – jen týmy ze season_teams
+// TABULKA
 function renderTable(matches, teamMap, teams){
 
  let table = {}
 
- // vytvoř všechny extraligové týmy
  teams.forEach(t=>{
   table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
  })
@@ -177,10 +181,10 @@ function renderTable(matches, teamMap, teams){
  arr.forEach((t,i)=>{
 
   const team = teamMap[t.team]
+  if(!team) return
 
   cont.innerHTML+=`
   <div class="standingsCard">
-
    <div class="rank">${i+1}</div>
 
    <div class="teamBlock">
@@ -194,14 +198,13 @@ function renderTable(matches, teamMap, teams){
    </div>
 
    <div class="pointsBox">${t.b}</div>
-
   </div>
   `
  })
 
 }
 
-// ===== ROZPIS =====
+// ROZPIS
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -218,7 +221,6 @@ function render(matches, teamMap){
   const awayScore = m.away_score ?? "-"
 
   cont.innerHTML+=`
-
   <div class="matchRow">
 
    <div class="teamBox">
