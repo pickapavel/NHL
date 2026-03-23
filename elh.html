@@ -100,7 +100,7 @@ async function load(){
   .from("matches")
   .select("*")
 
- // 🔥 KLÍČOVÁ OPRAVA – správné řazení podle round
+ // řazení podle round
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
@@ -119,6 +119,10 @@ function render(matches, teamMap){
 
   if(!home || !away) return
 
+  // 🔥 zobraz skóre pokud existuje
+  const homeScore = m.home_score ?? "-"
+  const awayScore = m.away_score ?? "-"
+
   cont.innerHTML+=`
 
   <div class="matchRow">
@@ -133,11 +137,11 @@ function render(matches, teamMap){
     </div>
    </div>
 
-   <div class="scoreBox">${m.played ? m.home_score : "-"}</div>
+   <div class="scoreBox">${homeScore}</div>
 
    <div></div>
 
-   <div class="scoreBox">${m.played ? m.away_score : "-"}</div>
+   <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
     <div style="text-align:right">
