@@ -144,7 +144,8 @@ const res = await supabase.from("matches").insert([{
   away_team: awayTeam.value
 }])
 
-console.log("ERROR:", res.error)
+console.log("ERROR:", res.error.message)
+console.log("DETAIL:", res.error.details)
 
  if(res.error){
   alert("Chyba při ukládání ❌")
