@@ -88,46 +88,55 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
 
  const extraliga = comps.find(c => c.name === "Extraliga")
- const sezona = seasons.find(s => s.name.includes("2"))
+ const sezona2 = seasons.find(s => s.name.includes("2"))
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- // 🔥 SPRÁVNÝ FILTR
+ // 🔥 všechny týmy extraligy
+ const extraligaTeams = teams.filter(t => t.competition_id == extraliga.id)
+
+ // 🔥 zápasy jen sezóna 2
  const elhMatches = matches.filter(m =>
   m.competition_id == extraliga.id &&
-  m.season_id == sezona.id
+  m.season_id == sezona2.id
  )
 
  elhMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(elhMatches, teamMap)
- renderTable(elhMatches, teamMap)
+ renderTable(extraligaTeams, elhMatches, teamMap)
 }
 
 // ===== TABULKA =====
-function renderTable(matches, teamMap){
+function renderTable(allTeams, matches, teamMap){
 
  let table = {}
 
- // ✅ vytvoř všechny týmy z této sezóny
- matches.forEach(m=>{
-  table[m.home_team] = {team:m.home_team,b:0,z:0}
-  table[m.away_team] = {team:m.away_team,b:0,z:0}
+ // ✅ všechny týmy (i bez zápasu)
+ allTeams.forEach(t=>{
+  table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
 
-  // ✅ jen odehrané zápasy
   if(m.home_score == null || m.away_score == null) return
 
   const h = table[m.home_team]
   const a = table[m.away_team]
 
+  if(!h || !a) return
+
+  const hg = Number(m.home_score)
+  const ag = Number(m.away_score)
+
   h.z++; a.z++
 
-  if(m.home_score > m.away_score) h.b+=3
-  else if(m.away_score > m.home_score) a.b+=3
+  h.gf+=hg; h.ga+=ag
+  a.gf+=ag; a.ga+=hg
+
+  if(hg>ag){ h.b+=3 }
+  else if(ag>hg){ a.b+=3 }
   else{ h.b+=1; a.b+=1 }
 
  })
@@ -146,7 +155,12 @@ function renderTable(matches, teamMap){
    <div class="rank">${i+1}</div>
    <div class="teamBlock">
     <img class="logo" src="./logos/${team.logo}">
-    <div>${team.name} (Z ${t.z})</div>
+    <div>
+     ${team.name}
+     <div style="font-size:12px;color:#666;">
+      Z ${t.z} | Skóre ${t.gf}:${t.ga}
+     </div>
+    </div>
    </div>
    <div class="pointsBox">${t.b}</div>
   </div>
