@@ -115,7 +115,6 @@ async function load(){
 
  const extraligaId = competition.id
 
- // 🔥 sezóny extraligy
  const { data: seasons } = await supabase
   .from("seasons")
   .select("*")
@@ -123,14 +122,24 @@ async function load(){
 
  const seasonIds = seasons.map(s => s.id)
 
- // 🔥 zápasy extraligy
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
   .in("season_id", seasonIds)
 
+ // 🔥 jen týmy extraligy (ze zápasů)
+ const extraligaTeamIds = new Set()
+ matches.forEach(m=>{
+  extraligaTeamIds.add(m.home_team)
+  extraligaTeamIds.add(m.away_team)
+ })
+
  const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
+ teams.forEach(t=>{
+  if(extraligaTeamIds.has(t.id)){
+   teamMap[t.id] = t
+  }
+ })
 
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
@@ -138,12 +147,12 @@ async function load(){
  renderTable(matches, teamMap)
 }
 
-// 🔥 TABULKA – všechny týmy (i bez zápasu)
+// 🔥 TABULKA – jen extraligové týmy (všechny)
 function renderTable(matches, teamMap){
 
  let table = {}
 
- // 🔥 vezmi VŠECHNY týmy ze seasons (ne ze zápasů)
+ // 🔥 vytvoř všechny extraligové týmy
  Object.values(teamMap).forEach(t=>{
   table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
  })
@@ -179,8 +188,6 @@ function renderTable(matches, teamMap){
  arr.forEach((t,i)=>{
 
   const team = teamMap[t.team]
-
-  if(!team) return
 
   cont.innerHTML+=`
   <div class="standingsCard">
