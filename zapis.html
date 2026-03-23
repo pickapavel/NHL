@@ -148,8 +148,7 @@ window.saveMatch = async function(){
   home_score: hg,
   away_score: ag,
   played: true,
-  stats: loadedLines
- }])
+  stats: JSON.stringify(loadedLines) }])
 
  console.log("INSERT RESULT:", res)
 
