@@ -140,8 +140,16 @@ window.saveMatch = async function(){
  })
 
 const res = await supabase.from("matches").insert([{
+  competition_id: competition.value,
+  season_id: season.value,
+  stage_id: stage.value,
   home_team: homeTeam.value,
-  away_team: awayTeam.value
+  away_team: awayTeam.value,
+  home_score: hg,
+  away_score: ag,
+  played: true,
+  round: 1,
+  stats: JSON.stringify(loadedLines)
 }])
 
 console.log("ERROR:", res.error.message)
