@@ -6,7 +6,7 @@
 
 <style>
 body{font-family:Arial;background:#f2f2f2;margin:0;}
-.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
 .controls{display:flex;gap:10px;flex-wrap:wrap;}
 .controls>*{flex:1;min-width:150px;padding:10px;}
 
@@ -54,6 +54,9 @@ th{
 <thead>
 <tr>
 <th>Kolo</th>
+<th>Soutěž</th>
+<th>Sezóna</th>
+<th>Fáze</th>
 <th>Domácí</th>
 <th>Hosté</th>
 <th>Skóre</th>
@@ -74,7 +77,12 @@ const supabase = createClient(
 )
 
 let loadedLines=[]
+
+// 🔥 mapy ID → název
 let teamsMap = {}
+let compsMap = {}
+let seasonsMap = {}
+let stagesMap = {}
 
 // ===== TXT =====
 fileInput.onchange = e=>{
@@ -93,10 +101,13 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
  const { data: stages } = await supabase.from("stages").select("*")
 
- teams?.forEach(t=>{
-  teamsMap[t.id] = t.name
- })
+ // 🔥 vytvoření map
+ teams?.forEach(t=> teamsMap[t.id] = t.name)
+ comps?.forEach(c=> compsMap[c.id] = c.name)
+ seasons?.forEach(s=> seasonsMap[s.id] = s.name)
+ stages?.forEach(s=> stagesMap[s.id] = s.name)
 
+ // SELECTY
  competition.innerHTML="<option value=''>Vyber soutěž</option>"
  season.innerHTML="<option value=''>Vyber sezónu</option>"
  stage.innerHTML="<option value=''>Fáze</option>"
@@ -140,7 +151,7 @@ window.saveMatch = async function(){
   home_score: hg,
   away_score: ag,
   played: true,
-  round: 1, // můžeš si změnit
+  round: 1,
   stats: JSON.stringify(loadedLines)
  }])
 
@@ -158,7 +169,7 @@ async function loadMatches(){
  const { data } = await supabase
   .from("matches")
   .select("*")
-  .order("round", { ascending:true }) // 🔥 řazení podle kola
+  .order("round", { ascending:true })
 
  matchesTable.innerHTML=""
 
@@ -167,9 +178,16 @@ async function loadMatches(){
   const homeName = teamsMap[m.home_team] || m.home_team
   const awayName = teamsMap[m.away_team] || m.away_team
 
+  const compName = compsMap[m.competition_id] || "-"
+  const seasonName = seasonsMap[m.season_id] || "-"
+  const stageName = stagesMap[m.stage_id] || "-"
+
   matchesTable.innerHTML += `
   <tr>
     <td>${m.round ?? "-"}</td>
+    <td>${compName}</td>
+    <td>${seasonName}</td>
+    <td>${stageName}</td>
     <td>${homeName}</td>
     <td>${awayName}</td>
     <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
