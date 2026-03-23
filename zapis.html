@@ -7,15 +7,56 @@
 
 <style>
 *{box-sizing:border-box}
-body{font-family:Arial;background:#f2f2f2;margin:0;}
-.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-.controls>*{flex:1;min-width:160px;padding:10px;font-size:16px;}
-.tableWrap{overflow-x:auto;}
-table{border-collapse:collapse;width:100%;min-width:650px;}
-th,td{border:1px solid #999;padding:8px;}
-th{background:black;color:#ffff00;}
-.deleteBtn{background:#d9534f;color:white;border:none;padding:6px 10px;cursor:pointer;}
+
+body{
+ font-family:Arial;
+ background:#f2f2f2;
+ margin:0;
+}
+
+.wrapper{
+ max-width:1200px;
+ margin:auto;
+ padding:20px;
+ background:white;
+}
+
+.controls{
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ margin-bottom:20px;
+}
+
+.controls > *{
+ flex:1;
+ min-width:160px;
+ padding:10px;
+ font-size:16px;
+}
+
+table{
+ border-collapse:collapse;
+ width:100%;
+}
+
+th,td{
+ border:1px solid #999;
+ padding:8px;
+}
+
+th{
+ background:black;
+ color:#ffff00;
+}
+
+.deleteBtn{
+ background:#d9534f;
+ color:white;
+ border:none;
+ padding:6px 10px;
+ cursor:pointer;
+}
 </style>
 </head>
 
@@ -29,14 +70,8 @@ th{background:black;color:#ffff00;}
 
 <input type="file" id="fileInput" accept=".txt">
 
+<select id="competition"></select>
 <select id="season"></select>
-<select id="category">
-<option disabled selected>Kategorie</option>
-<option>Extraliga - základní část</option>
-<option>Extraliga - čtvrtfinále</option>
-<option>Extraliga - semifinále</option>
-<option>Extraliga - finále</option>
-</select>
 
 <select id="homeTeam"></select>
 <select id="awayTeam"></select>
@@ -46,22 +81,21 @@ th{background:black;color:#ffff00;}
 </div>
 
 <h2>Historie zápasů</h2>
-<div class="tableWrap">
-<table id="history">
+
+<table>
 <thead>
 <tr>
 <th>Datum</th>
+<th>Soutěž</th>
 <th>Sezóna</th>
-<th>Kategorie</th>
 <th>Domácí</th>
 <th>Hosté</th>
 <th>Skóre</th>
 <th>Akce</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="tbody"></tbody>
 </table>
-</div>
 
 </div>
 
@@ -71,111 +105,121 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   "https://qacobodrfsaerxntfui.supabase.co",
-  "TVŮJ_PUBLISHABLE_KEY"
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
 let loadedLines=[]
-let allMatches=[]
 let teams=[]
 let seasons=[]
-let teamMapByName={}
+let competitions=[]
+let matches=[]
 
-// ===== TXT LOAD =====
-document.getElementById("fileInput").addEventListener("change", e=>{
+// ===== TXT =====
+fileInput.onchange = e=>{
  const reader=new FileReader()
  reader.onload=ev=>{
-  loadedLines = ev.target.result.split(/\r?\n/).map(l=>l.trim()).filter(l=>l!=="")
+  loadedLines = ev.target.result.split(/\r?\n/).map(l=>l.trim())
  }
  reader.readAsText(e.target.files[0])
-})
+}
 
-// ===== LOAD DATA =====
+// ===== LOAD =====
 async function load(){
 
- // teams
+ // TEAMS
  const { data: t } = await supabase.from("teams").select("*")
  teams = t
 
+ homeTeam.innerHTML=""
+ awayTeam.innerHTML=""
+
  teams.forEach(team=>{
-  teamMapByName[team.name] = team.id
+  homeTeam.innerHTML += `<option value="${team.id}">${team.name}</option>`
+  awayTeam.innerHTML += `<option value="${team.id}">${team.name}</option>`
  })
 
- // seasons
+ // COMPETITIONS
+ const { data: c } = await supabase.from("competitions").select("*")
+ competitions = c
+
+ competition.innerHTML=""
+ competitions.forEach(comp=>{
+  competition.innerHTML += `<option value="${comp.id}">${comp.name}</option>`
+ })
+
+ // SEASONS
  const { data: s } = await supabase.from("seasons").select("*")
  seasons = s
 
- const seasonSelect=document.getElementById("season")
+ season.innerHTML=""
  seasons.forEach(se=>{
-  seasonSelect.innerHTML+=`<option value="${se.id}">${se.name}</option>`
+  season.innerHTML += `<option value="${se.id}">${se.name}</option>`
  })
 
- // matches
+ // MATCHES
  const { data: m } = await supabase
   .from("matches")
   .select("*")
   .order("created_at",{ascending:false})
 
- allMatches = m
+ matches = m
  render()
 }
 
 window.addEventListener("load", load)
 
 // ===== SCORE =====
-function calculateScore(stats){
+function getScore(){
 
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+ let ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
+ let hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
 
- return hg+" : "+ag
+ return {hg,ag}
 }
 
 // ===== RENDER =====
 function render(){
 
- const tbody=document.querySelector("#history tbody")
  tbody.innerHTML=""
 
- allMatches.forEach(m=>{
+ matches.forEach(m=>{
 
   const home = teams.find(t=>t.id===m.home_team)
   const away = teams.find(t=>t.id===m.away_team)
+  const comp = competitions.find(c=>c.id===m.competition_id)
+  const seas = seasons.find(s=>s.id===m.season_id)
 
-  const tr=document.createElement("tr")
-
-  tr.innerHTML=`
-  <td>${new Date(m.created_at).toLocaleDateString()}</td>
-  <td>${m.season_id}</td>
-  <td>${m.stage_id || ""}</td>
-  <td>${home?.name || ""}</td>
-  <td>${away?.name || ""}</td>
-  <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
-  <td><button onclick="deleteMatch('${m.id}')">Smazat</button></td>
+  tbody.innerHTML += `
+  <tr>
+    <td>${new Date(m.created_at).toLocaleDateString()}</td>
+    <td>${comp?.name || ""}</td>
+    <td>${seas?.name || ""}</td>
+    <td>${home?.name || ""}</td>
+    <td>${away?.name || ""}</td>
+    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
+    <td><button onclick="deleteMatch('${m.id}')">Smazat</button></td>
+  </tr>
   `
-
-  tbody.appendChild(tr)
  })
 }
 
 // ===== SAVE =====
 window.saveMatch = async function(){
 
- const homeName = homeTeam.value.split(" (")[0]
- const awayName = awayTeam.value.split(" (")[0]
+ if(!loadedLines.length){
+  alert("Nahraj TXT soubor")
+  return
+ }
 
- const home_id = teamMapByName[homeName]
- const away_id = teamMapByName[awayName]
-
- // spočítat skóre
- let ag=Number(loadedLines[6])+Number(loadedLines[7])+Number(loadedLines[8])
- let hg=Number(loadedLines[16])+Number(loadedLines[17])+Number(loadedLines[18])
+ const score = getScore()
 
  await supabase.from("matches").insert([{
+  competition_id: competition.value,
   season_id: season.value,
-  home_team: home_id,
-  away_team: away_id,
-  home_score: hg,
-  away_score: ag,
+  home_team: homeTeam.value,
+  away_team: awayTeam.value,
+  home_score: score.hg,
+  away_score: score.ag,
   played: true,
   stats: loadedLines
  }])
