@@ -10,7 +10,6 @@ body{
  background:#f2f2f2;
  margin:0;
 }
-
 .wrapper{
  max-width:600px;
  margin:auto;
@@ -19,21 +18,18 @@ body{
  margin-top:40px;
  border-radius:10px;
 }
-
 select, input, button{
  width:100%;
  padding:10px;
  margin-bottom:10px;
  font-size:16px;
 }
-
 button{
  background:#2f9ec9;
  color:white;
  border:none;
  cursor:pointer;
 }
-
 button:hover{
  background:#2789ad;
 }
@@ -69,36 +65,44 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ===== LOAD DATA =====
+// ===== LOAD =====
 async function load(){
 
- const { data: teams } = await supabase.from("teams").select("*")
- const { data: comps } = await supabase.from("competitions").select("*")
- const { data: seasons } = await supabase.from("seasons").select("*")
- const { data: stages } = await supabase.from("stages").select("*")
+ competition.innerHTML = "<option>Soutěž</option>"
+ season.innerHTML = "<option>Sezóna</option>"
+ stage.innerHTML = "<option>Fáze</option>"
+ homeTeam.innerHTML = "<option>Domácí</option>"
+ awayTeam.innerHTML = "<option>Hosté</option>"
 
- competition.innerHTML = "<option disabled selected>Soutěž</option>"
- season.innerHTML = "<option disabled selected>Sezóna</option>"
- stage.innerHTML = "<option disabled selected>Fáze</option>"
- homeTeam.innerHTML = "<option disabled selected>Domácí</option>"
- awayTeam.innerHTML = "<option disabled selected>Hosté</option>"
+ // každá tabulka zvlášť (aby to nespadlo)
+ try{
+  const { data } = await supabase.from("competitions").select("*")
+  data?.forEach(c=>{
+   competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
+  })
+ }catch{}
 
- comps?.forEach(c=>{
-  competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
- })
+ try{
+  const { data } = await supabase.from("seasons").select("*")
+  data?.forEach(s=>{
+   season.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }catch{}
 
- seasons?.forEach(s=>{
-  season.innerHTML += `<option value="${s.id}">${s.name}</option>`
- })
+ try{
+  const { data } = await supabase.from("stages").select("*")
+  data?.forEach(s=>{
+   stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }catch{}
 
- stages?.forEach(s=>{
-  stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
- })
-
- teams?.forEach(t=>{
-  homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
- })
+ try{
+  const { data } = await supabase.from("teams").select("*")
+  data?.forEach(t=>{
+   homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+   awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  })
+ }catch{}
 
 }
 
