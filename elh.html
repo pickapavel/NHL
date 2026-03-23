@@ -7,7 +7,6 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 
@@ -15,7 +14,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  display:flex;align-items:center;justify-content:space-between;
  background:#e9ecef;border-radius:12px;padding:20px;margin-bottom:25px;
 }
-
 .headerBar img{height:110px;}
 
 .seasonCard{
@@ -25,7 +23,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+ background:#e9ecef;border-radius:10px;padding:14px;margin-bottom:10px;
 }
 
 .rank{width:30px;font-weight:bold;text-align:center;}
@@ -37,43 +35,22 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:white;padding:2px;border-radius:6px;
 }
 
-.teamInfo{display:flex;flex-direction:column;}
-.teamName{font-weight:bold;}
-.teamStats{font-size:13px;color:#444;}
-
 .pointsBox{
- background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
- padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+ background:#0b2a3c;color:white;font-weight:bold;
+ padding:10px 16px;border-radius:8px;
 }
 
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr 120px;
- align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
+ background:#e9ecef;padding:10px;margin-bottom:5px;border-radius:6px;
 }
-
-.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
-.teamRight{justify-content:flex-end;}
 
 .scoreBox{
  background:#0b2a3c;color:white;
- font-size:22px;font-weight:bold;
- padding:8px 0;border-radius:6px;text-align:center;
+ font-size:20px;font-weight:bold;text-align:center;
+ padding:8px;border-radius:6px;
 }
-
-.btn{
- border:none;
- padding:8px;
- border-radius:6px;
- cursor:pointer;
- width:100%;
- margin-top:5px;
- font-weight:bold;
-}
-
-.detailBtn{background:#2f9ec9;color:white;}
-.betBtn{background:#27ae60;color:white;}
 </style>
 </head>
 
@@ -83,7 +60,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard">Extraliga - 2. sezóna</div>
+<div class="seasonCard">Extraliga</div>
 </div>
 
 <h2>Tabulka</h2>
@@ -99,8 +76,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
 async function load(){
@@ -108,23 +85,20 @@ async function load(){
  const { data: teams } = await supabase.from("teams").select("*")
  const { data: matches } = await supabase.from("matches").select("*")
  const { data: comps } = await supabase.from("competitions").select("*")
- const { data: seasons } = await supabase.from("seasons").select("*")
 
  const extraliga = comps.find(c => c.name === "Extraliga")
- const sezona = seasons.find(s => s.name.includes("2"))
 
- if(!extraliga || !sezona){
-  alert("Chybí soutěž nebo sezóna ❌")
+ if(!extraliga){
+  alert("Extraliga nenalezena")
   return
  }
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- // 🔥 filtr
+ // 🔥 jen extraliga (bez sezóny → aby to fungovalo)
  const elhMatches = matches.filter(m =>
-  m.competition_id == extraliga.id &&
-  m.season_id == sezona.id
+  m.competition_id == extraliga.id
  )
 
  elhMatches.sort((a,b)=> Number(a.round) - Number(b.round))
@@ -138,10 +112,10 @@ function renderTable(matches, teamMap){
 
  let table = {}
 
- // vytvoř týmy z extraligy
+ // vytvoř týmy
  matches.forEach(m=>{
-  table[m.home_team] = {team:m.home_team,b:0,z:0,gf:0,ga:0}
-  table[m.away_team] = {team:m.away_team,b:0,z:0,gf:0,ga:0}
+  table[m.home_team] = {team:m.home_team,b:0,z:0}
+  table[m.away_team] = {team:m.away_team,b:0,z:0}
  })
 
  matches.forEach(m=>{
@@ -151,16 +125,10 @@ function renderTable(matches, teamMap){
   const h = table[m.home_team]
   const a = table[m.away_team]
 
-  const hg = Number(m.home_score)
-  const ag = Number(m.away_score)
-
   h.z++; a.z++
 
-  h.gf+=hg; h.ga+=ag
-  a.gf+=ag; a.ga+=hg
-
-  if(hg>ag){ h.b+=3 }
-  else if(ag>hg){ a.b+=3 }
+  if(m.home_score > m.away_score) h.b+=3
+  else if(m.away_score > m.home_score) a.b+=3
   else{ h.b+=1; a.b+=1 }
 
  })
@@ -176,25 +144,15 @@ function renderTable(matches, teamMap){
 
   cont.innerHTML+=`
   <div class="standingsCard">
-
    <div class="rank">${i+1}</div>
-
    <div class="teamBlock">
     <img class="logo" src="./logos/${team.logo}">
-    <div class="teamInfo">
-     <div class="teamName">${team.name}</div>
-     <div class="teamStats">
-      Z ${t.z} | Skóre ${t.gf}:${t.ga}
-     </div>
-    </div>
+    <div>${team.name} (Z ${t.z})</div>
    </div>
-
    <div class="pointsBox">${t.b}</div>
-
   </div>
   `
  })
-
 }
 
 // ===== ROZPIS =====
@@ -210,45 +168,16 @@ function render(matches, teamMap){
 
   if(!home || !away) return
 
-  const homeScore = m.home_score ?? "-"
-  const awayScore = m.away_score ?? "-"
-
   cont.innerHTML+=`
-
   <div class="matchRow">
-
-   <div class="teamBox">
-    <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name}</div>
-   </div>
-
-   <div class="scoreBox">${homeScore}</div>
-
+   <div>${home.name}</div>
+   <div class="scoreBox">${m.home_score ?? "-"}</div>
    <div></div>
-
-   <div class="scoreBox">${awayScore}</div>
-
-   <div class="teamBox teamRight">
-    <div>${away.name}</div>
-    <img class="logo" src="./logos/${away.logo}">
-   </div>
-
-   <div>
-    <button class="btn detailBtn"
-     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-     Detail
-    </button>
-
-    <button class="btn betBtn"
-     onclick="window.location.href='vsad-si.html?id=${m.id}'">
-     Vsaď si
-    </button>
-   </div>
-
+   <div class="scoreBox">${m.away_score ?? "-"}</div>
+   <div>${away.name}</div>
   </div>
   `
  })
-
 }
 
 load()
