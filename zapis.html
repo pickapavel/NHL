@@ -45,44 +45,70 @@ const supabase = createClient(
 let loadedLines=[]
 
 // ===== TXT =====
-fileInput.onchange = e=>{
+document.getElementById("fileInput").addEventListener("change", e=>{
  const reader=new FileReader()
  reader.onload=ev=>{
   loadedLines = ev.target.result.split(/\r?\n/)
  }
  reader.readAsText(e.target.files[0])
-}
+})
 
 // ===== LOAD =====
 async function load(){
 
- const { data: teams } = await supabase.from("teams").select("*")
- const { data: comps } = await supabase.from("competitions").select("*")
- const { data: seasons } = await supabase.from("seasons").select("*")
- const { data: stages } = await supabase.from("stages").select("*")
+ console.log("LOAD START")
 
- competition.innerHTML = "<option disabled selected>Vyber soutěž</option>"
- season.innerHTML = "<option disabled selected>Vyber sezónu</option>"
- stage.innerHTML = "<option disabled selected>Fáze</option>"
- homeTeam.innerHTML = "<option disabled selected>Domácí tým</option>"
- awayTeam.innerHTML = "<option disabled selected>Hostující tým</option>"
+ const { data: teams, error: tErr } = await supabase.from("teams").select("*")
+ const { data: comps, error: cErr } = await supabase.from("competitions").select("*")
+ const { data: seasons, error: sErr } = await supabase.from("seasons").select("*")
+ const { data: stages, error: stErr } = await supabase.from("stages").select("*")
 
- comps?.forEach(c=>{
-  competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
- })
+ console.log("TEAMS:", teams, tErr)
+ console.log("COMP:", comps, cErr)
+ console.log("SEASONS:", seasons, sErr)
+ console.log("STAGES:", stages, stErr)
 
- seasons?.forEach(s=>{
-  season.innerHTML += `<option value="${s.id}">${s.name}</option>`
- })
+ const compSel = document.getElementById("competition")
+ const seasonSel = document.getElementById("season")
+ const stageSel = document.getElementById("stage")
+ const homeSel = document.getElementById("homeTeam")
+ const awaySel = document.getElementById("awayTeam")
 
- stages?.forEach(s=>{
-  stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
- })
+ // reset
+ compSel.innerHTML = "<option disabled selected>Vyber soutěž</option>"
+ seasonSel.innerHTML = "<option disabled selected>Vyber sezónu</option>"
+ stageSel.innerHTML = "<option disabled selected>Fáze</option>"
+ homeSel.innerHTML = "<option disabled selected>Domácí tým</option>"
+ awaySel.innerHTML = "<option disabled selected>Hostující tým</option>"
 
- teams?.forEach(t=>{
-  homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
- })
+ // competitions
+ if(comps){
+  comps.forEach(c=>{
+   compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
+  })
+ }
+
+ // seasons
+ if(seasons){
+  seasons.forEach(s=>{
+   seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }
+
+ // stages
+ if(stages){
+  stages.forEach(s=>{
+   stageSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }
+
+ // teams
+ if(teams){
+  teams.forEach(t=>{
+   homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+   awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  })
+ }
 
 }
 
