@@ -139,18 +139,12 @@ window.saveMatch = async function(){
   hg, ag
  })
 
- const res = await supabase.from("matches").insert([{
-  competition_id: competition.value,
-  season_id: season.value,
-  stage_id: stage.value,
+const res = await supabase.from("matches").insert([{
   home_team: homeTeam.value,
-  away_team: awayTeam.value,
-  home_score: hg,
-  away_score: ag,
-  played: true,
-  stats: JSON.stringify(loadedLines) }])
+  away_team: awayTeam.value
+}])
 
- console.log("INSERT RESULT:", res)
+console.log(res)
 
  if(res.error){
   alert("Chyba při ukládání ❌")
