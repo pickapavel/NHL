@@ -23,8 +23,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:14px 28px;border-radius:10px;
 }
 
-/* ===== TABULKA ===== */
-
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
  background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
@@ -47,8 +45,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
  padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
-
-/* ===== ZÁPASY ===== */
 
 .matchRow{
  display:grid;
@@ -90,11 +86,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <div class="seasonCard">Extraliga</div>
 </div>
 
-<!-- 🔥 TABULKA -->
 <h2>Tabulka</h2>
 <div id="standings"></div>
 
-<!-- 🔥 ROZPIS -->
 <h2>Rozpis zápasů</h2>
 <div id="schedule"></div>
 
@@ -109,30 +103,29 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
  const { data: matches } = await supabase.from("matches").select("*")
 
  const teamMap = {}
- teams.forEach(t=>{
-  teamMap[t.id] = t
- })
+ teams.forEach(t=> teamMap[t.id] = t)
 
- // 🔥 řazení
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
  renderTable(matches, teamMap)
 }
 
-// ===== TABULKA =====
+// 🔥 OPRAVENÁ TABULKA
 function renderTable(matches, teamMap){
 
  let table = {}
 
  matches.forEach(m=>{
+
+  // ❌ SKIP pokud není odehráno
+  if(m.home_score == null || m.away_score == null) return
 
   if(!table[m.home_team]){
    table[m.home_team]={team:m.home_team,b:0,z:0,gf:0,ga:0}
@@ -144,8 +137,8 @@ function renderTable(matches, teamMap){
   const h = table[m.home_team]
   const a = table[m.away_team]
 
-  const hg = Number(m.home_score||0)
-  const ag = Number(m.away_score||0)
+  const hg = Number(m.home_score)
+  const ag = Number(m.away_score)
 
   h.z++; a.z++
 
