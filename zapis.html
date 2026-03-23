@@ -2,37 +2,13 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Zápis zápasu</title>
+<title>Statistiky zápasu</title>
 
 <style>
-body{
- font-family:Arial;
- background:#f2f2f2;
- margin:0;
-}
-.wrapper{
- max-width:600px;
- margin:auto;
- background:white;
- padding:20px;
- margin-top:40px;
- border-radius:10px;
-}
-select, input, button{
- width:100%;
- padding:10px;
- margin-bottom:10px;
- font-size:16px;
-}
-button{
- background:#2f9ec9;
- color:white;
- border:none;
- cursor:pointer;
-}
-button:hover{
- background:#2789ad;
-}
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;}
+.controls>*{flex:1;min-width:150px;padding:10px;}
 </style>
 </head>
 
@@ -40,7 +16,10 @@ button:hover{
 
 <div class="wrapper">
 
-<h2>Zápis zápasu</h2>
+<h1>Statistiky zápasu</h1>
+
+<div class="controls">
+<input type="file" id="fileInput">
 
 <select id="competition"></select>
 <select id="season"></select>
@@ -49,10 +28,8 @@ button:hover{
 <select id="homeTeam"></select>
 <select id="awayTeam"></select>
 
-<input type="number" id="homeScore" placeholder="Góly domácí">
-<input type="number" id="awayScore" placeholder="Góly hosté">
-
-<button onclick="save()">Uložit</button>
+<button onclick="saveMatch()">Uložit zápas</button>
+</div>
 
 </div>
 
@@ -61,74 +38,118 @@ button:hover{
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrfsaerxntfui.supabase.co",
+  "https://qaocbodrflsaerxntfui.supabase.co",
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
+
+let loadedLines=[]
+
+// ===== TXT =====
+document.getElementById("fileInput").addEventListener("change", e=>{
+ const reader=new FileReader()
+ reader.onload=ev=>{
+  loadedLines = ev.target.result.split(/\r?\n/)
+ }
+ reader.readAsText(e.target.files[0])
+})
 
 // ===== LOAD =====
 async function load(){
 
- competition.innerHTML = "<option>Soutěž</option>"
- season.innerHTML = "<option>Sezóna</option>"
- stage.innerHTML = "<option>Fáze</option>"
- homeTeam.innerHTML = "<option>Domácí</option>"
- awayTeam.innerHTML = "<option>Hosté</option>"
+ console.log("LOAD START")
 
- // každá tabulka zvlášť (aby to nespadlo)
- try{
-  const { data } = await supabase.from("competitions").select("*")
-  data?.forEach(c=>{
-   competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
-  })
- }catch{}
+ const { data: teams, error: tErr } = await supabase.from("teams").select("*")
+ const { data: comps, error: cErr } = await supabase.from("competitions").select("*")
+ const { data: seasons, error: sErr } = await supabase.from("seasons").select("*")
+ const { data: stages, error: stErr } = await supabase.from("stages").select("*")
 
- try{
-  const { data } = await supabase.from("seasons").select("*")
-  data?.forEach(s=>{
-   season.innerHTML += `<option value="${s.id}">${s.name}</option>`
-  })
- }catch{}
+ console.log("TEAMS:", teams, tErr)
+ console.log("COMP:", comps, cErr)
+ console.log("SEASONS:", seasons, sErr)
+ console.log("STAGES:", stages, stErr)
 
- try{
-  const { data } = await supabase.from("stages").select("*")
-  data?.forEach(s=>{
-   stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
-  })
- }catch{}
+ const compSel = document.getElementById("competition")
+ const seasonSel = document.getElementById("season")
+ const stageSel = document.getElementById("stage")
+ const homeSel = document.getElementById("homeTeam")
+ const awaySel = document.getElementById("awayTeam")
 
- try{
-  const { data } = await supabase.from("teams").select("*")
-  data?.forEach(t=>{
-   homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
-   awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ // reset
+ compSel.innerHTML = "<option disabled selected>Vyber soutěž</option>"
+ seasonSel.innerHTML = "<option disabled selected>Vyber sezónu</option>"
+ stageSel.innerHTML = "<option disabled selected>Fáze</option>"
+ homeSel.innerHTML = "<option disabled selected>Domácí tým</option>"
+ awaySel.innerHTML = "<option disabled selected>Hostující tým</option>"
+
+ // competitions
+ if(comps){
+  comps.forEach(c=>{
+   compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
   })
- }catch{}
+ }
+
+ // seasons
+ if(seasons){
+  seasons.forEach(s=>{
+   seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }
+
+ // stages
+ if(stages){
+  stages.forEach(s=>{
+   stageSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }
+
+ // teams
+ if(teams){
+  teams.forEach(t=>{
+   homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+   awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  })
+ }
 
 }
 
-load()
+window.addEventListener("load", load)
 
 // ===== SAVE =====
-async function save(){
+window.saveMatch = async function(){
 
- const res = await supabase.from("matches").insert([{
-  competition_id: competition.value,
-  season_id: season.value,
-  stage_id: stage.value,
+ if(!loadedLines.length){
+  alert("Nahraj TXT")
+  return
+ }
+
+ if(!competition.value || !season.value || !stage.value || !homeTeam.value || !awayTeam.value){
+  alert("Vyplň všechno")
+  return
+ }
+
+ const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
+ const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
+
+ console.log("DATA:", {
+  competition: competition.value,
+  season: season.value,
+  stage: stage.value,
+  home: homeTeam.value,
+  away: awayTeam.value,
+  hg, ag
+ })
+
+const res = await supabase.from("matches").insert([{
   home_team: homeTeam.value,
-  away_team: awayTeam.value,
-  home_score: Number(homeScore.value),
-  away_score: Number(awayScore.value),
-  played: true,
-  round: 1
- }])
+  away_team: awayTeam.value
+}])
 
- console.log(res)
+console.log(res)
 
  if(res.error){
-  alert("Chyba ❌")
+  alert("Chyba při ukládání ❌")
  }else{
-  alert("Uloženo ✅")
+  alert("Uloženo 👍")
  }
 
 }
