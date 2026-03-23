@@ -38,7 +38,7 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
+  "https://qacobodrfsaerxntfui.supabase.co",
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
@@ -61,37 +61,27 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
  const { data: stages } = await supabase.from("stages").select("*")
 
- const compSel = competition
- const seasonSel = season
- const stageSel = stage
- const homeSel = homeTeam
- const awaySel = awayTeam
+ competition.innerHTML = "<option disabled selected>Vyber soutěž</option>"
+ season.innerHTML = "<option disabled selected>Vyber sezónu</option>"
+ stage.innerHTML = "<option disabled selected>Fáze</option>"
+ homeTeam.innerHTML = "<option disabled selected>Domácí tým</option>"
+ awayTeam.innerHTML = "<option disabled selected>Hostující tým</option>"
 
- compSel.innerHTML = "<option disabled selected>Vyber soutěž</option>"
- seasonSel.innerHTML = "<option disabled selected>Vyber sezónu</option>"
- stageSel.innerHTML = "<option disabled selected>Fáze soutěže</option>"
- homeSel.innerHTML = "<option disabled selected>Domácí tým</option>"
- awaySel.innerHTML = "<option disabled selected>Hostující tým</option>"
-
- // competitions
  comps?.forEach(c=>{
-  compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
+  competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
  })
 
- // seasons
  seasons?.forEach(s=>{
-  seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  season.innerHTML += `<option value="${s.id}">${s.name}</option>`
  })
 
- // stages
- stages?.forEach(st=>{
-  stageSel.innerHTML += `<option value="${st.id}">${st.name}</option>`
+ stages?.forEach(s=>{
+  stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
  })
 
- // teams
  teams?.forEach(t=>{
-  homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
  })
 
 }
@@ -106,10 +96,24 @@ window.saveMatch = async function(){
   return
  }
 
+ if(!competition.value || !season.value || !stage.value || !homeTeam.value || !awayTeam.value){
+  alert("Vyplň všechno")
+  return
+ }
+
  const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
  const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
 
- await supabase.from("matches").insert([{
+ console.log("DATA:", {
+  competition: competition.value,
+  season: season.value,
+  stage: stage.value,
+  home: homeTeam.value,
+  away: awayTeam.value,
+  hg, ag
+ })
+
+ const res = await supabase.from("matches").insert([{
   competition_id: competition.value,
   season_id: season.value,
   stage_id: stage.value,
@@ -121,7 +125,14 @@ window.saveMatch = async function(){
   stats: loadedLines
  }])
 
- alert("Uloženo 👍")
+ console.log("INSERT RESULT:", res)
+
+ if(res.error){
+  alert("Chyba při ukládání ❌")
+ }else{
+  alert("Uloženo 👍")
+ }
+
 }
 
 </script>
