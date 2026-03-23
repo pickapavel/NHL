@@ -54,6 +54,17 @@ fileInput.onchange = e=>{
 // ===== LOAD =====
 async function load(){
 
+  console.log("LOAD START")
+
+ const res1 = await supabase.from("teams").select("*")
+ console.log("TEAMS RAW:", res1)
+
+ const res2 = await supabase.from("competitions").select("*")
+ console.log("COMP RAW:", res2)
+
+ const res3 = await supabase.from("seasons").select("*")
+ console.log("SEASONS RAW:", res3)
+
  console.log("LOADING DATA...")
 
  // TEAMS
