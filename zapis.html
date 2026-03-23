@@ -83,7 +83,7 @@ fileInput.onchange = e=>{
  reader.readAsText(e.target.files[0])
 }
 
-// ===== LOAD SELECTS =====
+// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -125,7 +125,7 @@ window.saveMatch = async function(){
  const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
  const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
 
- const res = await supabase.from("matches").insert([{
+ const { error } = await supabase.from("matches").insert([{
   competition_id: competition.value,
   season_id: season.value,
   stage_id: stage.value,
@@ -138,25 +138,30 @@ window.saveMatch = async function(){
   stats: JSON.stringify(loadedLines)
  }])
 
- if(res.error){
+ if(error){
+  console.log("INSERT ERROR:", error)
   alert("Chyba ❌")
  }else{
   alert("Uloženo 👍")
-  loadMatches() // 🔥 refresh tabulky
+  loadMatches()
  }
 }
 
 // ===== LOAD MATCHES =====
 async function loadMatches(){
 
- const { data } = await supabase
+ const { data, error } = await supabase
   .from("matches")
   .select("*")
   .order("id", { ascending:false })
 
+ console.log("MATCHES:", data, error)
+
  matchesTable.innerHTML=""
 
- data?.forEach(m=>{
+ if(!data) return
+
+ data.forEach(m=>{
   matchesTable.innerHTML += `
   <tr>
     <td>${m.home_team}</td>
