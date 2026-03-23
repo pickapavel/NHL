@@ -83,7 +83,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard">Extraliga</div>
+<div class="seasonCard">Extraliga - 2. sezóna</div>
 </div>
 
 <h2>Tabulka</h2>
@@ -103,19 +103,29 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// 🔥 nastav ID extraligy (změň podle DB)
-const EXTRALIGA_ID = "1"
-
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
  const { data: matches } = await supabase.from("matches").select("*")
+ const { data: comps } = await supabase.from("competitions").select("*")
+ const { data: seasons } = await supabase.from("seasons").select("*")
+
+ const extraliga = comps.find(c => c.name === "Extraliga")
+ const sezona = seasons.find(s => s.name.includes("2"))
+
+ if(!extraliga || !sezona){
+  alert("Chybí soutěž nebo sezóna ❌")
+  return
+ }
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- // 🔥 filtr jen extraliga zápasy
- const elhMatches = matches.filter(m => m.competition_id == EXTRALIGA_ID)
+ // 🔥 filtr
+ const elhMatches = matches.filter(m =>
+  m.competition_id == extraliga.id &&
+  m.season_id == sezona.id
+ )
 
  elhMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
@@ -123,12 +133,12 @@ async function load(){
  renderTable(elhMatches, teamMap)
 }
 
-// 🔥 TABULKA jen extraliga týmy
+// ===== TABULKA =====
 function renderTable(matches, teamMap){
 
  let table = {}
 
- // vytvoř týmy jen z extraligy
+ // vytvoř týmy z extraligy
  matches.forEach(m=>{
   table[m.home_team] = {team:m.home_team,b:0,z:0,gf:0,ga:0}
   table[m.away_team] = {team:m.away_team,b:0,z:0,gf:0,ga:0}
