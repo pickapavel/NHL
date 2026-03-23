@@ -23,6 +23,8 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 
 <select id="competition"></select>
 <select id="season"></select>
+<select id="stage"></select>
+
 <select id="homeTeam"></select>
 <select id="awayTeam"></select>
 
@@ -36,7 +38,7 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
+  "https://qacobodrfsaerxntfui.supabase.co",
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
@@ -54,64 +56,43 @@ fileInput.onchange = e=>{
 // ===== LOAD =====
 async function load(){
 
-  console.log("LOAD START")
+ const { data: teams } = await supabase.from("teams").select("*")
+ const { data: comps } = await supabase.from("competitions").select("*")
+ const { data: seasons } = await supabase.from("seasons").select("*")
+ const { data: stages } = await supabase.from("stages").select("*")
 
- const res1 = await supabase.from("teams").select("*")
- console.log("TEAMS RAW:", res1)
+ const compSel = competition
+ const seasonSel = season
+ const stageSel = stage
+ const homeSel = homeTeam
+ const awaySel = awayTeam
 
- const res2 = await supabase.from("competitions").select("*")
- console.log("COMP RAW:", res2)
-
- const res3 = await supabase.from("seasons").select("*")
- console.log("SEASONS RAW:", res3)
-
- console.log("LOADING DATA...")
-
- // TEAMS
- const { data: teams, error: tErr } = await supabase.from("teams").select("*")
- console.log("TEAMS:", teams, tErr)
-
- // COMPETITIONS
- const { data: comps, error: cErr } = await supabase.from("competitions").select("*")
- console.log("COMP:", comps, cErr)
-
- // SEASONS
- const { data: seasons, error: sErr } = await supabase.from("seasons").select("*")
- console.log("SEASONS:", seasons, sErr)
-
- // ===== NAPLNĚNÍ SELECTŮ =====
-
- const compSel = document.getElementById("competition")
- const seasonSel = document.getElementById("season")
- const homeSel = document.getElementById("homeTeam")
- const awaySel = document.getElementById("awayTeam")
-
- compSel.innerHTML = "<option>Vyber soutěž</option>"
- seasonSel.innerHTML = "<option>Vyber sezónu</option>"
- homeSel.innerHTML = "<option>Domácí tým</option>"
- awaySel.innerHTML = "<option>Hostující tým</option>"
+ compSel.innerHTML = "<option disabled selected>Vyber soutěž</option>"
+ seasonSel.innerHTML = "<option disabled selected>Vyber sezónu</option>"
+ stageSel.innerHTML = "<option disabled selected>Fáze soutěže</option>"
+ homeSel.innerHTML = "<option disabled selected>Domácí tým</option>"
+ awaySel.innerHTML = "<option disabled selected>Hostující tým</option>"
 
  // competitions
- if(comps){
-  comps.forEach(c=>{
-   compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
-  })
- }
+ comps?.forEach(c=>{
+  compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
+ })
 
  // seasons
- if(seasons){
-  seasons.forEach(s=>{
-   seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
-  })
- }
+ seasons?.forEach(s=>{
+  seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+ })
+
+ // stages
+ stages?.forEach(st=>{
+  stageSel.innerHTML += `<option value="${st.id}">${st.name}</option>`
+ })
 
  // teams
- if(teams){
-  teams.forEach(t=>{
-   homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
-   awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  })
- }
+ teams?.forEach(t=>{
+  homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ })
 
 }
 
@@ -128,9 +109,10 @@ window.saveMatch = async function(){
  const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
  const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
 
- const res = await supabase.from("matches").insert([{
+ await supabase.from("matches").insert([{
   competition_id: competition.value,
   season_id: season.value,
+  stage_id: stage.value,
   home_team: homeTeam.value,
   away_team: awayTeam.value,
   home_score: hg,
@@ -138,8 +120,6 @@ window.saveMatch = async function(){
   played: true,
   stats: loadedLines
  }])
-
- console.log("INSERT:", res)
 
  alert("Uloženo 👍")
 }
