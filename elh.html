@@ -107,16 +107,14 @@ async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
 
- // 🔥 najdeme extraligu
- const { data: competitions } = await supabase
+ const { data: competition } = await supabase
   .from("competitions")
   .select("*")
   .eq("name", "Extraliga")
   .single()
 
- const extraligaId = competitions.id
+ const extraligaId = competition.id
 
- // 🔥 načteme jen zápasy extraligy
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
@@ -128,19 +126,25 @@ async function load(){
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
- renderTable(matches, teamMap, teams)
+ renderTable(matches, teamMap)
 }
 
-// 🔥 TABULKA – všechny týmy
-function renderTable(matches, teamMap, teams){
+// 🔥 TABULKA – jen extraligové týmy (i bez zápasu)
+function renderTable(matches, teamMap){
 
  let table = {}
 
- // ✅ vytvoř všechny týmy s 0
- teams.forEach(t=>{
-  table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
+ // 🔥 vezmeme všechny týmy z extraligy (ze zápasů)
+ matches.forEach(m=>{
+  if(!table[m.home_team]){
+   table[m.home_team] = {team:m.home_team,b:0,z:0,gf:0,ga:0}
+  }
+  if(!table[m.away_team]){
+   table[m.away_team] = {team:m.away_team,b:0,z:0,gf:0,ga:0}
+  }
  })
 
+ // 🔥 započítání výsledků
  matches.forEach(m=>{
 
   if(m.home_score == null || m.away_score == null) return
@@ -162,9 +166,7 @@ function renderTable(matches, teamMap, teams){
 
  })
 
- const arr = Object.values(table)
-  .filter(t => t.z > 0) // 🔥 zobraz jen týmy co hrají extraligu
-  .sort((a,b)=>b.b-a.b)
+ const arr = Object.values(table).sort((a,b)=>b.b-a.b)
 
  const cont = document.getElementById("standings")
  cont.innerHTML=""
