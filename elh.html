@@ -2,36 +2,61 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Statistiky zápasu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extraliga</title>
 
 <style>
-body{font-family:Arial;background:#f2f2f2;margin:0;}
-.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
-.controls{display:flex;gap:10px;flex-wrap:wrap;}
-.controls>*{flex:1;min-width:150px;padding:10px;}
+*{box-sizing:border-box}
 
-table{
- width:100%;
- border-collapse:collapse;
- margin-top:20px;
+body{font-family:Arial;margin:0;background:#f2f2f2;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+
+.headerBar{
+ display:flex;align-items:center;justify-content:space-between;
+ background:#e9ecef;border-radius:12px;padding:20px;margin-bottom:25px;
 }
 
-th,td{
- border:1px solid #ccc;
+.headerBar img{height:110px;}
+
+.seasonCard{
+ background:#0b2a3c;color:white;font-size:26px;
+ padding:14px 28px;border-radius:10px;
+}
+
+.matchRow{
+ display:grid;
+ grid-template-columns:1fr 70px 220px 70px 1fr 120px;
+ align-items:center;background:#e9ecef;
+ padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
+}
+
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
+.teamRight{justify-content:flex-end;}
+
+.logo{
+ width:50px;height:50px;object-fit:contain;
+ background:white;padding:2px;border-radius:6px;
+}
+
+.scoreBox{
+ background:#0b2a3c;color:white;
+ font-size:22px;font-weight:bold;
+ padding:8px 0;border-radius:6px;text-align:center;
+}
+
+.btn{
+ border:none;
  padding:8px;
- text-align:center;
+ border-radius:6px;
+ cursor:pointer;
+ width:100%;
+ margin-top:5px;
+ font-weight:bold;
 }
 
-th{
- background:black;
- color:yellow;
-}
+.detailBtn{background:#2f9ec9;color:white;}
+.betBtn{background:#27ae60;color:white;}
 
-/* týmy doleva */
-td:nth-child(5),
-td:nth-child(6){
- text-align:left;
-}
 </style>
 </head>
 
@@ -39,37 +64,13 @@ td:nth-child(6){
 
 <div class="wrapper">
 
-<h1>Statistiky zápasu</h1>
-
-<div class="controls">
-<input type="file" id="fileInput">
-
-<select id="competition"></select>
-<select id="season"></select>
-<select id="stage"></select>
-
-<select id="homeTeam"></select>
-<select id="awayTeam"></select>
-
-<button onclick="saveMatch()">Uložit zápas</button>
+<div class="headerBar">
+<img src="img/extraliga.jpg">
+<div class="seasonCard">Extraliga</div>
 </div>
 
-<h2>Odehrané zápasy</h2>
-
-<table>
-<thead>
-<tr>
-<th>Kolo</th>
-<th>Soutěž</th>
-<th>Sezóna</th>
-<th>Fáze</th>
-<th>Domácí</th>
-<th>Hosté</th>
-<th>Skóre</th>
-</tr>
-</thead>
-<tbody id="matchesTable"></tbody>
-</table>
+<h2>Rozpis zápasů</h2>
+<div id="schedule"></div>
 
 </div>
 
@@ -82,125 +83,89 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-let loadedLines=[]
-
-let teamsMap = {}
-let compsMap = {}
-let seasonsMap = {}
-let stagesMap = {}
-
-// ===== TXT =====
-fileInput.onchange = e=>{
- const reader=new FileReader()
- reader.onload=ev=>{
-  loadedLines = ev.target.result.split(/\r?\n/)
- }
- reader.readAsText(e.target.files[0])
-}
+// ===== RATING =====
+let ratings = {}
 
 // ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
- const { data: comps } = await supabase.from("competitions").select("*")
- const { data: seasons } = await supabase.from("seasons").select("*")
- const { data: stages } = await supabase.from("stages").select("*")
 
- teams?.forEach(t=> teamsMap[t.id] = t.name)
- comps?.forEach(c=> compsMap[c.id] = c.name)
- seasons?.forEach(s=> seasonsMap[s.id] = s.name)
- stages?.forEach(s=> stagesMap[s.id] = s.name)
-
- competition.innerHTML="<option value=''>Vyber soutěž</option>"
- season.innerHTML="<option value=''>Vyber sezónu</option>"
- stage.innerHTML="<option value=''>Fáze</option>"
- homeTeam.innerHTML="<option value=''>Domácí tým</option>"
- awayTeam.innerHTML="<option value=''>Hostující tým</option>"
-
- comps?.forEach(c=>{
-  competition.innerHTML+=`<option value="${c.id}">${c.name}</option>`
+ const teamMap = {}
+ teams.forEach(t=>{
+  teamMap[t.id] = t
+  ratings[t.name] = 1000
  })
 
- seasons?.forEach(s=>{
-  season.innerHTML+=`<option value="${s.id}">${s.name}</option>`
- })
-
- stages?.forEach(s=>{
-  stage.innerHTML+=`<option value="${s.id}">${s.name}</option>`
- })
-
- teams?.forEach(t=>{
-  homeTeam.innerHTML+=`<option value="${t.id}">${t.name}</option>`
-  awayTeam.innerHTML+=`<option value="${t.id}">${t.name}</option>`
- })
-
- loadMatches()
-}
-
-window.onload = load
-
-// ===== SAVE =====
-window.saveMatch = async function(){
-
- const hg = Number(loadedLines[16]||0) + Number(loadedLines[17]||0) + Number(loadedLines[18]||0)
- const ag = Number(loadedLines[6]||0) + Number(loadedLines[7]||0) + Number(loadedLines[8]||0)
-
- const { error } = await supabase.from("matches").insert([{
-  competition_id: competition.value,
-  season_id: season.value,
-  stage_id: stage.value,
-  home_team: homeTeam.value,
-  away_team: awayTeam.value,
-  home_score: hg,
-  away_score: ag,
-  played: true,
-  round: 1,
-  stats: JSON.stringify(loadedLines)
- }])
-
- if(error){
-  alert("Chyba ❌")
- }else{
-  alert("Uloženo 👍")
-  loadMatches()
- }
-}
-
-// ===== LOAD MATCHES =====
-async function loadMatches(){
-
- const { data } = await supabase
+ const { data: matches } = await supabase
   .from("matches")
   .select("*")
 
- // 🔥 oprava řazení (funguje i když je round string)
- data.sort((a,b)=> Number(a.round) - Number(b.round))
+ render(matches, teamMap)
+}
 
- matchesTable.innerHTML=""
+// ===== RENDER =====
+function render(matches, teamMap){
 
- data?.forEach(m=>{
+ const cont = document.getElementById("schedule")
+ cont.innerHTML=""
 
-  const homeName = teamsMap[m.home_team] || m.home_team
-  const awayName = teamsMap[m.away_team] || m.away_team
+ matches.forEach(m=>{
 
-  const compName = compsMap[m.competition_id] || "-"
-  const seasonName = seasonsMap[m.season_id] || "-"
-  const stageName = stagesMap[m.stage_id] || "-"
+  const home = teamMap[m.home_team]
+  const away = teamMap[m.away_team]
 
-  matchesTable.innerHTML += `
-  <tr>
-    <td>${m.round ?? "-"}</td>
-    <td>${compName}</td>
-    <td>${seasonName}</td>
-    <td>${stageName}</td>
-    <td>${homeName}</td>
-    <td>${awayName}</td>
-    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
-  </tr>
+  if(!home || !away) return
+
+  cont.innerHTML+=`
+
+  <div class="matchRow">
+
+   <div class="teamBox">
+    <img class="logo" src="./logos/${home.logo}">
+    <div>
+     ${home.name}
+     <div style="font-size:12px;color:#666;">
+      ⭐ ${ratings[home.name]}
+     </div>
+    </div>
+   </div>
+
+   <div class="scoreBox">${m.played ? m.home_score : "-"}</div>
+
+   <div></div>
+
+   <div class="scoreBox">${m.played ? m.away_score : "-"}</div>
+
+   <div class="teamBox teamRight">
+    <div style="text-align:right">
+     ${away.name}
+     <div style="font-size:12px;color:#666;">
+      ⭐ ${ratings[away.name]}
+     </div>
+    </div>
+    <img class="logo" src="./logos/${away.logo}">
+   </div>
+
+   <div>
+    <button class="btn detailBtn"
+     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+     Detail
+    </button>
+
+  <button class="btn betBtn"
+    onclick="window.location.href='vsad-si.html?id=${m.id}&home=${encodeURIComponent(home.name)}&away=${encodeURIComponent(away.name)}&hlogo=${home.logo}&alogo=${away.logo}'">
+    Vsaď si
+  </button>
+   </div>
+
+  </div>
   `
  })
 
 }
+
+load()
 
 </script>
 
