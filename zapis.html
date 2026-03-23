@@ -152,7 +152,14 @@ const res = await supabase.from("matches").insert([{
   stats: JSON.stringify(loadedLines)
 }])
 
-console.log("ERROR:", res.error.message)
+console.log(res)
+
+if(res.error){
+  console.log("ERROR:", res.error)
+  alert("Chyba ❌")
+}else{
+  alert("Uloženo 👍")
+}
 console.log("DETAIL:", res.error.details)
 
  if(res.error){
