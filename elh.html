@@ -103,57 +103,46 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
+// 🔥 nastav si sezónu
+const SEASON_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+
 async function load(){
 
- const { data: teams } = await supabase.from("teams").select("*")
+ // 🔥 jen extraligové týmy pro sezónu
+ const { data: seasonTeams } = await supabase
+  .from("season_teams")
+  .select("team_id")
+  .eq("season_id", SEASON_ID)
 
- const { data: competition } = await supabase
-  .from("competitions")
+ const teamIds = seasonTeams.map(t => t.team_id)
+
+ const { data: teams } = await supabase
+  .from("teams")
   .select("*")
-  .eq("name", "Extraliga")
-  .single()
+  .in("id", teamIds)
 
- const extraligaId = competition.id
-
- const { data: seasons } = await supabase
-  .from("seasons")
-  .select("*")
-  .eq("competition_id", extraligaId)
-
- const seasonIds = seasons.map(s => s.id)
-
+ // 🔥 zápasy jen té sezóny
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
-  .in("season_id", seasonIds)
-
- // 🔥 jen týmy extraligy (ze zápasů)
- const extraligaTeamIds = new Set()
- matches.forEach(m=>{
-  extraligaTeamIds.add(m.home_team)
-  extraligaTeamIds.add(m.away_team)
- })
+  .eq("season_id", SEASON_ID)
 
  const teamMap = {}
- teams.forEach(t=>{
-  if(extraligaTeamIds.has(t.id)){
-   teamMap[t.id] = t
-  }
- })
+ teams.forEach(t=> teamMap[t.id] = t)
 
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
- renderTable(matches, teamMap)
+ renderTable(matches, teamMap, teams)
 }
 
-// 🔥 TABULKA – jen extraligové týmy (všechny)
-function renderTable(matches, teamMap){
+// 🔥 TABULKA – jen týmy ze season_teams
+function renderTable(matches, teamMap, teams){
 
  let table = {}
 
- // 🔥 vytvoř všechny extraligové týmy
- Object.values(teamMap).forEach(t=>{
+ // vytvoř všechny extraligové týmy
+ teams.forEach(t=>{
   table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
  })
 
