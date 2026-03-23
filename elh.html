@@ -23,6 +23,33 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:14px 28px;border-radius:10px;
 }
 
+/* ===== TABULKA ===== */
+
+.standingsCard{
+ display:flex;align-items:center;justify-content:space-between;
+ background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+}
+
+.rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
+
+.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
+
+.logo{
+ width:50px;height:50px;object-fit:contain;
+ background:white;padding:2px;border-radius:6px;
+}
+
+.teamInfo{display:flex;flex-direction:column;}
+.teamName{font-weight:bold;}
+.teamStats{font-size:13px;color:#444;}
+
+.pointsBox{
+ background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
+ padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+}
+
+/* ===== ZÁPASY ===== */
+
 .matchRow{
  display:grid;
  grid-template-columns:1fr 70px 220px 70px 1fr 120px;
@@ -32,11 +59,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
 .teamRight{justify-content:flex-end;}
-
-.logo{
- width:50px;height:50px;object-fit:contain;
- background:white;padding:2px;border-radius:6px;
-}
 
 .scoreBox{
  background:#0b2a3c;color:white;
@@ -68,6 +90,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <div class="seasonCard">Extraliga</div>
 </div>
 
+<!-- 🔥 TABULKA -->
+<h2>Tabulka</h2>
+<div id="standings"></div>
+
+<!-- 🔥 ROZPIS -->
 <h2>Rozpis zápasů</h2>
 <div id="schedule"></div>
 
@@ -82,31 +109,88 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ===== RATING =====
-let ratings = {}
-
 // ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
+ const { data: matches } = await supabase.from("matches").select("*")
 
  const teamMap = {}
  teams.forEach(t=>{
   teamMap[t.id] = t
-  ratings[t.name] = 1000
  })
 
- const { data: matches } = await supabase
-  .from("matches")
-  .select("*")
-
- // řazení podle round
+ // 🔥 řazení
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
+ renderTable(matches, teamMap)
 }
 
-// ===== RENDER =====
+// ===== TABULKA =====
+function renderTable(matches, teamMap){
+
+ let table = {}
+
+ matches.forEach(m=>{
+
+  if(!table[m.home_team]){
+   table[m.home_team]={team:m.home_team,b:0,z:0,gf:0,ga:0}
+  }
+  if(!table[m.away_team]){
+   table[m.away_team]={team:m.away_team,b:0,z:0,gf:0,ga:0}
+  }
+
+  const h = table[m.home_team]
+  const a = table[m.away_team]
+
+  const hg = Number(m.home_score||0)
+  const ag = Number(m.away_score||0)
+
+  h.z++; a.z++
+
+  h.gf+=hg; h.ga+=ag
+  a.gf+=ag; a.ga+=hg
+
+  if(hg>ag){ h.b+=3 }
+  else if(ag>hg){ a.b+=3 }
+  else{ h.b+=1; a.b+=1 }
+
+ })
+
+ const arr = Object.values(table).sort((a,b)=>b.b-a.b)
+
+ const cont = document.getElementById("standings")
+ cont.innerHTML=""
+
+ arr.forEach((t,i)=>{
+
+  const team = teamMap[t.team]
+
+  cont.innerHTML+=`
+  <div class="standingsCard">
+
+   <div class="rank">${i+1}</div>
+
+   <div class="teamBlock">
+    <img class="logo" src="./logos/${team.logo}">
+    <div class="teamInfo">
+     <div class="teamName">${team.name}</div>
+     <div class="teamStats">
+      Z ${t.z} | Skóre ${t.gf}:${t.ga}
+     </div>
+    </div>
+   </div>
+
+   <div class="pointsBox">${t.b}</div>
+
+  </div>
+  `
+ })
+
+}
+
+// ===== ROZPIS =====
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -119,7 +203,6 @@ function render(matches, teamMap){
 
   if(!home || !away) return
 
-  // 🔥 zobraz skóre pokud existuje
   const homeScore = m.home_score ?? "-"
   const awayScore = m.away_score ?? "-"
 
@@ -129,12 +212,7 @@ function render(matches, teamMap){
 
    <div class="teamBox">
     <img class="logo" src="./logos/${home.logo}">
-    <div>
-     ${home.name}
-     <div style="font-size:12px;color:#666;">
-      ⭐ ${ratings[home.name]}
-     </div>
-    </div>
+    <div>${home.name}</div>
    </div>
 
    <div class="scoreBox">${homeScore}</div>
@@ -144,12 +222,7 @@ function render(matches, teamMap){
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
-    <div style="text-align:right">
-     ${away.name}
-     <div style="font-size:12px;color:#666;">
-      ⭐ ${ratings[away.name]}
-     </div>
-    </div>
+    <div>${away.name}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
 
@@ -160,7 +233,7 @@ function render(matches, teamMap){
     </button>
 
     <button class="btn betBtn"
-     onclick="window.location.href='vsad-si.html?id=${m.id}&home=${encodeURIComponent(home.name)}&away=${encodeURIComponent(away.name)}&hlogo=${home.logo}&alogo=${away.logo}'">
+     onclick="window.location.href='vsad-si.html?id=${m.id}'">
      Vsaď si
     </button>
    </div>
