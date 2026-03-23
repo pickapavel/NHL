@@ -28,7 +28,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
 }
 
-.rank{width:30px;font-weight:bold;font-size:18px;text-align:center;}
+.rank{width:30px;font-weight:bold;text-align:center;}
 
 .teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
@@ -114,25 +114,22 @@ async function load(){
  matches.sort((a,b)=> Number(a.round) - Number(b.round))
 
  render(matches, teamMap)
- renderTable(matches, teamMap)
+ renderTable(matches, teamMap, teams)
 }
 
-// 🔥 OPRAVENÁ TABULKA
-function renderTable(matches, teamMap){
+// 🔥 TABULKA – všechny týmy
+function renderTable(matches, teamMap, teams){
 
  let table = {}
 
+ // ✅ vytvoř všechny týmy s 0
+ teams.forEach(t=>{
+  table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
+ })
+
  matches.forEach(m=>{
 
-  // ❌ SKIP pokud není odehráno
   if(m.home_score == null || m.away_score == null) return
-
-  if(!table[m.home_team]){
-   table[m.home_team]={team:m.home_team,b:0,z:0,gf:0,ga:0}
-  }
-  if(!table[m.away_team]){
-   table[m.away_team]={team:m.away_team,b:0,z:0,gf:0,ga:0}
-  }
 
   const h = table[m.home_team]
   const a = table[m.away_team]
