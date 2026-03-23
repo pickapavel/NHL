@@ -103,6 +103,9 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
+// 🔥 nastav ID extraligy (změň podle DB)
+const EXTRALIGA_ID = "1"
+
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -111,20 +114,24 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- matches.sort((a,b)=> Number(a.round) - Number(b.round))
+ // 🔥 filtr jen extraliga zápasy
+ const elhMatches = matches.filter(m => m.competition_id == EXTRALIGA_ID)
 
- render(matches, teamMap)
- renderTable(matches, teamMap, teams)
+ elhMatches.sort((a,b)=> Number(a.round) - Number(b.round))
+
+ render(elhMatches, teamMap)
+ renderTable(elhMatches, teamMap)
 }
 
-// 🔥 TABULKA – všechny týmy
-function renderTable(matches, teamMap, teams){
+// 🔥 TABULKA jen extraliga týmy
+function renderTable(matches, teamMap){
 
  let table = {}
 
- // ✅ vytvoř všechny týmy s 0
- teams.forEach(t=>{
-  table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
+ // vytvoř týmy jen z extraligy
+ matches.forEach(m=>{
+  table[m.home_team] = {team:m.home_team,b:0,z:0,gf:0,ga:0}
+  table[m.away_team] = {team:m.away_team,b:0,z:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
