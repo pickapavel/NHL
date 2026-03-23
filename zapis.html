@@ -2,61 +2,13 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Statistiky zápasu</title>
 
 <style>
-*{box-sizing:border-box}
-
-body{
- font-family:Arial;
- background:#f2f2f2;
- margin:0;
-}
-
-.wrapper{
- max-width:1200px;
- margin:auto;
- padding:20px;
- background:white;
-}
-
-.controls{
- display:flex;
- flex-wrap:wrap;
- gap:10px;
- margin-bottom:20px;
-}
-
-.controls > *{
- flex:1;
- min-width:160px;
- padding:10px;
- font-size:16px;
-}
-
-table{
- border-collapse:collapse;
- width:100%;
-}
-
-th,td{
- border:1px solid #999;
- padding:8px;
-}
-
-th{
- background:black;
- color:#ffff00;
-}
-
-.deleteBtn{
- background:#d9534f;
- color:white;
- border:none;
- padding:6px 10px;
- cursor:pointer;
-}
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;}
+.controls>*{flex:1;min-width:150px;padding:10px;}
 </style>
 </head>
 
@@ -67,35 +19,15 @@ th{
 <h1>Statistiky zápasu</h1>
 
 <div class="controls">
-
-<input type="file" id="fileInput" accept=".txt">
+<input type="file" id="fileInput">
 
 <select id="competition"></select>
 <select id="season"></select>
-
 <select id="homeTeam"></select>
 <select id="awayTeam"></select>
 
 <button onclick="saveMatch()">Uložit zápas</button>
-
 </div>
-
-<h2>Historie zápasů</h2>
-
-<table>
-<thead>
-<tr>
-<th>Datum</th>
-<th>Soutěž</th>
-<th>Sezóna</th>
-<th>Domácí</th>
-<th>Hosté</th>
-<th>Skóre</th>
-<th>Akce</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
 
 </div>
 
@@ -109,16 +41,12 @@ const supabase = createClient(
 )
 
 let loadedLines=[]
-let teams=[]
-let seasons=[]
-let competitions=[]
-let matches=[]
 
 // ===== TXT =====
 fileInput.onchange = e=>{
  const reader=new FileReader()
  reader.onload=ev=>{
-  loadedLines = ev.target.result.split(/\r?\n/).map(l=>l.trim())
+  loadedLines = ev.target.result.split(/\r?\n/)
  }
  reader.readAsText(e.target.files[0])
 }
@@ -126,111 +54,83 @@ fileInput.onchange = e=>{
 // ===== LOAD =====
 async function load(){
 
+ console.log("LOADING DATA...")
+
  // TEAMS
- const { data: t } = await supabase.from("teams").select("*")
- teams = t
-
- homeTeam.innerHTML=""
- awayTeam.innerHTML=""
-
- teams.forEach(team=>{
-  homeTeam.innerHTML += `<option value="${team.id}">${team.name}</option>`
-  awayTeam.innerHTML += `<option value="${team.id}">${team.name}</option>`
- })
+ const { data: teams, error: tErr } = await supabase.from("teams").select("*")
+ console.log("TEAMS:", teams, tErr)
 
  // COMPETITIONS
- const { data: c } = await supabase.from("competitions").select("*")
- competitions = c
-
- competition.innerHTML=""
- competitions.forEach(comp=>{
-  competition.innerHTML += `<option value="${comp.id}">${comp.name}</option>`
- })
+ const { data: comps, error: cErr } = await supabase.from("competitions").select("*")
+ console.log("COMP:", comps, cErr)
 
  // SEASONS
- const { data: s } = await supabase.from("seasons").select("*")
- seasons = s
+ const { data: seasons, error: sErr } = await supabase.from("seasons").select("*")
+ console.log("SEASONS:", seasons, sErr)
 
- season.innerHTML=""
- seasons.forEach(se=>{
-  season.innerHTML += `<option value="${se.id}">${se.name}</option>`
- })
+ // ===== NAPLNĚNÍ SELECTŮ =====
 
- // MATCHES
- const { data: m } = await supabase
-  .from("matches")
-  .select("*")
-  .order("created_at",{ascending:false})
+ const compSel = document.getElementById("competition")
+ const seasonSel = document.getElementById("season")
+ const homeSel = document.getElementById("homeTeam")
+ const awaySel = document.getElementById("awayTeam")
 
- matches = m
- render()
+ compSel.innerHTML = "<option>Vyber soutěž</option>"
+ seasonSel.innerHTML = "<option>Vyber sezónu</option>"
+ homeSel.innerHTML = "<option>Domácí tým</option>"
+ awaySel.innerHTML = "<option>Hostující tým</option>"
+
+ // competitions
+ if(comps){
+  comps.forEach(c=>{
+   compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
+  })
+ }
+
+ // seasons
+ if(seasons){
+  seasons.forEach(s=>{
+   seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
+  })
+ }
+
+ // teams
+ if(teams){
+  teams.forEach(t=>{
+   homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+   awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  })
+ }
+
 }
 
 window.addEventListener("load", load)
-
-// ===== SCORE =====
-function getScore(){
-
- let ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
- let hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
-
- return {hg,ag}
-}
-
-// ===== RENDER =====
-function render(){
-
- tbody.innerHTML=""
-
- matches.forEach(m=>{
-
-  const home = teams.find(t=>t.id===m.home_team)
-  const away = teams.find(t=>t.id===m.away_team)
-  const comp = competitions.find(c=>c.id===m.competition_id)
-  const seas = seasons.find(s=>s.id===m.season_id)
-
-  tbody.innerHTML += `
-  <tr>
-    <td>${new Date(m.created_at).toLocaleDateString()}</td>
-    <td>${comp?.name || ""}</td>
-    <td>${seas?.name || ""}</td>
-    <td>${home?.name || ""}</td>
-    <td>${away?.name || ""}</td>
-    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
-    <td><button onclick="deleteMatch('${m.id}')">Smazat</button></td>
-  </tr>
-  `
- })
-}
 
 // ===== SAVE =====
 window.saveMatch = async function(){
 
  if(!loadedLines.length){
-  alert("Nahraj TXT soubor")
+  alert("Nahraj TXT")
   return
  }
 
- const score = getScore()
+ const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
+ const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
 
- await supabase.from("matches").insert([{
+ const res = await supabase.from("matches").insert([{
   competition_id: competition.value,
   season_id: season.value,
   home_team: homeTeam.value,
   away_team: awayTeam.value,
-  home_score: score.hg,
-  away_score: score.ag,
+  home_score: hg,
+  away_score: ag,
   played: true,
   stats: loadedLines
  }])
 
- load()
-}
+ console.log("INSERT:", res)
 
-// ===== DELETE =====
-window.deleteMatch = async function(id){
- await supabase.from("matches").delete().eq("id", id)
- load()
+ alert("Uloženo 👍")
 }
 
 </script>
