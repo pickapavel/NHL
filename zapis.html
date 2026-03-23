@@ -38,7 +38,7 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
+  "https://qaocbodrfsaerxntfui.supabase.co",
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
@@ -56,59 +56,33 @@ document.getElementById("fileInput").addEventListener("change", e=>{
 // ===== LOAD =====
 async function load(){
 
- console.log("LOAD START")
+ const { data: teams } = await supabase.from("teams").select("*")
+ const { data: comps } = await supabase.from("competitions").select("*")
+ const { data: seasons } = await supabase.from("seasons").select("*")
+ const { data: stages } = await supabase.from("stages").select("*")
 
- const { data: teams, error: tErr } = await supabase.from("teams").select("*")
- const { data: comps, error: cErr } = await supabase.from("competitions").select("*")
- const { data: seasons, error: sErr } = await supabase.from("seasons").select("*")
- const { data: stages, error: stErr } = await supabase.from("stages").select("*")
+ competition.innerHTML = "<option disabled selected>Vyber soutěž</option>"
+ season.innerHTML = "<option disabled selected>Vyber sezónu</option>"
+ stage.innerHTML = "<option disabled selected>Fáze</option>"
+ homeTeam.innerHTML = "<option disabled selected>Domácí tým</option>"
+ awayTeam.innerHTML = "<option disabled selected>Hostující tým</option>"
 
- console.log("TEAMS:", teams, tErr)
- console.log("COMP:", comps, cErr)
- console.log("SEASONS:", seasons, sErr)
- console.log("STAGES:", stages, stErr)
+ comps?.forEach(c=>{
+  competition.innerHTML += `<option value="${c.id}">${c.name}</option>`
+ })
 
- const compSel = document.getElementById("competition")
- const seasonSel = document.getElementById("season")
- const stageSel = document.getElementById("stage")
- const homeSel = document.getElementById("homeTeam")
- const awaySel = document.getElementById("awayTeam")
+ seasons?.forEach(s=>{
+  season.innerHTML += `<option value="${s.id}">${s.name}</option>`
+ })
 
- // reset
- compSel.innerHTML = "<option disabled selected>Vyber soutěž</option>"
- seasonSel.innerHTML = "<option disabled selected>Vyber sezónu</option>"
- stageSel.innerHTML = "<option disabled selected>Fáze</option>"
- homeSel.innerHTML = "<option disabled selected>Domácí tým</option>"
- awaySel.innerHTML = "<option disabled selected>Hostující tým</option>"
+ stages?.forEach(s=>{
+  stage.innerHTML += `<option value="${s.id}">${s.name}</option>`
+ })
 
- // competitions
- if(comps){
-  comps.forEach(c=>{
-   compSel.innerHTML += `<option value="${c.id}">${c.name}</option>`
-  })
- }
-
- // seasons
- if(seasons){
-  seasons.forEach(s=>{
-   seasonSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
-  })
- }
-
- // stages
- if(stages){
-  stages.forEach(s=>{
-   stageSel.innerHTML += `<option value="${s.id}">${s.name}</option>`
-  })
- }
-
- // teams
- if(teams){
-  teams.forEach(t=>{
-   homeSel.innerHTML += `<option value="${t.id}">${t.name}</option>`
-   awaySel.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  })
- }
+ teams?.forEach(t=>{
+  homeTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  awayTeam.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ })
 
 }
 
@@ -127,30 +101,9 @@ window.saveMatch = async function(){
   return
  }
 
- const hg = Number(loadedLines[16]) + Number(loadedLines[17]) + Number(loadedLines[18])
- const ag = Number(loadedLines[6]) + Number(loadedLines[7]) + Number(loadedLines[8])
-
- console.log("DATA:", {
-  competition: competition.value,
-  season: season.value,
-  stage: stage.value,
-  home: homeTeam.value,
-  away: awayTeam.value,
-  hg, ag
- })
-
-const res = await supabase.from("matches").insert([{
-  home_team: homeTeam.value,
-  away_team: awayTeam.value
-}])
-
-console.log(res)
-
- if(res.error){
-  alert("Chyba při ukládání ❌")
- }else{
-  alert("Uloženo 👍")
- }
+ // 🔥 TEN DŮLEŽITÝ KROK
+ console.log("HOME:", homeTeam.value)
+ console.log("AWAY:", awayTeam.value)
 
 }
 
