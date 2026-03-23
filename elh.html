@@ -106,7 +106,21 @@ const supabase = createClient(
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
- const { data: matches } = await supabase.from("matches").select("*")
+
+ // 🔥 najdeme extraligu
+ const { data: competitions } = await supabase
+  .from("competitions")
+  .select("*")
+  .eq("name", "Extraliga")
+  .single()
+
+ const extraligaId = competitions.id
+
+ // 🔥 načteme jen zápasy extraligy
+ const { data: matches } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("competition_id", extraligaId)
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
@@ -148,7 +162,9 @@ function renderTable(matches, teamMap, teams){
 
  })
 
- const arr = Object.values(table).sort((a,b)=>b.b-a.b)
+ const arr = Object.values(table)
+  .filter(t => t.z > 0) // 🔥 zobraz jen týmy co hrají extraligu
+  .sort((a,b)=>b.b-a.b)
 
  const cont = document.getElementById("standings")
  cont.innerHTML=""
