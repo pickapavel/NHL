@@ -48,7 +48,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 70px 220px 70px 1fr 120px;
+ grid-template-columns:1fr 90px 220px 90px 1fr 120px;
  align-items:center;background:#e9ecef;
  padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
 }
@@ -58,7 +58,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .scoreBox{
  background:#0b2a3c;color:white;
- font-size:22px;font-weight:bold;
+ font-size:20px;font-weight:bold;
  padding:8px 0;border-radius:6px;text-align:center;
 }
 
@@ -138,7 +138,7 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
-// 🔥 TABULKA S DETAILNÍMI STATISTIKAMI
+// TABULKA (beze změny)
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -179,37 +179,17 @@ function renderTable(matches, teamMap, teams){
   const isSN = stats && (stats[20] === "1" || stats[20] === "2")
   const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
 
-  // SN
   if(isSN){
-    if(hg>ag){
-      h.vsn++; h.b+=2
-      a.psn++; a.b+=1
-    }else{
-      a.vsn++; a.b+=2
-      h.psn++; h.b+=1
-    }
+    if(hg>ag){ h.vsn++; h.b+=2; a.psn++; a.b+=1 }
+    else{ a.vsn++; a.b+=2; h.psn++; h.b+=1 }
   }
-
-  // OT
   else if(isOT){
-    if(hg>ag){
-      h.vp++; h.b+=2
-      a.pp++; a.b+=1
-    }else{
-      a.vp++; a.b+=2
-      h.pp++; h.b+=1
-    }
+    if(hg>ag){ h.vp++; h.b+=2; a.pp++; a.b+=1 }
+    else{ a.vp++; a.b+=2; h.pp++; h.b+=1 }
   }
-
-  // normální zápas
   else{
-    if(hg>ag){
-      h.v++; h.b+=3
-      a.p++
-    }else{
-      a.v++; a.b+=3
-      h.p++
-    }
+    if(hg>ag){ h.v++; h.b+=3; a.p++ }
+    else{ a.v++; a.b+=3; h.p++ }
   }
 
  })
@@ -251,7 +231,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// ROZPIS (nezměněný)
+// 🔥 ROZPIS S OT / SN
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -263,6 +243,21 @@ function render(matches, teamMap){
   const away = teamMap[m.away_team]
 
   if(!home || !away) return
+
+  let suffix = ""
+
+  try{
+    const stats = m.stats ? JSON.parse(m.stats) : null
+
+    if(stats){
+      if(stats[20] === "1" || stats[20] === "2"){
+        suffix = " SN"
+      }
+      else if(stats[9] === "11" || stats[19] === "11"){
+        suffix = " OT"
+      }
+    }
+  }catch(e){}
 
   const homeScore = m.home_score ?? "-"
   const awayScore = m.away_score ?? "-"
@@ -277,7 +272,7 @@ function render(matches, teamMap){
 
    <div class="scoreBox">${homeScore}</div>
 
-   <div></div>
+   <div>${suffix}</div>
 
    <div class="scoreBox">${awayScore}</div>
 
