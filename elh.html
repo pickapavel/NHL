@@ -48,9 +48,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 90px 220px 90px 1fr 120px;
+ grid-template-columns:1fr 90px 40px 200px 40px 90px 1fr 120px;
  align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
+ padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
 }
 
 .teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
@@ -69,13 +69,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .winTag{
- font-size:12px;
+ font-size:11px;
  font-weight:bold;
  color:#fff;
  background:#2f9ec9;
  padding:2px 6px;
  border-radius:6px;
- margin:0 4px;
+ text-align:center;
 }
 
 .btn{
@@ -154,7 +154,7 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
-// TABULKA (beze změny)
+// TABULKA (nezměněná)
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -242,7 +242,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// 🔥 ROZPIS – SN/OT U SKÓRE
+// 🔥 ROZPIS – SN/OT vedle boxů
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -258,8 +258,8 @@ function render(matches, teamMap){
   try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
   let periods = ""
-  let homeScore = m.home_score ?? "-"
-  let awayScore = m.away_score ?? "-"
+  let homeTag = ""
+  let awayTag = ""
 
   if(stats){
 
@@ -280,20 +280,17 @@ function render(matches, teamMap){
     const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
 
     if(isSN){
-      if(hg > ag){
-        homeScore = `${hg} <span class="winTag">SN</span>`
-      }else{
-        awayScore = `<span class="winTag">SN</span> ${ag}`
-      }
+      if(hg > ag) homeTag = "SN"
+      else awayTag = "SN"
     }
     else if(isOT){
-      if(hg > ag){
-        homeScore = `${hg} <span class="winTag">OT</span>`
-      }else{
-        awayScore = `<span class="winTag">OT</span> ${ag}`
-      }
+      if(hg > ag) homeTag = "OT"
+      else awayTag = "OT"
     }
   }
+
+  const homeScore = m.home_score ?? "-"
+  const awayScore = m.away_score ?? "-"
 
   cont.innerHTML+=`
   <div class="matchRow">
@@ -304,9 +301,11 @@ function render(matches, teamMap){
    </div>
 
    <div class="scoreBox">${homeScore}</div>
+   <div class="winTag">${homeTag}</div>
 
    <div class="periods">${periods}</div>
 
+   <div class="winTag">${awayTag}</div>
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
