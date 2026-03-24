@@ -107,7 +107,6 @@ const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 
 async function load(){
 
- // 🔥 season teams
  const { data: seasonTeams } = await supabase
   .from("season_teams")
   .select("team_id")
@@ -115,7 +114,6 @@ async function load(){
 
  const teamIds = (seasonTeams || []).map(t => t.team_id)
 
- // 🔥 fallback když nic není (aby se to nerozbilo)
  let teams = []
  if(teamIds.length > 0){
   const res = await supabase
@@ -125,7 +123,6 @@ async function load(){
   teams = res.data || []
  }
 
- // 🔥 matches
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
@@ -141,7 +138,7 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
-// TABULKA
+// 🔥 OPRAVENÁ TABULKA
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -167,9 +164,31 @@ function renderTable(matches, teamMap, teams){
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
-  if(hg>ag){ h.b+=3 }
-  else if(ag>hg){ a.b+=3 }
-  else{ h.b+=1; a.b+=1 }
+  // 🔥 NAČTENÍ STATS
+  let stats = null
+  try{
+    stats = m.stats ? JSON.parse(m.stats) : null
+  }catch(e){}
+
+  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+  // 🔥 BODY
+  if(isSN || isOT){
+    if(hg > ag){
+      h.b += 2
+      a.b += 1
+    }else{
+      a.b += 2
+      h.b += 1
+    }
+  }else{
+    if(hg > ag){
+      h.b += 3
+    }else if(ag > hg){
+      a.b += 3
+    }
+  }
 
  })
 
@@ -204,7 +223,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// ROZPIS
+// ROZPIS (beze změny)
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
