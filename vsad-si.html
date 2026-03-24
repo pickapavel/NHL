@@ -186,19 +186,21 @@ let selectedType = null
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADVANTAGE = 80
- const DRAW_PROB = 0.25
+ const DRAW_PROB = 0.20 // 🔥 sníženo
 
  const homeAdj = homeRating + HOME_ADVANTAGE
 
  let probHomeRaw = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
  let probAwayRaw = 1 - probHomeRaw
 
+ // rozdělení mimo remízu
  const probHomeTotal = probHomeRaw * (1 - DRAW_PROB)
  const probAwayTotal = probAwayRaw * (1 - DRAW_PROB)
  const probDraw = DRAW_PROB
 
- const probHomeOT = probDraw * 0.5
- const probAwayOT = probDraw * 0.5
+ // 🔥 OT/SN podle síly týmů (NE 50/50!)
+ const probHomeOT = probDraw * probHomeRaw
+ const probAwayOT = probDraw * probAwayRaw
 
  const probHome60 = probHomeTotal
  const probAway60 = probAwayTotal
@@ -207,8 +209,10 @@ function calculateOdds(homeRating, awayRating){
   "1": (1/probHome60),
   "0": (1/probDraw),
   "2": (1/probAway60),
+
   "10": (1/probHomeOT),
   "02": (1/probAwayOT),
+
   "11": (1/(probHome60 + probHomeOT)),
   "22": (1/(probAway60 + probAwayOT))
  }
