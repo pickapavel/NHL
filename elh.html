@@ -17,8 +17,9 @@ body{
 .wrapper{
  max-width:1200px;
  margin:auto;
- padding:15px;
+ padding:20px;
  background:white;
+ overflow-x:hidden;
 }
 
 /* HEADER */
@@ -32,7 +33,7 @@ body{
  margin-bottom:20px;
 }
 
-.headerBar img{height:80px;}
+.headerBar img{height:90px;}
 
 .seasonCard{
  background:#0b2a3c;
@@ -64,6 +65,7 @@ body{
  align-items:center;
  gap:12px;
  flex:1;
+ min-width:0;
 }
 
 .logo{
@@ -78,9 +80,15 @@ body{
 .teamInfo{
  display:flex;
  flex-direction:column;
+ min-width:0;
 }
 
-.teamName{font-weight:bold;}
+.teamName{
+ font-weight:bold;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
 
 .teamStats{
  font-size:12px;
@@ -98,66 +106,64 @@ body{
  text-align:center;
 }
 
-/* MATCH */
+/* MATCH ROW */
 .matchRow{
  display:grid;
- grid-template-columns:1fr 60px 40px 1fr;
- grid-template-areas:
-  "home scoreH tagH away"
-  "periods periods periods periods"
-  "buttons buttons buttons buttons";
+ grid-template-columns: minmax(0,1fr) auto auto minmax(0,1fr) auto;
  align-items:center;
  background:#e9ecef;
  padding:10px;
  margin-bottom:6px;
  border-radius:6px;
- gap:6px;
+ gap:8px;
 }
 
+/* TEAM */
 .teamBox{
  display:flex;
  align-items:center;
  gap:8px;
  font-weight:bold;
+ min-width:0;
+}
+
+.teamBox div{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
 }
 
 .teamRight{
  justify-content:flex-end;
+ text-align:right;
 }
 
+/* SCORE */
 .scoreBox{
  background:#0b2a3c;
  color:white;
  font-size:18px;
  font-weight:bold;
- padding:6px 0;
+ padding:6px 10px;
  border-radius:6px;
  text-align:center;
+ min-width:50px;
 }
 
+/* PERIODS */
 .periods{
- grid-area:periods;
+ grid-column:1 / -1;
  text-align:center;
  font-size:12px;
  color:#333;
 }
 
-.winTag{
- font-size:12px;
- font-weight:bold;
- color:#fff;
- background:#2f9ec9;
- padding:3px 8px;
- border-radius:8px;
- text-align:center;
-}
-
-.emptyTag{min-width:30px;}
-
+/* BUTTONS */
 .buttons{
- grid-area:buttons;
  display:flex;
- gap:8px;
+ flex-direction:column;
+ gap:6px;
+ min-width:90px;
 }
 
 .btn{
@@ -172,38 +178,22 @@ body{
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
 
-/* ===== TABLET ===== */
-@media(min-width:768px){
-
-.headerBar img{height:100px;}
+/* MOBILE */
+@media(max-width:600px){
 
 .matchRow{
- grid-template-columns:1fr 70px 40px 150px 40px 70px 1fr 120px;
- grid-template-areas:none;
+ grid-template-columns:1fr auto;
+ grid-template-rows:auto auto auto auto;
 }
 
-.periods{
- grid-area:auto;
+.teamRight{
+ justify-content:flex-start;
+ text-align:left;
 }
 
 .buttons{
- grid-area:auto;
- flex-direction:column;
+ flex-direction:row;
 }
-
-}
-
-/* ===== DESKTOP ===== */
-@media(min-width:1024px){
-
-.wrapper{padding:20px;}
-
-.matchRow{
- grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
-}
-
-.scoreBox{font-size:20px;}
-.pointsBox{font-size:20px;}
 
 }
 
@@ -277,13 +267,7 @@ function renderTable(matches, teamMap, teams){
  let table = {}
 
  teams.forEach(t=>{
-  table[t.id] = {
-    team:t.id,b:0,z:0,
-    v:0,p:0,
-    vp:0,pp:0,
-    vsn:0,psn:0,
-    gf:0,ga:0
-  }
+  table[t.id] = {team:t.id,b:0,z:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
@@ -291,7 +275,6 @@ function renderTable(matches, teamMap, teams){
 
   const h = table[m.home_team]
   const a = table[m.away_team]
-  if(!h || !a) return
 
   const hg = Number(m.home_score)
   const ag = Number(m.away_score)
@@ -300,9 +283,8 @@ function renderTable(matches, teamMap, teams){
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
-  if(hg>ag){ h.v++; h.b+=3; a.p++ }
-  else{ a.v++; a.b+=3; h.p++ }
-
+  if(hg>ag){ h.b+=3 }
+  else{ a.b+=3 }
  })
 
  const arr = Object.values(table).sort((a,b)=> b.b-a.b)
@@ -345,7 +327,6 @@ function render(matches, teamMap){
 
   const home = teamMap[m.home_team]
   const away = teamMap[m.away_team]
-  if(!home || !away) return
 
   const homeScore = m.home_score ?? "-"
   const awayScore = m.away_score ?? "-"
@@ -359,14 +340,12 @@ function render(matches, teamMap){
    </div>
 
    <div class="scoreBox">${homeScore}</div>
-   <div></div>
+   <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
     <div>${away.name}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
-
-   <div class="periods"></div>
 
    <div class="buttons">
     <button class="btn detailBtn"
