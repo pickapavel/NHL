@@ -144,28 +144,48 @@ window.onload = load
 
 // ===== SAVE =====
 window.saveMatch = async function(){
+window.saveMatch = async function(){
 
- const hg = Number(loadedLines[16]||0) + Number(loadedLines[17]||0) + Number(loadedLines[18]||0)
- const ag = Number(loadedLines[6]||0) + Number(loadedLines[7]||0) + Number(loadedLines[8]||0)
+ if(!loadedLines.length){
+  alert("Nahraj TXT soubor")
+  return
+ }
 
- const { error } = await supabase.from("matches").insert([{
-  competition_id: competition.value,
-  season_id: season.value,
-  stage_id: stage.value,
-  home_team: homeTeam.value,
-  away_team: awayTeam.value,
-  home_score: hg,
-  away_score: ag,
-  played: true,
-  round: 1,
-  stats: JSON.stringify(loadedLines)
- }])
+ // 🔥 ID zápasu – musíš ho mít (např. z URL)
+ const params = new URLSearchParams(window.location.search)
+ const matchId = params.get("id")
+
+ if(!matchId){
+  alert("Chybí ID zápasu ❌")
+  return
+ }
+
+ const hg =
+  Number(loadedLines[16]||0) +
+  Number(loadedLines[17]||0) +
+  Number(loadedLines[18]||0)
+
+ const ag =
+  Number(loadedLines[6]||0) +
+  Number(loadedLines[7]||0) +
+  Number(loadedLines[8]||0)
+
+ // 🔥 UPDATE místo INSERT
+ const { error } = await supabase
+  .from("matches")
+  .update({
+   home_score: hg,
+   away_score: ag,
+   played: true,
+   stats: JSON.stringify(loadedLines)
+  })
+  .eq("id", matchId)
 
  if(error){
+  console.error(error)
   alert("Chyba ❌")
  }else{
   alert("Uloženo 👍")
-  loadMatches()
  }
 }
 
