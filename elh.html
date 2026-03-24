@@ -23,19 +23,17 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:14px 28px;border-radius:10px;
 }
 
-/* ===== TABULKA ===== */
-
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px;margin-bottom:10px;
+ background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
 }
 
 .rank{width:30px;font-weight:bold;text-align:center;}
 
-.teamBlock{display:flex;align-items:center;gap:10px;flex:1;}
+.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
 
 .logo{
- width:45px;height:45px;object-fit:contain;
+ width:50px;height:50px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
 }
 
@@ -44,21 +42,15 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .teamStats{font-size:13px;color:#444;}
 
 .pointsBox{
- background:#0b2a3c;color:white;font-size:18px;
- padding:8px 14px;border-radius:8px;
+ background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
+ padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
-
-/* ===== MATCH (DESKTOP - NEMĚNIT) ===== */
 
 .matchRow{
  display:grid;
  grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
- align-items:center;
- background:#e9ecef;
- padding:10px;
- margin-bottom:5px;
- border-radius:6px;
- gap:8px;
+ align-items:center;background:#e9ecef;
+ padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
 }
 
 .teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
@@ -66,19 +58,30 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .scoreBox{
  background:#0b2a3c;color:white;
- font-size:22px;font-weight:bold;
+ font-size:20px;font-weight:bold;
  padding:8px 0;border-radius:6px;text-align:center;
 }
 
-.winType{
- background:#2f9ec9;
- color:white;
- font-size:12px;
- padding:4px 8px;
- border-radius:6px;
+.periods{
+ text-align:center;
+ font-size:13px;
+ color:#333;
 }
 
-.periods{text-align:center;font-size:14px}
+.winTag{
+ font-size:13px;
+ font-weight:bold;
+ color:#fff;
+ background:#2f9ec9;
+ padding:4px 10px;
+ border-radius:8px;
+ text-align:center;
+ min-width:40px;
+}
+
+.emptyTag{
+ min-width:40px;
+}
 
 .btn{
  border:none;
@@ -92,39 +95,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
-
-/* ===== MOBILE FIX ===== */
-
-@media (max-width: 900px){
-
-.matchRow{
- display:flex !important;
- flex-direction:column;
- gap:8px;
-}
-
-.teamBox,
-.teamRight{
- justify-content:flex-start !important;
-}
-
-.scoreBox{
- font-size:18px;
- width:60px;
- margin:auto;
-}
-
-.periods{
- text-align:center;
- width:100%;
-}
-
-.btn{
- width:100%;
- margin:2px 0;
-}
-
-}
 </style>
 </head>
 
@@ -134,7 +104,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard">Extraliga - 2. sezóna</div>
+<div class="seasonCard">Extraliga</div>
 </div>
 
 <h2>Tabulka</h2>
@@ -150,8 +120,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
- "https://qaocbodrflsaerxntfui.supabase.co",
- "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
 const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
@@ -163,148 +133,202 @@ async function load(){
   .select("team_id")
   .eq("season_id", SEASON_ID)
 
- const teamIds = seasonTeams.map(t=>t.team_id)
+ const teamIds = (seasonTeams || []).map(t => t.team_id)
 
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
-  .in("id", teamIds)
+ let teams = []
+ if(teamIds.length > 0){
+  const res = await supabase
+   .from("teams")
+   .select("*")
+   .in("id", teamIds)
+  teams = res.data || []
+ }
 
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
   .eq("season_id", SEASON_ID)
 
- const teamMap={}
- teams.forEach(t=> teamMap[t.id]=t)
+ const teamMap = {}
+ teams.forEach(t=> teamMap[t.id] = t)
 
- matches.sort((a,b)=>a.round-b.round)
+ const safeMatches = matches || []
+ safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
- renderTable(matches,teamMap,teams)
- render(matches,teamMap)
+ render(safeMatches, teamMap)
+ renderTable(safeMatches, teamMap, teams)
 }
 
-/* TABULKA */
-function renderTable(matches,teamMap,teams){
+// TABULKA (nezměněná)
+function renderTable(matches, teamMap, teams){
 
- let table={}
+ let table = {}
+
  teams.forEach(t=>{
-  table[t.id]={team:t.id,b:0,z:0,gf:0,ga:0}
+  table[t.id] = {
+    team:t.id,b:0,z:0,
+    v:0,p:0,
+    vp:0,pp:0,
+    vsn:0,psn:0,
+    gf:0,ga:0
+  }
  })
 
  matches.forEach(m=>{
 
-  if(m.home_score==null) return
+  if(m.home_score == null || m.away_score == null) return
 
-  const h=table[m.home_team]
-  const a=table[m.away_team]
+  const h = table[m.home_team]
+  const a = table[m.away_team]
 
-  const hg=Number(m.home_score)
-  const ag=Number(m.away_score)
+  if(!h || !a) return
+
+  const hg = Number(m.home_score)
+  const ag = Number(m.away_score)
 
   h.z++; a.z++
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
-  if(m.shootout){
-    if(hg>ag){h.b+=2;a.b+=1}
-    else{a.b+=2;h.b+=1}
+  let stats = null
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+
+  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+  if(isSN){
+    if(hg>ag){ h.vsn++; h.b+=2; a.psn++; a.b+=1 }
+    else{ a.vsn++; a.b+=2; h.psn++; h.b+=1 }
   }
-  else if(m.overtime){
-    if(hg>ag){h.b+=2;a.b+=1}
-    else{a.b+=2;h.b+=1}
+  else if(isOT){
+    if(hg>ag){ h.vp++; h.b+=2; a.pp++; a.b+=1 }
+    else{ a.vp++; a.b+=2; h.pp++; h.b+=1 }
   }
   else{
-    if(hg>ag){h.b+=3}
-    else{a.b+=3}
+    if(hg>ag){ h.v++; h.b+=3; a.p++ }
+    else{ a.v++; a.b+=3; h.p++ }
   }
 
  })
 
- const arr=Object.values(table).sort((a,b)=>b.b-a.b)
+ const arr = Object.values(table).sort((a,b)=>{
+  if(b.b!==a.b) return b.b-a.b
+  return (b.gf-b.ga)-(a.gf-a.ga)
+ })
 
- const cont=document.getElementById("standings")
+ const cont = document.getElementById("standings")
  cont.innerHTML=""
 
  arr.forEach((t,i)=>{
-  const team=teamMap[t.team]
+  const team = teamMap[t.team]
+  if(!team) return
 
   cont.innerHTML+=`
   <div class="standingsCard">
-    <div class="rank">${i+1}</div>
+   <div class="rank">${i+1}</div>
 
-    <div class="teamBlock">
-      <img class="logo" src="./logos/${team.logo}">
-      <div class="teamInfo">
-        <div class="teamName">${team.name}</div>
-        <div class="teamStats">
-          Z ${t.z} | Skóre ${t.gf}:${t.ga}
-        </div>
-      </div>
+   <div class="teamBlock">
+    <img class="logo" src="./logos/${team.logo}">
+    <div class="teamInfo">
+     <div class="teamName">${team.name}</div>
+     <div class="teamStats">
+      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+      Z ${t.z} | V ${t.v} | P ${t.p} |
+      VP ${t.vp} | PP ${t.pp} |
+      VSN ${t.vsn} | PSN ${t.psn}
+     </div>
     </div>
+   </div>
 
-    <div class="pointsBox">${t.b}</div>
-  </div>`
+   <div class="pointsBox">${t.b}</div>
+  </div>
+  `
  })
 
 }
 
-/* ROZPIS */
-function render(matches,teamMap){
+// ROZPIS
+function render(matches, teamMap){
 
- const cont=document.getElementById("schedule")
+ const cont = document.getElementById("schedule")
  cont.innerHTML=""
 
  matches.forEach(m=>{
 
-  const home=teamMap[m.home_team]
-  const away=teamMap[m.away_team]
+  const home = teamMap[m.home_team]
+  const away = teamMap[m.away_team]
+  if(!home || !away) return
 
-  const homeScore=m.home_score ?? "-"
-  const awayScore=m.away_score ?? "-"
+  let stats = null
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
-  const type = m.shootout ? "SN" : (m.overtime ? "OT" : "")
-  const winner = homeScore>awayScore?"home":"away"
+  let periods = ""
+  let homeTag = ""
+  let awayTag = ""
+
+  if(stats){
+
+    const h1 = Number(stats[16]||0)
+    const h2 = Number(stats[17]||0)
+    const h3 = Number(stats[18]||0)
+
+    const a1 = Number(stats[6]||0)
+    const a2 = Number(stats[7]||0)
+    const a3 = Number(stats[8]||0)
+
+    periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
+
+    const hg = Number(m.home_score||0)
+    const ag = Number(m.away_score||0)
+
+    const isSN = stats[20] === "1" || stats[20] === "2"
+    const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
+
+    if(isSN){
+      if(hg > ag) homeTag = "SN"
+      else awayTag = "SN"
+    }
+    else if(isOT){
+      if(hg > ag) homeTag = "OT"
+      else awayTag = "OT"
+    }
+  }
+
+  const homeScore = m.home_score ?? "-"
+  const awayScore = m.away_score ?? "-"
 
   cont.innerHTML+=`
-
   <div class="matchRow">
 
-    <div class="teamBox">
-      <img class="logo" src="./logos/${home.logo}">
-      ${home.name}
-    </div>
+   <div class="teamBox">
+    <img class="logo" src="./logos/${home.logo}">
+    <div>${home.name}</div>
+   </div>
 
-    <div class="scoreBox">${homeScore}</div>
+   <div class="scoreBox">${homeScore}</div>
+   <div>${homeTag ? `<div class="winTag">${homeTag}</div>` : `<div class="emptyTag"></div>`}</div>
 
-    <div>
-      ${(winner==="home" && type)?`<div class="winType">${type}</div>`:""}
-    </div>
+   <div class="periods">${periods}</div>
 
-    <div class="periods">${m.periods || ""}</div>
+   <div>${awayTag ? `<div class="winTag">${awayTag}</div>` : `<div class="emptyTag"></div>`}</div>
+   <div class="scoreBox">${awayScore}</div>
 
-    <div>
-      ${(winner==="away" && type)?`<div class="winType">${type}</div>`:""}
-    </div>
+   <div class="teamBox teamRight">
+    <div>${away.name}</div>
+    <img class="logo" src="./logos/${away.logo}">
+   </div>
 
-    <div class="scoreBox">${awayScore}</div>
+   <div>
+    <button class="btn detailBtn"
+     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+     Detail
+    </button>
 
-    <div class="teamBox teamRight">
-      ${away.name}
-      <img class="logo" src="./logos/${away.logo}">
-    </div>
-
-    <div>
-      <button class="btn detailBtn"
-        onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-        Detail
-      </button>
-
-      <button class="btn betBtn"
-        onclick="window.location.href='vsad-si.html?id=${m.id}'">
-        Vsaď si
-      </button>
-    </div>
+    <button class="btn betBtn"
+     onclick="window.location.href='vsad-si.html?id=${m.id}'">
+     Vsaď si
+    </button>
+   </div>
 
   </div>
   `
