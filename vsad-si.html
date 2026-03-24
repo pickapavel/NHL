@@ -241,8 +241,11 @@ async function load(){
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
 
- document.getElementById("homeName").innerText = home.name
- document.getElementById("awayName").innerText = away.name
+document.getElementById("homeName").innerText =
+ `${home.name} (${Math.round(home.rating_form)})`
+
+document.getElementById("awayName").innerText =
+ `${away.name} (${Math.round(away.rating_form)})`
 
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
