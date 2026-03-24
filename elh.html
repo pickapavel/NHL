@@ -93,6 +93,39 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-weight:bold;
 }
 
+ @media (max-width: 900px){
+
+.matchRow{
+  grid-template-columns:1fr 60px 40px 1fr;
+  grid-template-rows:auto auto;
+}
+
+.periods{
+  grid-column:1 / -1;
+  text-align:center;
+  margin:5px 0;
+}
+
+.teamRight{
+  justify-content:flex-start;
+}
+
+.btn{
+  font-size:12px;
+  padding:6px;
+}
+
+.logo{
+  width:40px;
+  height:40px;
+}
+
+.scoreBox{
+  font-size:16px;
+}
+
+}
+
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
 </style>
