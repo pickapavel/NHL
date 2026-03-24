@@ -33,6 +33,7 @@ select{
  background:#16394d;
  border-radius:12px;
  padding:15px;
+ margin-bottom:20px;
 }
 
 .teamHeader{
@@ -56,9 +57,24 @@ table{
 }
 
 th, td{
- padding:8px;
+ padding:10px;
  text-align:center;
  border-bottom:1px solid #2a4c5f;
+}
+
+.matchCell{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+}
+
+.matchCell img{
+ width:25px;
+ height:25px;
+ background:white;
+ border-radius:4px;
+ padding:2px;
 }
 
 .win{color:#2ecc71;}
@@ -90,7 +106,7 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// body
+// body za zápas
 function getPoints(match, teamId){
 
  const hg = Number(match.home_score)
@@ -116,8 +132,8 @@ function getPoints(match, teamId){
  }
 }
 
-// render jednoho týmu
-function renderTeam(team, matches){
+// render týmu
+function renderTeam(team, matches, teamMap){
 
  let rating = 1000
 
@@ -132,6 +148,7 @@ function renderTeam(team, matches){
    <tr>
     <th>#</th>
     <th>Zápas</th>
+    <th>Skóre</th>
     <th>Body</th>
     <th>Rating</th>
    </tr>
@@ -141,13 +158,32 @@ function renderTeam(team, matches){
 
   const res = getPoints(m, team.id)
 
-  rating += (res.p - 1.5) * 20 // jednoduchý model
+  rating += (res.p - 1.5) * 20
+
+  const isHome = m.home_team === team.id
+
+  const opponentId = isHome ? m.away_team : m.home_team
+  const opponent = teamMap[opponentId]
+
+  const opponentLogo = opponent.logo
+  const opponentName = opponent.name
 
   html += `
    <tr>
     <td>${i+1}</td>
-    <td>${m.home_team === team.id ? "vs " + m.away_team : "@ " + m.home_team}</td>
+
+    <td>
+     <div class="matchCell">
+      ${isHome ? "vs" : "@"}
+      <img src="./logos/${opponentLogo}">
+      ${opponentName}
+     </div>
+    </td>
+
+    <td>${m.home_score}:${m.away_score}</td>
+
     <td class="${res.cls}">${res.p}</td>
+
     <td>${Math.round(rating)}</td>
    </tr>
   `
@@ -167,6 +203,10 @@ async function load(){
   .from("matches")
   .select("*")
   .not("home_score","is",null)
+
+ // mapa týmů
+ const teamMap = {}
+ teams.forEach(t=> teamMap[t.id] = t)
 
  // select
  const select = document.getElementById("teamSelect")
@@ -189,7 +229,7 @@ async function load(){
     .filter(m=> m.home_team === team.id || m.away_team === team.id)
     .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
 
-   cont.innerHTML += renderTeam(team, teamMatches)
+   cont.innerHTML += renderTeam(team, teamMatches, teamMap)
   })
  }
 
