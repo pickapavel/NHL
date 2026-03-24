@@ -20,8 +20,8 @@ th,td{
  text-align:center;
 }
 
-td:nth-child(5),
-td:nth-child(6){
+td:nth-child(2),
+td:nth-child(3){
  text-align:left;
 }
 
@@ -66,7 +66,6 @@ const supabase = createClient(
 let teamsMap = {}
 let filesMap = {}
 
-// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -80,7 +79,6 @@ async function load(){
  render(matches)
 }
 
-// ===== RENDER =====
 function render(matches){
 
  const cont = document.getElementById("matchesTable")
@@ -89,11 +87,12 @@ function render(matches){
  matches.forEach(m=>{
 
   let suffix = ""
-  if(m.stats){
-    const lines = JSON.parse(m.stats)
 
-    if(lines[20] === "1" || lines[20] === "2") suffix = " SN"
-    else if(lines[9] === "11" || lines[19] === "11") suffix = " OT"
+  if(m.stats){
+   const lines = JSON.parse(m.stats)
+
+   if(lines[20] === "1" || lines[20] === "2") suffix = " SN"
+   else if(lines[9] === "11" || lines[19] === "11") suffix = " OT"
   }
 
   cont.innerHTML += `
@@ -116,7 +115,6 @@ function render(matches){
  })
 }
 
-// ===== FILE =====
 window.handleFile = function(e, matchId){
 
  const reader = new FileReader()
@@ -128,7 +126,6 @@ window.handleFile = function(e, matchId){
  reader.readAsText(e.target.files[0])
 }
 
-// ===== SCORE + BODY =====
 function calculateScore(lines){
 
  let ag =
@@ -145,7 +142,7 @@ function calculateScore(lines){
  const otAway = lines[19]
  const shootout = lines[20]
 
- let type = "R" // R = základ
+ let type = "R"
 
  if(otHome === "11"){ hg++; type="OT" }
  if(otAway === "11"){ ag++; type="OT" }
@@ -156,10 +153,10 @@ function calculateScore(lines){
  return {hg, ag, type}
 }
 
-// ===== SAVE =====
 window.saveMatch = async function(matchId){
 
  const lines = filesMap[matchId]
+
  if(!lines){
   alert("Nahraj soubor")
   return
@@ -204,12 +201,12 @@ window.saveMatch = async function(matchId){
  }
 }
 
-// ===== RESET =====
+// 🔥 OPRAVENÝ RESET
 window.resetMatch = async function(matchId){
 
- if(!confirm("Zrušit zápas?")) return
+ if(!confirm("Opravdu zrušit zápas?")) return
 
- await supabase
+ const { error } = await supabase
   .from("matches")
   .update({
    home_score: null,
@@ -221,7 +218,13 @@ window.resetMatch = async function(matchId){
   })
   .eq("id", matchId)
 
- load()
+ if(error){
+  console.error(error)
+  alert("Chyba při mazání ❌")
+ } else {
+  alert("Zápas zrušen 👍")
+  load()
+ }
 }
 
 load()
