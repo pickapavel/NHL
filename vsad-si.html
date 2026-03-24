@@ -19,8 +19,6 @@ body{
  padding:20px;
 }
 
-/* MATCH */
-
 .matchBox{text-align:center;margin-bottom:20px;}
 
 .teams{
@@ -46,10 +44,6 @@ body{
  font-weight:bold;
 }
 
-.periods{margin-top:10px;color:#ccc;}
-
-/* BET */
-
 .betBox{
  background:#16394d;
  padding:20px;
@@ -58,7 +52,7 @@ body{
 
 .odds{
  display:grid;
- grid-template-columns:repeat(5,1fr);
+ grid-template-columns:repeat(2,1fr);
  gap:10px;
  margin-bottom:15px;
 }
@@ -94,12 +88,12 @@ input{
 
 .betBtn{
  width:100%;
- padding:15px;
+ height:45px;
  background:#27ae60;
  border:none;
  border-radius:10px;
  color:white;
- font-size:18px;
+ font-size:16px;
  cursor:pointer;
 }
 
@@ -141,8 +135,6 @@ input{
 
 </div>
 
-<div class="periods">Třetiny: (-:-, -:-, -:-)</div>
-
 </div>
 
 <div class="betBox">
@@ -150,18 +142,15 @@ input{
 <h3>Vyber výsledek</h3>
 
 <div class="odds">
-<div class="odd">1</div>
-<div class="odd">10</div>
-<div class="odd">0</div>
-<div class="odd">02</div>
-<div class="odd">2</div>
+<div class="odd" id="oddHome">1</div>
+<div class="odd" id="oddAway">2</div>
 </div>
 
-<input placeholder="Částka (Kč)">
+<input id="amount" placeholder="Částka (Kč)">
 
 <div class="info">
-<div>Kurz: -</div>
-<div>Výhra: -</div>
+<div id="kurs">Kurz: -</div>
+<div id="vyhra">Výhra: -</div>
 </div>
 
 <button class="betBtn">VSADIT</button>
@@ -174,35 +163,93 @@ input{
 
 </div>
 
-<script>
+<script type="module">
 
-// ===== NAČTENÍ Z URL =====
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+// ===== URL =====
 const params = new URLSearchParams(window.location.search)
+const matchId = params.get("id")
 
-const home = params.get("home")
-const away = params.get("away")
-const hlogo = params.get("hlogo")
-const alogo = params.get("alogo")
+let selectedOdds = null
 
-// ===== VYKRESLENÍ =====
-document.getElementById("homeName").innerText = home || "Domácí"
-document.getElementById("awayName").innerText = away || "Hosté"
+// ===== výpočet kurzů =====
+function calculateOdds(homeRating, awayRating){
 
-if(hlogo){
- document.getElementById("homeLogo").src = "./logos/" + hlogo
-}
+ const HOME_ADVANTAGE = 80
 
-if(alogo){
- document.getElementById("awayLogo").src = "./logos/" + alogo
-}
+ const homeAdj = homeRating + HOME_ADVANTAGE
 
-// klikání
-document.querySelectorAll(".odd").forEach(btn=>{
- btn.onclick = ()=>{
-  document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
-  btn.classList.add("active")
+ const probHome = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
+ const probAway = 1 - probHome
+
+ return {
+  home: Number((1/probHome).toFixed(2)),
+  away: Number((1/probAway).toFixed(2))
  }
-})
+}
+
+// ===== load =====
+async function load(){
+
+ const { data: match } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
+
+ const { data: teams } = await supabase
+  .from("teams")
+  .select("*")
+  .in("id", [match.home_team, match.away_team])
+
+ const home = teams.find(t=>t.id === match.home_team)
+ const away = teams.find(t=>t.id === match.away_team)
+
+ // UI
+ document.getElementById("homeName").innerText = home.name
+ document.getElementById("awayName").innerText = away.name
+
+ document.getElementById("homeLogo").src = "./logos/" + home.logo
+ document.getElementById("awayLogo").src = "./logos/" + away.logo
+
+ // kurzy
+ const odds = calculateOdds(home.rating_form, away.rating_form)
+
+ document.getElementById("oddHome").innerText = "1 (" + odds.home + ")"
+ document.getElementById("oddAway").innerText = "2 (" + odds.away + ")"
+
+ // klikání
+ document.getElementById("oddHome").onclick = ()=> selectOdd(odds.home)
+ document.getElementById("oddAway").onclick = ()=> selectOdd(odds.away)
+}
+
+function selectOdd(o){
+ selectedOdds = o
+
+ document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
+ event.target.classList.add("active")
+
+ document.getElementById("kurs").innerText = "Kurz: " + o
+ updateWin()
+}
+
+document.getElementById("amount").oninput = updateWin
+
+function updateWin(){
+ const amount = Number(document.getElementById("amount").value)
+ if(!amount || !selectedOdds) return
+
+ document.getElementById("vyhra").innerText =
+  "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
+}
+
+load()
 
 </script>
 
