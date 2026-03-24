@@ -112,7 +112,6 @@ input{
  cursor:pointer;
 }
 
-/* potvrzení */
 .betInfo{
  margin-top:15px;
  background:#0b2a3c;
@@ -168,7 +167,6 @@ input{
 
 <button class="betBtn">VSADIT</button>
 
-<!-- 🔥 potvrzení -->
 <div id="betInfo" class="betInfo">
  <span id="betText"></span>
 </div>
@@ -196,7 +194,6 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
-// výpočet kurzů
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADVANTAGE = 80
@@ -228,7 +225,6 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// load dat
 async function load(){
 
  const { data: match } = await supabase
@@ -270,6 +266,42 @@ async function load(){
    updateWin()
   }
  })
+
+ await loadExistingBet()
+}
+
+async function loadExistingBet(){
+
+ const { data: bet } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", matchId)
+  .limit(1)
+  .maybeSingle()
+
+ if(!bet) return
+
+ selectedOdds = bet.odds
+ selectedType = bet.tip
+
+ document.getElementById("betInfo").style.display = "block"
+ document.getElementById("betText").innerText =
+  `Vsazeno ${bet.amount} Kč na ${bet.tip} (kurz ${bet.odds.toFixed(2)})`
+
+ document.getElementById("kurs").innerText = "Kurz: " + bet.odds.toFixed(2)
+ document.getElementById("vyhra").innerText =
+  "Výhra: " + bet.potential_win.toFixed(0) + " Kč"
+
+ document.querySelectorAll(".odd").forEach(btn=>{
+  if(btn.dataset.type === bet.tip){
+   btn.classList.add("active")
+  }
+ })
+
+ document.querySelectorAll(".odd").forEach(b=>b.style.pointerEvents = "none")
+ document.getElementById("amount").value = bet.amount
+ document.getElementById("amount").disabled = true
+ document.querySelector(".betBtn").disabled = true
 }
 
 document.getElementById("amount").oninput = updateWin
@@ -282,7 +314,6 @@ function updateWin(){
   "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
 }
 
-// uložení sázky
 document.querySelector(".betBtn").onclick = async () => {
 
  const amount = Number(document.getElementById("amount").value)
@@ -311,13 +342,10 @@ document.querySelector(".betBtn").onclick = async () => {
   return
  }
 
- // 🔥 zobraz info
  document.getElementById("betInfo").style.display = "block"
-
  document.getElementById("betText").innerText =
   `Vsazeno ${amount} Kč na ${selectedType} (kurz ${selectedOdds.toFixed(2)})`
 
- // 🔥 zamkni UI
  document.querySelectorAll(".odd").forEach(b=>b.style.pointerEvents = "none")
  document.getElementById("amount").disabled = true
  document.querySelector(".betBtn").disabled = true
