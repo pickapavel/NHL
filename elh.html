@@ -38,7 +38,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .teamInfo{display:flex;flex-direction:column;}
-.teamName{font-weight:bold;white-space:nowrap;}
+.teamName{font-weight:bold;}
 .teamStats{font-size:13px;color:#444;}
 
 .pointsBox{
@@ -46,10 +46,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
 }
 
-/* NOVÝ GRID */
 .matchRow{
  display:grid;
- grid-template-columns:1fr 80px 180px 80px 1fr 120px;
+ grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
  align-items:center;background:#e9ecef;
  padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
 }
@@ -63,26 +62,25 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 0;border-radius:6px;text-align:center;
 }
 
-.middleBox{
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- gap:4px;
-}
-
 .periods{
+ text-align:center;
  font-size:13px;
  color:#333;
 }
 
 .winTag{
- font-size:12px;
+ font-size:13px;
  font-weight:bold;
  color:#fff;
  background:#2f9ec9;
- padding:3px 8px;
+ padding:4px 10px;
  border-radius:8px;
+ text-align:center;
+ min-width:40px;
+}
+
+.emptyTag{
+ min-width:40px;
 }
 
 .btn{
@@ -97,6 +95,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
+
+/* ✅ MOBIL – skryje stav třetin */
+@media (max-width: 768px){
+  .periods{display:none;}
+}
 </style>
 </head>
 
@@ -176,10 +179,12 @@ function renderTable(matches, teamMap, teams){
  })
 
  matches.forEach(m=>{
+
   if(m.home_score == null || m.away_score == null) return
 
   const h = table[m.home_team]
   const a = table[m.away_team]
+
   if(!h || !a) return
 
   const hg = Number(m.home_score)
@@ -246,7 +251,6 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// NOVÝ RENDER
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -262,7 +266,8 @@ function render(matches, teamMap){
   try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
   let periods = ""
-  let tag = ""
+  let homeTag = ""
+  let awayTag = ""
 
   if(stats){
 
@@ -282,8 +287,14 @@ function render(matches, teamMap){
     const isSN = stats[20] === "1" || stats[20] === "2"
     const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
 
-    if(isSN) tag = "SN"
-    else if(isOT) tag = "OT"
+    if(isSN){
+      if(hg > ag) homeTag = "SN"
+      else awayTag = "SN"
+    }
+    else if(isOT){
+      if(hg > ag) homeTag = "OT"
+      else awayTag = "OT"
+    }
   }
 
   const homeScore = m.home_score ?? "-"
@@ -298,12 +309,11 @@ function render(matches, teamMap){
    </div>
 
    <div class="scoreBox">${homeScore}</div>
+   <div>${homeTag ? `<div class="winTag">${homeTag}</div>` : `<div class="emptyTag"></div>`}</div>
 
-   <div class="middleBox">
-     <div class="periods">${periods}</div>
-     ${tag ? `<div class="winTag">${tag}</div>` : ``}
-   </div>
+   <div class="periods">${periods}</div>
 
+   <div>${awayTag ? `<div class="winTag">${awayTag}</div>` : `<div class="emptyTag"></div>`}</div>
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
