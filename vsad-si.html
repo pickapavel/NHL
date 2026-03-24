@@ -182,23 +182,21 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
-// 🔥 VÝPOČET KURZŮ
+// 🔥 výpočet kurzů
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADVANTAGE = 80
- const DRAW_PROB = 0.20 // 🔥 sníženo
+ const DRAW_PROB = 0.20
 
  const homeAdj = homeRating + HOME_ADVANTAGE
 
  let probHomeRaw = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
  let probAwayRaw = 1 - probHomeRaw
 
- // rozdělení mimo remízu
  const probHomeTotal = probHomeRaw * (1 - DRAW_PROB)
  const probAwayTotal = probAwayRaw * (1 - DRAW_PROB)
  const probDraw = DRAW_PROB
 
- // 🔥 OT/SN podle síly týmů (NE 50/50!)
  const probHomeOT = probDraw * probHomeRaw
  const probAwayOT = probDraw * probAwayRaw
 
@@ -209,10 +207,8 @@ function calculateOdds(homeRating, awayRating){
   "1": (1/probHome60),
   "0": (1/probDraw),
   "2": (1/probAway60),
-
   "10": (1/probHomeOT),
   "02": (1/probAwayOT),
-
   "11": (1/(probHome60 + probHomeOT)),
   "22": (1/(probAway60 + probAwayOT))
  }
@@ -243,19 +239,20 @@ async function load(){
 
  const odds = calculateOdds(home.rating_form, away.rating_form)
 
- // naplnění UI
  document.querySelectorAll(".odd").forEach(btn=>{
   const type = btn.dataset.type
-  btn.innerText = type + " (" + odds[type].toFixed(2) + ")"
+  const o = odds[type]
+
+  btn.innerText = type + " (" + o.toFixed(2) + ")"
 
   btn.onclick = ()=>{
-   selectedOdds = odds[type]
+   selectedOdds = o
    selectedType = type
 
    document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
    btn.classList.add("active")
 
-   document.getElementById("kurs").innerText = "Kurz: " + odds[type].toFixed(2)
+   document.getElementById("kurs").innerText = "Kurz: " + o.toFixed(2)
    updateWin()
   }
  })
@@ -269,6 +266,38 @@ function updateWin(){
 
  document.getElementById("vyhra").innerText =
   "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
+}
+
+// 🔥 ULOŽENÍ SÁZKY
+document.querySelector(".betBtn").onclick = async () => {
+
+ const amount = Number(document.getElementById("amount").value)
+
+ if(!amount || !selectedOdds || !selectedType){
+  alert("Vyber sázku a zadej částku")
+  return
+ }
+
+ const potentialWin = amount * selectedOdds
+
+ const { error } = await supabase
+  .from("bets")
+  .insert({
+    match_id: matchId,
+    tip: selectedType,
+    amount: amount,
+    odds: selectedOdds, // 🔥 zamknutý kurz
+    potential_win: potentialWin,
+    status: "pending"
+  })
+
+ if(error){
+  alert("Chyba při ukládání")
+  console.log(error)
+  return
+ }
+
+ alert("Sázka uložena!")
 }
 
 load()
