@@ -51,6 +51,11 @@ select{
  padding:3px;
 }
 
+.rating{
+ font-size:14px;
+ color:#ccc;
+}
+
 table{
  width:100%;
  border-collapse:collapse;
@@ -87,7 +92,7 @@ th, td{
 
 <div class="wrapper">
 
-<h1>Vývoj ratingu</h1>
+<h1>Rating týmů</h1>
 
 <select id="teamSelect">
 <option value="all">Všechny týmy</option>
@@ -106,7 +111,7 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// body za zápas
+// body (jen pro barvu)
 function getPoints(match, teamId){
 
  const hg = Number(match.home_score)
@@ -124,24 +129,25 @@ function getPoints(match, teamId){
  const oppGoals = isHome ? ag : hg
 
  if(isSN || isOT){
-  if(teamGoals > oppGoals) return {p:2, cls:"ot"}
-  else return {p:1, cls:"ot"}
+  if(teamGoals > oppGoals) return "ot"
+  else return "ot"
  }else{
-  if(teamGoals > oppGoals) return {p:3, cls:"win"}
-  else return {p:0, cls:"loss"}
+  if(teamGoals > oppGoals) return "win"
+  else return "loss"
  }
 }
 
 // render týmu
 function renderTeam(team, matches, teamMap){
 
- let rating = 1000
-
  let html = `
  <div class="teamBox">
   <div class="teamHeader">
    <img src="./logos/${team.logo}">
-   <b>${team.name}</b>
+   <div>
+    <b>${team.name}</b><br>
+    <span class="rating">Rating: ${Math.round(team.rating_form)}</span>
+   </div>
   </div>
 
   <table>
@@ -149,24 +155,17 @@ function renderTeam(team, matches, teamMap){
     <th>#</th>
     <th>Zápas</th>
     <th>Skóre</th>
-    <th>Body</th>
-    <th>Rating</th>
+    <th>Výsledek</th>
    </tr>
  `
 
  matches.forEach((m,i)=>{
 
-  const res = getPoints(m, team.id)
-
-  rating += (res.p - 1.5) * 20
+  const cls = getPoints(m, team.id)
 
   const isHome = m.home_team === team.id
-
   const opponentId = isHome ? m.away_team : m.home_team
   const opponent = teamMap[opponentId]
-
-  const opponentLogo = opponent.logo
-  const opponentName = opponent.name
 
   html += `
    <tr>
@@ -175,16 +174,14 @@ function renderTeam(team, matches, teamMap){
     <td>
      <div class="matchCell">
       ${isHome ? "vs" : "@"}
-      <img src="./logos/${opponentLogo}">
-      ${opponentName}
+      <img src="./logos/${opponent.logo}">
+      ${opponent.name}
      </div>
     </td>
 
     <td>${m.home_score}:${m.away_score}</td>
 
-    <td class="${res.cls}">${res.p}</td>
-
-    <td>${Math.round(rating)}</td>
+    <td class="${cls}">${cls === "win" ? "V" : cls === "loss" ? "P" : "OT"}</td>
    </tr>
   `
  })
@@ -204,11 +201,9 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
 
- // mapa týmů
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- // select
  const select = document.getElementById("teamSelect")
 
  teams.forEach(t=>{
