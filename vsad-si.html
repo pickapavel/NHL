@@ -111,6 +111,15 @@ input{
  color:white;
  cursor:pointer;
 }
+
+/* potvrzení */
+.betInfo{
+ margin-top:15px;
+ background:#0b2a3c;
+ padding:10px;
+ border-radius:8px;
+ display:none;
+}
 </style>
 </head>
 
@@ -159,6 +168,11 @@ input{
 
 <button class="betBtn">VSADIT</button>
 
+<!-- 🔥 potvrzení -->
+<div id="betInfo" class="betInfo">
+ <span id="betText"></span>
+</div>
+
 </div>
 
 <div class="back">
@@ -182,7 +196,7 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
-// 🔥 výpočet kurzů
+// výpočet kurzů
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADVANTAGE = 80
@@ -214,7 +228,7 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// LOAD
+// load dat
 async function load(){
 
  const { data: match } = await supabase
@@ -268,7 +282,7 @@ function updateWin(){
   "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
 }
 
-// 🔥 ULOŽENÍ SÁZKY
+// uložení sázky
 document.querySelector(".betBtn").onclick = async () => {
 
  const amount = Number(document.getElementById("amount").value)
@@ -286,7 +300,7 @@ document.querySelector(".betBtn").onclick = async () => {
     match_id: matchId,
     tip: selectedType,
     amount: amount,
-    odds: selectedOdds, // 🔥 zamknutý kurz
+    odds: selectedOdds,
     potential_win: potentialWin,
     status: "pending"
   })
@@ -297,16 +311,16 @@ document.querySelector(".betBtn").onclick = async () => {
   return
  }
 
+ // 🔥 zobraz info
  document.getElementById("betInfo").style.display = "block"
 
-document.getElementById("betText").innerText =
- `Vsazeno ${amount} Kč na ${selectedType} (kurz ${selectedOdds.toFixed(2)})`
+ document.getElementById("betText").innerText =
+  `Vsazeno ${amount} Kč na ${selectedType} (kurz ${selectedOdds.toFixed(2)})`
 
-// zamknutí UI
-document.querySelectorAll(".odd").forEach(b=>b.style.pointerEvents = "none")
-document.getElementById("amount").disabled = true
-document.querySelector(".betBtn").disabled = true
- 
+ // 🔥 zamkni UI
+ document.querySelectorAll(".odd").forEach(b=>b.style.pointerEvents = "none")
+ document.getElementById("amount").disabled = true
+ document.querySelector(".betBtn").disabled = true
 }
 
 load()
