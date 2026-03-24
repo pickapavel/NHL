@@ -297,7 +297,16 @@ document.querySelector(".betBtn").onclick = async () => {
   return
  }
 
- alert("Sázka uložena!")
+ document.getElementById("betInfo").style.display = "block"
+
+document.getElementById("betText").innerText =
+ `Vsazeno ${amount} Kč na ${selectedType} (kurz ${selectedOdds.toFixed(2)})`
+
+// zamknutí UI
+document.querySelectorAll(".odd").forEach(b=>b.style.pointerEvents = "none")
+document.getElementById("amount").disabled = true
+document.querySelector(".betBtn").disabled = true
+ 
 }
 
 load()
