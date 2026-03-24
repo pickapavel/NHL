@@ -32,33 +32,15 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .rank{width:30px;font-weight:bold;text-align:center;}
 
-.teamBlock{
- display:flex;
- align-items:center;
- gap:10px;
- flex:1;
- min-width:0;
-}
+.teamBlock{display:flex;align-items:center;gap:10px;flex:1;}
 
 .logo{
  width:45px;height:45px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
- flex-shrink:0;
 }
 
-.teamInfo{
- display:flex;
- flex-direction:column;
- min-width:0;
-}
-
-.teamName{
- font-weight:bold;
- white-space:nowrap;
- overflow:hidden;
- text-overflow:ellipsis;
-}
-
+.teamInfo{display:flex;flex-direction:column;}
+.teamName{font-weight:bold;}
 .teamStats{font-size:13px;color:#444;}
 
 .pointsBox{
@@ -66,68 +48,38 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 14px;border-radius:8px;
 }
 
-/* ===== MATCH DESKTOP ===== */
+/* ===== MATCH (DESKTOP - NEMĚNIT) ===== */
 
 .matchRow{
  display:grid;
- grid-template-columns:1.5fr 70px 70px 180px 70px 70px 1.5fr 120px;
+ grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
  align-items:center;
  background:#e9ecef;
  padding:10px;
  margin-bottom:5px;
  border-radius:6px;
- gap:6px;
-}
-
-/* týmy */
-.teamBox{
- display:flex;
- align-items:center;
  gap:8px;
- font-weight:bold;
- min-width:0;
 }
 
-.teamBox div{
- white-space:nowrap;
- overflow:hidden;
- text-overflow:ellipsis;
-}
+.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
+.teamRight{justify-content:flex-end;}
 
-.teamRight{
- justify-content:flex-end;
- text-align:right;
-}
-
-/* skóre */
 .scoreBox{
- background:#0b2a3c;
- color:white;
- font-size:20px;
- font-weight:bold;
- padding:6px 0;
- border-radius:6px;
- text-align:center;
+ background:#0b2a3c;color:white;
+ font-size:22px;font-weight:bold;
+ padding:8px 0;border-radius:6px;text-align:center;
 }
 
-/* SN / OT */
 .winType{
  background:#2f9ec9;
  color:white;
- font-size:11px;
- padding:3px 6px;
+ font-size:12px;
+ padding:4px 8px;
  border-radius:6px;
- text-align:center;
 }
 
-/* třetiny */
-.periods{
- text-align:center;
- font-size:13px;
- color:#333;
-}
+.periods{text-align:center;font-size:14px}
 
-/* tlačítka */
 .btn{
  border:none;
  padding:8px;
@@ -141,7 +93,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
 
-/* ===== MOBILE (NECHÁME) ===== */
+/* ===== MOBILE FIX ===== */
 
 @media (max-width: 900px){
 
@@ -154,7 +106,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .teamBox,
 .teamRight{
  justify-content:flex-start !important;
- text-align:left !important;
 }
 
 .scoreBox{
@@ -229,7 +180,73 @@ async function load(){
 
  matches.sort((a,b)=>a.round-b.round)
 
+ renderTable(matches,teamMap,teams)
  render(matches,teamMap)
+}
+
+/* TABULKA */
+function renderTable(matches,teamMap,teams){
+
+ let table={}
+ teams.forEach(t=>{
+  table[t.id]={team:t.id,b:0,z:0,gf:0,ga:0}
+ })
+
+ matches.forEach(m=>{
+
+  if(m.home_score==null) return
+
+  const h=table[m.home_team]
+  const a=table[m.away_team]
+
+  const hg=Number(m.home_score)
+  const ag=Number(m.away_score)
+
+  h.z++; a.z++
+  h.gf+=hg; h.ga+=ag
+  a.gf+=ag; a.ga+=hg
+
+  if(m.shootout){
+    if(hg>ag){h.b+=2;a.b+=1}
+    else{a.b+=2;h.b+=1}
+  }
+  else if(m.overtime){
+    if(hg>ag){h.b+=2;a.b+=1}
+    else{a.b+=2;h.b+=1}
+  }
+  else{
+    if(hg>ag){h.b+=3}
+    else{a.b+=3}
+  }
+
+ })
+
+ const arr=Object.values(table).sort((a,b)=>b.b-a.b)
+
+ const cont=document.getElementById("standings")
+ cont.innerHTML=""
+
+ arr.forEach((t,i)=>{
+  const team=teamMap[t.team]
+
+  cont.innerHTML+=`
+  <div class="standingsCard">
+    <div class="rank">${i+1}</div>
+
+    <div class="teamBlock">
+      <img class="logo" src="./logos/${team.logo}">
+      <div class="teamInfo">
+        <div class="teamName">${team.name}</div>
+        <div class="teamStats">
+          Z ${t.z} | Skóre ${t.gf}:${t.ga}
+        </div>
+      </div>
+    </div>
+
+    <div class="pointsBox">${t.b}</div>
+  </div>`
+ })
+
 }
 
 /* ROZPIS */
@@ -249,15 +266,13 @@ function render(matches,teamMap){
   const type = m.shootout ? "SN" : (m.overtime ? "OT" : "")
   const winner = homeScore>awayScore?"home":"away"
 
-  const periods = m.periods || ""
-
   cont.innerHTML+=`
 
   <div class="matchRow">
 
     <div class="teamBox">
       <img class="logo" src="./logos/${home.logo}">
-      <div>${home.name}</div>
+      ${home.name}
     </div>
 
     <div class="scoreBox">${homeScore}</div>
@@ -266,7 +281,7 @@ function render(matches,teamMap){
       ${(winner==="home" && type)?`<div class="winType">${type}</div>`:""}
     </div>
 
-    <div class="periods">${periods}</div>
+    <div class="periods">${m.periods || ""}</div>
 
     <div>
       ${(winner==="away" && type)?`<div class="winType">${type}</div>`:""}
@@ -275,7 +290,7 @@ function render(matches,teamMap){
     <div class="scoreBox">${awayScore}</div>
 
     <div class="teamBox teamRight">
-      <div>${away.name}</div>
+      ${away.name}
       <img class="logo" src="./logos/${away.logo}">
     </div>
 
