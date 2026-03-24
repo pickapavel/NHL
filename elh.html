@@ -88,55 +88,60 @@ body{
  font-weight:bold;
 }
 
-/* MATCH CARD (MOBILE DEFAULT) */
+/* ===================== */
+/* MATCH (DESKTOP FIRST) */
+/* ===================== */
+
 .matchRow{
+ display:grid;
+ grid-template-columns: 1fr 100px 1fr 160px;
+ align-items:center;
  background:#e9ecef;
  padding:12px;
  margin-bottom:10px;
  border-radius:10px;
+ gap:10px;
 }
 
-/* MOBILE LAYOUT */
-.teamLine{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-bottom:6px;
-}
-
-.teamLeft{
+/* tým */
+.team{
  display:flex;
  align-items:center;
- gap:8px;
+ gap:10px;
  min-width:0;
 }
 
-.teamLeft div{
+.team div{
  white-space:nowrap;
  overflow:hidden;
  text-overflow:ellipsis;
  font-weight:bold;
 }
 
+/* pravý tým */
+.away{
+ justify-content:flex-end;
+ text-align:right;
+}
+
+/* score */
 .score{
  background:#0b2a3c;
  color:white;
  padding:6px 12px;
  border-radius:8px;
  font-weight:bold;
- min-width:45px;
  text-align:center;
 }
 
-/* BUTTONS */
+/* tlačítka */
 .buttons{
  display:flex;
- gap:8px;
- margin-top:8px;
+ flex-direction:column;
+ gap:6px;
 }
 
 .btn{
- flex:1;
  border:none;
  padding:10px;
  border-radius:6px;
@@ -147,44 +152,48 @@ body{
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
 
+/* hover */
+.matchRow:hover{
+ background:#dde2e6;
+ transition:0.2s;
+}
+
 /* ===================== */
-/* 🔥 DESKTOP LAYOUT */
+/* MOBILE */
 /* ===================== */
-@media(min-width:900px){
+
+@media(max-width:768px){
 
 .matchRow{
- display:grid;
- grid-template-columns: 1fr 80px 1fr 160px;
- align-items:center;
- gap:10px;
+ display:block;
 }
 
-/* reset mobile styles */
-.teamLine{
- display:contents;
+/* řádky */
+.team{
+ justify-content:space-between;
+ margin-bottom:6px;
 }
 
-/* tým vlevo */
-.teamLeft{
- display:flex;
- align-items:center;
- gap:10px;
-}
-
-/* pravý tým zarovnat doprava */
+/* pravý tým reset */
 .away{
- justify-content:flex-end;
+ justify-content:space-between;
+ text-align:left;
 }
 
-/* skóre */
+/* score pod sebe */
 .score{
- justify-self:center;
+ display:inline-block;
+ margin-left:10px;
 }
 
-/* tlačítka vpravo */
+/* tlačítka vedle sebe */
 .buttons{
- flex-direction:column;
- margin:0;
+ flex-direction:row;
+ margin-top:10px;
+}
+
+.btn{
+ flex:1;
 }
 
 }
@@ -250,7 +259,7 @@ async function load(){
  renderTable(matches || [], teamMap, teams)
 }
 
-/* TABULKA – stejná */
+/* TABULKA */
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -321,20 +330,16 @@ function render(matches, teamMap){
   cont.innerHTML+=`
   <div class="matchRow">
 
-   <div class="teamLine">
-    <div class="teamLeft">
-     <img class="logo" src="./logos/${home.logo}">
-     <div>${home.name}</div>
-    </div>
-    <div class="score">${homeScore}</div>
+   <div class="team">
+    <img class="logo" src="./logos/${home.logo}">
+    <div>${home.name}</div>
    </div>
 
-   <div class="teamLine">
-    <div class="teamLeft away">
-     <img class="logo" src="./logos/${away.logo}">
-     <div>${away.name}</div>
-    </div>
-    <div class="score">${awayScore}</div>
+   <div class="score">${homeScore} : ${awayScore}</div>
+
+   <div class="team away">
+    <div>${away.name}</div>
+    <img class="logo" src="./logos/${away.logo}">
    </div>
 
    <div class="buttons">
