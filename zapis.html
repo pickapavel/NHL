@@ -22,7 +22,6 @@ th,td{
  text-align:center;
 }
 
-/* 🔥 jen týmy doleva */
 td:nth-child(5),
 td:nth-child(6){
  text-align:left;
@@ -84,7 +83,6 @@ const supabase = createClient(
 
 let loadedLines=[]
 
-// 🔥 mapy ID → název
 let teamsMap = {}
 let compsMap = {}
 let seasonsMap = {}
@@ -107,13 +105,11 @@ async function load(){
  const { data: seasons } = await supabase.from("seasons").select("*")
  const { data: stages } = await supabase.from("stages").select("*")
 
- // 🔥 vytvoření map
  teams?.forEach(t=> teamsMap[t.id] = t.name)
  comps?.forEach(c=> compsMap[c.id] = c.name)
  seasons?.forEach(s=> seasonsMap[s.id] = s.name)
  stages?.forEach(s=> stagesMap[s.id] = s.name)
 
- // SELECTY
  competition.innerHTML="<option value=''>Vyber soutěž</option>"
  season.innerHTML="<option value=''>Vyber sezónu</option>"
  stage.innerHTML="<option value=''>Fáze</option>"
@@ -142,8 +138,7 @@ async function load(){
 
 window.onload = load
 
-// ===== SAVE =====
-window.saveMatch = async function(){
+// ===== SAVE (UPDATE místo INSERT) =====
 window.saveMatch = async function(){
 
  if(!loadedLines.length){
@@ -151,7 +146,6 @@ window.saveMatch = async function(){
   return
  }
 
- // 🔥 ID zápasu – musíš ho mít (např. z URL)
  const params = new URLSearchParams(window.location.search)
  const matchId = params.get("id")
 
@@ -170,7 +164,6 @@ window.saveMatch = async function(){
   Number(loadedLines[7]||0) +
   Number(loadedLines[8]||0)
 
- // 🔥 UPDATE místo INSERT
  const { error } = await supabase
   .from("matches")
   .update({
@@ -186,6 +179,7 @@ window.saveMatch = async function(){
   alert("Chyba ❌")
  }else{
   alert("Uloženo 👍")
+  loadMatches()
  }
 }
 
