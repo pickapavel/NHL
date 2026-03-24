@@ -29,12 +29,6 @@ th{
  background:black;
  color:yellow;
 }
-
-button{
- padding:6px 10px;
- margin:2px;
- cursor:pointer;
-}
 </style>
 </head>
 
@@ -48,9 +42,6 @@ button{
 <thead>
 <tr>
 <th>Kolo</th>
-<th>Soutěž</th>
-<th>Sezóna</th>
-<th>Fáze</th>
 <th>Domácí</th>
 <th>Hosté</th>
 <th>Skóre</th>
@@ -73,27 +64,18 @@ const supabase = createClient(
 )
 
 let teamsMap = {}
-let compsMap = {}
-let seasonsMap = {}
-let stagesMap = {}
 let filesMap = {}
 
 // ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
- const { data: comps } = await supabase.from("competitions").select("*")
- const { data: seasons } = await supabase.from("seasons").select("*")
- const { data: stages } = await supabase.from("stages").select("*")
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
   .order("round", { ascending:true })
 
  teams.forEach(t=> teamsMap[t.id] = t.name)
- comps.forEach(c=> compsMap[c.id] = c.name)
- seasons.forEach(s=> seasonsMap[s.id] = s.name)
- stages.forEach(s=> stagesMap[s.id] = s.name)
 
  render(matches)
 }
@@ -106,15 +88,20 @@ function render(matches){
 
  matches.forEach(m=>{
 
+  let suffix = ""
+  if(m.stats){
+    const lines = JSON.parse(m.stats)
+
+    if(lines[20] === "1" || lines[20] === "2") suffix = " SN"
+    else if(lines[9] === "11" || lines[19] === "11") suffix = " OT"
+  }
+
   cont.innerHTML += `
   <tr>
-    <td>${m.round ?? "-"}</td>
-    <td>${compsMap[m.competition_id] || "-"}</td>
-    <td>${seasonsMap[m.season_id] || "-"}</td>
-    <td>${stagesMap[m.stage_id] || "-"}</td>
+    <td>${m.round}</td>
     <td>${teamsMap[m.home_team]}</td>
     <td>${teamsMap[m.away_team]}</td>
-    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}</td>
+    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}${suffix}</td>
 
     <td>
       <input type="file" onchange="handleFile(event,'${m.id}')">
@@ -129,7 +116,7 @@ function render(matches){
  })
 }
 
-// ===== FILE LOAD =====
+// ===== FILE =====
 window.handleFile = function(e, matchId){
 
  const reader = new FileReader()
@@ -141,7 +128,7 @@ window.handleFile = function(e, matchId){
  reader.readAsText(e.target.files[0])
 }
 
-// ===== VÝPOČET SKÓRE =====
+// ===== SCORE + BODY =====
 function calculateScore(lines){
 
  let ag =
@@ -154,38 +141,55 @@ function calculateScore(lines){
   Number(lines[17]||0) +
   Number(lines[18]||0)
 
- const otHome = lines[9]   // řádek 10
- const otAway = lines[19]  // řádek 20
+ const otHome = lines[9]
+ const otAway = lines[19]
  const shootout = lines[20]
 
- // 🟡 PRODLOUŽENÍ
- if(otHome === "11") hg++
- if(otAway === "11") ag++
+ let type = "R" // R = základ
 
- // 🟡 NÁJEZDY
- if(shootout === "1") hg++
- if(shootout === "2") ag++
+ if(otHome === "11"){ hg++; type="OT" }
+ if(otAway === "11"){ ag++; type="OT" }
 
- return {hg, ag}
+ if(shootout === "1"){ hg++; type="SN" }
+ if(shootout === "2"){ ag++; type="SN" }
+
+ return {hg, ag, type}
 }
 
 // ===== SAVE =====
 window.saveMatch = async function(matchId){
 
  const lines = filesMap[matchId]
-
  if(!lines){
-  alert("Nahraj soubor ❌")
+  alert("Nahraj soubor")
   return
  }
 
- const score = calculateScore(lines)
+ const res = calculateScore(lines)
+
+ let home_points = 0
+ let away_points = 0
+
+ if(res.type === "R"){
+  if(res.hg > res.ag){ home_points = 3 }
+  else{ away_points = 3 }
+ } else {
+  if(res.hg > res.ag){
+   home_points = 2
+   away_points = 1
+  } else {
+   away_points = 2
+   home_points = 1
+  }
+ }
 
  const { error } = await supabase
   .from("matches")
   .update({
-   home_score: score.hg,
-   away_score: score.ag,
+   home_score: res.hg,
+   away_score: res.ag,
+   home_points,
+   away_points,
    played: true,
    stats: JSON.stringify(lines)
   })
@@ -200,28 +204,24 @@ window.saveMatch = async function(matchId){
  }
 }
 
-// ===== RESET (ANULACE) =====
+// ===== RESET =====
 window.resetMatch = async function(matchId){
 
- if(!confirm("Opravdu zrušit zápas?")) return
+ if(!confirm("Zrušit zápas?")) return
 
- const { error } = await supabase
+ await supabase
   .from("matches")
   .update({
    home_score: null,
    away_score: null,
+   home_points: null,
+   away_points: null,
    played: false,
    stats: null
   })
   .eq("id", matchId)
 
- if(error){
-  console.error(error)
-  alert("Chyba ❌")
- }else{
-  alert("Zápas zrušen 👍")
-  load()
- }
+ load()
 }
 
 load()
