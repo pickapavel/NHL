@@ -48,7 +48,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 80px 200px 80px 1fr 120px;
+ grid-template-columns:1fr 90px 220px 90px 1fr 120px;
  align-items:center;background:#e9ecef;
  padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
 }
@@ -75,7 +75,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#2f9ec9;
  padding:2px 6px;
  border-radius:6px;
- margin-left:6px;
+ margin:0 4px;
 }
 
 .btn{
@@ -242,7 +242,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// 🔥 ROZPIS – třetiny + OT/SN u vítěze
+// 🔥 ROZPIS – SN/OT U SKÓRE
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -258,8 +258,8 @@ function render(matches, teamMap){
   try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
   let periods = ""
-  let homeTag = ""
-  let awayTag = ""
+  let homeScore = m.home_score ?? "-"
+  let awayScore = m.away_score ?? "-"
 
   if(stats){
 
@@ -280,24 +280,27 @@ function render(matches, teamMap){
     const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
 
     if(isSN){
-      if(hg > ag) homeTag = '<span class="winTag">SN</span>'
-      else awayTag = '<span class="winTag">SN</span>'
+      if(hg > ag){
+        homeScore = `${hg} <span class="winTag">SN</span>`
+      }else{
+        awayScore = `<span class="winTag">SN</span> ${ag}`
+      }
     }
     else if(isOT){
-      if(hg > ag) homeTag = '<span class="winTag">OT</span>'
-      else awayTag = '<span class="winTag">OT</span>'
+      if(hg > ag){
+        homeScore = `${hg} <span class="winTag">OT</span>`
+      }else{
+        awayScore = `<span class="winTag">OT</span> ${ag}`
+      }
     }
   }
-
-  const homeScore = m.home_score ?? "-"
-  const awayScore = m.away_score ?? "-"
 
   cont.innerHTML+=`
   <div class="matchRow">
 
    <div class="teamBox">
     <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name} ${homeTag}</div>
+    <div>${home.name}</div>
    </div>
 
    <div class="scoreBox">${homeScore}</div>
@@ -307,7 +310,7 @@ function render(matches, teamMap){
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
-    <div>${away.name} ${awayTag}</div>
+    <div>${away.name}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
 
