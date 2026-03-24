@@ -23,17 +23,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:14px 28px;border-radius:10px;
 }
 
+/* TABULKA */
+
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+ background:#e9ecef;border-radius:10px;padding:14px;margin-bottom:10px;
 }
 
 .rank{width:30px;font-weight:bold;text-align:center;}
 
-.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
+.teamBlock{display:flex;align-items:center;gap:10px;flex:1;}
 
 .logo{
- width:50px;height:50px;object-fit:contain;
+ width:45px;height:45px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
 }
 
@@ -42,92 +44,93 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .teamStats{font-size:13px;color:#444;}
 
 .pointsBox{
- background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
- padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+ background:#0b2a3c;color:white;font-size:18px;
+ padding:8px 14px;border-radius:8px;
 }
+
+/* MATCH */
 
 .matchRow{
- display:grid;
- grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
- align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
+ background:#e9ecef;
+ padding:10px;
+ border-radius:8px;
+ margin-bottom:8px;
 }
 
-.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
-.teamRight{justify-content:flex-end;}
+.matchTop{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.teamBox{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ font-weight:bold;
+}
+
+.scoreWrapper{
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:6px;
+ margin:8px 0;
+}
 
 .scoreBox{
- background:#0b2a3c;color:white;
- font-size:20px;font-weight:bold;
- padding:8px 0;border-radius:6px;text-align:center;
+ background:#0b2a3c;
+ color:white;
+ font-size:22px;
+ padding:6px 12px;
+ border-radius:6px;
+}
+
+.winType{
+ background:#2f9ec9;
+ color:white;
+ font-size:12px;
+ padding:4px 8px;
+ border-radius:6px;
 }
 
 .periods{
  text-align:center;
  font-size:13px;
- color:#333;
 }
 
-.winTag{
- font-size:13px;
- font-weight:bold;
- color:#fff;
- background:#2f9ec9;
- padding:4px 10px;
- border-radius:8px;
- text-align:center;
- min-width:40px;
-}
-
-.emptyTag{
- min-width:40px;
+.actions{
+ display:flex;
+ gap:8px;
+ margin-top:6px;
 }
 
 .btn{
+ flex:1;
  border:none;
  padding:8px;
  border-radius:6px;
  cursor:pointer;
- width:100%;
- margin-top:5px;
  font-weight:bold;
-}
-
- @media (max-width: 900px){
-
-.matchRow{
-  grid-template-columns:1fr 60px 40px 1fr;
-  grid-template-rows:auto auto;
-}
-
-.periods{
-  grid-column:1 / -1;
-  text-align:center;
-  margin:5px 0;
-}
-
-.teamRight{
-  justify-content:flex-start;
-}
-
-.btn{
-  font-size:12px;
-  padding:6px;
-}
-
-.logo{
-  width:40px;
-  height:40px;
-}
-
-.scoreBox{
-  font-size:16px;
-}
-
 }
 
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
+
+/* MOBILE */
+@media (max-width:900px){
+
+.matchTop{
+ flex-direction:column;
+ align-items:flex-start;
+ gap:5px;
+}
+
+.actions{
+ flex-direction:column;
+}
+
+}
 </style>
 </head>
 
@@ -137,7 +140,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
 <img src="img/extraliga.jpg">
-<div class="seasonCard">Extraliga</div>
+<div class="seasonCard">Extraliga - 2. sezóna</div>
 </div>
 
 <h2>Tabulka</h2>
@@ -153,12 +156,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
 const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 
+// LOAD
 async function load(){
 
  const { data: seasonTeams } = await supabase
@@ -166,16 +170,12 @@ async function load(){
   .select("team_id")
   .eq("season_id", SEASON_ID)
 
- const teamIds = (seasonTeams || []).map(t => t.team_id)
+ const teamIds = seasonTeams.map(t=>t.team_id)
 
- let teams = []
- if(teamIds.length > 0){
-  const res = await supabase
-   .from("teams")
-   .select("*")
-   .in("id", teamIds)
-  teams = res.data || []
- }
+ const { data: teams } = await supabase
+  .from("teams")
+  .select("*")
+  .in("id", teamIds)
 
  const { data: matches } = await supabase
   .from("matches")
@@ -183,97 +183,84 @@ async function load(){
   .eq("season_id", SEASON_ID)
 
  const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
+ teams.forEach(t=> teamMap[t.id]=t)
 
- const safeMatches = matches || []
- safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
+ matches.sort((a,b)=>a.round-b.round)
 
- render(safeMatches, teamMap)
- renderTable(safeMatches, teamMap, teams)
+ renderTable(matches, teamMap, teams)
+ render(matches, teamMap)
 }
 
-// TABULKA (nezměněná)
+// TABULKA
 function renderTable(matches, teamMap, teams){
 
- let table = {}
+ let table={}
 
  teams.forEach(t=>{
-  table[t.id] = {
-    team:t.id,b:0,z:0,
-    v:0,p:0,
-    vp:0,pp:0,
-    vsn:0,psn:0,
-    gf:0,ga:0
-  }
+  table[t.id]={team:t.id,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
 
-  if(m.home_score == null || m.away_score == null) return
+  if(m.home_score==null || m.away_score==null) return
 
-  const h = table[m.home_team]
-  const a = table[m.away_team]
+  const h=table[m.home_team]
+  const a=table[m.away_team]
 
-  if(!h || !a) return
-
-  const hg = Number(m.home_score)
-  const ag = Number(m.away_score)
+  const hg=Number(m.home_score)
+  const ag=Number(m.away_score)
 
   h.z++; a.z++
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
-  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+  const isOT = m.overtime === true
+  const isSN = m.shootout === true
 
   if(isSN){
-    if(hg>ag){ h.vsn++; h.b+=2; a.psn++; a.b+=1 }
-    else{ a.vsn++; a.b+=2; h.psn++; h.b+=1 }
+    if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1}
+    else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
   }
   else if(isOT){
-    if(hg>ag){ h.vp++; h.b+=2; a.pp++; a.b+=1 }
-    else{ a.vp++; a.b+=2; h.pp++; h.b+=1 }
+    if(hg>ag){h.vp++;h.b+=2;a.pp++;a.b+=1}
+    else{a.vp++;a.b+=2;h.pp++;h.b+=1}
   }
   else{
-    if(hg>ag){ h.v++; h.b+=3; a.p++ }
-    else{ a.v++; a.b+=3; h.p++ }
+    if(hg>ag){h.v++;h.b+=3;a.p++}
+    else{a.v++;a.b+=3;h.p++}
   }
 
  })
 
- const arr = Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b
-  return (b.gf-b.ga)-(a.gf-a.ga)
- })
+ const arr=Object.values(table).sort((a,b)=>b.b-a.b)
 
- const cont = document.getElementById("standings")
+ const cont=document.getElementById("standings")
  cont.innerHTML=""
 
  arr.forEach((t,i)=>{
-  const team = teamMap[t.team]
-  if(!team) return
+
+  const team=teamMap[t.team]
 
   cont.innerHTML+=`
   <div class="standingsCard">
-   <div class="rank">${i+1}</div>
 
-   <div class="teamBlock">
-    <img class="logo" src="./logos/${team.logo}">
-    <div class="teamInfo">
-     <div class="teamName">${team.name}</div>
-     <div class="teamStats">
-      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-      Z ${t.z} | V ${t.v} | P ${t.p} |
-      VP ${t.vp} | PP ${t.pp} |
-      VSN ${t.vsn} | PSN ${t.psn}
-     </div>
+    <div class="rank">${i+1}</div>
+
+    <div class="teamBlock">
+      <img class="logo" src="./logos/${team.logo}">
+      <div class="teamInfo">
+        <div class="teamName">${team.name}</div>
+        <div class="teamStats">
+        Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
+        Z ${t.z} | V ${t.v} | P ${t.p} |
+        VP ${t.vp} | PP ${t.pp} |
+        VSN ${t.vsn} | PSN ${t.psn}
+        </div>
+      </div>
     </div>
-   </div>
 
-   <div class="pointsBox">${t.b}</div>
+    <div class="pointsBox">${t.b}</div>
+
   </div>
   `
  })
@@ -283,85 +270,63 @@ function renderTable(matches, teamMap, teams){
 // ROZPIS
 function render(matches, teamMap){
 
- const cont = document.getElementById("schedule")
+ const cont=document.getElementById("schedule")
  cont.innerHTML=""
 
  matches.forEach(m=>{
 
-  const home = teamMap[m.home_team]
-  const away = teamMap[m.away_team]
-  if(!home || !away) return
+  const home=teamMap[m.home_team]
+  const away=teamMap[m.away_team]
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+  const homeScore=m.home_score ?? "-"
+  const awayScore=m.away_score ?? "-"
 
-  let periods = ""
-  let homeTag = ""
-  let awayTag = ""
+  const periods = m.periods || ""
 
-  if(stats){
-
-    const h1 = Number(stats[16]||0)
-    const h2 = Number(stats[17]||0)
-    const h3 = Number(stats[18]||0)
-
-    const a1 = Number(stats[6]||0)
-    const a2 = Number(stats[7]||0)
-    const a3 = Number(stats[8]||0)
-
-    periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
-
-    const hg = Number(m.home_score||0)
-    const ag = Number(m.away_score||0)
-
-    const isSN = stats[20] === "1" || stats[20] === "2"
-    const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
-
-    if(isSN){
-      if(hg > ag) homeTag = "SN"
-      else awayTag = "SN"
-    }
-    else if(isOT){
-      if(hg > ag) homeTag = "OT"
-      else awayTag = "OT"
-    }
-  }
-
-  const homeScore = m.home_score ?? "-"
-  const awayScore = m.away_score ?? "-"
+  const winner = m.home_score > m.away_score ? "home" : "away"
+  const type = m.shootout ? "SN" : (m.overtime ? "OT" : "")
 
   cont.innerHTML+=`
+
   <div class="matchRow">
 
-   <div class="teamBox">
-    <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name}</div>
-   </div>
+    <div class="matchTop">
+      <div class="teamBox">
+        <img class="logo" src="./logos/${home.logo}">
+        ${home.name}
+      </div>
 
-   <div class="scoreBox">${homeScore}</div>
-   <div>${homeTag ? `<div class="winTag">${homeTag}</div>` : `<div class="emptyTag"></div>`}</div>
+      <div class="teamBox">
+        ${away.name}
+        <img class="logo" src="./logos/${away.logo}">
+      </div>
+    </div>
 
-   <div class="periods">${periods}</div>
+    <div class="scoreWrapper">
 
-   <div>${awayTag ? `<div class="winTag">${awayTag}</div>` : `<div class="emptyTag"></div>`}</div>
-   <div class="scoreBox">${awayScore}</div>
+      <div class="scoreBox">${homeScore}</div>
+      ${(winner==="home" && type) ? `<div class="winType">${type}</div>` : ""}
 
-   <div class="teamBox teamRight">
-    <div>${away.name}</div>
-    <img class="logo" src="./logos/${away.logo}">
-   </div>
+      <div>-</div>
 
-   <div>
-    <button class="btn detailBtn"
-     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-     Detail
-    </button>
+      ${(winner==="away" && type) ? `<div class="winType">${type}</div>` : ""}
+      <div class="scoreBox">${awayScore}</div>
 
-    <button class="btn betBtn"
-     onclick="window.location.href='vsad-si.html?id=${m.id}'">
-     Vsaď si
-    </button>
-   </div>
+    </div>
+
+    <div class="periods">${periods}</div>
+
+    <div class="actions">
+      <button class="btn detailBtn"
+        onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+        Detail
+      </button>
+
+      <button class="btn betBtn"
+        onclick="window.location.href='vsad-si.html?id=${m.id}'">
+        Vsaď si
+      </button>
+    </div>
 
   </div>
   `
