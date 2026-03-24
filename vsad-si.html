@@ -52,19 +52,20 @@ body{
 
 .odds{
  display:grid;
- grid-template-columns:repeat(2,1fr);
- gap:10px;
+ grid-template-columns:repeat(7,1fr);
+ gap:6px;
  margin-bottom:15px;
 }
 
 .odd{
  background:#eee;
  color:black;
- padding:12px;
+ padding:10px;
  border-radius:8px;
  text-align:center;
  cursor:pointer;
  font-weight:bold;
+ font-size:12px;
 }
 
 .odd.active{
@@ -118,7 +119,6 @@ input{
 <div class="wrapper">
 
 <div class="matchBox">
-
 <div class="teams">
 
 <div class="team">
@@ -134,7 +134,6 @@ input{
 </div>
 
 </div>
-
 </div>
 
 <div class="betBox">
@@ -142,8 +141,13 @@ input{
 <h3>Vyber výsledek</h3>
 
 <div class="odds">
-<div class="odd" id="oddHome">1</div>
-<div class="odd" id="oddAway">2</div>
+<div class="odd" data-type="1">1</div>
+<div class="odd" data-type="10">10</div>
+<div class="odd" data-type="11">11</div>
+<div class="odd" data-type="0">0</div>
+<div class="odd" data-type="22">22</div>
+<div class="odd" data-type="02">02</div>
+<div class="odd" data-type="2">2</div>
 </div>
 
 <input id="amount" placeholder="Částka (Kč)">
@@ -172,29 +176,45 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ===== URL =====
 const params = new URLSearchParams(window.location.search)
 const matchId = params.get("id")
 
 let selectedOdds = null
+let selectedType = null
 
-// ===== výpočet kurzů =====
+// 🔥 VÝPOČET KURZŮ
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADVANTAGE = 80
+ const DRAW_PROB = 0.25
 
  const homeAdj = homeRating + HOME_ADVANTAGE
 
- const probHome = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
- const probAway = 1 - probHome
+ let probHomeRaw = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
+ let probAwayRaw = 1 - probHomeRaw
+
+ const probHomeTotal = probHomeRaw * (1 - DRAW_PROB)
+ const probAwayTotal = probAwayRaw * (1 - DRAW_PROB)
+ const probDraw = DRAW_PROB
+
+ const probHomeOT = probDraw * 0.5
+ const probAwayOT = probDraw * 0.5
+
+ const probHome60 = probHomeTotal
+ const probAway60 = probAwayTotal
 
  return {
-  home: Number((1/probHome).toFixed(2)),
-  away: Number((1/probAway).toFixed(2))
+  "1": (1/probHome60),
+  "0": (1/probDraw),
+  "2": (1/probAway60),
+  "10": (1/probHomeOT),
+  "02": (1/probAwayOT),
+  "11": (1/(probHome60 + probHomeOT)),
+  "22": (1/(probAway60 + probAwayOT))
  }
 }
 
-// ===== load =====
+// LOAD
 async function load(){
 
  const { data: match } = await supabase
@@ -211,32 +231,30 @@ async function load(){
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
 
- // UI
  document.getElementById("homeName").innerText = home.name
  document.getElementById("awayName").innerText = away.name
 
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
- // kurzy
  const odds = calculateOdds(home.rating_form, away.rating_form)
 
- document.getElementById("oddHome").innerText = "1 (" + odds.home + ")"
- document.getElementById("oddAway").innerText = "2 (" + odds.away + ")"
+ // naplnění UI
+ document.querySelectorAll(".odd").forEach(btn=>{
+  const type = btn.dataset.type
+  btn.innerText = type + " (" + odds[type].toFixed(2) + ")"
 
- // klikání
- document.getElementById("oddHome").onclick = ()=> selectOdd(odds.home)
- document.getElementById("oddAway").onclick = ()=> selectOdd(odds.away)
-}
+  btn.onclick = ()=>{
+   selectedOdds = odds[type]
+   selectedType = type
 
-function selectOdd(o){
- selectedOdds = o
+   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
+   btn.classList.add("active")
 
- document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
- event.target.classList.add("active")
-
- document.getElementById("kurs").innerText = "Kurz: " + o
- updateWin()
+   document.getElementById("kurs").innerText = "Kurz: " + odds[type].toFixed(2)
+   updateWin()
+  }
+ })
 }
 
 document.getElementById("amount").oninput = updateWin
