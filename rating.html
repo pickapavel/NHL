@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rating týmů</title>
+
+<style>
+body{
+ font-family:Arial;
+ background:#0c2a38;
+ margin:0;
+ color:white;
+}
+
+.wrapper{
+ max-width:1000px;
+ margin:auto;
+ padding:20px;
+}
+
+h1{text-align:center;margin-bottom:20px;}
+
+select{
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ margin-bottom:20px;
+ border:none;
+}
+
+.teamBox{
+ background:#16394d;
+ border-radius:12px;
+ padding:15px;
+}
+
+.teamHeader{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ margin-bottom:10px;
+}
+
+.teamHeader img{
+ width:40px;
+ height:40px;
+ background:white;
+ border-radius:6px;
+ padding:3px;
+}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+}
+
+th, td{
+ padding:8px;
+ text-align:center;
+ border-bottom:1px solid #2a4c5f;
+}
+
+.win{color:#2ecc71;}
+.loss{color:#e74c3c;}
+.ot{color:#f1c40f;}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Vývoj ratingu</h1>
+
+<select id="teamSelect">
+<option value="all">Všechny týmy</option>
+</select>
+
+<div id="content"></div>
+
+</div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+// body
+function getPoints(match, teamId){
+
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ const isHome = match.home_team === teamId
+
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ if(isSN || isOT){
+  if(teamGoals > oppGoals) return {p:2, cls:"ot"}
+  else return {p:1, cls:"ot"}
+ }else{
+  if(teamGoals > oppGoals) return {p:3, cls:"win"}
+  else return {p:0, cls:"loss"}
+ }
+}
+
+// render jednoho týmu
+function renderTeam(team, matches){
+
+ let rating = 1000
+
+ let html = `
+ <div class="teamBox">
+  <div class="teamHeader">
+   <img src="./logos/${team.logo}">
+   <b>${team.name}</b>
+  </div>
+
+  <table>
+   <tr>
+    <th>#</th>
+    <th>Zápas</th>
+    <th>Body</th>
+    <th>Rating</th>
+   </tr>
+ `
+
+ matches.forEach((m,i)=>{
+
+  const res = getPoints(m, team.id)
+
+  rating += (res.p - 1.5) * 20 // jednoduchý model
+
+  html += `
+   <tr>
+    <td>${i+1}</td>
+    <td>${m.home_team === team.id ? "vs " + m.away_team : "@ " + m.home_team}</td>
+    <td class="${res.cls}">${res.p}</td>
+    <td>${Math.round(rating)}</td>
+   </tr>
+  `
+ })
+
+ html += "</table></div>"
+
+ return html
+}
+
+// LOAD
+async function load(){
+
+ const { data: teams } = await supabase.from("teams").select("*")
+
+ const { data: matches } = await supabase
+  .from("matches")
+  .select("*")
+  .not("home_score","is",null)
+
+ // select
+ const select = document.getElementById("teamSelect")
+
+ teams.forEach(t=>{
+  select.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ })
+
+ function render(){
+
+  const val = select.value
+  const cont = document.getElementById("content")
+  cont.innerHTML = ""
+
+  teams.forEach(team=>{
+
+   if(val !== "all" && val !== team.id) return
+
+   const teamMatches = matches
+    .filter(m=> m.home_team === team.id || m.away_team === team.id)
+    .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
+
+   cont.innerHTML += renderTeam(team, teamMatches)
+  })
+ }
+
+ select.onchange = render
+
+ render()
+}
+
+load()
+
+</script>
+
+</body>
+</html>
