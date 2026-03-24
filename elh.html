@@ -48,7 +48,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 90px 40px 200px 40px 90px 1fr 120px;
+ grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
  align-items:center;background:#e9ecef;
  padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
 }
@@ -69,13 +69,18 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .winTag{
- font-size:11px;
+ font-size:13px;
  font-weight:bold;
  color:#fff;
  background:#2f9ec9;
- padding:2px 6px;
- border-radius:6px;
+ padding:4px 10px;
+ border-radius:8px;
  text-align:center;
+ min-width:40px;
+}
+
+.emptyTag{
+ min-width:40px;
 }
 
 .btn{
@@ -242,7 +247,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// 🔥 ROZPIS – SN/OT vedle boxů
+// ROZPIS
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -301,11 +306,11 @@ function render(matches, teamMap){
    </div>
 
    <div class="scoreBox">${homeScore}</div>
-   <div class="winTag">${homeTag}</div>
+   <div>${homeTag ? `<div class="winTag">${homeTag}</div>` : `<div class="emptyTag"></div>`}</div>
 
    <div class="periods">${periods}</div>
 
-   <div class="winTag">${awayTag}</div>
+   <div>${awayTag ? `<div class="winTag">${awayTag}</div>` : `<div class="emptyTag"></div>`}</div>
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
