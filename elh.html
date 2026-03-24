@@ -8,79 +8,156 @@
 <style>
 *{box-sizing:border-box}
 
-body{font-family:Arial;margin:0;background:#f2f2f2;}
-.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
-
-.headerBar{
- display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:12px;padding:20px;margin-bottom:25px;
+body{
+ font-family:Arial;
+ margin:0;
+ background:#f2f2f2;
 }
 
-.headerBar img{height:110px;}
+.wrapper{
+ max-width:1200px;
+ margin:auto;
+ padding:15px;
+ background:white;
+}
+
+/* HEADER */
+.headerBar{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ background:#e9ecef;
+ border-radius:12px;
+ padding:15px;
+ margin-bottom:20px;
+}
+
+.headerBar img{height:80px;}
 
 .seasonCard{
- background:#0b2a3c;color:white;font-size:26px;
- padding:14px 28px;border-radius:10px;
+ background:#0b2a3c;
+ color:white;
+ font-size:22px;
+ padding:10px 20px;
+ border-radius:10px;
 }
 
+/* TABULKA */
 .standingsCard{
- display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ background:#e9ecef;
+ border-radius:10px;
+ padding:12px;
+ margin-bottom:8px;
 }
 
-.rank{width:30px;font-weight:bold;text-align:center;}
+.rank{
+ width:30px;
+ font-weight:bold;
+ text-align:center;
+}
 
-.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
+.teamBlock{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ flex:1;
+}
 
 .logo{
- width:50px;height:50px;object-fit:contain;
- background:white;padding:2px;border-radius:6px;
+ width:45px;
+ height:45px;
+ object-fit:contain;
+ background:white;
+ padding:2px;
+ border-radius:6px;
 }
 
-.teamInfo{display:flex;flex-direction:column;}
+.teamInfo{
+ display:flex;
+ flex-direction:column;
+}
+
 .teamName{font-weight:bold;}
-.teamStats{font-size:13px;color:#444;}
+
+.teamStats{
+ font-size:12px;
+ color:#444;
+}
 
 .pointsBox{
- background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
- padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+ background:#0b2a3c;
+ color:white;
+ font-size:18px;
+ font-weight:bold;
+ padding:8px 12px;
+ border-radius:8px;
+ min-width:50px;
+ text-align:center;
 }
 
+/* MATCH */
 .matchRow{
  display:grid;
- grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
- align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
+ grid-template-columns:1fr 60px 40px 1fr;
+ grid-template-areas:
+  "home scoreH tagH away"
+  "periods periods periods periods"
+  "buttons buttons buttons buttons";
+ align-items:center;
+ background:#e9ecef;
+ padding:10px;
+ margin-bottom:6px;
+ border-radius:6px;
+ gap:6px;
 }
 
-.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
-.teamRight{justify-content:flex-end;}
+.teamBox{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ font-weight:bold;
+}
+
+.teamRight{
+ justify-content:flex-end;
+}
 
 .scoreBox{
- background:#0b2a3c;color:white;
- font-size:20px;font-weight:bold;
- padding:8px 0;border-radius:6px;text-align:center;
+ background:#0b2a3c;
+ color:white;
+ font-size:18px;
+ font-weight:bold;
+ padding:6px 0;
+ border-radius:6px;
+ text-align:center;
 }
 
 .periods{
+ grid-area:periods;
  text-align:center;
- font-size:13px;
+ font-size:12px;
  color:#333;
 }
 
 .winTag{
- font-size:13px;
+ font-size:12px;
  font-weight:bold;
  color:#fff;
  background:#2f9ec9;
- padding:4px 10px;
+ padding:3px 8px;
  border-radius:8px;
  text-align:center;
- min-width:40px;
 }
 
-.emptyTag{
- min-width:40px;
+.emptyTag{min-width:30px;}
+
+.buttons{
+ grid-area:buttons;
+ display:flex;
+ gap:8px;
 }
 
 .btn{
@@ -89,12 +166,47 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  border-radius:6px;
  cursor:pointer;
  width:100%;
- margin-top:5px;
  font-weight:bold;
 }
 
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
+
+/* ===== TABLET ===== */
+@media(min-width:768px){
+
+.headerBar img{height:100px;}
+
+.matchRow{
+ grid-template-columns:1fr 70px 40px 150px 40px 70px 1fr 120px;
+ grid-template-areas:none;
+}
+
+.periods{
+ grid-area:auto;
+}
+
+.buttons{
+ grid-area:auto;
+ flex-direction:column;
+}
+
+}
+
+/* ===== DESKTOP ===== */
+@media(min-width:1024px){
+
+.wrapper{padding:20px;}
+
+.matchRow{
+ grid-template-columns:1fr 90px 50px 200px 50px 90px 1fr 120px;
+}
+
+.scoreBox{font-size:20px;}
+.pointsBox{font-size:20px;}
+
+}
+
 </style>
 </head>
 
@@ -159,7 +271,7 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
-// TABULKA (nezměněná)
+/* TABULKA */
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -175,12 +287,10 @@ function renderTable(matches, teamMap, teams){
  })
 
  matches.forEach(m=>{
-
   if(m.home_score == null || m.away_score == null) return
 
   const h = table[m.home_team]
   const a = table[m.away_team]
-
   if(!h || !a) return
 
   const hg = Number(m.home_score)
@@ -190,31 +300,12 @@ function renderTable(matches, teamMap, teams){
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
-  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
-
-  if(isSN){
-    if(hg>ag){ h.vsn++; h.b+=2; a.psn++; a.b+=1 }
-    else{ a.vsn++; a.b+=2; h.psn++; h.b+=1 }
-  }
-  else if(isOT){
-    if(hg>ag){ h.vp++; h.b+=2; a.pp++; a.b+=1 }
-    else{ a.vp++; a.b+=2; h.pp++; h.b+=1 }
-  }
-  else{
-    if(hg>ag){ h.v++; h.b+=3; a.p++ }
-    else{ a.v++; a.b+=3; h.p++ }
-  }
+  if(hg>ag){ h.v++; h.b+=3; a.p++ }
+  else{ a.v++; a.b+=3; h.p++ }
 
  })
 
- const arr = Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b
-  return (b.gf-b.ga)-(a.gf-a.ga)
- })
+ const arr = Object.values(table).sort((a,b)=> b.b-a.b)
 
  const cont = document.getElementById("standings")
  cont.innerHTML=""
@@ -232,10 +323,7 @@ function renderTable(matches, teamMap, teams){
     <div class="teamInfo">
      <div class="teamName">${team.name}</div>
      <div class="teamStats">
-      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-      Z ${t.z} | V ${t.v} | P ${t.p} |
-      VP ${t.vp} | PP ${t.pp} |
-      VSN ${t.vsn} | PSN ${t.psn}
+      Skóre ${t.gf}:${t.ga} | Z ${t.z}
      </div>
     </div>
    </div>
@@ -247,7 +335,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// ROZPIS
+/* MATCH */
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -258,41 +346,6 @@ function render(matches, teamMap){
   const home = teamMap[m.home_team]
   const away = teamMap[m.away_team]
   if(!home || !away) return
-
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  let periods = ""
-  let homeTag = ""
-  let awayTag = ""
-
-  if(stats){
-
-    const h1 = Number(stats[16]||0)
-    const h2 = Number(stats[17]||0)
-    const h3 = Number(stats[18]||0)
-
-    const a1 = Number(stats[6]||0)
-    const a2 = Number(stats[7]||0)
-    const a3 = Number(stats[8]||0)
-
-    periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
-
-    const hg = Number(m.home_score||0)
-    const ag = Number(m.away_score||0)
-
-    const isSN = stats[20] === "1" || stats[20] === "2"
-    const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
-
-    if(isSN){
-      if(hg > ag) homeTag = "SN"
-      else awayTag = "SN"
-    }
-    else if(isOT){
-      if(hg > ag) homeTag = "OT"
-      else awayTag = "OT"
-    }
-  }
 
   const homeScore = m.home_score ?? "-"
   const awayScore = m.away_score ?? "-"
@@ -306,19 +359,16 @@ function render(matches, teamMap){
    </div>
 
    <div class="scoreBox">${homeScore}</div>
-   <div>${homeTag ? `<div class="winTag">${homeTag}</div>` : `<div class="emptyTag"></div>`}</div>
-
-   <div class="periods">${periods}</div>
-
-   <div>${awayTag ? `<div class="winTag">${awayTag}</div>` : `<div class="emptyTag"></div>`}</div>
-   <div class="scoreBox">${awayScore}</div>
+   <div></div>
 
    <div class="teamBox teamRight">
     <div>${away.name}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
 
-   <div>
+   <div class="periods"></div>
+
+   <div class="buttons">
     <button class="btn detailBtn"
      onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
      Detail
