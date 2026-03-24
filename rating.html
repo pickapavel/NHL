@@ -1,118 +1,35 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rating týmů</title>
+// 🔥 ELO výpočet
+function calculateElo(oldRating, opponentRating, result){
 
-<style>
-body{
- font-family:Arial;
- background:#0c2a38;
- margin:0;
- color:white;
+ const K = 40
+
+ const expected = 1 / (1 + Math.pow(10, (opponentRating - oldRating)/400))
+
+ return oldRating + K * (result - expected)
 }
 
-.wrapper{
- max-width:1000px;
- margin:auto;
- padding:20px;
-}
 
-h1{text-align:center;margin-bottom:20px;}
+// 🔥 hlavní funkce pro zápas
+async function updateMatchElo(matchId){
 
-select{
- width:100%;
- padding:10px;
- border-radius:8px;
- margin-bottom:20px;
- border:none;
-}
+ const { data: match } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
 
-.teamBox{
- background:#16394d;
- border-radius:12px;
- padding:15px;
- margin-bottom:20px;
-}
+ if(!match.home_score || !match.away_score){
+  console.log("Zápas nemá výsledek")
+  return
+ }
 
-.teamHeader{
- display:flex;
- align-items:center;
- gap:10px;
- margin-bottom:10px;
-}
+ const { data: teams } = await supabase
+  .from("teams")
+  .select("*")
+  .in("id", [match.home_team, match.away_team])
 
-.teamHeader img{
- width:40px;
- height:40px;
- background:white;
- border-radius:6px;
- padding:3px;
-}
-
-.rating{
- font-size:14px;
- color:#ccc;
-}
-
-table{
- width:100%;
- border-collapse:collapse;
-}
-
-th, td{
- padding:10px;
- text-align:center;
- border-bottom:1px solid #2a4c5f;
-}
-
-.matchCell{
- display:flex;
- align-items:center;
- justify-content:center;
- gap:8px;
-}
-
-.matchCell img{
- width:25px;
- height:25px;
- background:white;
- border-radius:4px;
- padding:2px;
-}
-
-.win{color:#2ecc71;}
-.loss{color:#e74c3c;}
-.ot{color:#f1c40f;}
-</style>
-</head>
-
-<body>
-
-<div class="wrapper">
-
-<h1>Rating týmů</h1>
-
-<select id="teamSelect">
-<option value="all">Všechny týmy</option>
-</select>
-
-<div id="content"></div>
-
-</div>
-
-<script type="module">
-
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const supabase = createClient(
- "https://qaocbodrflsaerxntfui.supabase.co",
- "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-)
-
-// body (jen pro barvu)
-function getPoints(match, teamId){
+ const home = teams.find(t=>t.id === match.home_team)
+ const away = teams.find(t=>t.id === match.away_team)
 
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
@@ -123,119 +40,45 @@ function getPoints(match, teamId){
  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
 
- const isHome = match.home_team === teamId
+ let homeResult, awayResult
 
- const teamGoals = isHome ? hg : ag
- const oppGoals = isHome ? ag : hg
-
- if(isSN || isOT){
-  if(teamGoals > oppGoals) return "ot"
-  else return "ot"
- }else{
-  if(teamGoals > oppGoals) return "win"
-  else return "loss"
+ // 🔥 základní výsledek
+ if(hg > ag){
+  homeResult = 1
+  awayResult = 0
  }
-}
-
-// render týmu
-function renderTeam(team, matches, teamMap){
-
- let html = `
- <div class="teamBox">
-  <div class="teamHeader">
-   <img src="./logos/${team.logo}">
-   <div>
-    <b>${team.name}</b><br>
-    <span class="rating">Rating: ${Math.round(team.rating_form)}</span>
-   </div>
-  </div>
-
-  <table>
-   <tr>
-    <th>#</th>
-    <th>Zápas</th>
-    <th>Skóre</th>
-    <th>Výsledek</th>
-   </tr>
- `
-
- matches.forEach((m,i)=>{
-
-  const cls = getPoints(m, team.id)
-
-  const isHome = m.home_team === team.id
-  const opponentId = isHome ? m.away_team : m.home_team
-  const opponent = teamMap[opponentId]
-
-  html += `
-   <tr>
-    <td>${i+1}</td>
-
-    <td>
-     <div class="matchCell">
-      ${isHome ? "vs" : "@"}
-      <img src="./logos/${opponent.logo}">
-      ${opponent.name}
-     </div>
-    </td>
-
-    <td>${m.home_score}:${m.away_score}</td>
-
-    <td class="${cls}">${cls === "win" ? "V" : cls === "loss" ? "P" : "OT"}</td>
-   </tr>
-  `
- })
-
- html += "</table></div>"
-
- return html
-}
-
-// LOAD
-async function load(){
-
- const { data: teams } = await supabase.from("teams").select("*")
-
- const { data: matches } = await supabase
-  .from("matches")
-  .select("*")
-  .not("home_score","is",null)
-
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
-
- const select = document.getElementById("teamSelect")
-
- teams.forEach(t=>{
-  select.innerHTML += `<option value="${t.id}">${t.name}</option>`
- })
-
- function render(){
-
-  const val = select.value
-  const cont = document.getElementById("content")
-  cont.innerHTML = ""
-
-  teams.forEach(team=>{
-
-   if(val !== "all" && val !== team.id) return
-
-   const teamMatches = matches
-    .filter(m=> m.home_team === team.id || m.away_team === team.id)
-    .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
-
-   cont.innerHTML += renderTeam(team, teamMatches, teamMap)
-  })
+ else if(ag > hg){
+  homeResult = 0
+  awayResult = 1
+ }
+ else{
+  homeResult = 0.5
+  awayResult = 0.5
  }
 
- select.onchange = render
+ // 🔥 úprava pro OT/SN
+ if(isOT || isSN){
+  if(hg > ag){
+   homeResult = 0.75
+   awayResult = 0.25
+  }else{
+   homeResult = 0.25
+   awayResult = 0.75
+  }
+ }
 
- render()
+ // 🔥 nové ratingy
+ const newHome = calculateElo(home.rating_form, away.rating_form, homeResult)
+ const newAway = calculateElo(away.rating_form, home.rating_form, awayResult)
+
+ // 🔥 uložení do DB
+ await supabase.from("teams")
+  .update({ rating_form: newHome })
+  .eq("id", home.id)
+
+ await supabase.from("teams")
+  .update({ rating_form: newAway })
+  .eq("id", away.id)
+
+ console.log("ELO updated", newHome, newAway)
 }
-
-load()
-
-</script>
-
-</body>
-</html>
