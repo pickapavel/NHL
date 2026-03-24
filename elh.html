@@ -48,7 +48,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 90px 220px 90px 1fr 120px;
+ grid-template-columns:1fr 80px 200px 80px 1fr 120px;
  align-items:center;background:#e9ecef;
  padding:10px;margin-bottom:5px;border-radius:6px;gap:8px;
 }
@@ -60,6 +60,22 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;
  font-size:20px;font-weight:bold;
  padding:8px 0;border-radius:6px;text-align:center;
+}
+
+.periods{
+ text-align:center;
+ font-size:13px;
+ color:#333;
+}
+
+.winTag{
+ font-size:12px;
+ font-weight:bold;
+ color:#fff;
+ background:#2f9ec9;
+ padding:2px 6px;
+ border-radius:6px;
+ margin-left:6px;
 }
 
 .btn{
@@ -145,8 +161,7 @@ function renderTable(matches, teamMap, teams){
 
  teams.forEach(t=>{
   table[t.id] = {
-    team:t.id,
-    b:0,z:0,
+    team:t.id,b:0,z:0,
     v:0,p:0,
     vp:0,pp:0,
     vsn:0,psn:0,
@@ -167,14 +182,11 @@ function renderTable(matches, teamMap, teams){
   const ag = Number(m.away_score)
 
   h.z++; a.z++
-
   h.gf+=hg; h.ga+=ag
   a.gf+=ag; a.ga+=hg
 
   let stats = null
-  try{
-    stats = m.stats ? JSON.parse(m.stats) : null
-  }catch(e){}
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
   const isSN = stats && (stats[20] === "1" || stats[20] === "2")
   const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
@@ -203,7 +215,6 @@ function renderTable(matches, teamMap, teams){
  cont.innerHTML=""
 
  arr.forEach((t,i)=>{
-
   const team = teamMap[t.team]
   if(!team) return
 
@@ -231,7 +242,7 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// 🔥 ROZPIS S OT / SN
+// 🔥 ROZPIS – třetiny + OT/SN u vítěze
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -241,23 +252,42 @@ function render(matches, teamMap){
 
   const home = teamMap[m.home_team]
   const away = teamMap[m.away_team]
-
   if(!home || !away) return
 
-  let suffix = ""
+  let stats = null
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
-  try{
-    const stats = m.stats ? JSON.parse(m.stats) : null
+  let periods = ""
+  let homeTag = ""
+  let awayTag = ""
 
-    if(stats){
-      if(stats[20] === "1" || stats[20] === "2"){
-        suffix = " SN"
-      }
-      else if(stats[9] === "11" || stats[19] === "11"){
-        suffix = " OT"
-      }
+  if(stats){
+
+    const h1 = Number(stats[16]||0)
+    const h2 = Number(stats[17]||0)
+    const h3 = Number(stats[18]||0)
+
+    const a1 = Number(stats[6]||0)
+    const a2 = Number(stats[7]||0)
+    const a3 = Number(stats[8]||0)
+
+    periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
+
+    const hg = Number(m.home_score||0)
+    const ag = Number(m.away_score||0)
+
+    const isSN = stats[20] === "1" || stats[20] === "2"
+    const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
+
+    if(isSN){
+      if(hg > ag) homeTag = '<span class="winTag">SN</span>'
+      else awayTag = '<span class="winTag">SN</span>'
     }
-  }catch(e){}
+    else if(isOT){
+      if(hg > ag) homeTag = '<span class="winTag">OT</span>'
+      else awayTag = '<span class="winTag">OT</span>'
+    }
+  }
 
   const homeScore = m.home_score ?? "-"
   const awayScore = m.away_score ?? "-"
@@ -267,17 +297,17 @@ function render(matches, teamMap){
 
    <div class="teamBox">
     <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name}</div>
+    <div>${home.name} ${homeTag}</div>
    </div>
 
    <div class="scoreBox">${homeScore}</div>
 
-   <div>${suffix}</div>
+   <div class="periods">${periods}</div>
 
    <div class="scoreBox">${awayScore}</div>
 
    <div class="teamBox teamRight">
-    <div>${away.name}</div>
+    <div>${away.name} ${awayTag}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
 
