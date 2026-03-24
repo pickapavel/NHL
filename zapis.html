@@ -66,6 +66,7 @@ const supabase = createClient(
 let teamsMap = {}
 let filesMap = {}
 
+// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -79,6 +80,7 @@ async function load(){
  render(matches)
 }
 
+// ===== RENDER =====
 function render(matches){
 
  const cont = document.getElementById("matchesTable")
@@ -115,6 +117,7 @@ function render(matches){
  })
 }
 
+// ===== FILE =====
 window.handleFile = function(e, matchId){
 
  const reader = new FileReader()
@@ -126,6 +129,7 @@ window.handleFile = function(e, matchId){
  reader.readAsText(e.target.files[0])
 }
 
+// ===== SCORE =====
 function calculateScore(lines){
 
  let ag =
@@ -142,17 +146,16 @@ function calculateScore(lines){
  const otAway = lines[19]
  const shootout = lines[20]
 
- let type = "R"
+ if(otHome === "11") hg++
+ if(otAway === "11") ag++
 
- if(otHome === "11"){ hg++; type="OT" }
- if(otAway === "11"){ ag++; type="OT" }
+ if(shootout === "1") hg++
+ if(shootout === "2") ag++
 
- if(shootout === "1"){ hg++; type="SN" }
- if(shootout === "2"){ ag++; type="SN" }
-
- return {hg, ag, type}
+ return {hg, ag}
 }
 
+// ===== SAVE =====
 window.saveMatch = async function(matchId){
 
  const lines = filesMap[matchId]
@@ -162,31 +165,13 @@ window.saveMatch = async function(matchId){
   return
  }
 
- const res = calculateScore(lines)
-
- let home_points = 0
- let away_points = 0
-
- if(res.type === "R"){
-  if(res.hg > res.ag){ home_points = 3 }
-  else{ away_points = 3 }
- } else {
-  if(res.hg > res.ag){
-   home_points = 2
-   away_points = 1
-  } else {
-   away_points = 2
-   home_points = 1
-  }
- }
+ const score = calculateScore(lines)
 
  const { error } = await supabase
   .from("matches")
   .update({
-   home_score: res.hg,
-   away_score: res.ag,
-   home_points,
-   away_points,
+   home_score: score.hg,
+   away_score: score.ag,
    played: true,
    stats: JSON.stringify(lines)
   })
@@ -201,7 +186,7 @@ window.saveMatch = async function(matchId){
  }
 }
 
-// 🔥 OPRAVENÝ RESET
+// ===== RESET =====
 window.resetMatch = async function(matchId){
 
  if(!confirm("Opravdu zrušit zápas?")) return
@@ -211,8 +196,6 @@ window.resetMatch = async function(matchId){
   .update({
    home_score: null,
    away_score: null,
-   home_points: null,
-   away_points: null,
    played: false,
    stats: null
   })
