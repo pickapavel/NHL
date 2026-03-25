@@ -12,113 +12,22 @@ body{
  margin:0;
  color:white;
 }
-
-.wrapper{
- max-width:500px;
- margin:auto;
- padding:20px;
-}
-
+.wrapper{max-width:500px;margin:auto;padding:20px;}
 .matchBox{text-align:center;margin-bottom:20px;}
-
-.teams{
- display:flex;
- justify-content:space-between;
- align-items:center;
-}
-
-.team{
- width:40%;
- text-align:center;
-}
-
-.team img{
- width:70px;height:70px;
- background:white;
- border-radius:10px;
- padding:5px;
-}
-
-.score{
- font-size:40px;
- font-weight:bold;
-}
-
-.betBox{
- background:#16394d;
- padding:20px;
- border-radius:15px;
-}
-
-.odds{
- display:grid;
- grid-template-columns:repeat(7,1fr);
- gap:6px;
- margin-bottom:15px;
-}
-
-.odd{
- background:#eee;
- color:black;
- padding:10px;
- border-radius:8px;
- text-align:center;
- cursor:pointer;
- font-weight:bold;
- font-size:12px;
-}
-
-.odd.active{
- background:#27ae60;
- color:white;
-}
-
-input{
- width:100%;
- padding:10px;
- border-radius:8px;
- border:none;
- margin-bottom:10px;
-}
-
-.info{
- display:flex;
- justify-content:space-between;
- margin-bottom:15px;
-}
-
-.betBtn{
- width:100%;
- height:45px;
- background:#27ae60;
- border:none;
- border-radius:10px;
- color:white;
- font-size:16px;
- cursor:pointer;
-}
-
-.betInfo{
- margin-top:15px;
- background:#0b2a3c;
- padding:10px;
- border-radius:8px;
- display:none;
-}
-
-.back{
- margin-top:20px;
- text-align:center;
-}
-
-.back button{
- padding:10px 20px;
- border:none;
- border-radius:8px;
- background:#2f9ec9;
- color:white;
- cursor:pointer;
-}
+.teams{display:flex;justify-content:space-between;align-items:center;}
+.team{width:40%;text-align:center;}
+.team img{width:70px;height:70px;background:white;border-radius:10px;padding:5px;}
+.score{font-size:40px;font-weight:bold;}
+.betBox{background:#16394d;padding:20px;border-radius:15px;}
+.odds{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:15px;}
+.odd{background:#eee;color:black;padding:10px;border-radius:8px;text-align:center;cursor:pointer;font-weight:bold;font-size:12px;}
+.odd.active{background:#27ae60;color:white;}
+input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
+.info{display:flex;justify-content:space-between;margin-bottom:15px;}
+.betBtn{width:100%;height:45px;background:#27ae60;border:none;border-radius:10px;color:white;font-size:16px;cursor:pointer;}
+.betInfo{margin-top:15px;background:#0b2a3c;padding:10px;border-radius:8px;display:none;}
+.back{margin-top:20px;text-align:center;}
+.back button{padding:10px 20px;border:none;border-radius:8px;background:#2f9ec9;color:white;cursor:pointer;}
 </style>
 </head>
 
@@ -194,82 +103,20 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
-// 🔥 UPDATE RATING
-async function updateTeamFormRating(teamId){
+// 🔥 JEDNODUCHÉ FIXNÍ KURZY (bez ratingu)
+function calculateOdds(){
 
- const { data: matches } = await supabase
-  .from("matches")
-  .select("*")
-  .or(`home_team.eq.${teamId},away_team.eq.${teamId}`)
-  .not("home_score","is",null)
-  .not("away_score","is",null)
-  .order("created_at", { ascending:false })
-  .limit(5)
-
- if(!matches || matches.length === 0) return
-
- let points = 0
-
- for(const m of matches){
-
-  const hg = Number(m.home_score)
-  const ag = Number(m.away_score)
-
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
-  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
-
-  const isHome = m.home_team === teamId
-
-  const teamGoals = isHome ? hg : ag
-  const oppGoals = isHome ? ag : hg
-
-  if(isSN || isOT){
-   if(teamGoals > oppGoals) points += 2
-   else points += 1
-  }else{
-   if(teamGoals > oppGoals) points += 3
-   else points += 0
-  }
+ const odds = {
+  "1": 2.2,
+  "0": 3.5,
+  "2": 2.8,
+  "10": 4.5,
+  "02": 4.5,
+  "11": 1.8,
+  "22": 2.0
  }
 
- const rating = 800 + (points * 20)
-
- await supabase
-  .from("teams")
-  .update({ rating_form: rating })
-  .eq("id", teamId)
-}
-
-// kurzy
-function calculateOdds(homeRating, awayRating){
-
- const HOME_ADVANTAGE = 80
- const DRAW_PROB = 0.20
-
- const homeAdj = homeRating + HOME_ADVANTAGE
-
- let probHomeRaw = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
- let probAwayRaw = 1 - probHomeRaw
-
- const probHomeTotal = probHomeRaw * (1 - DRAW_PROB)
- const probAwayTotal = probAwayRaw * (1 - DRAW_PROB)
- const probDraw = DRAW_PROB
-
- const probHomeOT = probDraw * probHomeRaw
- const probAwayOT = probDraw * probAwayRaw
-
- return {
-  "1": (1/probHomeTotal),
-  "0": (1/probDraw),
-  "2": (1/probAwayTotal),
-  "10": (1/probHomeOT),
-  "02": (1/probAwayOT),
-  "11": (1/(probHomeTotal + probHomeOT)),
-  "22": (1/(probAwayTotal + probAwayOT))
- }
+ return odds
 }
 
 // LOAD
@@ -281,9 +128,6 @@ async function load(){
   .eq("id", matchId)
   .single()
 
- await updateTeamFormRating(match.home_team)
- await updateTeamFormRating(match.away_team)
-
  const { data: teams } = await supabase
   .from("teams")
   .select("*")
@@ -292,16 +136,13 @@ async function load(){
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
 
- document.getElementById("homeName").innerText =
-  `${home.name} (${Math.round(home.rating_form)})`
-
- document.getElementById("awayName").innerText =
-  `${away.name} (${Math.round(away.rating_form)})`
+ document.getElementById("homeName").innerText = home.name
+ document.getElementById("awayName").innerText = away.name
 
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
- const odds = calculateOdds(home.rating_form, away.rating_form)
+ const odds = calculateOdds()
 
  document.querySelectorAll(".odd").forEach(btn=>{
   const type = btn.dataset.type
