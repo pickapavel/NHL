@@ -115,7 +115,6 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// 🔥 NOVÁ FUNKCE
 async function evaluateBets(match){
 
  const result =
@@ -152,7 +151,6 @@ async function load(){
   .eq("id", matchId)
   .single()
 
- // 🔥 pokud je odehráno → vyhodnoť sázky
  if(match.played){
   await evaluateBets(match)
  }
@@ -228,7 +226,25 @@ async function loadExistingBet(match){
  document.querySelector(".betBtn").disabled = true
 
  if(match.played){
-  let text = bet.status === "won" ? "✅ VYHRÁNO" : "❌ PROHRÁNO"
+
+  const result =
+   match.home_score > match.away_score ? "1" :
+   match.home_score < match.away_score ? "2" : "0"
+
+  let mode = "Z"
+
+  if(
+   (bet.tip === "10" && (result === "1" || result === "0")) ||
+   (bet.tip === "02" && (result === "0" || result === "2")) ||
+   (bet.tip === "11" && result === "1") ||
+   (bet.tip === "22" && result === "2")
+  ){
+   mode = "OT"
+  }
+
+  let text = bet.status === "won"
+   ? `✅ VYHRÁNO (${mode})`
+   : `❌ PROHRÁNO (${mode})`
 
   document.getElementById("vyhra").innerText =
    text + " | " + bet.potential_win.toFixed(0) + " Kč"
