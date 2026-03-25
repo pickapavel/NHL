@@ -3,23 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vsaď si</title>
+<title>Zápis výsledku</title>
 
 <style>
-body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
-.wrapper{max-width:500px;margin:auto;padding:20px;}
-.matchBox{text-align:center;margin-bottom:20px;}
-.teams{display:flex;justify-content:space-between;align-items:center;}
-.team{width:40%;text-align:center;}
-.team img{width:70px;height:70px;background:white;border-radius:10px;padding:5px;}
-.score{font-size:40px;font-weight:bold;}
-.betBox{background:#16394d;padding:20px;border-radius:15px;}
-.odds{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:15px;}
-.odd{background:#eee;color:black;padding:10px;border-radius:8px;text-align:center;cursor:pointer;font-weight:bold;font-size:12px;}
-.odd.active{background:#27ae60;color:white;}
-input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
-.info{display:flex;justify-content:space-between;margin-bottom:15px;}
-.betBtn{width:100%;height:45px;background:#27ae60;border:none;border-radius:10px;color:white;font-size:16px;cursor:pointer;}
+body{
+ font-family:Arial;
+ background:#0c2a38;
+ color:white;
+ margin:0;
+}
+
+.wrapper{
+ max-width:500px;
+ margin:auto;
+ padding:20px;
+}
+
+input{
+ width:100%;
+ padding:10px;
+ margin-bottom:10px;
+ border-radius:8px;
+ border:none;
+}
+
+button{
+ width:100%;
+ padding:12px;
+ background:#27ae60;
+ border:none;
+ border-radius:10px;
+ color:white;
+ font-size:16px;
+ cursor:pointer;
+}
 </style>
 </head>
 
@@ -27,48 +44,13 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="wrapper">
 
-<div class="matchBox">
-<div class="teams">
+<h2>Zápis výsledku</h2>
 
-<div class="team">
-<img id="homeLogo">
-<div id="homeName"></div>
-</div>
+<input id="matchId" placeholder="ID zápasu">
+<input id="homeScore" placeholder="Domácí góly">
+<input id="awayScore" placeholder="Hosté góly">
 
-<div class="score">- : -</div>
-
-<div class="team">
-<img id="awayLogo">
-<div id="awayName"></div>
-</div>
-
-</div>
-</div>
-
-<div class="betBox">
-
-<h3>Vyber výsledek</h3>
-
-<div class="odds">
-<div class="odd" data-type="1">1</div>
-<div class="odd" data-type="10">10</div>
-<div class="odd" data-type="11">11</div>
-<div class="odd" data-type="0">0</div>
-<div class="odd" data-type="22">22</div>
-<div class="odd" data-type="02">02</div>
-<div class="odd" data-type="2">2</div>
-</div>
-
-<input id="amount" placeholder="Částka (Kč)">
-
-<div class="info">
-<div id="kurs">Kurz: -</div>
-<div id="vyhra">Výhra: -</div>
-</div>
-
-<button class="betBtn">VSADIT</button>
-
-</div>
+<button onclick="save()">ULOŽIT</button>
 
 </div>
 
@@ -77,123 +59,83 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const params = new URLSearchParams(window.location.search)
-const matchId = params.get("id")
+// 🔥 vyhodnocení sázek
+async function evaluateBets(match){
 
-let selectedOdds = null
-let selectedType = null
+ const { data: bets } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", match.id)
 
-// 🔥 výpočet kurzů
-function calculateOdds(homeRating, awayRating){
+ for(const bet of bets){
 
- const HOME_ADV = 80
- const DRAW_PROB = 0.2
+  const hg = Number(match.home_score)
+  const ag = Number(match.away_score)
 
- const homeAdj = homeRating + HOME_ADV
+  let result = null
 
- const probHome = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
- const probAway = 1 - probHome
+  if(hg > ag) result = "1"
+  else if(hg < ag) result = "2"
+  else result = "0"
 
- const probHomeTotal = probHome * (1 - DRAW_PROB)
- const probAwayTotal = probAway * (1 - DRAW_PROB)
- const probDraw = DRAW_PROB
+  let status = "lost"
 
- const probHomeOT = probDraw * probHome
- const probAwayOT = probDraw * probAway
+  // základní tipy
+  if(bet.tip === result){
+    status = "won"
+  }
 
- return {
-  "1": 1/probHomeTotal,
-  "0": 1/probDraw,
-  "2": 1/probAwayTotal,
-  "10": 1/probHomeOT,
-  "02": 1/probAwayOT,
-  "11": 1/(probHomeTotal + probHomeOT),
-  "22": 1/(probAwayTotal + probAwayOT)
+  // rozšířené tipy
+  if(bet.tip === "11" && result === "1") status = "won"
+  if(bet.tip === "22" && result === "2") status = "won"
+  if(bet.tip === "10" && (result === "1" || result === "0")) status = "won"
+  if(bet.tip === "02" && (result === "0" || result === "2")) status = "won"
+
+  await supabase
+    .from("bets")
+    .update({ status })
+    .eq("id", bet.id)
  }
 }
 
-async function load(){
+// 🔥 uložení výsledku
+window.save = async () => {
 
- const { data: match } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
+ const matchId = document.getElementById("matchId").value
+ const homeScore = Number(document.getElementById("homeScore").value)
+ const awayScore = Number(document.getElementById("awayScore").value)
 
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
-  .in("id", [match.home_team, match.away_team])
-
- const home = teams.find(t=>t.id === match.home_team)
- const away = teams.find(t=>t.id === match.away_team)
-
- document.getElementById("homeName").innerText =
-  `${home.name} (${home.rating_form})`
-
- document.getElementById("awayName").innerText =
-  `${away.name} (${away.rating_form})`
-
- document.getElementById("homeLogo").src = "./logos/" + home.logo
- document.getElementById("awayLogo").src = "./logos/" + away.logo
-
- const odds = calculateOdds(home.rating_form, away.rating_form)
-
- document.querySelectorAll(".odd").forEach(btn=>{
-  const type = btn.dataset.type
-  const o = odds[type]
-
-  btn.innerText = type + " (" + o.toFixed(2) + ")"
-
-  btn.onclick = ()=>{
-   selectedOdds = o
-   selectedType = type
-
-   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
-   btn.classList.add("active")
-
-   document.getElementById("kurs").innerText = "Kurz: " + o.toFixed(2)
-   updateWin()
-  }
- })
-}
-
-document.getElementById("amount").oninput = updateWin
-
-function updateWin(){
- const amount = Number(document.getElementById("amount").value)
- if(!amount || !selectedOdds) return
-
- document.getElementById("vyhra").innerText =
-  "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
-}
-
-document.querySelector(".betBtn").onclick = async () => {
-
- const amount = Number(document.getElementById("amount").value)
-
- if(!amount || !selectedOdds || !selectedType){
-  alert("Vyber sázku a částku")
+ if(!matchId){
+  alert("Zadej ID zápasu")
   return
  }
 
- await supabase.from("bets").insert({
-  match_id: matchId,
-  tip: selectedType,
-  amount: amount,
-  odds: selectedOdds,
-  potential_win: amount * selectedOdds,
-  status: "pending"
- })
+ const { data: match, error } = await supabase
+  .from("matches")
+  .update({
+    home_score: homeScore,
+    away_score: awayScore,
+    played: true
+  })
+  .eq("id", matchId)
+  .select()
+  .single()
 
- location.reload()
+ if(error){
+  alert("Chyba při ukládání")
+  console.log(error)
+  return
+ }
+
+ // 🔥 tady se vyhodnotí sázky
+ await evaluateBets(match)
+
+ alert("Výsledek uložen a sázky vyhodnoceny")
 }
-
-load()
 
 </script>
 
