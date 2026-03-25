@@ -24,6 +24,14 @@ h1{
  margin-bottom:20px;
 }
 
+select{
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ margin-bottom:20px;
+ border:none;
+}
+
 .team{
  background:#16394d;
  padding:15px;
@@ -75,6 +83,13 @@ h1{
 
 <div class="wrapper">
 <h1>Rating týmů</h1>
+
+<select id="filter">
+ <option value="extraliga">Extraligové týmy</option>
+ <option value="reprezentace">Reprezentační týmy</option>
+ <option value="all">Všechny</option>
+</select>
+
 <div id="content"></div>
 </div>
 
@@ -159,7 +174,7 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // 🔵 ELO (všechny zápasy)
+ // ELO
  matches.forEach(m=>{
 
   const h = m.home_team
@@ -184,7 +199,7 @@ async function load(){
   ratings[a] = nA
  })
 
- // 🟡 FORMA = ELO z posledních 5 zápasů
+ // FORMA (ELO posledních 5)
  function getForm(teamId){
 
   const teamMatches = matches
@@ -208,59 +223,75 @@ async function load(){
   return Math.round(rating)
  }
 
- // uložit ELO do DB
+ // uložit do DB
  for(const id in ratings){
   await supabase.from("teams").update({ rating_form: ratings[id] }).eq("id", id)
  }
 
+ const filter = document.getElementById("filter")
  const cont = document.getElementById("content")
 
- const sorted = teams
-  .map(t=> ({
-   ...t,
-   elo: ratings[t.id],
-   form: getForm(t.id)
-  }))
-  .sort((a,b)=> b.elo - a.elo)
+ function render(){
 
- sorted.forEach(team=>{
+  cont.innerHTML = ""
 
-  let html = `
-   <div class="team">
-    <div class="header">
-     <div class="left">
-      <img src="./logos/${team.logo}">
-      <div>${team.name}</div>
+  let filtered = teams
+
+  if(filter.value !== "all"){
+   filtered = teams.filter(t => t.type === filter.value)
+  }
+
+  const sorted = filtered
+   .map(t=> ({
+    ...t,
+    elo: ratings[t.id],
+    form: getForm(t.id)
+   }))
+   .sort((a,b)=> b.elo - a.elo)
+
+  sorted.forEach(team=>{
+
+   let html = `
+    <div class="team">
+     <div class="header">
+      <div class="left">
+       <img src="./logos/${team.logo}">
+       <div>${team.name}</div>
+      </div>
+      <div class="ratings">
+       <div class="elo">${team.elo}</div>
+       <div class="form">forma: ${team.form}</div>
+      </div>
      </div>
-     <div class="ratings">
-      <div class="elo">${team.elo}</div>
-      <div class="form">forma: ${team.form}</div>
-     </div>
-    </div>
-  `
-
-  const teamHistory = history[team.id] || []
-
-  teamHistory.slice().reverse().forEach(h=>{
-
-   const m = h.match
-   const cls = getResultClass(m, team.id)
-
-   const home = teamMap[m.home_team]
-   const away = teamMap[m.away_team]
-
-   html += `
-    <div class="match ${cls}">
-     ${home.name} vs ${away.name} (${m.home_score}:${m.away_score})
-     | ${h.before} → ${h.after}
-     (${h.change >=0 ? "+" : ""}${h.change})
-    </div>
    `
-  })
 
-  html += "</div>"
-  cont.innerHTML += html
- })
+   const teamHistory = history[team.id] || []
+
+   teamHistory.slice().reverse().forEach(h=>{
+
+    const m = h.match
+    const cls = getResultClass(m, team.id)
+
+    const home = teamMap[m.home_team]
+    const away = teamMap[m.away_team]
+
+    html += `
+     <div class="match ${cls}">
+      ${home.name} vs ${away.name} (${m.home_score}:${m.away_score})
+      | ${h.before} → ${h.after}
+      (${h.change >=0 ? "+" : ""}${h.change})
+     </div>
+    `
+   })
+
+   html += "</div>"
+   cont.innerHTML += html
+  })
+ }
+
+ filter.onchange = render
+
+ render()
 }
 
 load()
