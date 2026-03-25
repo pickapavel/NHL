@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rating týmů (ELO)</title>
+<title>Rating týmů</title>
 
 <style>
 body{
@@ -52,10 +52,12 @@ h1{
  padding:3px;
 }
 
-.rating{
- font-size:18px;
- font-weight:bold;
+.ratings{
+ text-align:right;
 }
+
+.elo{ font-size:18px; font-weight:bold; }
+.form{ font-size:13px; color:#ccc; }
 
 .match{
  font-size:13px;
@@ -72,7 +74,7 @@ h1{
 <body>
 
 <div class="wrapper">
-<h1>Rating týmů (ELO)</h1>
+<h1>Rating týmů</h1>
 <div id="content"></div>
 </div>
 
@@ -116,6 +118,29 @@ function getScore(match, teamId){
  }
 }
 
+function getPoints(match, teamId){
+
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ const isHome = match.home_team === teamId
+
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ if(isSN || isOT){
+  return teamGoals > oppGoals ? 2 : 1
+ }else{
+  return teamGoals > oppGoals ? 3 : 0
+ }
+}
+
 function getResultClass(match, teamId){
 
  const hg = Number(match.home_score)
@@ -149,65 +174,69 @@ async function load(){
 
  const ratings = {}
  const history = {}
+ const teamMap = {}
 
  teams.forEach(t=>{
   ratings[t.id] = START_RATING
   history[t.id] = []
+  teamMap[t.id] = t
  })
 
+ // 🔥 ELO výpočet
  matches.forEach(m=>{
 
-  const homeId = m.home_team
-  const awayId = m.away_team
+  const h = m.home_team
+  const a = m.away_team
 
-  const homeRating = ratings[homeId]
-  const awayRating = ratings[awayId]
+  const rH = ratings[h]
+  const rA = ratings[a]
 
-  const homeScore = getScore(m, homeId)
-  const awayScore = getScore(m, awayId)
+  const sH = getScore(m, h)
+  const sA = getScore(m, a)
 
-  const changeHome = getEloChange(homeRating, awayRating, homeScore)
-  const changeAway = getEloChange(awayRating, homeRating, awayScore)
+  const cH = getEloChange(rH, rA, sH)
+  const cA = getEloChange(rA, rH, sA)
 
-  const newHome = Math.round(homeRating + changeHome)
-  const newAway = Math.round(awayRating + changeAway)
+  const nH = Math.round(rH + cH)
+  const nA = Math.round(rA + cA)
 
-  history[homeId].push({
-   match: m,
-   before: homeRating,
-   after: newHome,
-   change: Math.round(changeHome)
-  })
+  history[h].push({ match:m, before:rH, after:nH, change:Math.round(cH) })
+  history[a].push({ match:m, before:rA, after:nA, change:Math.round(cA) })
 
-  history[awayId].push({
-   match: m,
-   before: awayRating,
-   after: newAway,
-   change: Math.round(changeAway)
-  })
-
-  ratings[homeId] = newHome
-  ratings[awayId] = newAway
+  ratings[h] = nH
+  ratings[a] = nA
  })
 
- // uložit do DB
- for(const teamId in ratings){
-  await supabase
-   .from("teams")
-   .update({ rating_form: ratings[teamId] })
-   .eq("id", teamId)
+ // 🔥 FORM (posledních 5)
+ function getForm(teamId){
+  const teamMatches = matches
+   .filter(m=> m.home_team === teamId || m.away_team === teamId)
+   .slice(-5)
+
+  let points = 0
+  teamMatches.forEach(m=>{
+   points += getPoints(m, teamId)
+  })
+
+  return 1000 + (points * 20)
  }
 
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
+ // uložit ELO do DB
+ for(const id in ratings){
+  await supabase.from("teams").update({ rating_form: ratings[id] }).eq("id", id)
+ }
 
  const cont = document.getElementById("content")
 
- const teamsSorted = teams
-  .map(t=> ({...t, rating: ratings[t.id]}))
-  .sort((a,b)=> b.rating - a.rating)
+ const sorted = teams
+  .map(t=> ({
+   ...t,
+   elo: ratings[t.id],
+   form: getForm(t.id)
+  }))
+  .sort((a,b)=> b.elo - a.elo)
 
- teamsSorted.forEach(team=>{
+ sorted.forEach(team=>{
 
   let html = `
    <div class="team">
@@ -216,13 +245,16 @@ async function load(){
       <img src="./logos/${team.logo}">
       <div>${team.name}</div>
      </div>
-     <div class="rating">${team.rating}</div>
+     <div class="ratings">
+      <div class="elo">${team.elo}</div>
+      <div class="form">forma: ${team.form}</div>
+     </div>
     </div>
   `
 
-  // 🔥 TADY JE TA ZMĚNA (reverse)
- const teamHistory = history[team.id] || []
-teamHistory.slice().reverse().forEach(h=>{
+  const teamHistory = history[team.id] || []
+
+  teamHistory.slice().reverse().forEach(h=>{
 
    const m = h.match
    const cls = getResultClass(m, team.id)
@@ -240,7 +272,6 @@ teamHistory.slice().reverse().forEach(h=>{
   })
 
   html += "</div>"
-
   cont.innerHTML += html
  })
 }
