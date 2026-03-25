@@ -14,36 +14,33 @@ body{
 }
 
 .wrapper{
- max-width:1000px;
+ max-width:600px;
  margin:auto;
  padding:20px;
 }
 
-h1{text-align:center;margin-bottom:20px;}
-
-select{
- width:100%;
- padding:10px;
- border-radius:8px;
- margin-bottom:20px;
- border:none;
-}
-
-.teamBox{
- background:#16394d;
- border-radius:12px;
- padding:15px;
+h1{
+ text-align:center;
  margin-bottom:20px;
 }
 
-.teamHeader{
+.team{
  display:flex;
  align-items:center;
- gap:10px;
+ justify-content:space-between;
+ background:#16394d;
+ padding:12px;
+ border-radius:10px;
  margin-bottom:10px;
 }
 
-.teamHeader img{
+.left{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+.left img{
  width:40px;
  height:40px;
  background:white;
@@ -52,39 +49,9 @@ select{
 }
 
 .rating{
- font-size:14px;
- color:#ccc;
+ font-size:16px;
+ font-weight:bold;
 }
-
-table{
- width:100%;
- border-collapse:collapse;
-}
-
-th, td{
- padding:10px;
- text-align:center;
- border-bottom:1px solid #2a4c5f;
-}
-
-.matchCell{
- display:flex;
- align-items:center;
- justify-content:center;
- gap:8px;
-}
-
-.matchCell img{
- width:25px;
- height:25px;
- background:white;
- border-radius:4px;
- padding:2px;
-}
-
-.win{color:#2ecc71;}
-.loss{color:#e74c3c;}
-.ot{color:#f1c40f;}
 </style>
 </head>
 
@@ -92,11 +59,7 @@ th, td{
 
 <div class="wrapper">
 
-<h1>Rating týmů (ELO)</h1>
-
-<select id="teamSelect">
-<option value="all">Všechny týmy</option>
-</select>
+<h1>Rating týmů</h1>
 
 <div id="content"></div>
 
@@ -111,124 +74,27 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// jen pro barvu výsledku
-function getResultClass(match, teamId){
-
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
-
- let stats = null
- try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
-
- const isSN = stats && (stats[20] === "1" || stats[20] === "2")
- const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
-
- const isHome = match.home_team === teamId
-
- const teamGoals = isHome ? hg : ag
- const oppGoals = isHome ? ag : hg
-
- if(isSN || isOT) return "ot"
- if(teamGoals > oppGoals) return "win"
- return "loss"
-}
-
-// render týmu
-function renderTeam(team, matches, teamMap){
-
- let html = `
- <div class="teamBox">
-  <div class="teamHeader">
-   <img src="./logos/${team.logo}">
-   <div>
-    <b>${team.name}</b><br>
-    <span class="rating">ELO: ${Math.round(team.rating_form)}</span>
-   </div>
-  </div>
-
-  <table>
-   <tr>
-    <th>#</th>
-    <th>Zápas</th>
-    <th>Skóre</th>
-    <th>Výsledek</th>
-   </tr>
- `
-
- matches.forEach((m,i)=>{
-
-  const cls = getResultClass(m, team.id)
-
-  const isHome = m.home_team === team.id
-  const opponentId = isHome ? m.away_team : m.home_team
-  const opponent = teamMap[opponentId]
-
-  html += `
-   <tr>
-    <td>${i+1}</td>
-
-    <td>
-     <div class="matchCell">
-      ${isHome ? "vs" : "@"}
-      <img src="./logos/${opponent.logo}">
-      ${opponent.name}
-     </div>
-    </td>
-
-    <td>${m.home_score}:${m.away_score}</td>
-
-    <td class="${cls}">
-      ${cls === "win" ? "V" : cls === "loss" ? "P" : "OT"}
-    </td>
-   </tr>
-  `
- })
-
- html += "</table></div>"
-
- return html
-}
-
-// LOAD
 async function load(){
 
- const { data: teams } = await supabase.from("teams").select("*")
-
- const { data: matches } = await supabase
-  .from("matches")
+ const { data: teams } = await supabase
+  .from("teams")
   .select("*")
-  .not("home_score","is",null)
+  .order("rating_form", { ascending:false })
 
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
+ const cont = document.getElementById("content")
 
- const select = document.getElementById("teamSelect")
+ teams.forEach(team=>{
 
- teams.forEach(t=>{
-  select.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  cont.innerHTML += `
+   <div class="team">
+    <div class="left">
+     <img src="./logos/${team.logo}">
+     <div>${team.name}</div>
+    </div>
+    <div class="rating">${Math.round(team.rating_form)}</div>
+   </div>
+  `
  })
-
- function render(){
-
-  const val = select.value
-  const cont = document.getElementById("content")
-  cont.innerHTML = ""
-
-  teams.forEach(team=>{
-
-   if(val !== "all" && val !== team.id) return
-
-   const teamMatches = matches
-    .filter(m=> m.home_team === team.id || m.away_team === team.id)
-    .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
-
-   cont.innerHTML += renderTeam(team, teamMatches, teamMap)
-  })
- }
-
- select.onchange = render
-
- render()
 }
 
 load()
