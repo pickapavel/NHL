@@ -220,7 +220,7 @@ async function load(){
     </div>
   `
 
-  history[team.id].forEach(h=>{
+  [...history[team.id]].reverse().forEach(h=>{
 
    const m = h.match
    const cls = getResultClass(m, team.id)
