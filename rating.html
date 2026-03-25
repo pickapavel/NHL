@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rating týmů</title>
+<title>Rating týmů (ELO)</title>
 
 <style>
 body{
@@ -62,17 +62,18 @@ h1{
  padding:6px;
  border-bottom:1px solid #2a4c5f;
 }
+
+.win{ color:#2ecc71; }
+.loss{ color:#e74c3c; }
+.ot{ color:#f1c40f; }
 </style>
 </head>
 
 <body>
 
 <div class="wrapper">
-
 <h1>Rating týmů (ELO)</h1>
-
 <div id="content"></div>
-
 </div>
 
 <script type="module">
@@ -87,13 +88,11 @@ const supabase = createClient(
 const START_RATING = 1000
 const K = 40
 
-// 🔥 ELO změna
 function getEloChange(teamRating, oppRating, score){
  const expected = 1 / (1 + Math.pow(10, (oppRating - teamRating)/400))
  return K * (score - expected)
 }
 
-// 🔥 určení score
 function getScore(match, teamId){
 
  const hg = Number(match.home_score)
@@ -117,7 +116,26 @@ function getScore(match, teamId){
  }
 }
 
-// LOAD
+function getResultClass(match, teamId){
+
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ if(isSN || isOT) return "ot"
+
+ const isHome = match.home_team === teamId
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ return teamGoals > oppGoals ? "win" : "loss"
+}
+
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -132,13 +150,11 @@ async function load(){
  const ratings = {}
  const history = {}
 
- // start rating
  teams.forEach(t=>{
   ratings[t.id] = START_RATING
   history[t.id] = []
  })
 
- // 🔥 projdeme zápasy postupně
  matches.forEach(m=>{
 
   const homeId = m.home_team
@@ -156,7 +172,6 @@ async function load(){
   const newHome = Math.round(homeRating + changeHome)
   const newAway = Math.round(awayRating + changeAway)
 
-  // uložit historii
   history[homeId].push({
    match: m,
    before: homeRating,
@@ -171,12 +186,11 @@ async function load(){
    change: Math.round(changeAway)
   })
 
-  // update ratingů
   ratings[homeId] = newHome
   ratings[awayId] = newAway
  })
 
- // 🔥 uložit do DB
+ // uložit do DB
  for(const teamId in ratings){
   await supabase
    .from("teams")
@@ -193,7 +207,6 @@ async function load(){
   .map(t=> ({...t, rating: ratings[t.id]}))
   .sort((a,b)=> b.rating - a.rating)
 
- // render
  teamsSorted.forEach(team=>{
 
   let html = `
@@ -210,13 +223,14 @@ async function load(){
   history[team.id].forEach(h=>{
 
    const m = h.match
-   const isHome = m.home_team === team.id
-   const opponent = teamMap[isHome ? m.away_team : m.home_team]
+   const cls = getResultClass(m, team.id)
+
+   const home = teamMap[m.home_team]
+   const away = teamMap[m.away_team]
 
    html += `
-    <div class="match">
-     ${isHome ? "vs" : "@"} ${opponent.name}
-     (${m.home_score}:${m.away_score})
+    <div class="match ${cls}">
+     ${home.name} vs ${away.name} (${m.home_score}:${m.away_score})
      | ${h.before} → ${h.after}
      (${h.change >=0 ? "+" : ""}${h.change})
     </div>
