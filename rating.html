@@ -221,7 +221,8 @@ async function load(){
   `
 
   // 🔥 TADY JE TA ZMĚNA (reverse)
-  [...history[team.id]].reverse().forEach(h=>{
+ const teamHistory = history[team.id] || []
+teamHistory.slice().reverse().forEach(h=>{
 
    const m = h.match
    const cls = getResultClass(m, team.id)
