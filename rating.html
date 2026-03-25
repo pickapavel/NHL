@@ -174,7 +174,7 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // ELO výpočet
+ // 🔵 ELO (dlouhodobý)
  matches.forEach(m=>{
 
   const h = m.home_team
@@ -199,7 +199,7 @@ async function load(){
   ratings[a] = nA
  })
 
- // FORMA (ELO posledních 5)
+ // 🟡 FORMA (ELO posledních 5)
  function getForm(teamId){
 
   const teamMatches = matches
@@ -223,9 +223,15 @@ async function load(){
   return Math.round(rating)
  }
 
- // uložit ELO do DB
+ // 🔥 ULOŽENÍ DO DB (OPRAVENO)
  for(const id in ratings){
-  await supabase.from("teams").update({ rating_form: ratings[id] }).eq("id", id)
+  await supabase
+   .from("teams")
+   .update({ 
+     rating_overall: ratings[id],
+     rating_form: getForm(id)
+   })
+   .eq("id", id)
  }
 
  const filter = document.getElementById("filter")
