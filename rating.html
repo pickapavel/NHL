@@ -62,10 +62,6 @@ h1{
  padding:6px;
  border-bottom:1px solid #2a4c5f;
 }
-
-.win{color:#2ecc71;}
-.loss{color:#e74c3c;}
-.ot{color:#f1c40f;}
 </style>
 </head>
 
@@ -73,7 +69,7 @@ h1{
 
 <div class="wrapper">
 
-<h1>Rating týmů</h1>
+<h1>Rating týmů (ELO)</h1>
 
 <div id="content"></div>
 
@@ -88,8 +84,17 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// 🔥 body ze zápasu
-function getPoints(match, teamId){
+const START_RATING = 1000
+const K = 40
+
+// 🔥 ELO změna
+function getEloChange(teamRating, oppRating, score){
+ const expected = 1 / (1 + Math.pow(10, (oppRating - teamRating)/400))
+ return K * (score - expected)
+}
+
+// 🔥 určení score
+function getScore(match, teamId){
 
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
@@ -105,48 +110,11 @@ function getPoints(match, teamId){
  const teamGoals = isHome ? hg : ag
  const oppGoals = isHome ? ag : hg
 
- if(isSN || isOT){
-  return teamGoals > oppGoals ? 2 : 1
+ if(teamGoals > oppGoals){
+  return (isSN || isOT) ? 0.75 : 1
  }else{
-  return teamGoals > oppGoals ? 3 : 0
+  return (isSN || isOT) ? 0.25 : 0
  }
-}
-
-// 🔥 render historie
-function renderHistory(team, matches, teamMap){
-
- let rating = 1000
- let html = ""
-
- matches.forEach(m=>{
-
-  const before = rating
-
-  const points = getPoints(m, team.id)
-  const change = points * 20
-
-  rating += change
-
-  const after = rating
-
-  const isHome = m.home_team === team.id
-  const opponent = teamMap[isHome ? m.away_team : m.home_team]
-
-  const resultClass =
-    points === 3 ? "win" :
-    points === 0 ? "loss" : "ot"
-
-  html += `
-   <div class="match ${resultClass}">
-    ${isHome ? "vs" : "@"} ${opponent.name}
-    (${m.home_score}:${m.away_score})
-    | ${before} → ${after}
-    (${change >=0 ? "+" : ""}${change})
-   </div>
-  `
- })
-
- return html
 }
 
 // LOAD
@@ -159,36 +127,76 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
+  .order("created_at", { ascending:true })
+
+ const ratings = {}
+ const history = {}
+
+ // start rating
+ teams.forEach(t=>{
+  ratings[t.id] = START_RATING
+  history[t.id] = []
+ })
+
+ // 🔥 projdeme zápasy postupně
+ matches.forEach(m=>{
+
+  const homeId = m.home_team
+  const awayId = m.away_team
+
+  const homeRating = ratings[homeId]
+  const awayRating = ratings[awayId]
+
+  const homeScore = getScore(m, homeId)
+  const awayScore = getScore(m, awayId)
+
+  const changeHome = getEloChange(homeRating, awayRating, homeScore)
+  const changeAway = getEloChange(awayRating, homeRating, awayScore)
+
+  const newHome = Math.round(homeRating + changeHome)
+  const newAway = Math.round(awayRating + changeAway)
+
+  // uložit historii
+  history[homeId].push({
+   match: m,
+   before: homeRating,
+   after: newHome,
+   change: Math.round(changeHome)
+  })
+
+  history[awayId].push({
+   match: m,
+   before: awayRating,
+   after: newAway,
+   change: Math.round(changeAway)
+  })
+
+  // update ratingů
+  ratings[homeId] = newHome
+  ratings[awayId] = newAway
+ })
+
+ // 🔥 uložit do DB
+ for(const teamId in ratings){
+  await supabase
+   .from("teams")
+   .update({ rating_form: ratings[teamId] })
+   .eq("id", teamId)
+ }
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
  const cont = document.getElementById("content")
 
- const teamsWithRating = []
+ const teamsSorted = teams
+  .map(t=> ({...t, rating: ratings[t.id]}))
+  .sort((a,b)=> b.rating - a.rating)
 
- teams.forEach(team=>{
+ // render
+ teamsSorted.forEach(team=>{
 
-  const teamMatches = matches
-   .filter(m=> m.home_team === team.id || m.away_team === team.id)
-   .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
-
-  let rating = 1000
-
-  teamMatches.forEach(m=>{
-   const points = getPoints(m, team.id)
-   rating += points * 20
-  })
-
-  teamsWithRating.push({ ...team, rating, matches: teamMatches })
- })
-
- // seřadit podle ratingu
- teamsWithRating.sort((a,b)=> b.rating - a.rating)
-
- teamsWithRating.forEach(team=>{
-
-  cont.innerHTML += `
+  let html = `
    <div class="team">
     <div class="header">
      <div class="left">
@@ -197,11 +205,27 @@ async function load(){
      </div>
      <div class="rating">${team.rating}</div>
     </div>
-
-    ${renderHistory(team, team.matches, teamMap)}
-
-   </div>
   `
+
+  history[team.id].forEach(h=>{
+
+   const m = h.match
+   const isHome = m.home_team === team.id
+   const opponent = teamMap[isHome ? m.away_team : m.home_team]
+
+   html += `
+    <div class="match">
+     ${isHome ? "vs" : "@"} ${opponent.name}
+     (${m.home_score}:${m.away_score})
+     | ${h.before} → ${h.after}
+     (${h.change >=0 ? "+" : ""}${h.change})
+    </div>
+   `
+  })
+
+  html += "</div>"
+
+  cont.innerHTML += html
  })
 }
 
