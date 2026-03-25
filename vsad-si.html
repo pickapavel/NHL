@@ -115,6 +115,35 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
+// 🔥 NOVÁ FUNKCE
+async function evaluateBets(match){
+
+ const result =
+  match.home_score > match.away_score ? "1" :
+  match.home_score < match.away_score ? "2" : "0"
+
+ const { data: bets } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", match.id)
+
+ for(const bet of bets){
+
+  let win = false
+
+  if(bet.tip === result) win = true
+  if(bet.tip === "10" && (result === "1" || result === "0")) win = true
+  if(bet.tip === "02" && (result === "0" || result === "2")) win = true
+  if(bet.tip === "11" && result === "1") win = true
+  if(bet.tip === "22" && result === "2") win = true
+
+  await supabase
+   .from("bets")
+   .update({ status: win ? "won" : "lost" })
+   .eq("id", bet.id)
+ }
+}
+
 async function load(){
 
  const { data: match } = await supabase
@@ -122,6 +151,11 @@ async function load(){
   .select("*")
   .eq("id", matchId)
   .single()
+
+ // 🔥 pokud je odehráno → vyhodnoť sázky
+ if(match.played){
+  await evaluateBets(match)
+ }
 
  const { data: teams } = await supabase
   .from("teams")
@@ -137,7 +171,6 @@ async function load(){
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
- // 🔥 zobraz skóre pokud je odehráno
  if(match.played){
   document.getElementById("score").innerText =
    `${match.home_score} : ${match.away_score}`
@@ -166,7 +199,6 @@ async function load(){
  await loadExistingBet(match)
 }
 
-// 🔥 načtení sázky + výsledek
 async function loadExistingBet(match){
 
  const { data: bet } = await supabase
@@ -195,12 +227,7 @@ async function loadExistingBet(match){
  document.getElementById("amount").disabled = true
  document.querySelector(".betBtn").disabled = true
 
- // 🔥 výsledek sázky
  if(match.played){
-  const res =
-   match.home_score > match.away_score ? "1" :
-   match.home_score < match.away_score ? "2" : "0"
-
   let text = bet.status === "won" ? "✅ VYHRÁNO" : "❌ PROHRÁNO"
 
   document.getElementById("vyhra").innerText =
