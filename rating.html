@@ -118,29 +118,6 @@ function getScore(match, teamId){
  }
 }
 
-function getPoints(match, teamId){
-
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
-
- let stats = null
- try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
-
- const isSN = stats && (stats[20] === "1" || stats[20] === "2")
- const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
-
- const isHome = match.home_team === teamId
-
- const teamGoals = isHome ? hg : ag
- const oppGoals = isHome ? ag : hg
-
- if(isSN || isOT){
-  return teamGoals > oppGoals ? 2 : 1
- }else{
-  return teamGoals > oppGoals ? 3 : 0
- }
-}
-
 function getResultClass(match, teamId){
 
  const hg = Number(match.home_score)
@@ -182,7 +159,7 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // 🔥 ELO výpočet
+ // 🔵 ELO (všechny zápasy)
  matches.forEach(m=>{
 
   const h = m.home_team
@@ -207,18 +184,28 @@ async function load(){
   ratings[a] = nA
  })
 
- // 🔥 FORM (posledních 5)
+ // 🟡 FORMA = ELO z posledních 5 zápasů
  function getForm(teamId){
+
   const teamMatches = matches
    .filter(m=> m.home_team === teamId || m.away_team === teamId)
    .slice(-5)
 
-  let points = 0
+  let rating = 1000
+
   teamMatches.forEach(m=>{
-   points += getPoints(m, teamId)
+
+   const opponentId = m.home_team === teamId ? m.away_team : m.home_team
+   const opponentRating = ratings[opponentId]
+
+   const score = getScore(m, teamId)
+
+   const change = getEloChange(rating, opponentRating, score)
+
+   rating += Math.round(change)
   })
 
-  return 1000 + (points * 20)
+  return Math.round(rating)
  }
 
  // uložit ELO do DB
