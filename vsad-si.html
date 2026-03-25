@@ -29,6 +29,7 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="matchBox">
 <div class="teams">
+
 <div class="team">
 <img id="homeLogo">
 <div id="homeName"></div>
@@ -40,6 +41,7 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 <img id="awayLogo">
 <div id="awayName"></div>
 </div>
+
 </div>
 </div>
 
@@ -49,7 +51,11 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="odds">
 <div class="odd" data-type="1">1</div>
+<div class="odd" data-type="10">10</div>
+<div class="odd" data-type="11">11</div>
 <div class="odd" data-type="0">0</div>
+<div class="odd" data-type="22">22</div>
+<div class="odd" data-type="02">02</div>
 <div class="odd" data-type="2">2</div>
 </div>
 
@@ -81,7 +87,7 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
-// 🔥 výpočet kurzů z ratingu
+// 🔥 výpočet kurzů
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADV = 80
@@ -92,14 +98,21 @@ function calculateOdds(homeRating, awayRating){
  const probHome = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
  const probAway = 1 - probHome
 
- const probHomeFinal = probHome * (1 - DRAW_PROB)
- const probAwayFinal = probAway * (1 - DRAW_PROB)
+ const probHomeTotal = probHome * (1 - DRAW_PROB)
+ const probAwayTotal = probAway * (1 - DRAW_PROB)
  const probDraw = DRAW_PROB
 
+ const probHomeOT = probDraw * probHome
+ const probAwayOT = probDraw * probAway
+
  return {
-  "1": 1 / probHomeFinal,
-  "0": 1 / probDraw,
-  "2": 1 / probAwayFinal
+  "1": 1/probHomeTotal,
+  "0": 1/probDraw,
+  "2": 1/probAwayTotal,
+  "10": 1/probHomeOT,
+  "02": 1/probAwayOT,
+  "11": 1/(probHomeTotal + probHomeOT),
+  "22": 1/(probAwayTotal + probAwayOT)
  }
 }
 
@@ -163,7 +176,7 @@ document.querySelector(".betBtn").onclick = async () => {
 
  const amount = Number(document.getElementById("amount").value)
 
- if(!amount || !selectedOdds){
+ if(!amount || !selectedOdds || !selectedType){
   alert("Vyber sázku a částku")
   return
  }
