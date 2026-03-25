@@ -174,7 +174,7 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // ELO
+ // ELO výpočet
  matches.forEach(m=>{
 
   const h = m.home_team
@@ -223,7 +223,7 @@ async function load(){
   return Math.round(rating)
  }
 
- // uložit do DB
+ // uložit ELO do DB
  for(const id in ratings){
   await supabase.from("teams").update({ rating_form: ratings[id] }).eq("id", id)
  }
@@ -238,7 +238,7 @@ async function load(){
   let filtered = teams
 
   if(filter.value !== "all"){
-   filtered = teams.filter(t => t.type === filter.value)
+   filtered = teams.filter(t => (t.competition || "").toLowerCase() === filter.value)
   }
 
   const sorted = filtered
