@@ -14,7 +14,7 @@ body{
 }
 
 .wrapper{
- max-width:600px;
+ max-width:700px;
  margin:auto;
  padding:20px;
 }
@@ -25,12 +25,16 @@ h1{
 }
 
 .team{
- display:flex;
- align-items:center;
- justify-content:space-between;
  background:#16394d;
- padding:12px;
- border-radius:10px;
+ padding:15px;
+ border-radius:12px;
+ margin-bottom:20px;
+}
+
+.header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
  margin-bottom:10px;
 }
 
@@ -49,9 +53,19 @@ h1{
 }
 
 .rating{
- font-size:16px;
+ font-size:18px;
  font-weight:bold;
 }
+
+.match{
+ font-size:13px;
+ padding:6px;
+ border-bottom:1px solid #2a4c5f;
+}
+
+.win{color:#2ecc71;}
+.loss{color:#e74c3c;}
+.ot{color:#f1c40f;}
 </style>
 </head>
 
@@ -74,53 +88,71 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// 🔥 výpočet ratingu
-function calculateRating(matches, teamId){
+// 🔥 body ze zápasu
+function getPoints(match, teamId){
 
- let points = 0
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ const isHome = match.home_team === teamId
+
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ if(isSN || isOT){
+  return teamGoals > oppGoals ? 2 : 1
+ }else{
+  return teamGoals > oppGoals ? 3 : 0
+ }
+}
+
+// 🔥 render historie
+function renderHistory(team, matches, teamMap){
+
+ let rating = 1000
+ let html = ""
 
  matches.forEach(m=>{
 
-  const hg = Number(m.home_score)
-  const ag = Number(m.away_score)
+  const before = rating
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+  const points = getPoints(m, team.id)
+  const change = points * 20
 
-  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
-  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+  rating += change
 
-  const isHome = m.home_team === teamId
+  const after = rating
 
-  const teamGoals = isHome ? hg : ag
-  const oppGoals = isHome ? ag : hg
+  const isHome = m.home_team === team.id
+  const opponent = teamMap[isHome ? m.away_team : m.home_team]
 
-  if(isSN || isOT){
-   if(teamGoals > oppGoals) points += 2
-   else points += 1
-  }else{
-   if(teamGoals > oppGoals) points += 3
-   else points += 0
-  }
+  const resultClass =
+    points === 3 ? "win" :
+    points === 0 ? "loss" : "ot"
+
+  html += `
+   <div class="match ${resultClass}">
+    ${isHome ? "vs" : "@"} ${opponent.name}
+    (${m.home_score}:${m.away_score})
+    | ${before} → ${after}
+    (${change >=0 ? "+" : ""}${change})
+   </div>
+  `
  })
 
- return 1000 + (points * 20)
-}
-
-// 🔥 update do DB
-async function updateRating(teamId, rating){
- await supabase
-  .from("teams")
-  .update({ rating_form: rating })
-  .eq("id", teamId)
+ return html
 }
 
 // LOAD
 async function load(){
 
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
+ const { data: teams } = await supabase.from("teams").select("*")
 
  const { data: matches } = await supabase
   .from("matches")
@@ -128,37 +160,46 @@ async function load(){
   .not("home_score","is",null)
   .not("away_score","is",null)
 
+ const teamMap = {}
+ teams.forEach(t=> teamMap[t.id] = t)
+
  const cont = document.getElementById("content")
 
  const teamsWithRating = []
 
- for(const team of teams){
+ teams.forEach(team=>{
 
   const teamMatches = matches
    .filter(m=> m.home_team === team.id || m.away_team === team.id)
-   .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at))
-   .slice(0,5)
+   .sort((a,b)=> new Date(a.created_at) - new Date(b.created_at))
 
-  const rating = calculateRating(teamMatches, team.id)
+  let rating = 1000
 
-  // 👉 uložíme do DB
-  await updateRating(team.id, rating)
+  teamMatches.forEach(m=>{
+   const points = getPoints(m, team.id)
+   rating += points * 20
+  })
 
-  teamsWithRating.push({ ...team, rating })
- }
+  teamsWithRating.push({ ...team, rating, matches: teamMatches })
+ })
 
- // seřazení
+ // seřadit podle ratingu
  teamsWithRating.sort((a,b)=> b.rating - a.rating)
 
- // render
  teamsWithRating.forEach(team=>{
+
   cont.innerHTML += `
    <div class="team">
-    <div class="left">
-     <img src="./logos/${team.logo}">
-     <div>${team.name}</div>
+    <div class="header">
+     <div class="left">
+      <img src="./logos/${team.logo}">
+      <div>${team.name}</div>
+     </div>
+     <div class="rating">${team.rating}</div>
     </div>
-    <div class="rating">${Math.round(team.rating)}</div>
+
+    ${renderHistory(team, team.matches, teamMap)}
+
    </div>
   `
  })
