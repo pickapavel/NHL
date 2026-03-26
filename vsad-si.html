@@ -115,11 +115,33 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-async function evaluateBets(match){
+// 🔥 SPRÁVNÁ LOGIKA
+function isWinningBet(match, tip){
 
- const result =
-  match.home_score > match.away_score ? "1" :
-  match.home_score < match.away_score ? "2" : "0"
+ const type = match.result_type
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ const homeWin = hg > ag
+ const awayWin = ag > hg
+
+ switch(tip){
+  case "1": return homeWin && type === "REG"
+  case "2": return awayWin && type === "REG"
+  case "0": return type !== "REG"
+
+  case "10": return homeWin && (type === "OT" || type === "SN")
+  case "02": return awayWin && (type === "OT" || type === "SN")
+
+  case "11": return homeWin
+  case "22": return awayWin
+ }
+
+ return false
+}
+
+// 🔥 OPRAVENO
+async function evaluateBets(match){
 
  const { data: bets } = await supabase
   .from("bets")
@@ -128,13 +150,7 @@ async function evaluateBets(match){
 
  for(const bet of bets){
 
-  let win = false
-
-  if(bet.tip === result) win = true
-  if(bet.tip === "10" && (result === "1" || result === "0")) win = true
-  if(bet.tip === "02" && (result === "0" || result === "2")) win = true
-  if(bet.tip === "11" && result === "1") win = true
-  if(bet.tip === "22" && result === "2") win = true
+  const win = isWinningBet(match, bet.tip)
 
   await supabase
    .from("bets")
@@ -211,8 +227,6 @@ async function loadExistingBet(match){
  selectedType = bet.tip
 
  document.getElementById("kurs").innerText = "Kurz: " + bet.odds.toFixed(2)
- document.getElementById("vyhra").innerText =
-  "Výhra: " + bet.potential_win.toFixed(0) + " Kč"
 
  document.querySelectorAll(".odd").forEach(btn=>{
   if(btn.dataset.type === bet.tip){
@@ -227,24 +241,11 @@ async function loadExistingBet(match){
 
  if(match.played){
 
-  const result =
-   match.home_score > match.away_score ? "1" :
-   match.home_score < match.away_score ? "2" : "0"
+  const win = isWinningBet(match, bet.tip)
 
-  let mode = "Z"
-
-  if(
-   (bet.tip === "10" && (result === "1" || result === "0")) ||
-   (bet.tip === "02" && (result === "0" || result === "2")) ||
-   (bet.tip === "11" && result === "1") ||
-   (bet.tip === "22" && result === "2")
-  ){
-   mode = "OT"
-  }
-
-  let text = bet.status === "won"
-   ? `✅ VYHRÁNO (${mode})`
-   : `❌ PROHRÁNO (${mode})`
+  let text = win
+   ? `✅ VYHRÁNO`
+   : `❌ PROHRÁNO`
 
   document.getElementById("vyhra").innerText =
    text + " | " + bet.potential_win.toFixed(0) + " Kč"
