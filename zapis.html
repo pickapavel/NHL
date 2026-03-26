@@ -207,6 +207,8 @@ function isWinningBet(match, tip){
 // ===== 🔥 NOVÉ: VYHODNOCENÍ VŠECH TIKETŮ =====
 async function evaluateBets(match){
 
+ console.log("MATCH PRO VYHODNOCENÍ:", match) // 👈 SEM TO DEJ
+
  const { data: bets } = await supabase
   .from("bets")
   .select("*")
@@ -217,6 +219,8 @@ async function evaluateBets(match){
  for(const bet of bets){
 
   const win = isWinningBet(match, bet.tip)
+
+  console.log("TIP:", bet.tip, "VÝSLEDEK:", getMatchResult(match), "WIN:", win) // 👈 BONUS LOG
 
   await supabase
    .from("bets")
