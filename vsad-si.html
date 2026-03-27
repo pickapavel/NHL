@@ -32,10 +32,7 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
  gap:5px;
 }
 
-.periods{
- font-size:14px;
- color:#ccc;
-}
+.periods{font-size:14px;color:#ccc;}
 
 .winTag{
  font-size:12px;
@@ -46,6 +43,13 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 }
 
 .betBox{background:#16394d;padding:20px;border-radius:15px;margin-bottom:25px;}
+
+.headerRow{
+ display:flex;
+ justify-content:space-between;
+ margin-bottom:10px;
+ font-weight:bold;
+}
 
 .odds{
  display:grid;
@@ -61,16 +65,22 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 
 .odd.active{background:#27ae60;color:white;}
 
-input{
- width:100%;padding:10px;border-radius:8px;
- border:none;margin-bottom:10px;
-}
-
-.info{
+.betRow{
  display:flex;
- justify-content:space-between;
+ align-items:center;
+ gap:10px;
  margin-bottom:15px;
 }
+
+.betRow input{
+ flex:1;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+}
+
+.kurz{min-width:120px;}
+.vyhra{margin-left:auto;}
 
 .betBtn{
  width:100%;height:45px;
@@ -78,9 +88,6 @@ input{
  border-radius:10px;color:white;
  font-size:16px;cursor:pointer;
 }
-
-.playerTitle{font-size:18px;font-weight:bold;margin-bottom:5px;}
-.credit{margin-bottom:10px;font-size:14px;color:#ddd;}
 
 .backBtn{
  width:100%;
@@ -123,15 +130,17 @@ input{
 
 <!-- KUBELE -->
 <div class="betBox">
-<div class="playerTitle">Kubele</div>
-<div class="credit" id="credit_kubele"></div>
+<div class="headerRow">
+<div>Kubele</div>
+<div id="credit_kubele"></div>
+</div>
 
 <div class="odds" id="odds_kubele"></div>
-<input id="amount_kubele">
 
-<div class="info">
-<div id="kurs_kubele"></div>
-<div id="vyhra_kubele"></div>
+<div class="betRow">
+<div class="kurz" id="kurs_kubele">Kurz: -</div>
+<input id="amount_kubele" placeholder="Kč">
+<div class="vyhra" id="vyhra_kubele">-</div>
 </div>
 
 <button class="betBtn" onclick="placeBet('kubele')">VSADIT</button>
@@ -139,21 +148,23 @@ input{
 
 <!-- PICI -->
 <div class="betBox">
-<div class="playerTitle">Pici</div>
-<div class="credit" id="credit_pici"></div>
+<div class="headerRow">
+<div>Pici</div>
+<div id="credit_pici"></div>
+</div>
 
 <div class="odds" id="odds_pici"></div>
-<input id="amount_pici">
 
-<div class="info">
-<div id="kurs_pici"></div>
-<div id="vyhra_pici"></div>
+<div class="betRow">
+<div class="kurz" id="kurs_pici">Kurz: -</div>
+<input id="amount_pici" placeholder="Kč">
+<div class="vyhra" id="vyhra_pici">-</div>
 </div>
 
 <button class="betBtn" onclick="placeBet('pici')">VSADIT</button>
 </div>
 
-<button class="backBtn" onclick="window.location.href='elh.html'">
+<button class="backBtn" onclick="window.location.href='./elh.html'">
 Zpět na rozpis
 </button>
 
@@ -177,7 +188,6 @@ let state = {
  pici:{selected:[]}
 }
 
-// ===== ODDS =====
 function calculateOdds(homeRating, awayRating){
  const HOME_ADV = 80
  const homeAdj = homeRating + HOME_ADV
@@ -206,7 +216,6 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// ===== LOAD =====
 async function load(){
 
  const { data: match } = await supabase.from("matches").select("*").eq("id", matchId).single()
@@ -221,13 +230,11 @@ async function load(){
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
  if(match.played){
-
   document.getElementById("score").innerText =
    `${match.home_score} : ${match.away_score}`
 
   if(match.stats){
     const s = JSON.parse(match.stats)
-
     document.getElementById("periods").innerText =
      `(${s[16]||0}:${s[6]||0}, ${s[17]||0}:${s[7]||0}, ${s[18]||0}:${s[8]||0})`
   }
@@ -246,7 +253,6 @@ async function load(){
  await loadExistingBets(match)
 }
 
-// ===== PLAYERS =====
 async function loadPlayers(){
  const { data } = await supabase.from("players").select("*")
 
@@ -260,7 +266,6 @@ async function loadPlayers(){
   "Kredit: " + Math.round(players.pici.credit) + " Kč"
 }
 
-// ===== ODDS =====
 function renderOdds(playerKey){
 
  const cont = document.getElementById("odds_"+playerKey)
@@ -292,7 +297,6 @@ function renderOdds(playerKey){
  })
 }
 
-// ===== UPDATE =====
 function updateSummary(playerKey){
 
  const amount = Number(document.getElementById("amount_"+playerKey).value)
@@ -308,14 +312,13 @@ function updateSummary(playerKey){
 
  if(amount){
   document.getElementById("vyhra_"+playerKey).innerText =
-   "Možná výhra: " + Math.round(amount * combinedOdds) + " Kč"
+   Math.round(amount * combinedOdds) + " Kč"
  }
 }
 
 document.getElementById("amount_kubele").oninput = ()=>updateSummary("kubele")
 document.getElementById("amount_pici").oninput = ()=>updateSummary("pici")
 
-// ===== EXISTING BETS =====
 async function loadExistingBets(match){
 
  const { data: bets } = await supabase
@@ -348,16 +351,15 @@ async function loadExistingBets(match){
   if(match.played){
     document.getElementById("vyhra_"+playerKey).innerText =
       bet.status === "won"
-      ? `Vyhrál jsi ${Math.round(bet.potential_win)} Kč!`
-      : `Prohrál jsi (${bet.amount} Kč)`
+      ? `Vyhrál ${Math.round(bet.potential_win)} Kč`
+      : `Prohrál (${bet.amount} Kč)`
   }else{
     document.getElementById("vyhra_"+playerKey).innerText =
-      `Možná výhra: ${Math.round(bet.potential_win)} Kč`
+      `${Math.round(bet.potential_win)} Kč`
   }
  })
 }
 
-// ===== BET =====
 window.placeBet = async function(playerKey){
 
  const amount = Number(document.getElementById("amount_"+playerKey).value)
