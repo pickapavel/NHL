@@ -87,34 +87,42 @@ const matchId = params.get("id")
 let selectedOdds = null
 let selectedType = null
 
+// 🔥 NOVÝ VÝPOČET KURZŮ
 function calculateOdds(homeRating, awayRating){
 
  const HOME_ADV = 80
- const DRAW_PROB = 0.2
 
  const homeAdj = homeRating + HOME_ADV
+ const diff = Math.abs(homeAdj - awayRating)
 
- const probHome = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
- const probAway = 1 - probHome
+ // 🔥 dynamická remíza (čím menší rozdíl, tím větší)
+ let drawProb = 0.25 * Math.exp(-diff / 400)
 
- const probHomeTotal = probHome * (1 - DRAW_PROB)
- const probAwayTotal = probAway * (1 - DRAW_PROB)
- const probDraw = DRAW_PROB
+ // clamp (aby nebyla extrémní)
+ drawProb = Math.max(0.10, Math.min(0.30, drawProb))
 
- const probHomeOT = probDraw * probHome
- const probAwayOT = probDraw * probAway
+ const probHomeRaw = 1 / (1 + Math.pow(10, (awayRating - homeAdj)/400))
+ const probAwayRaw = 1 - probHomeRaw
+
+ // rozděl zbytek mimo remízu
+ const probHome = probHomeRaw * (1 - drawProb)
+ const probAway = probAwayRaw * (1 - drawProb)
+
+ const probHomeOT = drawProb * probHomeRaw
+ const probAwayOT = drawProb * probAwayRaw
 
  return {
-  "1": 1/probHomeTotal,
-  "0": 1/probDraw,
-  "2": 1/probAwayTotal,
+  "1": 1/probHome,
+  "0": 1/drawProb,
+  "2": 1/probAway,
   "10": 1/probHomeOT,
   "02": 1/probAwayOT,
-  "11": 1/(probHomeTotal + probHomeOT),
-  "22": 1/(probAwayTotal + probAwayOT)
+  "11": 1/(probHome + probHomeOT),
+  "22": 1/(probAway + probAwayOT)
  }
 }
 
+// ===== LOGIKA SÁZEK =====
 function isWinningBet(match, tip){
 
  const type = match.result_type
