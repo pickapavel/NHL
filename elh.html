@@ -11,7 +11,7 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-/* 🔥 HEADER - odstraněn obrázek */
+/* HEADER */
 .headerBar{
  display:flex;
  justify-content:center;
@@ -47,7 +47,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* 🔥 MATCH MOBILE FIRST */
+/* MATCH MOBILE */
 .matchRow{
  background:#e9ecef;
  padding:12px;
@@ -78,7 +78,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:18px;font-weight:bold;
  padding:6px 10px;
  border-radius:6px;
- min-width:40px;
+ min-width:45px; /* 🔥 FIX stejné šířky */
  text-align:center;
 }
 
@@ -123,19 +123,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* 🔥 DESKTOP návrat gridu */
+/* DESKTOP */
 @media(min-width:768px){
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 80px 180px 80px 1fr 120px;
+ grid-template-columns:1fr 70px 180px 70px 1fr 120px; /* 🔥 FIX stejné sloupce */
  align-items:center;
 }
 
 .teamLine{display:contents;}
 
-.btnWrap{
- flex-direction:column;
+.scoreBox{
+ min-width:70px; /* 🔥 sjednocení */
 }
 
 }
@@ -273,7 +273,9 @@ function renderTable(matches, teamMap, teams){
      <div class="teamName">${team.name}</div>
      <div class="teamStats">
       Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-      Z ${t.z} | V ${t.v} | P ${t.p}
+      Z ${t.z} | V ${t.v} | P ${t.p} |
+      VP ${t.vp} | PP ${t.pp} |
+      VSN ${t.vsn} | PSN ${t.psn}
      </div>
     </div>
    </div>
