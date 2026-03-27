@@ -7,24 +7,91 @@
 
 <style>
 body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
-.wrapper{max-width:500px;margin:auto;padding:20px;}
+.wrapper{max-width:1000px;margin:auto;padding:20px;}
+
 .matchBox{text-align:center;margin-bottom:20px;}
-.teams{display:flex;justify-content:space-between;align-items:center;}
-.team{width:40%;text-align:center;}
-.team img{width:70px;height:70px;background:white;border-radius:10px;padding:5px;}
+
+.teams{
+ display:grid;
+ grid-template-columns:1fr 200px 1fr;
+ align-items:center;
+}
+
+.team{text-align:center;}
+.team img{
+ width:70px;height:70px;background:white;
+ border-radius:10px;padding:5px;
+}
+
 .score{font-size:40px;font-weight:bold;}
 
+.middleBox{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:5px;
+}
+
+.periods{
+ font-size:14px;
+ color:#ccc;
+}
+
+.winTag{
+ font-size:12px;
+ font-weight:bold;
+ background:#2f9ec9;
+ padding:4px 10px;
+ border-radius:10px;
+}
+
 .betBox{background:#16394d;padding:20px;border-radius:15px;margin-bottom:25px;}
-.odds{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:15px;}
-.odd{background:#eee;color:black;padding:10px;border-radius:8px;text-align:center;cursor:pointer;font-weight:bold;font-size:12px;}
+
+.odds{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:6px;margin-bottom:15px;
+}
+
+.odd{
+ background:#eee;color:black;padding:10px;
+ border-radius:8px;text-align:center;
+ cursor:pointer;font-weight:bold;font-size:12px;
+}
+
 .odd.active{background:#27ae60;color:white;}
 
-input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
-.info{display:flex;justify-content:space-between;margin-bottom:15px;}
-.betBtn{width:100%;height:45px;background:#27ae60;border:none;border-radius:10px;color:white;font-size:16px;cursor:pointer;}
+input{
+ width:100%;padding:10px;border-radius:8px;
+ border:none;margin-bottom:10px;
+}
+
+.info{
+ display:flex;
+ justify-content:space-between;
+ margin-bottom:15px;
+}
+
+.betBtn{
+ width:100%;height:45px;
+ background:#27ae60;border:none;
+ border-radius:10px;color:white;
+ font-size:16px;cursor:pointer;
+}
 
 .playerTitle{font-size:18px;font-weight:bold;margin-bottom:5px;}
 .credit{margin-bottom:10px;font-size:14px;color:#ddd;}
+
+.backBtn{
+ width:100%;
+ height:45px;
+ background:#2f9ec9;
+ border:none;
+ border-radius:10px;
+ color:white;
+ font-size:16px;
+ cursor:pointer;
+}
 </style>
 </head>
 
@@ -34,29 +101,37 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="matchBox">
 <div class="teams">
+
 <div class="team">
 <img id="homeLogo">
 <div id="homeName"></div>
 </div>
+
+<div class="middleBox">
 <div class="score" id="score">- : -</div>
+<div class="periods" id="periods"></div>
+<div class="winTag" id="tag"></div>
+</div>
+
 <div class="team">
 <img id="awayLogo">
 <div id="awayName"></div>
 </div>
+
 </div>
 </div>
 
 <!-- KUBELE -->
 <div class="betBox">
 <div class="playerTitle">Kubele</div>
-<div class="credit" id="credit_kubele">Kredit: -</div>
+<div class="credit" id="credit_kubele"></div>
 
 <div class="odds" id="odds_kubele"></div>
 <input id="amount_kubele">
 
 <div class="info">
-<div id="kurs_kubele">Kurz: -</div>
-<div id="vyhra_kubele">Možná výhra: -</div>
+<div id="kurs_kubele"></div>
+<div id="vyhra_kubele"></div>
 </div>
 
 <button class="betBtn" onclick="placeBet('kubele')">VSADIT</button>
@@ -65,18 +140,22 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 <!-- PICI -->
 <div class="betBox">
 <div class="playerTitle">Pici</div>
-<div class="credit" id="credit_pici">Kredit: -</div>
+<div class="credit" id="credit_pici"></div>
 
 <div class="odds" id="odds_pici"></div>
 <input id="amount_pici">
 
 <div class="info">
-<div id="kurs_pici">Kurz: -</div>
-<div id="vyhra_pici">Možná výhra: -</div>
+<div id="kurs_pici"></div>
+<div id="vyhra_pici"></div>
 </div>
 
 <button class="betBtn" onclick="placeBet('pici')">VSADIT</button>
 </div>
+
+<button class="backBtn" onclick="window.location.href='elh.cz'">
+Zpět na rozpis
+</button>
 
 </div>
 
@@ -141,10 +220,21 @@ async function load(){
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
- // 🔥 OPRAVA – zobrazení skóre
  if(match.played){
+
   document.getElementById("score").innerText =
    `${match.home_score} : ${match.away_score}`
+
+  if(match.stats){
+    const s = JSON.parse(match.stats)
+
+    document.getElementById("periods").innerText =
+     `(${s[16]||0}:${s[6]||0}, ${s[17]||0}:${s[7]||0}, ${s[18]||0}:${s[8]||0})`
+  }
+
+  if(match.result_type){
+    document.getElementById("tag").innerText = match.result_type
+  }
  }
 
  oddsGlobal = calculateOdds(home.rating_form, away.rating_form)
@@ -164,10 +254,10 @@ async function loadPlayers(){
  players.pici = data.find(p=>p.name==="Pici")
 
  document.getElementById("credit_kubele").innerText =
-  "Kredit: " + players.kubele.credit + " Kč"
+  "Kredit: " + Math.round(players.kubele.credit) + " Kč"
 
  document.getElementById("credit_pici").innerText =
-  "Kredit: " + players.pici.credit + " Kč"
+  "Kredit: " + Math.round(players.pici.credit) + " Kč"
 }
 
 // ===== ODDS =====
@@ -218,7 +308,7 @@ function updateSummary(playerKey){
 
  if(amount){
   document.getElementById("vyhra_"+playerKey).innerText =
-   "Možná výhra: " + (amount * combinedOdds).toFixed(0) + " Kč"
+   "Možná výhra: " + Math.round(amount * combinedOdds) + " Kč"
  }
 }
 
@@ -258,11 +348,11 @@ async function loadExistingBets(match){
   if(match.played){
     document.getElementById("vyhra_"+playerKey).innerText =
       bet.status === "won"
-      ? `Vyhrál jsi ${bet.potential_win.toFixed(0)} Kč!`
+      ? `Vyhrál jsi ${Math.round(bet.potential_win)} Kč!`
       : `Prohrál jsi (${bet.amount} Kč)`
   }else{
     document.getElementById("vyhra_"+playerKey).innerText =
-      `Možná výhra: ${bet.potential_win.toFixed(0)} Kč`
+      `Možná výhra: ${Math.round(bet.potential_win)} Kč`
   }
  })
 }
