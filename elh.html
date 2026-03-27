@@ -120,16 +120,15 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* 🔥 DESKTOP – čistý stabilní grid */
+/* 🔥 DESKTOP */
 @media(min-width:768px){
 
 .matchRow{
  display:grid;
  grid-template-columns: 1fr 80px 180px 80px 1fr 120px;
- align-items:center;
+ align-items:start; /* 🔥 KLÍČOVÝ FIX */
 }
 
-/* RESET mobile layout */
 .teamLine{
  display:contents;
 }
@@ -137,21 +136,25 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 /* LEFT TEAM */
 .teamLine:first-child .teamBox{
  grid-column:1;
+ align-self:start;
 }
 
 /* LEFT SCORE */
 .teamLine:first-child .scoreBox{
  grid-column:2;
+ align-self:start;
 }
 
 /* MIDDLE */
 .middleBox{
  grid-column:3;
+ align-self:start;
 }
 
 /* RIGHT SCORE */
 .teamLine:nth-child(3) .scoreBox{
  grid-column:4;
+ align-self:start;
 }
 
 /* RIGHT TEAM */
@@ -159,11 +162,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  grid-column:5;
  justify-content:flex-end;
  text-align:right;
+ align-self:start;
 }
 
 /* BUTTONS */
 .btnWrap{
  grid-column:6;
+ align-self:start; /* 🔥 FIX tlačítek nahoru */
 }
 
 .scoreBox{
@@ -234,7 +239,6 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
-/* TABULKA (beze změny logiky, jen full stats) */
 function renderTable(matches, teamMap, teams){
 
  let table = {}
