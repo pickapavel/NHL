@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
- 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Extraliga</title>
@@ -10,107 +9,135 @@
 *{box-sizing:border-box}
 
 body{font-family:Arial;margin:0;background:#f2f2f2;}
-.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
+/* 🔥 HEADER - odstraněn obrázek */
 .headerBar{
- display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:12px;padding:20px;margin-bottom:25px;
+ display:flex;
+ justify-content:center;
+ margin-bottom:20px;
 }
-
-.headerBar img{height:110px;}
 
 .seasonCard{
- background:#0b2a3c;color:white;font-size:26px;
- padding:14px 28px;border-radius:10px;
+ background:#0b2a3c;color:white;font-size:22px;
+ padding:10px 20px;border-radius:10px;
 }
 
+/* TABULKA */
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
- background:#e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:10px;
+ background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:8px;
 }
 
 .rank{width:30px;font-weight:bold;text-align:center;}
 
-.teamBlock{display:flex;align-items:center;gap:14px;flex:1;}
+.teamBlock{display:flex;align-items:center;gap:10px;flex:1;}
 
 .logo{
- width:50px;height:50px;object-fit:contain;
+ width:45px;height:45px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
 }
 
 .teamInfo{display:flex;flex-direction:column;}
-.teamName{font-weight:bold;white-space:nowrap;}
-.teamStats{font-size:13px;color:#444;}
+.teamName{font-weight:bold;font-size:14px;}
+.teamStats{font-size:12px;color:#444;}
 
 .pointsBox{
- background:#0b2a3c;color:white;font-size:20px;font-weight:bold;
- padding:10px 16px;border-radius:8px;min-width:60px;text-align:center;
+ background:#0b2a3c;color:white;font-size:18px;font-weight:bold;
+ padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* NOVÝ GRID */
+/* 🔥 MATCH MOBILE FIRST */
 .matchRow{
- display:grid;
- grid-template-columns:1fr 80px 180px 80px 1fr 120px;
- align-items:center;background:#e9ecef;
- padding:10px;margin-bottom:5px;border-radius:6px;gap:6px;
+ background:#e9ecef;
+ padding:12px;
+ margin-bottom:8px;
+ border-radius:10px;
+
+ display:flex;
+ flex-direction:column;
+ gap:10px;
 }
 
-.teamBox{display:flex;align-items:center;gap:10px;font-weight:bold;}
-.teamRight{justify-content:flex-end;}
+.teamLine{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+}
+
+.teamBox{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ font-weight:bold;
+ font-size:14px;
+}
 
 .scoreBox{
  background:#0b2a3c;color:white;
- font-size:20px;font-weight:bold;
- padding:8px 0;border-radius:6px;text-align:center;
+ font-size:18px;font-weight:bold;
+ padding:6px 10px;
+ border-radius:6px;
+ min-width:40px;
+ text-align:center;
 }
 
 .middleBox{
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- gap:4px;
+ text-align:center;
+ font-size:12px;
 }
 
-.periods{
- font-size:13px;
- color:#333;
-}
+.periods{color:#333;}
 
 .winTag{
- font-size:12px;
+ font-size:11px;
  font-weight:bold;
  color:#fff;
  background:#2f9ec9;
- padding:3px 8px;
- border-radius:8px;
+ padding:3px 6px;
+ border-radius:6px;
+ display:inline-block;
+ margin-top:3px;
 }
 
+/* BUTTONY */
 .btn{
  border:none;
  border-radius:6px;
  cursor:pointer;
  width:100%;
- margin-top:5px;
  font-weight:bold;
-
- height:40px;
+ height:38px;
  display:flex;
  align-items:center;
  justify-content:center;
- padding:0;
-
- font-size:14px; /* 🔥 jednotné */
+ font-size:14px;
 }
 
-.detailBtn{
- background:#2f9ec9;
- color:white;
+.detailBtn{background:#2f9ec9;color:white;}
+.betBtn{background:#27ae60;color:white;}
+
+.btnWrap{
+ display:flex;
+ flex-direction:column;
+ gap:6px;
 }
 
-.betBtn{
- background:#27ae60;
- color:white;
+/* 🔥 DESKTOP návrat gridu */
+@media(min-width:768px){
+
+.matchRow{
+ display:grid;
+ grid-template-columns:1fr 80px 180px 80px 1fr 120px;
+ align-items:center;
+}
+
+.teamLine{display:contents;}
+
+.btnWrap{
+ flex-direction:column;
+}
+
 }
 </style>
 </head>
@@ -120,7 +147,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <div class="wrapper">
 
 <div class="headerBar">
-<img src="img/extraliga.jpg">
 <div class="seasonCard">Extraliga</div>
 </div>
 
@@ -247,9 +273,7 @@ function renderTable(matches, teamMap, teams){
      <div class="teamName">${team.name}</div>
      <div class="teamStats">
       Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-      Z ${t.z} | V ${t.v} | P ${t.p} |
-      VP ${t.vp} | PP ${t.pp} |
-      VSN ${t.vsn} | PSN ${t.psn}
+      Z ${t.z} | V ${t.v} | P ${t.p}
      </div>
     </div>
    </div>
@@ -261,7 +285,6 @@ function renderTable(matches, teamMap, teams){
 
 }
 
-// NOVÝ RENDER
 function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
@@ -291,9 +314,6 @@ function render(matches, teamMap){
 
     periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
 
-    const hg = Number(m.home_score||0)
-    const ag = Number(m.away_score||0)
-
     const isSN = stats[20] === "1" || stats[20] === "2"
     const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
 
@@ -307,36 +327,38 @@ function render(matches, teamMap){
   cont.innerHTML+=`
   <div class="matchRow">
 
-   <div class="teamBox">
-    <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name}</div>
-   </div>
+    <div class="teamLine">
+      <div class="teamBox">
+        <img class="logo" src="./logos/${home.logo}">
+        <div>${home.name}</div>
+      </div>
+      <div class="scoreBox">${homeScore}</div>
+    </div>
 
-   <div class="scoreBox">${homeScore}</div>
+    <div class="middleBox">
+      <div class="periods">${periods}</div>
+      ${tag ? `<div class="winTag">${tag}</div>` : ``}
+    </div>
 
-   <div class="middleBox">
-     <div class="periods">${periods}</div>
-     ${tag ? `<div class="winTag">${tag}</div>` : ``}
-   </div>
+    <div class="teamLine">
+      <div class="teamBox">
+        <img class="logo" src="./logos/${away.logo}">
+        <div>${away.name}</div>
+      </div>
+      <div class="scoreBox">${awayScore}</div>
+    </div>
 
-   <div class="scoreBox">${awayScore}</div>
+    <div class="btnWrap">
+      <button class="btn detailBtn"
+        onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+        Detail
+      </button>
 
-   <div class="teamBox teamRight">
-    <div>${away.name}</div>
-    <img class="logo" src="./logos/${away.logo}">
-   </div>
-
-   <div>
-    <button class="btn detailBtn"
-     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-     Detail
-    </button>
-
-   <button class="btn betBtn"
-   onclick="window.location.href='vsad-si.html?id=${m.id}&home=${encodeURIComponent(home.name)}&away=${encodeURIComponent(away.name)}&hlogo=${home.logo}&alogo=${away.logo}'">
-   Vsaď si
-   </button>
-   </div>
+      <button class="btn betBtn"
+        onclick="window.location.href='vsad-si.html?id=${m.id}'">
+        Vsaď si
+      </button>
+    </div>
 
   </div>
   `
