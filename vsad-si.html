@@ -63,7 +63,7 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="info">
 <div id="kurs">Kurz: -</div>
-<div id="vyhra">Výhra: -</div>
+<div id="vyhra">Možná výhra: -</div>
 </div>
 
 <button class="betBtn">VSADIT</button>
@@ -115,7 +115,6 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// 🔥 SPRÁVNÁ LOGIKA
 function isWinningBet(match, tip){
 
  const type = match.result_type
@@ -140,25 +139,6 @@ function isWinningBet(match, tip){
  return false
 }
 
-// 🔥 OPRAVENO
-async function evaluateBets(match){
-
- const { data: bets } = await supabase
-  .from("bets")
-  .select("*")
-  .eq("match_id", match.id)
-
- for(const bet of bets){
-
-  const win = isWinningBet(match, bet.tip)
-
-  await supabase
-   .from("bets")
-   .update({ status: win ? "won" : "lost" })
-   .eq("id", bet.id)
- }
-}
-
 async function load(){
 
  const { data: match } = await supabase
@@ -166,10 +146,6 @@ async function load(){
   .select("*")
   .eq("id", matchId)
   .single()
-
- if(match.played){
-  await evaluateBets(match)
- }
 
  const { data: teams } = await supabase
   .from("teams")
@@ -179,8 +155,8 @@ async function load(){
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
 
- document.getElementById("homeName").innerText = `${home.name} (${home.rating_form})`
- document.getElementById("awayName").innerText = `${away.name} (${away.rating_form})`
+ document.getElementById("homeName").innerText = home.name
+ document.getElementById("awayName").innerText = away.name
 
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
@@ -243,24 +219,29 @@ async function loadExistingBet(match){
 
   const win = isWinningBet(match, bet.tip)
 
-  let text = win
-   ? `✅ VYHRÁNO`
-   : `❌ PROHRÁNO`
+  if(win){
+   document.getElementById("vyhra").innerText =
+    `Vyhrál jsi ${bet.potential_win.toFixed(0)} Kč!`
+  }else{
+   document.getElementById("vyhra").innerText =
+    `Prohrál jsi (${bet.amount} Kč)`
+  }
 
+ }else{
   document.getElementById("vyhra").innerText =
-   text + " | " + bet.potential_win.toFixed(0) + " Kč"
+   `Možná výhra: ${bet.potential_win.toFixed(0)} Kč`
  }
 }
-
-document.getElementById("amount").oninput = updateWin
 
 function updateWin(){
  const amount = Number(document.getElementById("amount").value)
  if(!amount || !selectedOdds) return
 
  document.getElementById("vyhra").innerText =
-  "Výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
+  "Možná výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
 }
+
+document.getElementById("amount").oninput = updateWin
 
 document.querySelector(".betBtn").onclick = async () => {
 
