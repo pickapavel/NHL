@@ -1,1 +1,300 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Zápisy zápasů</title>
 
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+ margin-top:20px;
+}
+
+th,td{
+ border:1px solid #ccc;
+ padding:8px;
+ text-align:center;
+}
+
+td:nth-child(2),
+td:nth-child(3){
+ text-align:left;
+}
+
+th{
+ background:black;
+ color:yellow;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Zápisy zápasů</h1>
+
+<table>
+<thead>
+<tr>
+<th>Kolo</th>
+<th>Domácí</th>
+<th>Hosté</th>
+<th>Skóre</th>
+<th>Soubor</th>
+<th>Akce</th>
+</tr>
+</thead>
+<tbody id="matchesTable"></tbody>
+</table>
+
+</div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+let teamsMap = {}
+let filesMap = {}
+
+// ===== LOAD =====
+async function load(){
+
+ const { data: teams } = await supabase.from("teams").select("*")
+ const { data: matches } = await supabase
+  .from("matches")
+  .select("*")
+  .order("round", { ascending:true })
+
+ teams.forEach(t=> teamsMap[t.id] = t.name)
+
+ render(matches)
+}
+
+// ===== RENDER =====
+function render(matches){
+
+ const cont = document.getElementById("matchesTable")
+ cont.innerHTML=""
+
+ matches.forEach(m=>{
+
+  let suffix = ""
+  if(m.result_type === "SN") suffix = " SN"
+  else if(m.result_type === "OT") suffix = " OT"
+
+  cont.innerHTML += `
+  <tr>
+    <td>${m.round}</td>
+    <td>${teamsMap[m.home_team]}</td>
+    <td>${teamsMap[m.away_team]}</td>
+    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}${suffix}</td>
+
+    <td>
+      <input type="file" onchange="handleFile(event,'${m.id}')">
+    </td>
+
+    <td>
+      <button onclick="saveMatch('${m.id}')">Uložit</button>
+      <button onclick="resetMatch('${m.id}')">Zrušit</button>
+    </td>
+  </tr>
+  `
+ })
+}
+
+// ===== FILE =====
+window.handleFile = function(e, matchId){
+
+ const reader = new FileReader()
+
+ reader.onload = ev=>{
+  filesMap[matchId] = ev.target.result.split(/\r?\n/)
+ }
+
+ reader.readAsText(e.target.files[0])
+}
+
+// ===== SCORE =====
+function calculateScore(lines){
+
+ let ag =
+  Number(lines[6]||0) +
+  Number(lines[7]||0) +
+  Number(lines[8]||0)
+
+ let hg =
+  Number(lines[16]||0) +
+  Number(lines[17]||0) +
+  Number(lines[18]||0)
+
+ const otHome = lines[9]
+ const otAway = lines[19]
+ const shootout = lines[20]
+
+ if(otHome === "11") hg++
+ if(otAway === "11") ag++
+
+ if(shootout === "1") hg++
+ if(shootout === "2") ag++
+
+ return {hg, ag}
+}
+
+// ===== RESULT TYPE =====
+function getResultType(lines){
+
+ const isSN = lines[20] === "1" || lines[20] === "2"
+ const isOT = !isSN && (lines[9] === "11" || lines[19] === "11")
+
+ if(isSN) return "SN"
+ if(isOT) return "OT"
+ return "REG"
+}
+
+// ===== SINGLE TIP CHECK =====
+function checkSingleTip(match, tip){
+
+ const type = match.result_type
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ const homeWin = hg > ag
+ const awayWin = ag > hg
+
+ switch(tip){
+
+  case "1": return homeWin && type === "REG"
+  case "2": return awayWin && type === "REG"
+  case "0": return type !== "REG"
+
+  case "10": return homeWin && (type === "OT" || type === "SN")
+  case "02": return awayWin && (type === "OT" || type === "SN")
+
+  case "11": return homeWin
+  case "22": return awayWin
+ }
+
+ return false
+}
+
+// ===== MULTI TIP CHECK (🔥 FIX) =====
+function isWinningBet(match, tip){
+
+ const tips = tip.includes(",") ? tip.split(",") : [tip]
+
+ // 🔥 všechny musí být true
+ return tips.every(t => checkSingleTip(match, t))
+}
+
+// ===== EVALUATE =====
+async function evaluateBets(match){
+
+ const { data: bets } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", match.id)
+
+ if(!bets) return
+
+ for(const bet of bets){
+
+  const win = isWinningBet(match, bet.tip)
+
+  await supabase
+   .from("bets")
+   .update({
+    status: win ? "won" : "lost"
+   })
+   .eq("id", bet.id)
+
+  if(win){
+    const { data: player } = await supabase
+     .from("players")
+     .select("*")
+     .eq("id", bet.player_id)
+     .single()
+
+    if(player){
+      await supabase
+       .from("players")
+       .update({
+        credit: Number(player.credit) + Number(bet.potential_win)
+       })
+       .eq("id", player.id)
+    }
+  }
+ }
+}
+
+// ===== SAVE =====
+window.saveMatch = async function(matchId){
+
+ const lines = filesMap[matchId]
+
+ if(!lines){
+  alert("Nahraj soubor")
+  return
+ }
+
+ const score = calculateScore(lines)
+ const resultType = getResultType(lines)
+
+ await supabase
+  .from("matches")
+  .update({
+   home_score: score.hg,
+   away_score: score.ag,
+   played: true,
+   stats: JSON.stringify(lines),
+   result_type: resultType
+  })
+  .eq("id", matchId)
+
+ const { data: fullMatch } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
+
+ await evaluateBets(fullMatch)
+
+ alert("Uloženo 👍")
+ load()
+}
+
+// ===== RESET =====
+window.resetMatch = async function(matchId){
+
+ if(!confirm("Opravdu zrušit zápas?")) return
+
+ await supabase
+  .from("matches")
+  .update({
+   home_score: null,
+   away_score: null,
+   played: false,
+   stats: null,
+   result_type: null
+  })
+  .eq("id", matchId)
+
+ alert("Zápas zrušen 👍")
+ load()
+}
+
+load()
+
+</script>
+
+</body>
+</html>
