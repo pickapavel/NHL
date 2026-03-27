@@ -32,7 +32,6 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 
 <div class="wrapper">
 
-<!-- MATCH -->
 <div class="matchBox">
 <div class="teams">
 
@@ -51,8 +50,8 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 </div>
 </div>
 
-<!-- ===== KUBELE ===== -->
-<div class="betBox" id="box_kubele">
+<!-- KUBELE -->
+<div class="betBox">
 <div class="playerTitle">Kubele</div>
 <div class="credit" id="credit_kubele">Kredit: -</div>
 
@@ -69,8 +68,8 @@ input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 <button class="betBtn" onclick="placeBet('kubele')">VSADIT</button>
 </div>
 
-<!-- ===== PICI ===== -->
-<div class="betBox" id="box_pici">
+<!-- PICI -->
+<div class="betBox">
 <div class="playerTitle">Pici</div>
 <div class="credit" id="credit_pici">Kredit: -</div>
 
@@ -180,7 +179,7 @@ async function loadPlayers(){
   "Kredit: " + players.pici.credit + " Kč"
 }
 
-// ===== ODDS RENDER =====
+// ===== ODDS =====
 function renderOdds(playerKey, odds){
 
  const cont = document.getElementById("odds_"+playerKey)
@@ -269,15 +268,30 @@ window.placeBet = async function(playerKey){
 
  const amount = Number(document.getElementById("amount_"+playerKey).value)
  const s = state[playerKey]
+ const player = players[playerKey]
 
  if(!amount || !s.selectedOdds || !s.selectedType){
   alert("Vyber sázku a částku")
   return
  }
 
+ if(player.credit < amount){
+  alert("Nedostatek kreditu")
+  return
+ }
+
+ // 🔥 odečtení kreditu
+ await supabase
+  .from("players")
+  .update({
+   credit: player.credit - amount
+  })
+  .eq("id", player.id)
+
+ // uložení sázky
  await supabase.from("bets").insert({
   match_id: matchId,
-  player_id: players[playerKey].id,
+  player_id: player.id,
   tip: s.selectedType,
   amount: amount,
   odds: s.selectedOdds,
