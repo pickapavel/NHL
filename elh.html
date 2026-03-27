@@ -120,52 +120,54 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* 🔥 DESKTOP FIX */
+/* 🔥 DESKTOP – čistý stabilní grid */
 @media(min-width:768px){
 
 .matchRow{
  display:grid;
- grid-template-columns: 1fr 70px 180px 70px 1fr 120px;
+ grid-template-columns: 1fr 80px 180px 80px 1fr 120px;
  align-items:center;
 }
 
-/* LEVÝ TÝM */
-.matchRow > .teamLine:first-child{
- grid-column:1 / 2;
- display:flex;
- justify-content:space-between;
+/* RESET mobile layout */
+.teamLine{
+ display:contents;
 }
 
-/* LEVÉ SKÓRE */
-.matchRow > .teamLine:first-child .scoreBox{
- grid-column:2 / 3;
+/* LEFT TEAM */
+.teamLine:first-child .teamBox{
+ grid-column:1;
+}
+
+/* LEFT SCORE */
+.teamLine:first-child .scoreBox{
+ grid-column:2;
 }
 
 /* MIDDLE */
-.matchRow > .middleBox{
- grid-column:3 / 4;
+.middleBox{
+ grid-column:3;
 }
 
-/* PRAVÉ SKÓRE */
-.matchRow > .teamLine:nth-child(3) .scoreBox{
- grid-column:4 / 5;
+/* RIGHT SCORE */
+.teamLine:nth-child(3) .scoreBox{
+ grid-column:4;
 }
 
-/* PRAVÝ TÝM */
-.matchRow > .teamLine:nth-child(3){
- grid-column:5 / 6;
- display:flex;
- justify-content:flex-start;
- gap:10px;
+/* RIGHT TEAM */
+.teamLine:nth-child(3) .teamBox{
+ grid-column:5;
+ justify-content:flex-end;
+ text-align:right;
 }
 
-/* BUTTONY */
-.matchRow > .btnWrap{
- grid-column:6 / 7;
+/* BUTTONS */
+.btnWrap{
+ grid-column:6;
 }
 
 .scoreBox{
- min-width:70px;
+ min-width:80px;
 }
 
 }
@@ -232,6 +234,7 @@ async function load(){
  renderTable(safeMatches, teamMap, teams)
 }
 
+/* TABULKA (beze změny logiky, jen full stats) */
 function renderTable(matches, teamMap, teams){
 
  let table = {}
