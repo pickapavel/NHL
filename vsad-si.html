@@ -47,19 +47,53 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 
 .betBox{background:#16394d;padding:20px;border-radius:15px;margin-bottom:25px;}
 
+/* 🔥 HEADER NA JEDEN ŘÁDEK */
+.betHeader{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:10px;
+}
+
+.playerTitle{font-size:18px;font-weight:bold;}
+.credit{font-size:14px;color:#ddd;}
+
+/* 🔥 RESPONSIVE ODDS */
 .odds{
  display:grid;
- grid-template-columns:repeat(7,1fr);
- gap:6px;margin-bottom:15px;
+ grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+ gap:6px;
+ margin-bottom:15px;
 }
 
 .odd{
- background:#eee;color:black;padding:10px;
- border-radius:8px;text-align:center;
- cursor:pointer;font-weight:bold;font-size:12px;
+ background:#eee;
+ color:black;
+ padding:8px;
+ border-radius:8px;
+ text-align:center;
+ cursor:pointer;
+ font-weight:bold;
+ font-size:12px;
+ display:flex;
+ flex-direction:column;
+ line-height:1.2;
 }
 
-.odd.active{background:#27ae60;color:white;}
+.odd span{
+ font-size:11px;
+ font-weight:normal;
+ color:#333;
+}
+
+.odd.active{
+ background:#27ae60;
+ color:white;
+}
+
+.odd.active span{
+ color:#eaffea;
+}
 
 input{
  width:100%;padding:10px;border-radius:8px;
@@ -78,9 +112,6 @@ input{
  border-radius:10px;color:white;
  font-size:16px;cursor:pointer;
 }
-
-.playerTitle{font-size:18px;font-weight:bold;margin-bottom:5px;}
-.credit{margin-bottom:10px;font-size:14px;color:#ddd;}
 
 .backBtn{
  width:100%;
@@ -123,8 +154,11 @@ input{
 
 <!-- KUBELE -->
 <div class="betBox">
+
+<div class="betHeader">
 <div class="playerTitle">Kubele</div>
 <div class="credit" id="credit_kubele"></div>
+</div>
 
 <div class="odds" id="odds_kubele"></div>
 <input id="amount_kubele">
@@ -139,8 +173,11 @@ input{
 
 <!-- PICI -->
 <div class="betBox">
+
+<div class="betHeader">
 <div class="playerTitle">Pici</div>
 <div class="credit" id="credit_pici"></div>
+</div>
 
 <div class="odds" id="odds_pici"></div>
 <input id="amount_pici">
@@ -153,7 +190,7 @@ input{
 <button class="betBtn" onclick="placeBet('pici')">VSADIT</button>
 </div>
 
-<button class="backBtn" onclick="window.location.href='elh.cz'">
+<button class="backBtn" onclick="window.location.href='elh.html'">
 Zpět na rozpis
 </button>
 
@@ -271,7 +308,11 @@ function renderOdds(playerKey){
   const div = document.createElement("div")
   div.className="odd"
   div.dataset.type = type
-  div.innerText = type + " (" + o.toFixed(2) + ")"
+
+  div.innerHTML = `
+    ${type}
+    <span>(${o.toFixed(2)})</span>
+  `
 
   div.onclick = ()=>{
    const selected = state[playerKey].selected
