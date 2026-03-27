@@ -161,8 +161,8 @@ function getResultType(lines){
  return "REG"
 }
 
-// ===== BET EVALUATION =====
-function isWinningBet(match, tip){
+// ===== SINGLE TIP CHECK =====
+function checkSingleTip(match, tip){
 
  const type = match.result_type
  const hg = Number(match.home_score)
@@ -187,7 +187,16 @@ function isWinningBet(match, tip){
  return false
 }
 
-// ===== EVALUATE BETS + CREDIT =====
+// ===== MULTI TIP CHECK (🔥 FIX) =====
+function isWinningBet(match, tip){
+
+ const tips = tip.includes(",") ? tip.split(",") : [tip]
+
+ // 🔥 všechny musí být true
+ return tips.every(t => checkSingleTip(match, t))
+}
+
+// ===== EVALUATE =====
 async function evaluateBets(match){
 
  const { data: bets } = await supabase
@@ -201,7 +210,6 @@ async function evaluateBets(match){
 
   const win = isWinningBet(match, bet.tip)
 
-  // update status
   await supabase
    .from("bets")
    .update({
@@ -209,9 +217,7 @@ async function evaluateBets(match){
    })
    .eq("id", bet.id)
 
-  // 🔥 pokud vyhra → přičti kredit
   if(win){
-
     const { data: player } = await supabase
      .from("players")
      .select("*")
@@ -219,7 +225,6 @@ async function evaluateBets(match){
      .single()
 
     if(player){
-
       await supabase
        .from("players")
        .update({
