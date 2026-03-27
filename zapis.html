@@ -187,7 +187,7 @@ function isWinningBet(match, tip){
  return false
 }
 
-// ===== EVALUATE BETS =====
+// ===== EVALUATE BETS + CREDIT =====
 async function evaluateBets(match){
 
  const { data: bets } = await supabase
@@ -201,12 +201,33 @@ async function evaluateBets(match){
 
   const win = isWinningBet(match, bet.tip)
 
+  // update status
   await supabase
    .from("bets")
    .update({
     status: win ? "won" : "lost"
    })
    .eq("id", bet.id)
+
+  // 🔥 pokud vyhra → přičti kredit
+  if(win){
+
+    const { data: player } = await supabase
+     .from("players")
+     .select("*")
+     .eq("id", bet.player_id)
+     .single()
+
+    if(player){
+
+      await supabase
+       .from("players")
+       .update({
+        credit: Number(player.credit) + Number(bet.potential_win)
+       })
+       .eq("id", player.id)
+    }
+  }
  }
 }
 
@@ -230,7 +251,7 @@ window.saveMatch = async function(matchId){
    away_score: score.ag,
    played: true,
    stats: JSON.stringify(lines),
-   result_type: resultType // 🔥 KLÍČ
+   result_type: resultType
   })
   .eq("id", matchId)
 
