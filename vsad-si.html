@@ -13,14 +13,18 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 .team{width:40%;text-align:center;}
 .team img{width:70px;height:70px;background:white;border-radius:10px;padding:5px;}
 .score{font-size:40px;font-weight:bold;}
-.betBox{background:#16394d;padding:20px;border-radius:15px;}
+
+.betBox{background:#16394d;padding:20px;border-radius:15px;margin-bottom:25px;}
 .odds{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:15px;}
 .odd{background:#eee;color:black;padding:10px;border-radius:8px;text-align:center;cursor:pointer;font-weight:bold;font-size:12px;}
 .odd.active{background:#27ae60;color:white;}
-input, select{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
+
+input{width:100%;padding:10px;border-radius:8px;border:none;margin-bottom:10px;}
 .info{display:flex;justify-content:space-between;margin-bottom:15px;}
 .betBtn{width:100%;height:45px;background:#27ae60;border:none;border-radius:10px;color:white;font-size:16px;cursor:pointer;}
-.credit{margin-bottom:10px;font-size:14px;}
+
+.playerTitle{font-size:18px;font-weight:bold;margin-bottom:5px;}
+.credit{margin-bottom:10px;font-size:14px;color:#ddd;}
 </style>
 </head>
 
@@ -28,6 +32,7 @@ input, select{width:100%;padding:10px;border-radius:8px;border:none;margin-botto
 
 <div class="wrapper">
 
+<!-- MATCH -->
 <div class="matchBox">
 <div class="teams">
 
@@ -46,34 +51,40 @@ input, select{width:100%;padding:10px;border-radius:8px;border:none;margin-botto
 </div>
 </div>
 
-<div class="betBox">
-
-<h3>Hráč</h3>
-<select id="playerSelect"></select>
-
-<div class="credit" id="creditInfo">Kredit: -</div>
+<!-- ===== KUBELE ===== -->
+<div class="betBox" id="box_kubele">
+<div class="playerTitle">Kubele</div>
+<div class="credit" id="credit_kubele">Kredit: -</div>
 
 <h3>Vyber výsledek</h3>
+<div class="odds" id="odds_kubele"></div>
 
-<div class="odds">
-<div class="odd" data-type="1">1</div>
-<div class="odd" data-type="10">10</div>
-<div class="odd" data-type="11">11</div>
-<div class="odd" data-type="0">0</div>
-<div class="odd" data-type="22">22</div>
-<div class="odd" data-type="02">02</div>
-<div class="odd" data-type="2">2</div>
-</div>
-
-<input id="amount" placeholder="Částka (Kč)">
+<input id="amount_kubele" placeholder="Částka (Kč)">
 
 <div class="info">
-<div id="kurs">Kurz: -</div>
-<div id="vyhra">Možná výhra: -</div>
+<div id="kurs_kubele">Kurz: -</div>
+<div id="vyhra_kubele">Možná výhra: -</div>
 </div>
 
-<button class="betBtn">VSADIT</button>
+<button class="betBtn" onclick="placeBet('kubele')">VSADIT</button>
+</div>
 
+<!-- ===== PICI ===== -->
+<div class="betBox" id="box_pici">
+<div class="playerTitle">Pici</div>
+<div class="credit" id="credit_pici">Kredit: -</div>
+
+<h3>Vyber výsledek</h3>
+<div class="odds" id="odds_pici"></div>
+
+<input id="amount_pici" placeholder="Částka (Kč)">
+
+<div class="info">
+<div id="kurs_pici">Kurz: -</div>
+<div id="vyhra_pici">Možná výhra: -</div>
+</div>
+
+<button class="betBtn" onclick="placeBet('pici')">VSADIT</button>
 </div>
 
 </div>
@@ -90,13 +101,15 @@ const supabase = createClient(
 const params = new URLSearchParams(window.location.search)
 const matchId = params.get("id")
 
-let selectedOdds = null
-let selectedType = null
-let currentPlayer = null
+let matchData
+let players = {}
+let state = {
+ kubele:{selectedOdds:null,selectedType:null},
+ pici:{selectedOdds:null,selectedType:null}
+}
 
 // ===== ODDS =====
 function calculateOdds(homeRating, awayRating){
-
  const HOME_ADV = 80
  const homeAdj = homeRating + HOME_ADV
  const diff = Math.abs(homeAdj - awayRating)
@@ -124,130 +137,176 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// ===== LOAD PLAYERS =====
-async function loadPlayers(){
-
- const { data: players } = await supabase.from("players").select("*")
-
- const select = document.getElementById("playerSelect")
- select.innerHTML = ""
-
- players.forEach(p=>{
-  const opt = document.createElement("option")
-  opt.value = p.id
-  opt.textContent = p.name
-  select.appendChild(opt)
- })
-
- select.onchange = ()=>{
-  const id = select.value
-  currentPlayer = players.find(p=>p.id === id)
-  updateCredit()
- }
-
- currentPlayer = players[0]
- select.value = currentPlayer.id
- updateCredit()
-}
-
-function updateCredit(){
- document.getElementById("creditInfo").innerText =
-  "Kredit: " + currentPlayer.credit + " Kč"
-}
-
-// ===== LOAD MATCH =====
+// ===== LOAD =====
 async function load(){
 
- await loadPlayers()
+ const { data: match } = await supabase.from("matches").select("*").eq("id", matchId).single()
+ matchData = match
 
- const { data: match } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
-
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
-  .in("id", [match.home_team, match.away_team])
-
+ const { data: teams } = await supabase.from("teams").select("*")
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
 
  document.getElementById("homeName").innerText = home.name
  document.getElementById("awayName").innerText = away.name
-
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
+ if(match.played){
+  document.getElementById("score").innerText =
+   `${match.home_score} : ${match.away_score}`
+ }
+
  const odds = calculateOdds(home.rating_form, away.rating_form)
 
- document.querySelectorAll(".odd").forEach(btn=>{
-  const type = btn.dataset.type
+ renderOdds("kubele", odds)
+ renderOdds("pici", odds)
+
+ await loadPlayers()
+ await loadExistingBets()
+}
+
+// ===== PLAYERS =====
+async function loadPlayers(){
+ const { data } = await supabase.from("players").select("*")
+
+ players.kubele = data.find(p=>p.name==="Kubele")
+ players.pici = data.find(p=>p.name==="Pici")
+
+ document.getElementById("credit_kubele").innerText =
+  "Kredit: " + players.kubele.credit + " Kč"
+
+ document.getElementById("credit_pici").innerText =
+  "Kredit: " + players.pici.credit + " Kč"
+}
+
+// ===== ODDS RENDER =====
+function renderOdds(playerKey, odds){
+
+ const cont = document.getElementById("odds_"+playerKey)
+ cont.innerHTML=""
+
+ Object.keys(odds).forEach(type=>{
   const o = odds[type]
 
-  btn.innerText = type + " (" + o.toFixed(2) + ")"
+  const div = document.createElement("div")
+  div.className="odd"
+  div.innerText = type + " (" + o.toFixed(2) + ")"
 
-  btn.onclick = ()=>{
-   selectedOdds = o
-   selectedType = type
+  div.onclick = ()=>{
+   state[playerKey].selectedOdds = o
+   state[playerKey].selectedType = type
 
-   document.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
-   btn.classList.add("active")
+   cont.querySelectorAll(".odd").forEach(b=>b.classList.remove("active"))
+   div.classList.add("active")
 
-   document.getElementById("kurs").innerText = "Kurz: " + o.toFixed(2)
-   updateWin()
+   document.getElementById("kurs_"+playerKey).innerText = "Kurz: " + o.toFixed(2)
+   updateWin(playerKey)
   }
+
+  cont.appendChild(div)
  })
 }
 
 // ===== WIN =====
-function updateWin(){
- const amount = Number(document.getElementById("amount").value)
- if(!amount || !selectedOdds) return
+function updateWin(playerKey){
+ const amount = Number(document.getElementById("amount_"+playerKey).value)
+ const odds = state[playerKey].selectedOdds
 
- document.getElementById("vyhra").innerText =
-  "Možná výhra: " + (amount * selectedOdds).toFixed(0) + " Kč"
+ if(!amount || !odds) return
+
+ document.getElementById("vyhra_"+playerKey).innerText =
+  "Možná výhra: " + (amount * odds).toFixed(0) + " Kč"
 }
 
-document.getElementById("amount").oninput = updateWin
+document.getElementById("amount_kubele").oninput = ()=>updateWin("kubele")
+document.getElementById("amount_pici").oninput = ()=>updateWin("pici")
+
+// ===== EXISTING BETS =====
+async function loadExistingBets(){
+
+ const { data: bets } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", matchId)
+
+ bets.forEach(bet=>{
+  const playerKey = bet.player_id === players.kubele.id ? "kubele" : "pici"
+
+  state[playerKey].selectedOdds = bet.odds
+  state[playerKey].selectedType = bet.tip
+
+  document.getElementById("kurs_"+playerKey).innerText =
+   "Kurz: " + bet.odds.toFixed(2)
+
+  document.getElementById("amount_"+playerKey).value = bet.amount
+  document.getElementById("amount_"+playerKey).disabled = true
+
+  document.querySelector("#odds_"+playerKey)
+   .querySelectorAll(".odd")
+   .forEach(btn=>{
+    if(btn.innerText.startsWith(bet.tip+" ")){
+     btn.classList.add("active")
+     btn.style.pointerEvents="none"
+    }
+   })
+
+  if(matchData.played){
+   const win = isWinningBet(matchData, bet.tip)
+
+   document.getElementById("vyhra_"+playerKey).innerText =
+    win ? `Vyhrál jsi ${bet.potential_win.toFixed(0)} Kč!`
+        : `Prohrál jsi (${bet.amount} Kč)`
+  }else{
+   document.getElementById("vyhra_"+playerKey).innerText =
+    `Možná výhra: ${bet.potential_win.toFixed(0)} Kč`
+  }
+ })
+}
 
 // ===== BET =====
-document.querySelector(".betBtn").onclick = async () => {
+window.placeBet = async function(playerKey){
 
- const amount = Number(document.getElementById("amount").value)
+ const amount = Number(document.getElementById("amount_"+playerKey).value)
+ const s = state[playerKey]
 
- if(!amount || !selectedOdds || !selectedType){
+ if(!amount || !s.selectedOdds || !s.selectedType){
   alert("Vyber sázku a částku")
   return
  }
 
- if(currentPlayer.credit < amount){
-  alert("Nedostatek kreditu!")
-  return
- }
-
- // odečtení kreditu
- await supabase
-  .from("players")
-  .update({
-   credit: currentPlayer.credit - amount
-  })
-  .eq("id", currentPlayer.id)
-
- // uložení sázky
  await supabase.from("bets").insert({
   match_id: matchId,
-  player_id: currentPlayer.id,
-  tip: selectedType,
+  player_id: players[playerKey].id,
+  tip: s.selectedType,
   amount: amount,
-  odds: selectedOdds,
-  potential_win: amount * selectedOdds,
+  odds: s.selectedOdds,
+  potential_win: amount * s.selectedOdds,
   status: "pending"
  })
 
- alert("Vsazeno 👍")
  location.reload()
+}
+
+// ===== LOGIKA =====
+function isWinningBet(match, tip){
+ const type = match.result_type
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ const homeWin = hg > ag
+ const awayWin = ag > hg
+
+ switch(tip){
+  case "1": return homeWin && type === "REG"
+  case "2": return awayWin && type === "REG"
+  case "0": return type !== "REG"
+  case "10": return homeWin && (type === "OT" || type === "SN")
+  case "02": return awayWin && (type === "OT" || type === "SN")
+  case "11": return homeWin
+  case "22": return awayWin
+ }
+ return false
 }
 
 load()
