@@ -141,6 +141,12 @@ async function load(){
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
+ // 🔥 OPRAVA – zobrazení skóre
+ if(match.played){
+  document.getElementById("score").innerText =
+   `${match.home_score} : ${match.away_score}`
+ }
+
  oddsGlobal = calculateOdds(home.rating_form, away.rating_form)
 
  renderOdds("kubele")
@@ -219,7 +225,7 @@ function updateSummary(playerKey){
 document.getElementById("amount_kubele").oninput = ()=>updateSummary("kubele")
 document.getElementById("amount_pici").oninput = ()=>updateSummary("pici")
 
-// ===== LOAD EXISTING BETS (🔥 FIX) =====
+// ===== EXISTING BETS =====
 async function loadExistingBets(match){
 
  const { data: bets } = await supabase
@@ -231,9 +237,7 @@ async function loadExistingBets(match){
 
   const playerKey = bet.player_id === players.kubele.id ? "kubele" : "pici"
 
-  // 🔥 rozdělení tipů
   const tips = bet.tip.split(",")
-
   state[playerKey].selected = tips
 
   const cont = document.getElementById("odds_"+playerKey)
