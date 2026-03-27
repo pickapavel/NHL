@@ -11,7 +11,6 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-/* HEADER */
 .headerBar{
  display:flex;
  justify-content:center;
@@ -47,13 +46,12 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* MATCH MOBILE */
+/* MOBILE */
 .matchRow{
  background:#e9ecef;
  padding:12px;
  margin-bottom:8px;
  border-radius:10px;
-
  display:flex;
  flex-direction:column;
  gap:10px;
@@ -78,7 +76,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:18px;font-weight:bold;
  padding:6px 10px;
  border-radius:6px;
- min-width:45px; /* 🔥 FIX stejné šířky */
+ min-width:45px;
  text-align:center;
 }
 
@@ -100,7 +98,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  margin-top:3px;
 }
 
-/* BUTTONY */
 .btn{
  border:none;
  border-radius:6px;
@@ -123,19 +120,52 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* DESKTOP */
+/* 🔥 DESKTOP FIX */
 @media(min-width:768px){
 
 .matchRow{
  display:grid;
- grid-template-columns:1fr 70px 180px 70px 1fr 120px; /* 🔥 FIX stejné sloupce */
+ grid-template-columns: 1fr 70px 180px 70px 1fr 120px;
  align-items:center;
 }
 
-.teamLine{display:contents;}
+/* LEVÝ TÝM */
+.matchRow > .teamLine:first-child{
+ grid-column:1 / 2;
+ display:flex;
+ justify-content:space-between;
+}
+
+/* LEVÉ SKÓRE */
+.matchRow > .teamLine:first-child .scoreBox{
+ grid-column:2 / 3;
+}
+
+/* MIDDLE */
+.matchRow > .middleBox{
+ grid-column:3 / 4;
+}
+
+/* PRAVÉ SKÓRE */
+.matchRow > .teamLine:nth-child(3) .scoreBox{
+ grid-column:4 / 5;
+}
+
+/* PRAVÝ TÝM */
+.matchRow > .teamLine:nth-child(3){
+ grid-column:5 / 6;
+ display:flex;
+ justify-content:flex-start;
+ gap:10px;
+}
+
+/* BUTTONY */
+.matchRow > .btnWrap{
+ grid-column:6 / 7;
+}
 
 .scoreBox{
- min-width:70px; /* 🔥 sjednocení */
+ min-width:70px;
 }
 
 }
