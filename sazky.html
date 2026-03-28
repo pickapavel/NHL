@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Sázky</title>
+
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+
+h1{margin-bottom:20px;}
+
+.block{
+ border:1px solid #ccc;
+ margin-bottom:15px;
+}
+
+.block-header{
+ background:black;
+ color:yellow;
+ padding:10px;
+ cursor:pointer;
+}
+
+.block-content{
+ display:none;
+ padding:10px;
+}
+
+.team-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ border-bottom:1px solid #ddd;
+ padding:8px 0;
+}
+
+.team-name{
+ width:200px;
+ font-weight:bold;
+}
+
+.odds{
+ width:80px;
+ text-align:center;
+}
+
+input{
+ padding:5px;
+ width:80px;
+}
+
+button{
+ padding:5px 10px;
+ cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Sázky</h1>
+
+<div id="betsContainer"></div>
+
+</div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+let teams = []
+let player = null
+
+// ===== LOAD =====
+async function load(){
+
+ // 🔹 hráč (upravit podle loginu)
+ const { data: p } = await supabase
+  .from("players")
+  .select("*")
+  .limit(1)
+  .single()
+
+ player = p
+
+ const { data: t } = await supabase
+  .from("teams")
+  .select("*")
+
+ teams = t
+
+ render()
+}
+
+// ===== ODDS =====
+function calculateOdds(team){
+
+ const rating = Number(team.rating || 100)
+ const form = Number(team.form || 0)
+
+ const strength = rating + form * 5
+
+ const odds = (1000 / strength).toFixed(2)
+
+ return Math.max(1.2, odds)
+}
+
+// ===== RENDER =====
+function render(){
+
+ const cont = document.getElementById("betsContainer")
+ cont.innerHTML = ""
+
+ // ===== BLOCK 1 =====
+ cont.innerHTML += `
+ <div class="block">
+
+  <div class="block-header" onclick="toggleBlock(this)">
+   Vítěz základní části
+  </div>
+
+  <div class="block-content" id="winnerBlock"></div>
+
+ </div>
+ `
+
+ const block = document.getElementById("winnerBlock")
+
+ teams.forEach(team=>{
+
+  const odds = calculateOdds(team)
+
+  block.innerHTML += `
+   <div class="team-row">
+     <div class="team-name">${team.name}</div>
+
+     <div class="odds">${odds}</div>
+
+     <input type="number" id="amount_${team.id}" placeholder="Kč">
+
+     <button onclick="placeBet('${team.id}', ${odds}, 'winner_regular_season')">
+       Vsadit
+     </button>
+   </div>
+  `
+ })
+}
+
+// ===== TOGGLE =====
+window.toggleBlock = function(el){
+
+ const content = el.nextElementSibling
+ content.style.display =
+  content.style.display === "block" ? "none" : "block"
+}
+
+// ===== PLACE BET =====
+window.placeBet = async function(teamId, odds, type){
+
+ const amountInput = document.getElementById(`amount_${teamId}`)
+ const amount = Number(amountInput.value)
+
+ if(!amount || amount <= 0){
+  alert("Zadej částku")
+  return
+ }
+
+ if(player.credit < amount){
+  alert("Nedostatek kreditu")
+  return
+ }
+
+ const potential = amount * odds
+
+ // 🔥 odečtení kreditu
+ await supabase
+  .from("players")
+  .update({
+   credit: player.credit - amount
+  })
+  .eq("id", player.id)
+
+ // 🔥 uložit bet
+ await supabase
+  .from("bets_special")
+  .insert({
+   player_id: player.id,
+   type: type,
+   target_id: teamId,
+   odds: odds,
+   amount: amount,
+   potential_win: potential,
+   status: "pending"
+  })
+
+ alert("Vsazeno 👍")
+
+ load()
+}
+
+load()
+
+</script>
+
+</body>
+</html>
