@@ -103,11 +103,12 @@ const supabase = createClient(
 )
 
 const START_RATING = 1000
-const K = 80
+const K_OVERALL = 80
+const K_FORM = 120
 
 function getEloChange(teamRating, oppRating, score){
  const expected = 1 / (1 + Math.pow(10, (oppRating - teamRating)/400))
- return K * (score - expected)
+ return K_OVERALL * (score - expected)
 }
 
 function getScore(match, teamId){
@@ -220,7 +221,8 @@ async function load(){
     const current = formRatings[teamId]
     const oppRating = ratings[opponentId]
 
-    const change = getEloChange(current, oppRating, score)
+    const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
+    const change = K_FORM * (score - expected)
 
     formHistory[teamId].push(change)
 
