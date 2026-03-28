@@ -27,17 +27,25 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px;border-bottom:1px solid #ccc;flex-wrap:wrap;
 }
 
+.headerRow{
+ display:flex;
+ font-weight:bold;
+ padding:10px;
+ border-bottom:2px solid #aaa;
+}
+
 .teamBlock{display:flex;align-items:center;gap:10px;width:230px;}
 
 .logo{
  width:40px;height:40px;background:white;border-radius:6px;padding:2px;
 }
 
-.rating{width:70px;text-align:center;}
+.rating{width:80px;text-align:center;}
 .odds{width:80px;text-align:center;font-weight:bold;}
+.betcol{width:120px;text-align:center;}
 .win{width:120px;text-align:center;}
 
-input{width:70px;padding:5px;}
+input{width:80px;padding:5px;}
 
 button{
  background:#27ae60;color:white;border:none;border-radius:6px;
@@ -45,7 +53,6 @@ button{
 }
 
 .locked{
- color:#333;
  font-size:13px;
 }
 
@@ -53,6 +60,7 @@ button{
 
 @media(max-width:768px){
  .row{flex-direction:column;align-items:flex-start;gap:6px}
+ .headerRow{display:none}
  button{width:100%}
 }
 </style>
@@ -85,7 +93,6 @@ let teams = []
 let players = {}
 let bets = []
 
-// ===== LOAD =====
 async function load(){
 
  const { data: t } = await supabase
@@ -111,7 +118,6 @@ async function load(){
  render()
 }
 
-// ===== ODDS =====
 function calculateOdds(){
 
  const strengths = teams.map(t =>
@@ -131,7 +137,6 @@ function calculateOdds(){
  return map
 }
 
-// ===== LIVE =====
 window.updateWin = function(player,team,odds){
 
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
@@ -142,7 +147,6 @@ window.updateWin = function(player,team,odds){
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
-// ===== BET =====
 window.bet = async function(playerName,teamId,odds){
 
  const player = players[playerName]
@@ -168,7 +172,6 @@ window.bet = async function(playerName,teamId,odds){
  load()
 }
 
-// ===== CHECK BET =====
 function getBet(playerId, teamId){
  return bets.find(b =>
   b.player_id===playerId &&
@@ -177,7 +180,6 @@ function getBet(playerId, teamId){
  )
 }
 
-// ===== PLAYER BLOCK =====
 function playerBlock(name,oddsMap){
 
  const p = players[name]
@@ -186,7 +188,17 @@ function playerBlock(name,oddsMap){
 
  let html=`
  <div class="playerCard">
+
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+
+  <div class="headerRow">
+    <div class="teamBlock">Tým</div>
+    <div class="rating">Forma</div>
+    <div class="odds">Kurz</div>
+    <div class="betcol">Vsazená částka</div>
+    <div class="win">Výhra</div>
+    <div style="width:120px;text-align:center;"></div>
+  </div>
  `
 
  sorted.forEach(t=>{
@@ -209,9 +221,9 @@ function playerBlock(name,oddsMap){
   if(existing){
 
     html+=`
-      <div class="locked">${existing.amount} Kč</div>
+      <div class="betcol">${existing.amount} Kč</div>
       <div class="win">${Math.round(existing.potential_win)} Kč</div>
-      <div class="locked">${existing.status}</div>
+      <div class="locked">Již vsazeno!</div>
     `
 
   } else {
@@ -234,7 +246,6 @@ function playerBlock(name,oddsMap){
  return html
 }
 
-// ===== RENDER =====
 function render(){
 
  const odds = calculateOdds()
@@ -244,7 +255,6 @@ function render(){
   playerBlock("Pici",odds)
 }
 
-// ===== TOGGLE =====
 window.toggleSection = function(){
  const s = document.getElementById("section")
  s.style.display = s.style.display==="block"?"none":"block"
