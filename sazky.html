@@ -11,102 +11,56 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-h1{margin-bottom:15px}
-
 .sectionHeader{
- background:#0b2a3c;
- color:white;
- padding:12px;
- border-radius:10px;
- cursor:pointer;
- font-size:18px;
- margin-bottom:10px;
+ background:#0b2a3c;color:white;padding:12px;border-radius:10px;
+ cursor:pointer;font-size:18px;margin-bottom:10px;
 }
 
-.blockContent{display:none;margin-bottom:20px;}
+.blockContent{display:none;}
 
 .playerCard{
- background:#e9ecef;
- border-radius:10px;
- padding:12px;
- margin-bottom:15px;
+ background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:15px;
 }
 
-.credit{
- font-weight:bold;
- margin-bottom:10px;
-}
-
-.headerRow{
- display:flex;
- font-weight:bold;
+.betList{
+ margin-top:10px;
+ background:white;
  padding:10px;
- border-bottom:2px solid #ccc;
+ border-radius:8px;
+}
+
+.betRow{
+ display:flex;
+ justify-content:space-between;
+ padding:6px 0;
+ border-bottom:1px solid #ddd;
+ font-size:13px;
 }
 
 .row{
- display:flex;
- align-items:center;
- justify-content:space-between;
- padding:10px;
- border-bottom:1px solid #ccc;
- flex-wrap:wrap;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:10px;border-bottom:1px solid #ccc;flex-wrap:wrap;
 }
 
-.teamBlock{
- display:flex;
- align-items:center;
- gap:10px;
- width:220px;
-}
+.teamBlock{display:flex;align-items:center;gap:10px;width:220px;}
+.logo{width:40px;height:40px;background:white;border-radius:6px;padding:2px;}
 
-.logo{
- width:40px;
- height:40px;
- object-fit:contain;
- background:white;
- border-radius:6px;
- padding:2px;
-}
-
-.rating{width:70px;text-align:center;font-size:13px;}
+.rating{width:70px;text-align:center;}
 .odds{width:70px;text-align:center;font-weight:bold;}
 .win{width:100px;text-align:center;}
 
-input{
- width:70px;
- padding:5px;
-}
+input{width:70px;padding:5px;}
 
 button{
- background:#27ae60;
- color:white;
- border:none;
- border-radius:6px;
- padding:6px 10px;
- cursor:pointer;
+ background:#27ae60;color:white;border:none;border-radius:6px;
+ padding:6px 10px;cursor:pointer;
 }
 
-/* 📱 MOBILE */
+.credit{font-weight:bold;margin-bottom:10px;}
+
 @media(max-width:768px){
-
-.headerRow{display:none;}
-
-.row{
- flex-direction:column;
- align-items:flex-start;
- gap:6px;
-}
-
-.teamBlock{width:100%;}
-
-.rating,.odds,.win{
- width:auto;
- text-align:left;
-}
-
-button{width:100%;}
-
+ .row{flex-direction:column;align-items:flex-start;gap:6px}
+ button{width:100%}
 }
 </style>
 </head>
@@ -136,6 +90,7 @@ const supabase = createClient(
 
 let teams = []
 let players = {}
+let bets = []
 
 // ===== LOAD =====
 async function load(){
@@ -154,6 +109,12 @@ async function load(){
 
  p.forEach(pl=> players[pl.name]=pl)
 
+ const { data: b } = await supabase
+  .from("bets_special")
+  .select("*")
+
+ bets = b
+
  render()
 }
 
@@ -167,7 +128,6 @@ function calculateOdds(){
  const total = strengths.reduce((a,b)=>a+b,0)
 
  const margin = 2.2
-
  const map = {}
 
  teams.forEach((t,i)=>{
@@ -216,15 +176,37 @@ window.bet = async function(playerName,teamId,odds){
  load()
 }
 
+// ===== BET LIST =====
+function renderBets(playerName){
+
+ const player = players[playerName]
+
+ const myBets = bets.filter(b => b.player_id === player.id)
+
+ if(!myBets.length) return "<div>Žádné sázky</div>"
+
+ return myBets.map(b=>{
+
+  const team = teams.find(t=>t.id===b.target_id)
+
+  return `
+   <div class="betRow">
+     <div>${team?.name || "?"}</div>
+     <div>${b.amount} Kč</div>
+     <div>kurz ${Number(b.odds).toFixed(2)}</div>
+     <div>${Math.round(b.potential_win)} Kč</div>
+     <div>${b.status}</div>
+   </div>
+  `
+ }).join("")
+}
+
 // ===== PLAYER BLOCK =====
 function playerBlock(name,oddsMap){
 
  const p = players[name]
 
- // 🔥 seřazení podle kurzu
- const sortedTeams = [...teams].sort((a,b)=>{
-  return oddsMap[b.id] - oddsMap[a.id]
- })
+ const sorted = [...teams].sort((a,b)=> oddsMap[b.id]-oddsMap[a.id])
 
  let html=`
  <div class="playerCard">
@@ -232,7 +214,7 @@ function playerBlock(name,oddsMap){
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
  `
 
- sortedTeams.forEach(t=>{
+ sorted.forEach(t=>{
 
   const o = oddsMap[t.id]
 
@@ -244,7 +226,7 @@ function playerBlock(name,oddsMap){
       <div>${t.name}</div>
     </div>
 
-    <div class="rating">🔥 ${t.rating_form}</div>
+    <div class="rating">${t.rating_form}</div>
     <div class="odds">${o.toFixed(2)}</div>
 
     <input id="a_${name}_${t.id}" type="number"
@@ -258,6 +240,14 @@ function playerBlock(name,oddsMap){
   `
  })
 
+ // 🔥 BET LIST
+ html+=`
+  <div class="betList">
+    <b>Moje sázky:</b>
+    ${renderBets(name)}
+  </div>
+ `
+
  html+=`</div>`
 
  return html
@@ -268,9 +258,7 @@ function render(){
 
  const odds = calculateOdds()
 
- const sec = document.getElementById("section")
-
- sec.innerHTML =
+ document.getElementById("section").innerHTML =
   playerBlock("Kubele",odds) +
   playerBlock("Pici",odds)
 }
