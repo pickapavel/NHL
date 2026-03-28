@@ -109,12 +109,22 @@ button{width:100%;}
 
 <h1>Sázky</h1>
 
+<!-- VÍTĚZ -->
 <div class="section" id="sec1">
   <div class="sectionHeader" onclick="toggleSection('sec1')">
     <span class="arrow">▶</span>
     <span>Vítěz základní části</span>
   </div>
   <div class="blockContent" id="section"></div>
+</div>
+
+<!-- POSLEDNÍ -->
+<div class="section" id="sec2">
+  <div class="sectionHeader" onclick="toggleSection('sec2')">
+    <span class="arrow">▶</span>
+    <span>Poslední celek základní části</span>
+  </div>
+  <div class="blockContent" id="section_last"></div>
 </div>
 
 </div>
@@ -184,8 +194,6 @@ function calculateFormRatings(matches, teams){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-
-    // 🔥 FIX – stejný jako rating.html
     const oppRating = formRatings[opponentId]
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
@@ -278,6 +286,25 @@ function calculateOdds(){
  return map
 }
 
+function calculateLastOdds(){
+
+ const strengths = teams.map(t =>
+  Math.pow(1/(Number(formRatings[t.id] || 1000)),6)
+ )
+
+ const total = strengths.reduce((a,b)=>a+b,0)
+
+ const margin = 2.2
+ const map = {}
+
+ teams.forEach((t,i)=>{
+  const prob = strengths[i]/total
+  map[t.id]=(margin/prob)
+ })
+
+ return map
+}
+
 /* ===== ZBYTEK BEZE ZMĚNY ===== */
 
 window.updateWin = function(player,team,odds){
@@ -290,10 +317,10 @@ window.updateWin = function(player,team,odds){
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
-window.bet = async function(playerName,teamId,odds){
+window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
 
  const player = players[playerName]
- const val = Number(document.getElementById(`a_${playerName}_${teamId}`).value)
+ const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
 
  if(!val||val<=0) return alert("Zadej částku")
  if(player.credit<val) return alert("Nedostatek kreditu")
@@ -304,7 +331,7 @@ window.bet = async function(playerName,teamId,odds){
 
  await supabase.from("bets_special").insert({
   player_id:player.id,
-  type:"winner_regular_season",
+  type:type,
   target_id:teamId,
   odds:odds,
   amount:val,
@@ -315,15 +342,15 @@ window.bet = async function(playerName,teamId,odds){
  load()
 }
 
-function getBet(playerId, teamId){
+function getBet(playerId, teamId, type){
  return bets.find(b =>
   b.player_id===playerId &&
   b.target_id===teamId &&
-  b.type==="winner_regular_season"
+  b.type===type
  )
 }
 
-function playerBlock(name,oddsMap){
+function playerBlock(name,oddsMap,type){
 
  const p = players[name]
  const sorted = [...teams].sort((a,b)=> oddsMap[b.id]-oddsMap[a.id])
@@ -346,8 +373,10 @@ function playerBlock(name,oddsMap){
  sorted.forEach(t=>{
 
   const o = oddsMap[t.id]
-  const existing = getBet(p.id, t.id)
+  const existing = getBet(p.id, t.id, type)
   const form = formRatings[t.id] || 1000
+
+  const id = `${name}_${t.id}_${type}`
 
   html+=`<div class="grid row">`
 
@@ -373,13 +402,13 @@ function playerBlock(name,oddsMap){
 
     html+=`
       <div data-label="Vsadit">
-        <input id="a_${name}_${t.id}" type="number"
-          oninput="updateWin('${name}','${t.id}',${o})">
+        <input id="a_${id}" type="number"
+          oninput="updateWin('${name}','${t.id}_${type}',${o})">
       </div>
 
-      <div data-label="Výhra" id="w_${name}_${t.id}">-</div>
+      <div data-label="Výhra" id="w_${id}">-</div>
 
-      <button onclick="bet('${name}','${t.id}',${o})">Vsadit</button>
+      <button onclick="bet('${name}','${t.id}',${o},'${type}')">Vsadit</button>
     `
   }
 
@@ -394,10 +423,15 @@ function playerBlock(name,oddsMap){
 function render(){
 
  const odds = calculateOdds()
+ const lastOdds = calculateLastOdds()
 
  document.getElementById("section").innerHTML =
-  playerBlock("Kubele",odds) +
-  playerBlock("Pici",odds)
+  playerBlock("Kubele",odds,"winner_regular_season") +
+  playerBlock("Pici",odds,"winner_regular_season")
+
+ document.getElementById("section_last").innerHTML =
+  playerBlock("Kubele",lastOdds,"last_regular_season") +
+  playerBlock("Pici",lastOdds,"last_regular_season")
 }
 
 window.toggleSection = function(id){
