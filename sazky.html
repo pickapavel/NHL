@@ -22,38 +22,31 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:15px;
 }
 
-.betList{
- margin-top:10px;
- background:white;
- padding:10px;
- border-radius:8px;
-}
-
-.betRow{
- display:flex;
- justify-content:space-between;
- padding:6px 0;
- border-bottom:1px solid #ddd;
- font-size:13px;
-}
-
 .row{
  display:flex;align-items:center;justify-content:space-between;
  padding:10px;border-bottom:1px solid #ccc;flex-wrap:wrap;
 }
 
-.teamBlock{display:flex;align-items:center;gap:10px;width:220px;}
-.logo{width:40px;height:40px;background:white;border-radius:6px;padding:2px;}
+.teamBlock{display:flex;align-items:center;gap:10px;width:230px;}
+
+.logo{
+ width:40px;height:40px;background:white;border-radius:6px;padding:2px;
+}
 
 .rating{width:70px;text-align:center;}
-.odds{width:70px;text-align:center;font-weight:bold;}
-.win{width:100px;text-align:center;}
+.odds{width:80px;text-align:center;font-weight:bold;}
+.win{width:120px;text-align:center;}
 
 input{width:70px;padding:5px;}
 
 button{
  background:#27ae60;color:white;border:none;border-radius:6px;
  padding:6px 10px;cursor:pointer;
+}
+
+.locked{
+ color:#333;
+ font-size:13px;
 }
 
 .credit{font-weight:bold;margin-bottom:10px;}
@@ -172,33 +165,16 @@ window.bet = async function(playerName,teamId,odds){
   status:"pending"
  })
 
- alert("Vsazeno 👍")
  load()
 }
 
-// ===== BET LIST =====
-function renderBets(playerName){
-
- const player = players[playerName]
-
- const myBets = bets.filter(b => b.player_id === player.id)
-
- if(!myBets.length) return "<div>Žádné sázky</div>"
-
- return myBets.map(b=>{
-
-  const team = teams.find(t=>t.id===b.target_id)
-
-  return `
-   <div class="betRow">
-     <div>${team?.name || "?"}</div>
-     <div>${b.amount} Kč</div>
-     <div>kurz ${Number(b.odds).toFixed(2)}</div>
-     <div>${Math.round(b.potential_win)} Kč</div>
-     <div>${b.status}</div>
-   </div>
-  `
- }).join("")
+// ===== CHECK BET =====
+function getBet(playerId, teamId){
+ return bets.find(b =>
+  b.player_id===playerId &&
+  b.target_id===teamId &&
+  b.type==="winner_regular_season"
+ )
 }
 
 // ===== PLAYER BLOCK =====
@@ -210,13 +186,13 @@ function playerBlock(name,oddsMap){
 
  let html=`
  <div class="playerCard">
-
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
  `
 
  sorted.forEach(t=>{
 
   const o = oddsMap[t.id]
+  const existing = getBet(p.id, t.id)
 
   html+=`
   <div class="row">
@@ -228,25 +204,30 @@ function playerBlock(name,oddsMap){
 
     <div class="rating">${t.rating_form}</div>
     <div class="odds">${o.toFixed(2)}</div>
-
-    <input id="a_${name}_${t.id}" type="number"
-      oninput="updateWin('${name}','${t.id}',${o})">
-
-    <div class="win" id="w_${name}_${t.id}">-</div>
-
-    <button onclick="bet('${name}','${t.id}',${o})">Vsadit</button>
-
-  </div>
   `
- })
 
- // 🔥 BET LIST
- html+=`
-  <div class="betList">
-    <b>Moje sázky:</b>
-    ${renderBets(name)}
-  </div>
- `
+  if(existing){
+
+    html+=`
+      <div class="locked">${existing.amount} Kč</div>
+      <div class="win">${Math.round(existing.potential_win)} Kč</div>
+      <div class="locked">${existing.status}</div>
+    `
+
+  } else {
+
+    html+=`
+      <input id="a_${name}_${t.id}" type="number"
+        oninput="updateWin('${name}','${t.id}',${o})">
+
+      <div class="win" id="w_${name}_${t.id}">-</div>
+
+      <button onclick="bet('${name}','${t.id}',${o})">Vsadit</button>
+    `
+  }
+
+  html+=`</div>`
+ })
 
  html+=`</div>`
 
