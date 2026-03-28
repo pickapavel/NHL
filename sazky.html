@@ -11,58 +11,139 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
+h1{margin-bottom:15px}
+
+/* 🔥 ACCORDION */
+.section{
+ margin-bottom:10px;
+ border-radius:10px;
+ overflow:hidden;
+}
+
 .sectionHeader{
- background:#0b2a3c;color:white;padding:12px;border-radius:10px;
- cursor:pointer;font-size:18px;margin-bottom:10px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:#0b2a3c;
+ color:white;
+ padding:12px 15px;
+ cursor:pointer;
+ font-size:18px;
+ transition:0.2s;
 }
 
-.blockContent{display:none;}
+.sectionHeader:hover{
+ background:#14435c;
+}
 
+.arrow{
+ transition:0.3s;
+ font-size:18px;
+}
+
+.section.open .arrow{
+ transform:rotate(90deg);
+}
+
+.blockContent{
+ max-height:0;
+ overflow:hidden;
+ transition:max-height 0.3s ease;
+ background:#f9f9f9;
+}
+
+.section.open .blockContent{
+ max-height:2000px;
+ padding:10px;
+}
+
+/* PLAYER */
 .playerCard{
- background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:15px;
+ background:#e9ecef;
+ border-radius:10px;
+ padding:12px;
+ margin-bottom:15px;
 }
 
+/* GRID */
 .grid{
  display:grid;
  grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
- align-items:center;
  gap:10px;
+ align-items:center;
 }
 
 .headerRow{
  font-weight:bold;
- padding:10px 0;
  border-bottom:2px solid #aaa;
+ padding:8px 0;
 }
 
 .row{
- padding:10px 0;
+ padding:8px 0;
  border-bottom:1px solid #ccc;
 }
 
 .teamBlock{
- display:flex;align-items:center;gap:10px;
+ display:flex;
+ align-items:center;
+ gap:10px;
 }
 
 .logo{
- width:40px;height:40px;background:white;border-radius:6px;padding:2px;
+ width:40px;
+ height:40px;
+ object-fit:contain;
+ background:white;
+ border-radius:6px;
+ padding:2px;
 }
 
-input{width:80px;padding:5px;}
+input{
+ width:80px;
+ padding:5px;
+}
 
 button{
- background:#27ae60;color:white;border:none;border-radius:6px;
- padding:6px 10px;cursor:pointer;
+ background:#27ae60;
+ color:white;
+ border:none;
+ border-radius:6px;
+ padding:6px 10px;
+ cursor:pointer;
 }
 
-.credit{font-weight:bold;margin-bottom:10px;}
-.locked{font-size:13px;}
+.credit{
+ font-weight:bold;
+ margin-bottom:10px;
+}
 
+.locked{
+ font-size:13px;
+ color:#333;
+}
+
+/* 📱 MOBILE */
 @media(max-width:768px){
- .grid{grid-template-columns:1fr}
- .headerRow{display:none}
- .row{display:flex;flex-direction:column;gap:5px}
- button{width:100%}
+
+.grid{
+ grid-template-columns:1fr;
+}
+
+.headerRow{
+ display:none;
+}
+
+.row{
+ display:flex;
+ flex-direction:column;
+ gap:5px;
+}
+
+button{
+ width:100%;
+}
+
 }
 </style>
 </head>
@@ -73,11 +154,17 @@ button{
 
 <h1>Sázky</h1>
 
-<div class="sectionHeader" onclick="toggleSection()">
- Vítěz základní části
-</div>
+<!-- 🔥 ACCORDION SEKCE -->
+<div class="section" id="sec1">
 
-<div id="section" class="blockContent"></div>
+  <div class="sectionHeader" onclick="toggleSection('sec1')">
+    <span>Vítěz základní části</span>
+    <span class="arrow">▶</span>
+  </div>
+
+  <div class="blockContent" id="section"></div>
+
+</div>
 
 </div>
 
@@ -94,6 +181,7 @@ let teams = []
 let players = {}
 let bets = []
 
+// ===== LOAD =====
 async function load(){
 
  const { data: t } = await supabase
@@ -120,6 +208,7 @@ async function load(){
  render()
 }
 
+// ===== ODDS =====
 function calculateOdds(){
 
  const strengths = teams.map(t =>
@@ -139,6 +228,7 @@ function calculateOdds(){
  return map
 }
 
+// ===== LIVE =====
 window.updateWin = function(player,team,odds){
 
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
@@ -149,6 +239,7 @@ window.updateWin = function(player,team,odds){
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
+// ===== BET =====
 window.bet = async function(playerName,teamId,odds){
 
  const player = players[playerName]
@@ -174,6 +265,7 @@ window.bet = async function(playerName,teamId,odds){
  load()
 }
 
+// ===== BET CHECK =====
 function getBet(playerId, teamId){
  return bets.find(b =>
   b.player_id===playerId &&
@@ -182,6 +274,7 @@ function getBet(playerId, teamId){
  )
 }
 
+// ===== PLAYER =====
 function playerBlock(name,oddsMap){
 
  const p = players[name]
@@ -248,6 +341,7 @@ function playerBlock(name,oddsMap){
  return html
 }
 
+// ===== RENDER =====
 function render(){
 
  const odds = calculateOdds()
@@ -257,9 +351,12 @@ function render(){
   playerBlock("Pici",odds)
 }
 
-window.toggleSection = function(){
- const s = document.getElementById("section")
- s.style.display = s.style.display==="block"?"none":"block"
+// ===== TOGGLE =====
+window.toggleSection = function(id){
+
+ const sec = document.getElementById(id)
+ sec.classList.toggle("open")
+
 }
 
 load()
