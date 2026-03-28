@@ -22,7 +22,22 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px 20px;border-radius:10px;
 }
 
-/* TABULKA */
+/* ===== FILTRY ===== */
+.filterBar{
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+ margin-bottom:20px;
+}
+
+.filterBar select{
+ padding:8px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
+/* ===== TABULKA ===== */
 .standingsCard{
  display:flex;align-items:center;justify-content:space-between;
  background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:8px;
@@ -46,7 +61,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* MATCH */
+/* ===== MATCH ===== */
 .matchRow{
  background:#e9ecef;
  padding:12px;
@@ -79,19 +94,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:12px;
 }
 
-.periods{color:#333;}
-
-.winTag{
- font-size:11px;
- font-weight:bold;
- color:#fff;
- background:#2f9ec9;
- padding:3px 6px;
- border-radius:6px;
- display:inline-block;
- margin-top:3px;
-}
-
 .btn{
  border:none;
  border-radius:6px;
@@ -114,7 +116,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* 🔥 DESKTOP – čistý grid bez hacků */
+/* DESKTOP */
 @media(min-width:768px){
 
 .matchRow{
@@ -123,7 +125,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  align-items:start;
 }
 
-/* přímé rozmístění */
 .homeTeam{grid-column:1;}
 .homeScore{grid-column:2;}
 .middleBox{grid-column:3;}
@@ -131,9 +132,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .awayTeam{grid-column:5; justify-content:flex-end; text-align:right;}
 .btnWrap{grid-column:6;}
 
-.scoreBox{
- min-width:80px;
-}
+.scoreBox{min-width:80px;}
 
 }
 </style>
@@ -145,6 +144,27 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
 <div class="seasonCard">Extraliga</div>
+</div>
+
+<!-- 🔥 FILTRY -->
+<div class="filterBar">
+
+<select id="teamFilter">
+<option value="all">Všechny týmy</option>
+</select>
+
+<select id="matchFilter">
+<option value="all">Všechny zápasy</option>
+<option value="played">Jen odehrané</option>
+<option value="unplayed">Jen neodehrané</option>
+</select>
+
+<select id="homeAwayFilter">
+<option value="both">Domácí i venkovní</option>
+<option value="home">Jen domácí</option>
+<option value="away">Jen venkovní</option>
+</select>
+
 </div>
 
 <h2>Tabulka</h2>
@@ -164,101 +184,104 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
+let teamFilter="all"
+let matchFilter="all"
+let homeAwayFilter="both"
+
+document.getElementById("teamFilter").onchange=e=>{
+ teamFilter=e.target.value
+ load()
+}
+
+document.getElementById("matchFilter").onchange=e=>{
+ matchFilter=e.target.value
+ load()
+}
+
+document.getElementById("homeAwayFilter").onchange=e=>{
+ homeAwayFilter=e.target.value
+ load()
+}
 
 async function load(){
 
- const { data: seasonTeams } = await supabase
-  .from("season_teams")
-  .select("team_id")
-  .eq("season_id", SEASON_ID)
+ const { data: teams } = await supabase.from("teams").select("*")
+ const { data: matches } = await supabase.from("matches").select("*")
 
- const teamIds = (seasonTeams || []).map(t => t.team_id)
+ const teamMap={}
+ teams.forEach(t=>teamMap[t.id]=t)
 
- let teams = []
- if(teamIds.length > 0){
-  const res = await supabase
-   .from("teams")
-   .select("*")
-   .in("id", teamIds)
-  teams = res.data || []
+ // 🔥 naplnění filtru týmů
+ const tf=document.getElementById("teamFilter")
+ if(tf.options.length===1){
+  teams.forEach(t=>{
+   const o=document.createElement("option")
+   o.value=t.id
+   o.textContent=t.name
+   tf.appendChild(o)
+  })
  }
 
- const { data: matches } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("season_id", SEASON_ID)
+ let filtered = matches
 
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id] = t)
+ // ===== FILTRY =====
+ if(teamFilter!=="all"){
+  filtered = filtered.filter(m=>
+   m.home_team===teamFilter || m.away_team===teamFilter
+  )
 
- const safeMatches = matches || []
- safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
+  if(homeAwayFilter==="home"){
+   filtered = filtered.filter(m=>m.home_team===teamFilter)
+  }
 
- render(safeMatches, teamMap)
- renderTable(safeMatches, teamMap, teams)
+  if(homeAwayFilter==="away"){
+   filtered = filtered.filter(m=>m.away_team===teamFilter)
+  }
+ }
+
+ if(matchFilter==="played"){
+  filtered = filtered.filter(m=>m.played)
+ }
+
+ if(matchFilter==="unplayed"){
+  filtered = filtered.filter(m=>!m.played)
+ }
+
+ render(filtered, teamMap)
+ renderTable(filtered, teamMap, teams)
 }
 
 function renderTable(matches, teamMap, teams){
 
- let table = {}
+ let table={}
 
  teams.forEach(t=>{
-  table[t.id] = {
-    team:t.id,b:0,z:0,
-    v:0,p:0,
-    vp:0,pp:0,
-    vsn:0,psn:0,
-    gf:0,ga:0
-  }
+  table[t.id]={team:t.id,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
-  if(m.home_score == null || m.away_score == null) return
+  if(!m.played) return
 
-  const h = table[m.home_team]
-  const a = table[m.away_team]
-  if(!h || !a) return
+  const h=table[m.home_team]
+  const a=table[m.away_team]
 
-  const hg = Number(m.home_score)
-  const ag = Number(m.away_score)
+  const hg=Number(m.home_score)
+  const ag=Number(m.away_score)
 
-  h.z++; a.z++
-  h.gf+=hg; h.ga+=ag
-  a.gf+=ag; a.ga+=hg
+  h.z++;a.z++
+  h.gf+=hg;h.ga+=ag
+  a.gf+=ag;a.ga+=hg
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  const isSN = stats && (stats[20] === "1" || stats[20] === "2")
-  const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
-
-  if(isSN){
-    if(hg>ag){ h.vsn++; h.b+=2; a.psn++; a.b+=1 }
-    else{ a.vsn++; a.b+=2; h.psn++; h.b+=1 }
-  }
-  else if(isOT){
-    if(hg>ag){ h.vp++; h.b+=2; a.pp++; a.b+=1 }
-    else{ a.vp++; a.b+=2; h.pp++; h.b+=1 }
-  }
-  else{
-    if(hg>ag){ h.v++; h.b+=3; a.p++ }
-    else{ a.v++; a.b+=3; h.p++ }
-  }
-
+  if(hg>ag){h.v++;h.b+=3}else{a.v++;a.b+=3}
  })
 
- const arr = Object.values(table).sort((a,b)=>{
-  if(b.b!==a.b) return b.b-a.b
-  return (b.gf-b.ga)-(a.gf-a.ga)
- })
+ const arr=Object.values(table).sort((a,b)=>b.b-a.b)
 
- const cont = document.getElementById("standings")
+ const cont=document.getElementById("standings")
  cont.innerHTML=""
 
  arr.forEach((t,i)=>{
-  const team = teamMap[t.team]
-  if(!team) return
+  const team=teamMap[t.team]
 
   cont.innerHTML+=`
   <div class="standingsCard">
@@ -269,10 +292,7 @@ function renderTable(matches, teamMap, teams){
     <div class="teamInfo">
      <div class="teamName">${team.name}</div>
      <div class="teamStats">
-      Skóre ${t.gf}:${t.ga} | +/- ${t.gf-t.ga} |
-      Z ${t.z} | V ${t.v} | P ${t.p} |
-      VP ${t.vp} | PP ${t.pp} |
-      VSN ${t.vsn} | PSN ${t.psn}
+      Skóre ${t.gf}:${t.ga} | Z ${t.z} | V ${t.v}
      </div>
     </div>
    </div>
@@ -281,47 +301,17 @@ function renderTable(matches, teamMap, teams){
   </div>
   `
  })
-
 }
 
 function render(matches, teamMap){
 
- const cont = document.getElementById("schedule")
+ const cont=document.getElementById("schedule")
  cont.innerHTML=""
 
  matches.forEach(m=>{
 
-  const home = teamMap[m.home_team]
-  const away = teamMap[m.away_team]
-  if(!home || !away) return
-
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  let periods = ""
-  let tag = ""
-
-  if(stats){
-
-    const h1 = Number(stats[16]||0)
-    const h2 = Number(stats[17]||0)
-    const h3 = Number(stats[18]||0)
-
-    const a1 = Number(stats[6]||0)
-    const a2 = Number(stats[7]||0)
-    const a3 = Number(stats[8]||0)
-
-    periods = `(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
-
-    const isSN = stats[20] === "1" || stats[20] === "2"
-    const isOT = !isSN && (stats[9] === "11" || stats[19] === "11")
-
-    if(isSN) tag = "SN"
-    else if(isOT) tag = "OT"
-  }
-
-  const homeScore = m.home_score ?? "-"
-  const awayScore = m.away_score ?? "-"
+  const home=teamMap[m.home_team]
+  const away=teamMap[m.away_team]
 
   cont.innerHTML+=`
   <div class="matchRow">
@@ -331,14 +321,11 @@ function render(matches, teamMap){
       <div>${home.name}</div>
     </div>
 
-    <div class="scoreBox homeScore">${homeScore}</div>
+    <div class="scoreBox homeScore">${m.home_score ?? "-"}</div>
 
-    <div class="middleBox">
-      <div class="periods">${periods}</div>
-      ${tag ? `<div class="winTag">${tag}</div>` : ``}
-    </div>
+    <div class="middleBox"></div>
 
-    <div class="scoreBox awayScore">${awayScore}</div>
+    <div class="scoreBox awayScore">${m.away_score ?? "-"}</div>
 
     <div class="teamBox awayTeam">
       <div>${away.name}</div>
@@ -360,7 +347,6 @@ function render(matches, teamMap){
   </div>
   `
  })
-
 }
 
 load()
