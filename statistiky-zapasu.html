@@ -153,63 +153,47 @@ body{
 <div id="statsContainer"></div>
 
 <div class="backBtn">
- <a href="extraliga.html">← Zpět na rozpis</a>
+ <a href="elh.html">← Zpět na rozpis</a>
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-const firebaseConfig={
- apiKey:"AIzaSyD0jDnVNHZAs83g6FGwQT_nOpOCyT4NTNU",
- authDomain:"statistiky-6310a.firebaseapp.com",
- projectId:"statistiky-6310a"
-};
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-
-const teamsData={
- "HC Sparta Praha (P)":"sparta.png",
- "HC Bílí Tygři Liberec (K)":"liberec.png",
- "HC Dynamo Pardubice (K)":"pardubice.png",
- "HC Chemopetrol Litvínov (P)":"litvinov.png",
- "HC Geus Okna Kladno (P)":"kladno.png",
- "HC Motor České Budějovice (K)":"budejovice.png",
- "HC Energie Karlovy Vary (P)":"vary.png",
- "HC Oceláři Třinec (K)":"trinec.png"
-};
-
-
-
-/* STEJNÁ FUNKCE JAKO V EXTRALIGA.HTML */
 function calc(stats){
- let ag=Number(stats[6])+Number(stats[7])+Number(stats[8]);
- let hg=Number(stats[16])+Number(stats[17])+Number(stats[18]);
+ let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
+ let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
 
- if(stats[9]==="11") ag++;
- if(stats[19]==="11") hg++;
+ if(stats[9] === "11") ag++
+ if(stats[19] === "11") hg++
 
- if(stats[20]==="1") hg++;
- if(stats[20]==="2") ag++;
+ if(stats[20] === "1") hg++
+ if(stats[20] === "2") ag++
 
- return {hg,ag};
+ return {hg, ag}
 }
 
 function parsePK(value){
- if(!value || !value.includes("/")) return {ga:0,pk:0};
- const p=value.split("/");
- return {ga:Number(p[0]),pk:Number(p[1])};
+ if(!value || !value.includes("/")) return {ga:0,pk:0}
+ const p=value.split("/")
+ return {ga:Number(p[0]),pk:Number(p[1])}
 }
 
 function renderBar(label,homeVal,awayVal){
- const max=Math.max(homeVal,awayVal,1);
- const homePerc=(homeVal/max)*100;
- const awayPerc=(awayVal/max)*100;
+
+ const h = isNaN(homeVal) ? 0 : Number(homeVal)
+ const a = isNaN(awayVal) ? 0 : Number(awayVal)
+
+ const max=Math.max(h,a,1)
+ const homePerc=(h/max)*100
+ const awayPerc=(a/max)*100
 
  return `
  <div class="statRow">
@@ -223,74 +207,81 @@ function renderBar(label,homeVal,awayVal){
      <div class="sideVal">${awayVal}</div>
    </div>
  </div>
- `;
+ `
 }
 
 async function loadMatch(){
 
- const params=new URLSearchParams(window.location.search);
- const matchId=params.get("id");
+ const params = new URLSearchParams(window.location.search)
+ const matchId = params.get("id")
 
- const snap=await getDoc(doc(db,"zapasy",matchId));
- if(!snap.exists()) return;
+ const { data: match } = await supabase
+  .from("matches")
+  .select("*")
+  .eq("id", matchId)
+  .single()
 
- const m=snap.data();
- const stats=m.stats;
-
- const home=m.homeTeam;
- const away=m.awayTeam;
-
- const s=calc(stats);
-
- document.getElementById("homeTeam").innerHTML=
- `<img src="./logos/${teamsData[home]}">${home}`;
-
- document.getElementById("awayTeam").innerHTML=
- `${away}<img src="./logos/${teamsData[away]}">`;
-
- document.getElementById("score").innerText=
- `${s.hg} : ${s.ag}`;
-
- /* OT / SN label */
- if(stats[20]==="1"||stats[20]==="2"){
-   document.getElementById("otLabel").innerText="SN";
- }
- else if(stats[9]==="11"||stats[19]==="11"){
-   document.getElementById("otLabel").innerText="OT";
+ if(!match || !match.stats){
+  document.getElementById("statsContainer").innerText="Žádná data"
+  return
  }
 
- document.getElementById("periodInfo").innerText=
- `Třetiny: (${stats[16]}:${stats[6]}, ${stats[17]}:${stats[7]}, ${stats[18]}:${stats[8]})`;
+ const { data: teams } = await supabase
+  .from("teams")
+  .select("*")
 
- const homeShots=Number(stats[10]);
- const awayShots=Number(stats[0]);
+ const home = teams.find(t=>t.id === match.home_team)
+ const away = teams.find(t=>t.id === match.away_team)
 
- const homeHits=Number(stats[11]);
- const awayHits=Number(stats[1]);
+ const stats = JSON.parse(match.stats)
 
- const homeFaceoffs=Number(stats[12]);
- const awayFaceoffs=Number(stats[2]);
+ const s = calc(stats)
 
- const homePP=Number(stats[14]);
- const awayPP=Number(stats[4]);
+ document.getElementById("homeTeam").innerHTML =
+ `<img src="./logos/${home.logo}">${home.name}`
 
- const homePK=parsePK(stats[15]);
- const awayPK=parsePK(stats[5]);
+ document.getElementById("awayTeam").innerHTML =
+ `${away.name}<img src="./logos/${away.logo}">`
 
- let html="";
- html+=renderBar("Střely",homeShots,awayShots);
- html+=renderBar("Hity",homeHits,awayHits);
- html+=renderBar("Vhazování",homeFaceoffs,awayFaceoffs);
- html+=renderBar("Přesilovky",homePP,awayPP);
+ document.getElementById("score").innerText =
+ `${s.hg} : ${s.ag}`
+
+ if(match.result_type){
+   document.getElementById("otLabel").innerText = match.result_type
+ }
+
+ document.getElementById("periodInfo").innerText =
+ `(${stats[16]||0}:${stats[6]||0}, ${stats[17]||0}:${stats[7]||0}, ${stats[18]||0}:${stats[8]||0})`
+
+ const homeShots = Number(stats[10])
+ const awayShots = Number(stats[0])
+
+ const homeHits = Number(stats[11])
+ const awayHits = Number(stats[1])
+
+ const homeFaceoffs = Number(stats[12])
+ const awayFaceoffs = Number(stats[2])
+
+ const homePP = Number(stats[14])
+ const awayPP = Number(stats[4])
+
+ const homePK = parsePK(stats[15])
+ const awayPK = parsePK(stats[5])
+
+ let html=""
+ html+=renderBar("Střely",homeShots,awayShots)
+ html+=renderBar("Hity",homeHits,awayHits)
+ html+=renderBar("Vhazování",homeFaceoffs,awayFaceoffs)
+ html+=renderBar("Přesilovky",homePP,awayPP)
  html+=renderBar("Oslabení (GA/PK)",
    homePK.ga+"/"+homePK.pk,
    awayPK.ga+"/"+awayPK.pk
- );
+ )
 
- document.getElementById("statsContainer").innerHTML=html;
+ document.getElementById("statsContainer").innerHTML = html
 }
 
-loadMatch();
+loadMatch()
 
 </script>
 
