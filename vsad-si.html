@@ -278,7 +278,9 @@ function calculateFormRatings(matches, teams){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-    const oppRating = ratings[opponentId]
+
+    // 🔥 FIX
+    const oppRating = formRatings[opponentId]
 
     const change = getEloChange(current, oppRating, score)
 
@@ -353,7 +355,7 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("round", { ascending:true }) // 🔥 FIX
+  .order("round", { ascending:true })
 
  const formRatings = calculateFormRatings(matches, teams)
 
