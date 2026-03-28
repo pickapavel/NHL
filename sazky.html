@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sázky</title>
 
-<!-- 🔥 NOVÝ FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -86,22 +85,12 @@ button{
 
 .locked{font-size:13px;color:#333;}
 
-/* 📱 MOBILE */
+/* MOBILE */
 @media(max-width:768px){
-
 .grid{grid-template-columns:1fr;}
-
 .headerRow{display:none;}
-
-.row{
- display:flex;
- flex-direction:column;
- gap:6px;
-}
-
+.row{display:flex;flex-direction:column;gap:6px;}
 button{width:100%;}
-
-/* 🔥 LABELY */
 .row div[data-label]::before{
  content: attr(data-label);
  font-weight:600;
@@ -110,7 +99,6 @@ button{width:100%;}
  display:block;
  margin-bottom:2px;
 }
-
 }
 </style>
 </head>
@@ -122,14 +110,11 @@ button{width:100%;}
 <h1>Sázky</h1>
 
 <div class="section" id="sec1">
-
   <div class="sectionHeader" onclick="toggleSection('sec1')">
     <span class="arrow">▶</span>
     <span>Vítěz základní části</span>
   </div>
-
   <div class="blockContent" id="section"></div>
-
 </div>
 
 </div>
@@ -143,9 +128,97 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
+const START_RATING = 1000
+const K_FORM = 120
+
 let teams = []
 let players = {}
 let bets = []
+let formRatings = {}
+
+/* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
+
+function getScore(match, teamId){
+
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ const isHome = match.home_team === teamId
+
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ if(teamGoals > oppGoals){
+  return (isSN || isOT) ? 0.75 : 1
+ }else{
+  return (isSN || isOT) ? 0.25 : 0
+ }
+}
+
+function calculateFormRatings(matches, teams){
+
+ const ratings = {}
+ const formHistory = {}
+ const formRatings = {}
+
+ teams.forEach(t=>{
+  ratings[t.id] = START_RATING
+  formHistory[t.id] = []
+  formRatings[t.id] = START_RATING
+ })
+
+ matches.forEach(m=>{
+
+  const h = m.home_team
+  const a = m.away_team
+
+  const sH = getScore(m, h)
+  const sA = getScore(m, a)
+
+  function updateForm(teamId, opponentId, score){
+
+    const current = formRatings[teamId]
+    const oppRating = ratings[opponentId]
+
+    const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
+    const change = K_FORM * (score - expected)
+
+    formHistory[teamId].push(change)
+
+    if(formHistory[teamId].length > 5){
+      formHistory[teamId].shift()
+    }
+
+    const newRating =
+      START_RATING +
+      formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
+
+    formRatings[teamId] = Math.round(newRating)
+  }
+
+  updateForm(h, a, sH)
+  updateForm(a, h, sA)
+
+  const rH = ratings[h]
+  const rA = ratings[a]
+
+  const cH = K_FORM * (sH - (1 / (1 + Math.pow(10, (rA - rH)/400))))
+  const cA = K_FORM * (sA - (1 / (1 + Math.pow(10, (rH - rA)/400))))
+
+  ratings[h] = Math.round(rH + cH)
+  ratings[a] = Math.round(rA + cA)
+ })
+
+ return formRatings
+}
+
+/* ===== LOAD ===== */
 
 async function load(){
 
@@ -155,6 +228,15 @@ async function load(){
   .eq("competition","extraliga")
 
  teams = t
+
+ const { data: matches } = await supabase
+  .from("matches")
+  .select("*")
+  .not("home_score","is",null)
+  .not("away_score","is",null)
+  .order("round", { ascending:true })
+
+ formRatings = calculateFormRatings(matches, teams)
 
  const { data: p } = await supabase
   .from("players")
@@ -173,10 +255,12 @@ async function load(){
  render()
 }
 
+/* ===== KURZY ===== */
+
 function calculateOdds(){
 
  const strengths = teams.map(t =>
-  Math.pow(Number(t.rating_form||1000),6)
+  Math.pow(Number(formRatings[t.id] || 1000),6)
  )
 
  const total = strengths.reduce((a,b)=>a+b,0)
@@ -191,6 +275,8 @@ function calculateOdds(){
 
  return map
 }
+
+/* ===== ZBYTEK BEZE ZMĚNY ===== */
 
 window.updateWin = function(player,team,odds){
 
@@ -259,6 +345,7 @@ function playerBlock(name,oddsMap){
 
   const o = oddsMap[t.id]
   const existing = getBet(p.id, t.id)
+  const form = formRatings[t.id] || 1000
 
   html+=`<div class="grid row">`
 
@@ -268,7 +355,7 @@ function playerBlock(name,oddsMap){
       <div>${t.name}</div>
     </div>
 
-    <div data-label="Forma">${t.rating_form}</div>
+    <div data-label="Forma">${form}</div>
     <div data-label="Kurz"><b>${o.toFixed(2)}</b></div>
   `
 
