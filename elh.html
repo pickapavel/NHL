@@ -46,16 +46,22 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* 🔥 FILTER */
+/* 🔥 FILTRY */
 .filterBar{
  margin:15px 0;
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
 }
 
 .filterBar select{
  padding:8px 12px;
  border-radius:6px;
- border:1px solid #ccc;
+ border:none;
  font-weight:bold;
+ background:#2f9ec9;
+ color:white;
+ cursor:pointer;
 }
 
 /* MATCH */
@@ -159,13 +165,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <h2>Tabulka</h2>
 <div id="standings"></div>
 
-<!-- 🔥 NOVÝ FILTER -->
+<!-- 🔥 FILTRY -->
 <div class="filterBar">
+
+<select id="teamFilter">
+<option value="all">Všechny týmy</option>
+</select>
+
 <select id="matchFilter">
 <option value="all">Všechny zápasy</option>
 <option value="played">Jen odehrané</option>
 <option value="unplayed">Jen neodehrané</option>
 </select>
+
 </div>
 
 <h2>Rozpis zápasů</h2>
@@ -184,10 +196,16 @@ const supabase = createClient(
 
 const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 
-let currentFilter = "all"
+let currentMatchFilter = "all"
+let currentTeamFilter = "all"
 
 document.getElementById("matchFilter").onchange = (e)=>{
- currentFilter = e.target.value
+ currentMatchFilter = e.target.value
+ load()
+}
+
+document.getElementById("teamFilter").onchange = (e)=>{
+ currentTeamFilter = e.target.value
  load()
 }
 
@@ -217,19 +235,38 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
+ // 🔥 naplnění dropdownu týmů
+ const tf = document.getElementById("teamFilter")
+ if(tf.options.length === 1){
+  teams.forEach(t=>{
+   const opt = document.createElement("option")
+   opt.value = t.id
+   opt.textContent = t.name
+   tf.appendChild(opt)
+  })
+ }
+
  let safeMatches = matches || []
  safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
- // 🔥 FILTER LOGIKA
- if(currentFilter === "played"){
+ // 🔥 TEAM FILTER
+ if(currentTeamFilter !== "all"){
+  safeMatches = safeMatches.filter(m =>
+   m.home_team === currentTeamFilter ||
+   m.away_team === currentTeamFilter
+  )
+ }
+
+ // 🔥 MATCH FILTER
+ if(currentMatchFilter === "played"){
   safeMatches = safeMatches.filter(m => m.played)
  }
- else if(currentFilter === "unplayed"){
+ else if(currentMatchFilter === "unplayed"){
   safeMatches = safeMatches.filter(m => !m.played)
  }
 
  render(safeMatches, teamMap)
- renderTable(matches || [], teamMap, teams) // tabulka zůstává bez filtru
+ renderTable(matches || [], teamMap, teams)
 }
 
 function renderTable(matches, teamMap, teams){
