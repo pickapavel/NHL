@@ -23,6 +23,13 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
  border-radius:10px;padding:5px;
 }
 
+/* 🔥 rating */
+.rating{
+ font-size:13px;
+ color:#ffd166;
+ margin-top:3px;
+}
+
 .score{font-size:40px;font-weight:bold;}
 
 .middleBox{
@@ -47,7 +54,6 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 
 .betBox{background:#16394d;padding:20px;border-radius:15px;margin-bottom:25px;}
 
-/* 🔥 HEADER NA JEDEN ŘÁDEK */
 .betHeader{
  display:flex;
  justify-content:space-between;
@@ -58,7 +64,6 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
 .playerTitle{font-size:18px;font-weight:bold;}
 .credit{font-size:14px;color:#ddd;}
 
-/* 🔥 RESPONSIVE ODDS */
 .odds{
  display:grid;
  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
@@ -136,6 +141,7 @@ input{
 <div class="team">
 <img id="homeLogo">
 <div id="homeName"></div>
+<div id="homeRating" class="rating"></div>
 </div>
 
 <div class="middleBox">
@@ -147,6 +153,7 @@ input{
 <div class="team">
 <img id="awayLogo">
 <div id="awayName"></div>
+<div id="awayRating" class="rating"></div>
 </div>
 
 </div>
@@ -214,7 +221,6 @@ let state = {
  pici:{selected:[]}
 }
 
-// ===== ODDS =====
 function calculateOdds(homeRating, awayRating){
  const HOME_ADV = 80
  const homeAdj = homeRating + HOME_ADV
@@ -243,7 +249,6 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
-// ===== LOAD =====
 async function load(){
 
  const { data: match } = await supabase.from("matches").select("*").eq("id", matchId).single()
@@ -256,6 +261,13 @@ async function load(){
  document.getElementById("awayName").innerText = away.name
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
+
+ /* 🔥 rating */
+ document.getElementById("homeRating").innerText =
+  "⭐ " + Math.round(home.rating_form)
+
+ document.getElementById("awayRating").innerText =
+  "⭐ " + Math.round(away.rating_form)
 
  if(match.played){
 
@@ -283,7 +295,8 @@ async function load(){
  await loadExistingBets(match)
 }
 
-// ===== PLAYERS =====
+/* zbytek kódu BEZ ZMĚNY */
+
 async function loadPlayers(){
  const { data } = await supabase.from("players").select("*")
 
@@ -297,7 +310,6 @@ async function loadPlayers(){
   "Kredit: " + Math.round(players.pici.credit) + " Kč"
 }
 
-// ===== ODDS =====
 function renderOdds(playerKey){
 
  const cont = document.getElementById("odds_"+playerKey)
@@ -333,7 +345,6 @@ function renderOdds(playerKey){
  })
 }
 
-// ===== UPDATE =====
 function updateSummary(playerKey){
 
  const amount = Number(document.getElementById("amount_"+playerKey).value)
@@ -356,7 +367,6 @@ function updateSummary(playerKey){
 document.getElementById("amount_kubele").oninput = ()=>updateSummary("kubele")
 document.getElementById("amount_pici").oninput = ()=>updateSummary("pici")
 
-// ===== EXISTING BETS =====
 async function loadExistingBets(match){
 
  const { data: bets } = await supabase
@@ -398,7 +408,6 @@ async function loadExistingBets(match){
  })
 }
 
-// ===== BET =====
 window.placeBet = async function(playerKey){
 
  const amount = Number(document.getElementById("amount_"+playerKey).value)
