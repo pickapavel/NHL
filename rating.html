@@ -65,7 +65,7 @@ select{
 }
 
 .elo{ font-size:18px; font-weight:bold; }
-.form{ font-size:13px; color:#ccc; }
+.form{ font-size:13px; color:#ffd166; }
 
 .match{
  font-size:13px;
@@ -134,7 +134,6 @@ function getScore(match, teamId){
 }
 
 function getResultClass(match, teamId){
-
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
 
@@ -168,13 +167,20 @@ async function load(){
  const history = {}
  const teamMap = {}
 
+ // 🔥 FORM history (posledních 5)
+ const formHistory = {}
+ const formRatings = {}
+
  teams.forEach(t=>{
   ratings[t.id] = START_RATING
   history[t.id] = []
+
+  formHistory[t.id] = []
+  formRatings[t.id] = START_RATING
+
   teamMap[t.id] = t
  })
 
- // 🔵 ELO (dlouhodobý)
  matches.forEach(m=>{
 
   const h = m.home_team
@@ -192,47 +198,59 @@ async function load(){
   const nH = Math.round(rH + cH)
   const nA = Math.round(rA + cA)
 
-  history[h].push({ match:m, before:rH, after:nH, change:Math.round(cH) })
-  history[a].push({ match:m, before:rA, after:nA, change:Math.round(cA) })
+  // 🔵 OVERALL history
+  history[h].push({
+    match:m,
+    before:rH,
+    after:nH,
+    change:Math.round(cH)
+  })
+
+  history[a].push({
+    match:m,
+    before:rA,
+    after:nA,
+    change:Math.round(cA)
+  })
 
   ratings[h] = nH
   ratings[a] = nA
+
+  // 🟡 FORM (rolling posledních 5)
+  function updateForm(teamId, opponentId, score){
+
+    const current = formRatings[teamId]
+    const oppRating = ratings[opponentId]
+
+    const change = getEloChange(current, oppRating, score)
+
+    formHistory[teamId].push(change)
+
+    if(formHistory[teamId].length > 5){
+      formHistory[teamId].shift()
+    }
+
+    const newRating =
+      START_RATING +
+      formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
+
+    formRatings[teamId] = Math.round(newRating)
+
+    return {
+      before: current,
+      after: formRatings[teamId],
+      change: Math.round(change)
+    }
+  }
+
+  const formH = updateForm(h, a, sH)
+  const formA = updateForm(a, h, sA)
+
+  // přidáme form info do historie
+  history[h][history[h].length-1].form = formH
+  history[a][history[a].length-1].form = formA
+
  })
-
- // 🟡 FORMA (ELO posledních 5)
- function getForm(teamId){
-
-  const teamMatches = matches
-   .filter(m=> m.home_team === teamId || m.away_team === teamId)
-   .slice(-5)
-
-  let rating = 1000
-
-  teamMatches.forEach(m=>{
-
-   const opponentId = m.home_team === teamId ? m.away_team : m.home_team
-   const opponentRating = ratings[opponentId]
-
-   const score = getScore(m, teamId)
-
-   const change = getEloChange(rating, opponentRating, score)
-
-   rating += Math.round(change)
-  })
-
-  return Math.round(rating)
- }
-
- // 🔥 ULOŽENÍ DO DB (OPRAVENO)
- for(const id in ratings){
-  await supabase
-   .from("teams")
-   .update({ 
-     rating_overall: ratings[id],
-     rating_form: getForm(id)
-   })
-   .eq("id", id)
- }
 
  const filter = document.getElementById("filter")
  const cont = document.getElementById("content")
@@ -251,7 +269,7 @@ async function load(){
    .map(t=> ({
     ...t,
     elo: ratings[t.id],
-    form: getForm(t.id)
+    form: formRatings[t.id]
    }))
    .sort((a,b)=> b.elo - a.elo)
 
@@ -284,8 +302,10 @@ async function load(){
     html += `
      <div class="match ${cls}">
       ${home.name} vs ${away.name} (${m.home_score}:${m.away_score})
-      | ${h.before} → ${h.after}
-      (${h.change >=0 ? "+" : ""}${h.change})
+      <br>
+      ELO: ${h.before} → ${h.after} (${h.change >=0 ? "+" : ""}${h.change})
+      <br>
+      FORMA: ${h.form.before} → ${h.form.after} (${h.form.change >=0 ? "+" : ""}${h.form.change})
      </div>
     `
    })
@@ -296,7 +316,6 @@ async function load(){
  }
 
  filter.onchange = render
-
  render()
 }
 
