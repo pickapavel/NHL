@@ -219,7 +219,7 @@ async function load(){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-    const oppRating = ratings[opponentId]
+    const oppRating = formRatings[opponentId] // ✅ OPRAVA
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
     const change = K_FORM * (score - expected)
