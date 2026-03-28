@@ -103,7 +103,7 @@ const supabase = createClient(
 )
 
 const START_RATING = 1000
-const K = 40
+const K = 80
 
 function getEloChange(teamRating, oppRating, score){
  const expected = 1 / (1 + Math.pow(10, (oppRating - teamRating)/400))
