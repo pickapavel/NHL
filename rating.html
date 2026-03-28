@@ -163,7 +163,7 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("created_at", { ascending:false })
+  .order("round", { ascending:false }) // 🔥 OPRAVA
 
  const ratings = {}
  const history = {}
@@ -198,14 +198,14 @@ async function load(){
   const nH = Math.round(rH + cH)
   const nA = Math.round(rA + cA)
 
-  history[h].unshift({
+  history[h].push({
     match:m,
     before:rH,
     after:nH,
     change:Math.round(cH)
   })
 
-  history[a].unshift({
+  history[a].push({
     match:m,
     before:rA,
     after:nA,
@@ -247,8 +247,8 @@ async function load(){
   const formH = updateForm(h, a, sH)
   const formA = updateForm(a, h, sA)
 
-  history[h][0].form = formH
-  history[a][0].form = formA
+  history[h][history[h].length-1].form = formH
+  history[a][history[a].length-1].form = formA
 
  })
 
