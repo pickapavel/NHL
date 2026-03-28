@@ -134,6 +134,7 @@ function getScore(match, teamId){
 }
 
 function getResultClass(match, teamId){
+
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
 
@@ -165,11 +166,9 @@ async function load(){
 
  const ratings = {}
  const history = {}
- const teamMap = {}
-
- // 🔥 FORM history (posledních 5)
  const formHistory = {}
  const formRatings = {}
+ const teamMap = {}
 
  teams.forEach(t=>{
   ratings[t.id] = START_RATING
@@ -198,7 +197,6 @@ async function load(){
   const nH = Math.round(rH + cH)
   const nA = Math.round(rA + cA)
 
-  // 🔵 OVERALL history
   history[h].push({
     match:m,
     before:rH,
@@ -216,7 +214,7 @@ async function load(){
   ratings[h] = nH
   ratings[a] = nA
 
-  // 🟡 FORM (rolling posledních 5)
+  // 🔥 FORM jen pro vizualizaci
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
@@ -234,10 +232,12 @@ async function load(){
       START_RATING +
       formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
 
+    const before = current
+
     formRatings[teamId] = Math.round(newRating)
 
     return {
-      before: current,
+      before,
       after: formRatings[teamId],
       change: Math.round(change)
     }
@@ -246,7 +246,6 @@ async function load(){
   const formH = updateForm(h, a, sH)
   const formA = updateForm(a, h, sA)
 
-  // přidáme form info do historie
   history[h][history[h].length-1].form = formH
   history[a][history[a].length-1].form = formA
 
@@ -269,7 +268,7 @@ async function load(){
    .map(t=> ({
     ...t,
     elo: ratings[t.id],
-    form: formRatings[t.id]
+    form: Math.round(t.rating_form || 0)
    }))
    .sort((a,b)=> b.elo - a.elo)
 
@@ -303,9 +302,11 @@ async function load(){
      <div class="match ${cls}">
       ${home.name} vs ${away.name} (${m.home_score}:${m.away_score})
       <br>
-      ELO: ${h.before} → ${h.after} (${h.change >=0 ? "+" : ""}${h.change})
+      ELO: ${h.before} → ${h.after}
+      (${h.change >=0 ? "+" : ""}${h.change})
       <br>
-      FORMA: ${h.form.before} → ${h.form.after} (${h.form.change >=0 ? "+" : ""}${h.form.change})
+      FORMA: ${h.form.before} → ${h.form.after}
+      (${h.form.change >=0 ? "+" : ""}${h.form.change})
      </div>
     `
    })
