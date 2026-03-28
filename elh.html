@@ -30,6 +30,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .rank{width:30px;font-weight:bold;text-align:center;}
 
+.ratingBox{
+ width:90px;
+ text-align:center;
+ font-size:12px;
+ font-weight:bold;
+}
+
 .teamBlock{display:flex;align-items:center;gap:10px;flex:1;}
 
 .logo{
@@ -46,7 +53,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
-/* 🔥 FILTRY */
+/* FILTRY */
 .filterBar{
  margin:15px 0;
  display:flex;
@@ -165,7 +172,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <h2>Tabulka</h2>
 <div id="standings"></div>
 
-<!-- 🔥 FILTRY -->
 <div class="filterBar">
 
 <select id="teamFilter">
@@ -199,12 +205,12 @@ const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 let currentMatchFilter = "all"
 let currentTeamFilter = "all"
 
-document.getElementById("matchFilter").onchange = (e)=>{
+document.getElementById("matchFilter").onchange = e=>{
  currentMatchFilter = e.target.value
  load()
 }
 
-document.getElementById("teamFilter").onchange = (e)=>{
+document.getElementById("teamFilter").onchange = e=>{
  currentTeamFilter = e.target.value
  load()
 }
@@ -235,7 +241,6 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- // 🔥 naplnění dropdownu týmů
  const tf = document.getElementById("teamFilter")
  if(tf.options.length === 1){
   teams.forEach(t=>{
@@ -249,7 +254,6 @@ async function load(){
  let safeMatches = matches || []
  safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
- // 🔥 TEAM FILTER
  if(currentTeamFilter !== "all"){
   safeMatches = safeMatches.filter(m =>
    m.home_team === currentTeamFilter ||
@@ -257,7 +261,6 @@ async function load(){
   )
  }
 
- // 🔥 MATCH FILTER
  if(currentMatchFilter === "played"){
   safeMatches = safeMatches.filter(m => m.played)
  }
@@ -332,6 +335,12 @@ function renderTable(matches, teamMap, teams){
 
   cont.innerHTML+=`
   <div class="standingsCard">
+
+   <div class="ratingBox">
+     ⭐ ${Math.round(team.rating || 0)}<br>
+     🔥 ${Math.round(team.rating_form || 0)}
+   </div>
+
    <div class="rank">${i+1}</div>
 
    <div class="teamBlock">
