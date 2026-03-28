@@ -270,7 +270,7 @@ async function load(){
    .map(t=> ({
     ...t,
     elo: ratings[t.id],
-    form: Math.round(t.rating_form || 0)
+    form: formRatings[t.id]
    }))
    .sort((a,b)=> b.elo - a.elo)
 
