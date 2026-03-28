@@ -13,135 +13,93 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 h1{margin-bottom:15px}
 
-/* 🔥 ACCORDION */
-.section{
- margin-bottom:10px;
- border-radius:10px;
- overflow:hidden;
-}
+/* ACCORDION */
+.section{margin-bottom:10px;border-radius:10px;overflow:hidden;}
 
 .sectionHeader{
- display:flex;
- align-items:center;
- gap:10px;
- background:#0b2a3c;
- color:white;
- padding:12px 15px;
- cursor:pointer;
- font-size:18px;
- transition:0.2s;
+ display:flex;align-items:center;gap:10px;
+ background:#0b2a3c;color:white;
+ padding:12px 15px;cursor:pointer;font-size:18px;
 }
 
-.sectionHeader:hover{
- background:#14435c;
-}
-
-.arrow{
- transition:0.3s;
- font-size:18px;
-}
-
-.section.open .arrow{
- transform:rotate(90deg);
-}
+.arrow{transition:0.3s;}
+.section.open .arrow{transform:rotate(90deg);}
 
 .blockContent{
- max-height:0;
- overflow:hidden;
+ max-height:0;overflow:hidden;
  transition:max-height 0.3s ease;
  background:#f9f9f9;
 }
 
 .section.open .blockContent{
- max-height:2000px;
+ max-height:3000px;
  padding:10px;
 }
 
 /* PLAYER */
 .playerCard{
- background:#e9ecef;
- border-radius:10px;
- padding:12px;
- margin-bottom:15px;
+ background:#e9ecef;border-radius:10px;
+ padding:12px;margin-bottom:15px;
 }
+
+.credit{font-weight:bold;margin-bottom:10px;}
 
 /* GRID */
 .grid{
  display:grid;
  grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
- gap:10px;
- align-items:center;
+ gap:10px;align-items:center;
 }
 
 .headerRow{
- font-weight:bold;
- border-bottom:2px solid #aaa;
+ font-weight:bold;border-bottom:2px solid #aaa;
  padding:8px 0;
 }
 
 .row{
- padding:8px 0;
- border-bottom:1px solid #ccc;
+ padding:8px 0;border-bottom:1px solid #ccc;
 }
 
-.teamBlock{
- display:flex;
- align-items:center;
- gap:10px;
-}
+.teamBlock{display:flex;align-items:center;gap:10px;}
 
 .logo{
- width:40px;
- height:40px;
- object-fit:contain;
- background:white;
- border-radius:6px;
- padding:2px;
+ width:40px;height:40px;object-fit:contain;
+ background:white;border-radius:6px;padding:2px;
 }
 
-input{
- width:80px;
- padding:5px;
-}
+input{width:80px;padding:5px;}
 
 button{
- background:#27ae60;
- color:white;
- border:none;
- border-radius:6px;
- padding:6px 10px;
- cursor:pointer;
+ background:#27ae60;color:white;
+ border:none;border-radius:6px;
+ padding:6px 10px;cursor:pointer;
 }
 
-.credit{
- font-weight:bold;
- margin-bottom:10px;
-}
-
-.locked{
- font-size:13px;
- color:#333;
-}
+.locked{font-size:13px;color:#333;}
 
 /* 📱 MOBILE */
 @media(max-width:768px){
 
-.grid{
- grid-template-columns:1fr;
-}
+.grid{grid-template-columns:1fr;}
 
-.headerRow{
- display:none;
-}
+.headerRow{display:none;}
 
 .row{
  display:flex;
  flex-direction:column;
- gap:5px;
+ gap:6px;
 }
 
-button{
- width:100%;
+button{width:100%;}
+
+/* 🔥 LABELY */
+.row div[data-label]::before{
+ content: attr(data-label);
+ font-weight:bold;
+ font-size:12px;
+ color:#555;
+ display:block;
+ margin-bottom:2px;
 }
 
 }
@@ -154,7 +112,6 @@ button{
 
 <h1>Sázky</h1>
 
-<!-- 🔥 ACCORDION -->
 <div class="section" id="sec1">
 
   <div class="sectionHeader" onclick="toggleSection('sec1')">
@@ -272,7 +229,6 @@ function getBet(playerId, teamId){
 function playerBlock(name,oddsMap){
 
  const p = players[name]
-
  const sorted = [...teams].sort((a,b)=> oddsMap[b.id]-oddsMap[a.id])
 
  let html=`
@@ -298,30 +254,32 @@ function playerBlock(name,oddsMap){
   html+=`<div class="grid row">`
 
   html+=`
-    <div class="teamBlock">
+    <div class="teamBlock" data-label="Tým">
       <img class="logo" src="./logos/${t.logo}">
       <div>${t.name}</div>
     </div>
 
-    <div>${t.rating_form}</div>
-    <div><b>${o.toFixed(2)}</b></div>
+    <div data-label="Forma">${t.rating_form}</div>
+    <div data-label="Kurz"><b>${o.toFixed(2)}</b></div>
   `
 
   if(existing){
 
     html+=`
-      <div>${existing.amount} Kč</div>
-      <div>${Math.round(existing.potential_win)} Kč</div>
+      <div data-label="Vsazeno">${existing.amount} Kč</div>
+      <div data-label="Výhra">${Math.round(existing.potential_win)} Kč</div>
       <div class="locked">Již vsazeno!</div>
     `
 
   } else {
 
     html+=`
-      <input id="a_${name}_${t.id}" type="number"
-        oninput="updateWin('${name}','${t.id}',${o})">
+      <div data-label="Vsadit">
+        <input id="a_${name}_${t.id}" type="number"
+          oninput="updateWin('${name}','${t.id}',${o})">
+      </div>
 
-      <div id="w_${name}_${t.id}">-</div>
+      <div data-label="Výhra" id="w_${name}_${t.id}">-</div>
 
       <button onclick="bet('${name}','${t.id}',${o})">Vsadit</button>
     `
