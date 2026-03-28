@@ -137,15 +137,11 @@ function calculateScore(lines){
   Number(lines[17]||0) +
   Number(lines[18]||0)
 
- const otHome = lines[9]
- const otAway = lines[19]
- const shootout = lines[20]
+ if(lines[9] === "11") hg++
+ if(lines[19] === "11") ag++
 
- if(otHome === "11") hg++
- if(otAway === "11") ag++
-
- if(shootout === "1") hg++
- if(shootout === "2") ag++
+ if(lines[20] === "1") hg++
+ if(lines[20] === "2") ag++
 
  return {hg, ag}
 }
@@ -161,7 +157,7 @@ function getResultType(lines){
  return "REG"
 }
 
-// ===== SINGLE TIP CHECK =====
+// ===== TIP CHECK =====
 function checkSingleTip(match, tip){
 
  const type = match.result_type
@@ -187,12 +183,8 @@ function checkSingleTip(match, tip){
  return false
 }
 
-// ===== MULTI TIP CHECK (🔥 FIX) =====
 function isWinningBet(match, tip){
-
  const tips = tip.includes(",") ? tip.split(",") : [tip]
-
- // 🔥 všechny musí být true
  return tips.every(t => checkSingleTip(match, t))
 }
 
@@ -236,6 +228,59 @@ async function evaluateBets(match){
  }
 }
 
+// ===== RESET (🔥 FIX) =====
+window.resetMatch = async function(matchId){
+
+ if(!confirm("Opravdu zrušit zápas?")) return
+
+ const { data: bets } = await supabase
+  .from("bets")
+  .select("*")
+  .eq("match_id", matchId)
+
+ // 🔥 vrácení kreditů
+ for(const bet of bets){
+
+  if(bet.status === "won"){
+
+    const { data: player } = await supabase
+     .from("players")
+     .select("*")
+     .eq("id", bet.player_id)
+     .single()
+
+    if(player){
+      await supabase
+       .from("players")
+       .update({
+        credit: Number(player.credit) - Number(bet.potential_win)
+       })
+       .eq("id", player.id)
+    }
+  }
+
+  // vrátíme bet do pending
+  await supabase
+   .from("bets")
+   .update({ status: "pending" })
+   .eq("id", bet.id)
+ }
+
+ await supabase
+  .from("matches")
+  .update({
+   home_score: null,
+   away_score: null,
+   played: false,
+   stats: null,
+   result_type: null
+  })
+  .eq("id", matchId)
+
+ alert("Zápas zrušen 👍")
+ load()
+}
+
 // ===== SAVE =====
 window.saveMatch = async function(matchId){
 
@@ -269,26 +314,6 @@ window.saveMatch = async function(matchId){
  await evaluateBets(fullMatch)
 
  alert("Uloženo 👍")
- load()
-}
-
-// ===== RESET =====
-window.resetMatch = async function(matchId){
-
- if(!confirm("Opravdu zrušit zápas?")) return
-
- await supabase
-  .from("matches")
-  .update({
-   home_score: null,
-   away_score: null,
-   played: false,
-   stats: null,
-   result_type: null
-  })
-  .eq("id", matchId)
-
- alert("Zápas zrušen 👍")
  load()
 }
 
