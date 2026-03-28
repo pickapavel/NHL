@@ -163,7 +163,7 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("round", { ascending:false }) // 🔥 OPRAVA
+  .order("round", { ascending:true }) // 🔥 správně pro výpočet
 
  const ratings = {}
  const history = {}
@@ -291,7 +291,7 @@ async function load(){
 
    const teamHistory = history[team.id] || []
 
-   teamHistory.forEach(h=>{
+   teamHistory.slice().reverse().forEach(h=>{ // 🔥 UI otočení
 
     const m = h.match
     const cls = getResultClass(m, team.id)
