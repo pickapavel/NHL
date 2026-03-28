@@ -107,6 +107,7 @@ button{
  display:flex;
  justify-content:space-between;
  align-items:center;
+ gap:10px; /* 👈 tvoje úprava */
 }
 
 .row div[data-label]::before{
@@ -212,7 +213,6 @@ function calculateFormRatings(matches, teams){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-
     const oppRating = formRatings[opponentId]
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
