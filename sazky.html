@@ -8,64 +8,41 @@
 body{font-family:Arial;background:#f2f2f2;margin:0;}
 .wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
 
-h1{margin-bottom:20px;}
+.block{border:1px solid #ccc;margin-bottom:15px;}
+.block-header{background:black;color:yellow;padding:10px;cursor:pointer;}
+.block-content{display:none;padding:10px;}
 
-.block{
- border:1px solid #ccc;
- margin-bottom:15px;
-}
-
-.block-header{
- background:black;
- color:yellow;
- padding:10px;
- cursor:pointer;
-}
-
-.block-content{
- display:none;
- padding:10px;
+.header-row{
+ display:flex;
+ font-weight:bold;
+ border-bottom:2px solid black;
+ padding-bottom:5px;
+ margin-bottom:10px;
 }
 
 .team-row{
  display:flex;
- justify-content:space-between;
  align-items:center;
  border-bottom:1px solid #ddd;
  padding:8px 0;
 }
 
-.team-name{
- width:250px;
- font-weight:bold;
-}
+.col-name{width:250px;}
+.col-rating{width:100px;text-align:center;}
+.col-odds{width:100px;text-align:center;font-weight:bold;}
+.col-input{width:120px;}
+.col-btn{width:100px;}
 
-.odds{
- width:80px;
- text-align:center;
- font-weight:bold;
-}
-
-input{
- padding:5px;
- width:80px;
-}
-
-button{
- padding:5px 10px;
- cursor:pointer;
-}
+input{padding:5px;width:80px;}
+button{padding:5px 10px;cursor:pointer;}
 </style>
 </head>
 
 <body>
 
 <div class="wrapper">
-
 <h1>Sázky</h1>
-
 <div id="betsContainer"></div>
-
 </div>
 
 <script type="module">
@@ -100,29 +77,24 @@ async function load(){
  render()
 }
 
-// ===== ODDS Z FORMY =====
+// ===== ODDS (Z rating_form) =====
 function calculateOddsAll(){
 
- // 🔥 síla = forma + malý základ
- const strengths = teams.map(t => {
-  const form = Number(t.form || 0)
-  const base = 10 // aby nebyla nula
-  return base + form
- })
+ // použijeme rating_form přímo
+ const strengths = teams.map(t => Number(t.rating_form || 1000))
 
  const total = strengths.reduce((a,b)=>a+b,0)
 
- // pravděpodobnosti
- const probs = strengths.map(s => s / total)
-
- // bookmaker marže 10%
  const margin = 1.1
-
  const oddsMap = {}
 
  teams.forEach((team, i)=>{
-  const odds = (margin / probs[i]).toFixed(2)
-  oddsMap[team.id] = Math.max(1.2, odds)
+
+  const prob = strengths[i] / total
+
+  const odds = margin / prob
+
+  oddsMap[team.id] = odds.toFixed(2)
  })
 
  return oddsMap
@@ -136,16 +108,23 @@ function render(){
  const cont = document.getElementById("betsContainer")
  cont.innerHTML = ""
 
- // ===== BLOCK =====
  cont.innerHTML += `
  <div class="block">
-
   <div class="block-header" onclick="toggleBlock(this)">
    Vítěz základní části
   </div>
 
-  <div class="block-content" id="winnerBlock"></div>
+  <div class="block-content" id="winnerBlock">
 
+    <div class="header-row">
+      <div class="col-name">Tým</div>
+      <div class="col-rating">Forma</div>
+      <div class="col-odds">Kurz</div>
+      <div class="col-input"></div>
+      <div class="col-btn"></div>
+    </div>
+
+  </div>
  </div>
  `
 
@@ -157,15 +136,19 @@ function render(){
 
   block.innerHTML += `
    <div class="team-row">
-     <div class="team-name">${team.name}</div>
+     <div class="col-name">${team.name}</div>
+     <div class="col-rating">${team.rating_form}</div>
+     <div class="col-odds">${odds}</div>
 
-     <div class="odds">${odds}</div>
+     <div class="col-input">
+       <input type="number" id="amount_${team.id}" placeholder="Kč">
+     </div>
 
-     <input type="number" id="amount_${team.id}" placeholder="Kč">
-
-     <button onclick="placeBet('${team.id}', ${odds}, 'winner_regular_season')">
-       Vsadit
-     </button>
+     <div class="col-btn">
+       <button onclick="placeBet('${team.id}', ${odds}, 'winner_regular_season')">
+         Vsadit
+       </button>
+     </div>
    </div>
   `
  })
@@ -173,17 +156,15 @@ function render(){
 
 // ===== TOGGLE =====
 window.toggleBlock = function(el){
-
  const content = el.nextElementSibling
  content.style.display =
   content.style.display === "block" ? "none" : "block"
 }
 
-// ===== PLACE BET =====
+// ===== BET =====
 window.placeBet = async function(teamId, odds, type){
 
- const amountInput = document.getElementById(`amount_${teamId}`)
- const amount = Number(amountInput.value)
+ const amount = Number(document.getElementById(`amount_${teamId}`).value)
 
  if(!amount || amount <= 0){
   alert("Zadej částku")
@@ -205,7 +186,7 @@ window.placeBet = async function(teamId, odds, type){
   })
   .eq("id", player.id)
 
- // uložení sázky
+ // uložení
  await supabase
   .from("bets_special")
   .insert({
