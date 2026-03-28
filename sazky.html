@@ -5,10 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sázky</title>
 
+<!-- 🔥 NOVÝ FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box}
 
-body{font-family:Arial;margin:0;background:#f2f2f2;}
+body{
+ font-family:'Inter', sans-serif;
+ margin:0;
+ background:#f2f2f2;
+}
+
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
 h1{margin-bottom:15px}
@@ -42,7 +50,7 @@ h1{margin-bottom:15px}
  padding:12px;margin-bottom:15px;
 }
 
-.credit{font-weight:bold;margin-bottom:10px;}
+.credit{font-weight:600;margin-bottom:10px;}
 
 /* GRID */
 .grid{
@@ -52,7 +60,7 @@ h1{margin-bottom:15px}
 }
 
 .headerRow{
- font-weight:bold;border-bottom:2px solid #aaa;
+ font-weight:600;border-bottom:2px solid #aaa;
  padding:8px 0;
 }
 
@@ -73,6 +81,7 @@ button{
  background:#27ae60;color:white;
  border:none;border-radius:6px;
  padding:6px 10px;cursor:pointer;
+ font-weight:600;
 }
 
 .locked{font-size:13px;color:#333;}
@@ -95,7 +104,7 @@ button{width:100%;}
 /* 🔥 LABELY */
 .row div[data-label]::before{
  content: attr(data-label);
- font-weight:bold;
+ font-weight:600;
  font-size:12px;
  color:#555;
  display:block;
