@@ -46,6 +46,18 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:8px 12px;border-radius:8px;min-width:50px;text-align:center;
 }
 
+/* 🔥 FILTER */
+.filterBar{
+ margin:15px 0;
+}
+
+.filterBar select{
+ padding:8px 12px;
+ border-radius:6px;
+ border:1px solid #ccc;
+ font-weight:bold;
+}
+
 /* MATCH */
 .matchRow{
  background:#e9ecef;
@@ -114,7 +126,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  gap:6px;
 }
 
-/* 🔥 DESKTOP – čistý grid bez hacků */
+/* DESKTOP */
 @media(min-width:768px){
 
 .matchRow{
@@ -123,7 +135,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  align-items:start;
 }
 
-/* přímé rozmístění */
 .homeTeam{grid-column:1;}
 .homeScore{grid-column:2;}
 .middleBox{grid-column:3;}
@@ -131,9 +142,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .awayTeam{grid-column:5; justify-content:flex-end; text-align:right;}
 .btnWrap{grid-column:6;}
 
-.scoreBox{
- min-width:80px;
-}
+.scoreBox{min-width:80px;}
 
 }
 </style>
@@ -150,6 +159,15 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <h2>Tabulka</h2>
 <div id="standings"></div>
 
+<!-- 🔥 NOVÝ FILTER -->
+<div class="filterBar">
+<select id="matchFilter">
+<option value="all">Všechny zápasy</option>
+<option value="played">Jen odehrané</option>
+<option value="unplayed">Jen neodehrané</option>
+</select>
+</div>
+
 <h2>Rozpis zápasů</h2>
 <div id="schedule"></div>
 
@@ -165,6 +183,13 @@ const supabase = createClient(
 )
 
 const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
+
+let currentFilter = "all"
+
+document.getElementById("matchFilter").onchange = (e)=>{
+ currentFilter = e.target.value
+ load()
+}
 
 async function load(){
 
@@ -192,11 +217,19 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id] = t)
 
- const safeMatches = matches || []
+ let safeMatches = matches || []
  safeMatches.sort((a,b)=> Number(a.round) - Number(b.round))
 
+ // 🔥 FILTER LOGIKA
+ if(currentFilter === "played"){
+  safeMatches = safeMatches.filter(m => m.played)
+ }
+ else if(currentFilter === "unplayed"){
+  safeMatches = safeMatches.filter(m => !m.played)
+ }
+
  render(safeMatches, teamMap)
- renderTable(safeMatches, teamMap, teams)
+ renderTable(matches || [], teamMap, teams) // tabulka zůstává bez filtru
 }
 
 function renderTable(matches, teamMap, teams){
@@ -302,7 +335,6 @@ function render(matches, teamMap){
   let tag = ""
 
   if(stats){
-
     const h1 = Number(stats[16]||0)
     const h2 = Number(stats[17]||0)
     const h3 = Number(stats[18]||0)
