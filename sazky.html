@@ -6,18 +6,18 @@
 
 <style>
 body{font-family:Arial;background:#f2f2f2;margin:0;}
-.wrapper{max-width:1200px;margin:auto;padding:20px;background:white;}
+.wrapper{max-width:1300px;margin:auto;padding:20px;background:white;}
 
-h1{margin-bottom:10px;}
+h2{margin-top:40px;}
 
 .credit{
  font-size:18px;
- margin-bottom:20px;
+ margin-bottom:10px;
  padding:10px;
  background:#eee;
 }
 
-.block{border:1px solid #ccc;margin-bottom:15px;}
+.block{border:1px solid #ccc;margin-bottom:20px;}
 .block-header{background:black;color:yellow;padding:10px;cursor:pointer;}
 .block-content{display:none;padding:10px;}
 
@@ -54,9 +54,7 @@ button{padding:5px 10px;cursor:pointer;}
 
 <h1>Sázky</h1>
 
-<div id="creditBox" class="credit"></div>
-
-<div id="betsContainer"></div>
+<div id="app"></div>
 
 </div>
 
@@ -70,44 +68,46 @@ const supabase = createClient(
 )
 
 let teams = []
-let player = null
+let players = {}
 
 // ===== LOAD =====
 async function load(){
 
- const { data: p } = await supabase
-  .from("players")
-  .select("*")
-  .limit(1)
-  .single()
-
- player = p
-
- document.getElementById("creditBox").innerHTML =
-  `💰 Kredit: <b>${player.credit} Kč</b>`
-
  const { data: t } = await supabase
   .from("teams")
   .select("*")
-  .eq("competition", "extraliga") // 🔥 filtr
+  .eq("competition", "extraliga")
 
  teams = t
+
+ // 🔥 NAJDI KONKRÉTNÍ HRÁČE
+ const { data: p } = await supabase
+  .from("players")
+  .select("*")
+  .in("name", ["Kubele", "Pici"])
+
+ p.forEach(pl => players[pl.name] = pl)
 
  render()
 }
 
-// ===== ODDS =====
+// ===== ODDS (🔥 VÝRAZNÉ ROZDÍLY) =====
 function calculateOddsAll(){
 
- const strengths = teams.map(t => Number(t.rating_form || 1000))
+ const strengths = teams.map(t => 
+  Math.pow(Number(t.rating_form || 1000), 6)
+ )
+
  const total = strengths.reduce((a,b)=>a+b,0)
 
- const margin = 1.1
+ const margin = 1.15
  const oddsMap = {}
 
  teams.forEach((team, i)=>{
+
   const prob = strengths[i] / total
   const odds = margin / prob
+
   oddsMap[team.id] = odds.toFixed(2)
  })
 
@@ -115,58 +115,51 @@ function calculateOddsAll(){
 }
 
 // ===== LIVE VÝHRA =====
-window.updateWin = function(teamId, odds){
+window.updateWin = function(teamId, odds, playerName){
 
- const amount = Number(document.getElementById(`amount_${teamId}`).value)
- const winBox = document.getElementById(`win_${teamId}`)
+ const amount = Number(document.getElementById(`amount_${playerName}_${teamId}`).value)
+ const winBox = document.getElementById(`win_${playerName}_${teamId}`)
 
  if(!amount){
   winBox.innerText = "-"
   return
  }
 
- const potential = (amount * odds).toFixed(0)
- winBox.innerText = potential + " Kč"
+ winBox.innerText = Math.round(amount * odds) + " Kč"
 }
 
-// ===== RENDER =====
-function render(){
+// ===== RENDER JEDNOHO HRÁČE =====
+function renderPlayer(playerName){
 
+ const player = players[playerName]
  const oddsMap = calculateOddsAll()
 
- const cont = document.getElementById("betsContainer")
- cont.innerHTML = ""
+ let html = `
+  <h2>${playerName}</h2>
+  <div class="credit">💰 Kredit: <b>${player.credit} Kč</b></div>
 
- cont.innerHTML += `
- <div class="block">
-
-  <div class="block-header" onclick="toggleBlock(this)">
-   Vítěz základní části
-  </div>
-
-  <div class="block-content" id="winnerBlock">
-
-    <div class="header-row">
-      <div class="col-name">Tým</div>
-      <div class="col-rating">Forma</div>
-      <div class="col-odds">Kurz</div>
-      <div class="col-input">Sázka</div>
-      <div class="col-win">Možná výhra</div>
-      <div class="col-btn"></div>
+  <div class="block">
+    <div class="block-header" onclick="toggleBlock(this)">
+      Vítěz základní části
     </div>
 
-  </div>
+    <div class="block-content">
 
- </div>
- `
-
- const block = document.getElementById("winnerBlock")
+      <div class="header-row">
+        <div class="col-name">Tým</div>
+        <div class="col-rating">Forma</div>
+        <div class="col-odds">Kurz</div>
+        <div class="col-input">Sázka</div>
+        <div class="col-win">Možná výhra</div>
+        <div class="col-btn"></div>
+      </div>
+  `
 
  teams.forEach(team=>{
 
   const odds = oddsMap[team.id]
 
-  block.innerHTML += `
+  html += `
    <div class="team-row">
      <div class="col-name">${team.name}</div>
      <div class="col-rating">${team.rating_form}</div>
@@ -174,41 +167,55 @@ function render(){
 
      <div class="col-input">
        <input 
-         type="number" 
-         id="amount_${team.id}" 
-         placeholder="Kč"
-         oninput="updateWin('${team.id}', ${odds})"
-       >
+         type="number"
+         id="amount_${playerName}_${team.id}"
+         oninput="updateWin('${team.id}', ${odds}, '${playerName}')"
+         placeholder="Kč">
      </div>
 
-     <div class="col-win" id="win_${team.id}">-</div>
+     <div class="col-win" id="win_${playerName}_${team.id}">-</div>
 
      <div class="col-btn">
-       <button onclick="placeBet('${team.id}', ${odds}, 'winner_regular_season')">
+       <button onclick="placeBet('${player.id}', '${team.id}', ${odds}, '${playerName}')">
          Vsadit
        </button>
      </div>
    </div>
   `
  })
+
+ html += `</div></div>`
+
+ return html
+}
+
+// ===== RENDER =====
+function render(){
+
+ const app = document.getElementById("app")
+
+ app.innerHTML =
+  renderPlayer("Kubele") +
+  renderPlayer("Pici")
 }
 
 // ===== TOGGLE =====
 window.toggleBlock = function(el){
- const content = el.nextElementSibling
- content.style.display =
-  content.style.display === "block" ? "none" : "block"
+ const c = el.nextElementSibling
+ c.style.display = c.style.display === "block" ? "none" : "block"
 }
 
 // ===== BET =====
-window.placeBet = async function(teamId, odds, type){
+window.placeBet = async function(playerId, teamId, odds, playerName){
 
- const amount = Number(document.getElementById(`amount_${teamId}`).value)
+ const amount = Number(document.getElementById(`amount_${playerName}_${teamId}`).value)
 
  if(!amount || amount <= 0){
   alert("Zadej částku")
   return
  }
+
+ const player = players[playerName]
 
  if(player.credit < amount){
   alert("Nedostatek kreditu")
@@ -217,20 +224,18 @@ window.placeBet = async function(teamId, odds, type){
 
  const potential = amount * odds
 
- // odečti kredit
  await supabase
   .from("players")
   .update({
    credit: player.credit - amount
   })
-  .eq("id", player.id)
+  .eq("id", playerId)
 
- // ulož bet
  await supabase
   .from("bets_special")
   .insert({
-   player_id: player.id,
-   type: type,
+   player_id: playerId,
+   type: "winner_regular_season",
    target_id: teamId,
    odds: odds,
    amount: amount,
