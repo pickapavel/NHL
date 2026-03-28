@@ -31,7 +31,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .rank{width:30px;font-weight:bold;text-align:center;}
 
 .ratingBox{
- width:90px;
+ width:95px;
  text-align:center;
  font-size:12px;
  font-weight:bold;
@@ -337,7 +337,7 @@ function renderTable(matches, teamMap, teams){
   <div class="standingsCard">
 
    <div class="ratingBox">
-     ⭐ ${Math.round(team.rating || 0)}<br>
+     ⭐ ${Math.round(team.rating_overall || 0)}<br>
      🔥 ${Math.round(team.rating_form || 0)}
    </div>
 
