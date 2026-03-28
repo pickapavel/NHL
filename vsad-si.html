@@ -353,7 +353,7 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("created_at", { ascending:true })
+  .order("round", { ascending:true }) // 🔥 FIX
 
  const formRatings = calculateFormRatings(matches, teams)
 
