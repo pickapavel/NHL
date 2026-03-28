@@ -184,7 +184,9 @@ function calculateFormRatings(matches, teams){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-    const oppRating = ratings[opponentId]
+
+    // 🔥 FIX – stejný jako rating.html
+    const oppRating = formRatings[opponentId]
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
     const change = K_FORM * (score - expected)
