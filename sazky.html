@@ -22,28 +22,32 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#e9ecef;border-radius:10px;padding:12px;margin-bottom:15px;
 }
 
-.row{
- display:flex;align-items:center;justify-content:space-between;
- padding:10px;border-bottom:1px solid #ccc;flex-wrap:wrap;
+/* 🔥 GRID – stejné pro header i řádky */
+.grid{
+ display:grid;
+ grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
+ align-items:center;
+ gap:10px;
 }
 
 .headerRow{
- display:flex;
  font-weight:bold;
- padding:10px;
+ padding:10px 0;
  border-bottom:2px solid #aaa;
 }
 
-.teamBlock{display:flex;align-items:center;gap:10px;width:230px;}
+.row{
+ padding:10px 0;
+ border-bottom:1px solid #ccc;
+}
+
+.teamBlock{
+ display:flex;align-items:center;gap:10px;
+}
 
 .logo{
  width:40px;height:40px;background:white;border-radius:6px;padding:2px;
 }
-
-.rating{width:80px;text-align:center;}
-.odds{width:80px;text-align:center;font-weight:bold;}
-.betcol{width:120px;text-align:center;}
-.win{width:120px;text-align:center;}
 
 input{width:80px;padding:5px;}
 
@@ -52,16 +56,27 @@ button{
  padding:6px 10px;cursor:pointer;
 }
 
-.locked{
- font-size:13px;
-}
-
 .credit{font-weight:bold;margin-bottom:10px;}
 
+.locked{font-size:13px;}
+
+/* 📱 MOBILE */
 @media(max-width:768px){
- .row{flex-direction:column;align-items:flex-start;gap:6px}
- .headerRow{display:none}
- button{width:100%}
+
+.grid{
+ grid-template-columns: 1fr;
+}
+
+.headerRow{display:none;}
+
+.row{
+ display:flex;
+ flex-direction:column;
+ gap:5px;
+}
+
+button{width:100%}
+
 }
 </style>
 </head>
@@ -191,13 +206,13 @@ function playerBlock(name,oddsMap){
 
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
 
-  <div class="headerRow">
-    <div class="teamBlock">Tým</div>
-    <div class="rating">Forma</div>
-    <div class="odds">Kurz</div>
-    <div class="betcol">Vsazená částka</div>
-    <div class="win">Výhra</div>
-    <div style="width:120px;text-align:center;"></div>
+  <div class="grid headerRow">
+    <div>Tým</div>
+    <div>Forma</div>
+    <div>Kurz</div>
+    <div>Vsazená částka</div>
+    <div>Výhra</div>
+    <div></div>
   </div>
  `
 
@@ -206,23 +221,23 @@ function playerBlock(name,oddsMap){
   const o = oddsMap[t.id]
   const existing = getBet(p.id, t.id)
 
-  html+=`
-  <div class="row">
+  html+=`<div class="grid row">`
 
+  html+=`
     <div class="teamBlock">
       <img class="logo" src="./logos/${t.logo}">
       <div>${t.name}</div>
     </div>
 
-    <div class="rating">${t.rating_form}</div>
-    <div class="odds">${o.toFixed(2)}</div>
+    <div>${t.rating_form}</div>
+    <div><b>${o.toFixed(2)}</b></div>
   `
 
   if(existing){
 
     html+=`
-      <div class="betcol">${existing.amount} Kč</div>
-      <div class="win">${Math.round(existing.potential_win)} Kč</div>
+      <div>${existing.amount} Kč</div>
+      <div>${Math.round(existing.potential_win)} Kč</div>
       <div class="locked">Již vsazeno!</div>
     `
 
@@ -232,7 +247,7 @@ function playerBlock(name,oddsMap){
       <input id="a_${name}_${t.id}" type="number"
         oninput="updateWin('${name}','${t.id}',${o})">
 
-      <div class="win" id="w_${name}_${t.id}">-</div>
+      <div id="w_${name}_${t.id}">-</div>
 
       <button onclick="bet('${name}','${t.id}',${o})">Vsadit</button>
     `
