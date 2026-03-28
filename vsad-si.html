@@ -23,7 +23,6 @@ body{font-family:Arial;background:#0c2a38;margin:0;color:white;}
  border-radius:10px;padding:5px;
 }
 
-/* 🔥 rating */
 .rating{
  font-size:13px;
  color:#ffd166;
@@ -212,6 +211,9 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
+const START_RATING = 1000
+const K = 40
+
 const matchId = new URLSearchParams(window.location.search).get("id")
 
 let players = {}
@@ -220,6 +222,96 @@ let state = {
  kubele:{selected:[]},
  pici:{selected:[]}
 }
+
+/* ===== ELO ===== */
+
+function getEloChange(teamRating, oppRating, score){
+ const expected = 1 / (1 + Math.pow(10, (oppRating - teamRating)/400))
+ return K * (score - expected)
+}
+
+function getScore(match, teamId){
+
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+
+ const isSN = stats && (stats[20] === "1" || stats[20] === "2")
+ const isOT = stats && !isSN && (stats[9] === "11" || stats[19] === "11")
+
+ const isHome = match.home_team === teamId
+
+ const teamGoals = isHome ? hg : ag
+ const oppGoals = isHome ? ag : hg
+
+ if(teamGoals > oppGoals){
+  return (isSN || isOT) ? 0.75 : 1
+ }else{
+  return (isSN || isOT) ? 0.25 : 0
+ }
+}
+
+/* ===== NOVÉ: FORM výpočet (STEJNÝ jako rating.html) ===== */
+
+function calculateFormRatings(matches, teams){
+
+ const ratings = {}
+ const formHistory = {}
+ const formRatings = {}
+
+ teams.forEach(t=>{
+  ratings[t.id] = START_RATING
+  formHistory[t.id] = []
+  formRatings[t.id] = START_RATING
+ })
+
+ matches.forEach(m=>{
+
+  const h = m.home_team
+  const a = m.away_team
+
+  const sH = getScore(m, h)
+  const sA = getScore(m, a)
+
+  function updateForm(teamId, opponentId, score){
+
+    const current = formRatings[teamId]
+    const oppRating = ratings[opponentId]
+
+    const change = getEloChange(current, oppRating, score)
+
+    formHistory[teamId].push(change)
+
+    if(formHistory[teamId].length > 5){
+      formHistory[teamId].shift()
+    }
+
+    const newRating =
+      START_RATING +
+      formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
+
+    formRatings[teamId] = Math.round(newRating)
+  }
+
+  updateForm(h, a, sH)
+  updateForm(a, h, sA)
+
+  const rH = ratings[h]
+  const rA = ratings[a]
+
+  const cH = getEloChange(rH, rA, sH)
+  const cA = getEloChange(rA, rH, sA)
+
+  ratings[h] = Math.round(rH + cH)
+  ratings[a] = Math.round(rA + cA)
+ })
+
+ return formRatings
+}
+
+/* ===== ODDS ===== */
 
 function calculateOdds(homeRating, awayRating){
  const HOME_ADV = 80
@@ -249,25 +341,35 @@ function calculateOdds(homeRating, awayRating){
  }
 }
 
+/* ===== LOAD ===== */
+
 async function load(){
 
  const { data: match } = await supabase.from("matches").select("*").eq("id", matchId).single()
  const { data: teams } = await supabase.from("teams").select("*")
 
+ const { data: matches } = await supabase
+  .from("matches")
+  .select("*")
+  .not("home_score","is",null)
+  .not("away_score","is",null)
+  .order("created_at", { ascending:true })
+
+ const formRatings = calculateFormRatings(matches, teams)
+
  const home = teams.find(t=>t.id === match.home_team)
  const away = teams.find(t=>t.id === match.away_team)
+
+ const homeForm = formRatings[home.id]
+ const awayForm = formRatings[away.id]
 
  document.getElementById("homeName").innerText = home.name
  document.getElementById("awayName").innerText = away.name
  document.getElementById("homeLogo").src = "./logos/" + home.logo
  document.getElementById("awayLogo").src = "./logos/" + away.logo
 
- /* 🔥 rating */
- document.getElementById("homeRating").innerText =
-  "⭐ " + Math.round(home.rating_form)
-
- document.getElementById("awayRating").innerText =
-  "⭐ " + Math.round(away.rating_form)
+ document.getElementById("homeRating").innerText = "⭐ " + homeForm
+ document.getElementById("awayRating").innerText = "⭐ " + awayForm
 
  if(match.played){
 
@@ -286,7 +388,7 @@ async function load(){
   }
  }
 
- oddsGlobal = calculateOdds(home.rating_form, away.rating_form)
+ oddsGlobal = calculateOdds(homeForm, awayForm)
 
  renderOdds("kubele")
  renderOdds("pici")
@@ -295,7 +397,7 @@ async function load(){
  await loadExistingBets(match)
 }
 
-/* zbytek kódu BEZ ZMĚNY */
+/* ===== ZBYTEK TVŮJ ORIGINÁL ===== */
 
 async function loadPlayers(){
  const { data } = await supabase.from("players").select("*")
