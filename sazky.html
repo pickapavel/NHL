@@ -87,18 +87,36 @@ button{
 
 /* MOBILE */
 @media(max-width:768px){
-.grid{grid-template-columns:1fr;}
+
+.grid{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+}
+
 .headerRow{display:none;}
-.row{display:flex;flex-direction:column;gap:6px;}
-button{width:100%;}
+
+.row{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+}
+
+/* label vlevo, hodnota vpravo */
+.row div[data-label]{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
 .row div[data-label]::before{
  content: attr(data-label);
  font-weight:600;
  font-size:12px;
  color:#555;
- display:block;
- margin-bottom:2px;
 }
+
+button{width:100%;}
 }
 </style>
 </head>
@@ -194,6 +212,7 @@ function calculateFormRatings(matches, teams){
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
+
     const oppRating = formRatings[opponentId]
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
