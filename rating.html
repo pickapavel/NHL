@@ -163,7 +163,7 @@ async function load(){
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("created_at", { ascending:true })
+  .order("created_at", { ascending:false }) // 🔥 změna
 
  const ratings = {}
  const history = {}
@@ -215,11 +215,10 @@ async function load(){
   ratings[h] = nH
   ratings[a] = nA
 
-  // 🔥 FORM jen pro vizualizaci
   function updateForm(teamId, opponentId, score){
 
     const current = formRatings[teamId]
-    const oppRating = formRatings[opponentId] // ✅ OPRAVA
+    const oppRating = formRatings[opponentId]
 
     const expected = 1 / (1 + Math.pow(10, (oppRating - current)/400))
     const change = K_FORM * (score - expected)
@@ -292,7 +291,7 @@ async function load(){
 
    const teamHistory = history[team.id] || []
 
-   teamHistory.slice().reverse().forEach(h=>{
+   teamHistory.forEach(h=>{ // 🔥 změna
 
     const m = h.match
     const cls = getResultClass(m, team.id)
