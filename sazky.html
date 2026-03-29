@@ -85,6 +85,7 @@ button{
 
 .locked{font-size:13px;color:#333;}
 
+/* MOBILE */
 @media(max-width:768px){
 
 .grid{
@@ -101,11 +102,12 @@ button{
  gap:8px;
 }
 
+/* label vlevo, hodnota vpravo */
 .row div[data-label]{
  display:flex;
  justify-content:space-between;
  align-items:center;
- gap:10px;
+ gap:10px; /* 👈 tvoje úprava */
 }
 
 .row div[data-label]::before{
@@ -144,15 +146,6 @@ button{width:100%;}
   <div class="blockContent" id="section_last"></div>
 </div>
 
-<!-- GÓLY -->
-<div class="section" id="sec3">
-  <div class="sectionHeader" onclick="toggleSection('sec3')">
-    <span class="arrow">▶</span>
-    <span>Počet vstřelených gólů v sezóně</span>
-  </div>
-  <div class="blockContent" id="section_goals"></div>
-</div>
-
 </div>
 
 <script type="module">
@@ -171,7 +164,6 @@ let teams = []
 let players = {}
 let bets = []
 let formRatings = {}
-let goalsData = {}
 
 /* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
 
@@ -242,34 +234,17 @@ function calculateFormRatings(matches, teams){
   updateForm(h, a, sH)
   updateForm(a, h, sA)
 
+  const rH = ratings[h]
+  const rA = ratings[a]
+
+  const cH = K_FORM * (sH - (1 / (1 + Math.pow(10, (rA - rH)/400))))
+  const cA = K_FORM * (sA - (1 / (1 + Math.pow(10, (rH - rA)/400))))
+
+  ratings[h] = Math.round(rH + cH)
+  ratings[a] = Math.round(rA + cA)
  })
 
  return formRatings
-}
-
-/* ===== GÓLY DATA ===== */
-
-function calculateGoalsData(matches){
-
- const data = {}
-
- teams.forEach(t=>{
-  data[t.id] = { goals:0, matches:0 }
- })
-
- matches.forEach(m=>{
-
-  const h = m.home_team
-  const a = m.away_team
-
-  data[h].goals += Number(m.home_score)
-  data[a].goals += Number(m.away_score)
-
-  data[h].matches++
-  data[a].matches++
- })
-
- return data
 }
 
 /* ===== LOAD ===== */
@@ -291,7 +266,6 @@ async function load(){
   .order("round", { ascending:true })
 
  formRatings = calculateFormRatings(matches, teams)
- goalsData = calculateGoalsData(matches)
 
  const { data: p } = await supabase
   .from("players")
@@ -345,37 +319,6 @@ function calculateLastOdds(){
  teams.forEach((t,i)=>{
   const prob = strengths[i]/total
   map[t.id]=(margin/prob)
- })
-
- return map
-}
-
-/* ===== UPRAVENÉ GÓLOVÉ KURZY ===== */
-
-function calculateGoalsOdds(threshold){
-
- const map = {}
-
- teams.forEach(t=>{
-
-  const g = goalsData[t.id]
-  if(!g || g.matches === 0){
-    map[t.id] = 99
-    return
-  }
-
-  const avg = g.goals / g.matches
-  const expected = avg * 8
-
-  const diff = threshold - expected
-
-  let prob = 1 / (1 + Math.exp(diff / 18))
-  prob = 0.2 + 0.5 * prob
-  prob = Math.min(0.4, Math.max(0.12, prob))
-
-  const margin = 2.2
-  map[t.id] = margin / prob
-
  })
 
  return map
@@ -496,85 +439,6 @@ function playerBlock(name,oddsMap,type){
  return html
 }
 
-/* ===== GOALS BLOCK ===== */
-
-function goalsBlock(name){
-
- const p = players[name]
-
- const odds35 = calculateGoalsOdds(35)
- const odds30 = calculateGoalsOdds(30)
- const odds25 = calculateGoalsOdds(25)
-
- let html = `
- <div class="playerCard">
-
-  <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
-
-  <div class="grid headerRow">
-    <div>Tým</div>
-    <div>35+</div>
-    <div>30+</div>
-    <div>25+</div>
-    <div></div>
-  </div>
- `
-
- teams.forEach(t=>{
-
-  html += `<div class="grid row">`
-
-  html += `
-    <div class="teamBlock">
-      <img class="logo" src="./logos/${t.logo}">
-      <div>${t.name}</div>
-    </div>
-  `
-
-  ;[
-    {thr:35, odds:odds35[t.id]},
-    {thr:30, odds:odds30[t.id]},
-    {thr:25, odds:odds25[t.id]}
-  ].forEach(opt=>{
-
-    const type = `goals_${opt.thr}`
-    const existing = getBet(p.id, t.id, type)
-    const id = `${name}_${t.id}_${type}`
-
-    if(existing){
-
-      html += `
-        <div>
-          ${existing.amount} Kč<br>
-          <small>${Math.round(existing.potential_win)} Kč</small>
-        </div>
-      `
-
-    } else {
-
-      html += `
-        <div>
-          <div><b>${opt.odds.toFixed(2)}</b></div>
-          <input id="a_${id}" type="number"
-            oninput="updateWin('${name}','${t.id}_${type}',${opt.odds})">
-          <div id="w_${id}">-</div>
-          <button onclick="bet('${name}','${t.id}',${opt.odds},'${type}')">
-            OK
-          </button>
-        </div>
-      `
-    }
-
-  })
-
-  html += `</div>`
- })
-
- html += `</div>`
-
- return html
-}
-
 function render(){
 
  const odds = calculateOdds()
@@ -587,10 +451,6 @@ function render(){
  document.getElementById("section_last").innerHTML =
   playerBlock("Kubele",lastOdds,"last_regular_season") +
   playerBlock("Pici",lastOdds,"last_regular_season")
-
- document.getElementById("section_goals").innerHTML =
-  goalsBlock("Kubele") +
-  goalsBlock("Pici")
 }
 
 window.toggleSection = function(id){
