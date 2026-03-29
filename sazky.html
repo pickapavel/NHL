@@ -344,7 +344,7 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== NOVÉ FIXNÍ GÓLOVÉ KURZY ===== */
+/* ===== FIXNÍ GÓLOVÉ KURZY (OPRAVA MATCHINGU) ===== */
 
 function calculateGoalsOdds(threshold){
 
@@ -362,9 +362,9 @@ function calculateGoalsOdds(threshold){
  const map = {}
 
  teams.forEach(t=>{
-  const teamOdds = oddsTable[t.name]
-  if(teamOdds && teamOdds[threshold]){
-    map[t.id] = teamOdds[threshold]
+  const key = Object.keys(oddsTable).find(k => t.name.includes(k))
+  if(key){
+    map[t.id] = oddsTable[key][threshold]
   } else {
     map[t.id] = 99
   }
@@ -374,22 +374,18 @@ function calculateGoalsOdds(threshold){
 }
 
 /* ===== ZBYTEK BEZE ZMĚNY ===== */
+// (beze změny dál…)
 
 window.updateWin = function(player,team,odds){
-
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
  const box = document.getElementById(`w_${player}_${team}`)
-
  if(!val){ box.innerText="-"; return }
-
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
 window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
-
  const player = players[playerName]
  const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
-
  if(!val||val<=0) return alert("Zadej částku")
  if(player.credit<val) return alert("Nedostatek kreditu")
 
@@ -425,9 +421,7 @@ function playerBlock(name,oddsMap,type){
 
  let html=`
  <div class="playerCard">
-
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
-
   <div class="grid headerRow">
     <div>Tým</div>
     <div>Forma</div>
@@ -439,11 +433,9 @@ function playerBlock(name,oddsMap,type){
  `
 
  sorted.forEach(t=>{
-
   const o = oddsMap[t.id]
   const existing = getBet(p.id, t.id, type)
   const form = formRatings[t.id] || 1000
-
   const id = `${name}_${t.id}_${type}`
 
   html+=`<div class="grid row">`
@@ -453,29 +445,23 @@ function playerBlock(name,oddsMap,type){
       <img class="logo" src="./logos/${t.logo}">
       <div>${t.name}</div>
     </div>
-
     <div data-label="Forma">${form}</div>
     <div data-label="Kurz"><b>${o.toFixed(2)}</b></div>
   `
 
   if(existing){
-
     html+=`
       <div data-label="Vsazeno">${existing.amount} Kč</div>
       <div data-label="Výhra">${Math.round(existing.potential_win)} Kč</div>
       <div class="locked">Již vsazeno!</div>
     `
-
   } else {
-
     html+=`
       <div data-label="Vsadit">
         <input id="a_${id}" type="number"
           oninput="updateWin('${name}','${t.id}_${type}',${o})">
       </div>
-
       <div data-label="Výhra" id="w_${id}">-</div>
-
       <button onclick="bet('${name}','${t.id}',${o},'${type}')">Vsadit</button>
     `
   }
@@ -484,11 +470,8 @@ function playerBlock(name,oddsMap,type){
  })
 
  html+=`</div>`
-
  return html
 }
-
-/* ===== GOALS BLOCK ===== */
 
 function goalsBlock(name){
 
@@ -500,9 +483,7 @@ function goalsBlock(name){
 
  let html = `
  <div class="playerCard">
-
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
-
   <div class="grid headerRow">
     <div>Tým</div>
     <div>35+</div>
