@@ -348,7 +348,7 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== GÓLOVÉ KURZY PODLE TEMPA ===== */
+/* ===== VYLEPŠENÉ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
 
@@ -367,10 +367,11 @@ function calculateGoalsOdds(threshold){
 
   const diff = threshold - expected
 
-  // sigmoid podle vzdálenosti
-  let prob = 1 / (1 + Math.exp(diff / 5))
+  // 🔥 upraveno – menší extrémy
+  let prob = 1 / (1 + Math.exp(diff / 12))
 
-  prob = Math.min(0.98, Math.max(0.02, prob))
+  // 🔥 omezení extrémů
+  prob = Math.min(0.8, Math.max(0.1, prob))
 
   const margin = 2.2
   map[t.id] = margin / prob
@@ -495,7 +496,7 @@ function playerBlock(name,oddsMap,type){
  return html
 }
 
-/* ===== GOALS BLOCK (bez formy) ===== */
+/* ===== GOALS BLOCK ===== */
 
 function goalsBlock(name){
 
