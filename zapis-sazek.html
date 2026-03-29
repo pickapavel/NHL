@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Vyhodnocení sázek</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;margin:0;background:#f2f2f2;}
+.wrapper{max-width:900px;margin:auto;padding:20px;}
+h1{margin-bottom:5px;}
+.subtitle{color:#666;margin-bottom:25px;font-size:14px;}
+
+.card{background:white;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.cardHeader{font-weight:700;font-size:16px;margin-bottom:12px;color:#0b2a3c;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
+
+.betRow{
+ display:grid;
+ grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
+ gap:10px;align-items:center;
+ padding:8px 0;border-bottom:1px solid #eee;font-size:14px;
+}
+.betRow:last-child{border-bottom:none;}
+.betHeader{font-weight:600;color:#555;font-size:12px;border-bottom:2px solid #ccc;padding-bottom:6px;margin-bottom:4px;}
+
+.badge{
+ display:inline-block;padding:3px 8px;border-radius:20px;
+ font-size:12px;font-weight:600;
+}
+.badge-pending{background:#fff3cd;color:#856404;}
+.badge-won{background:#d1e7dd;color:#155724;}
+.badge-lost{background:#f8d7da;color:#721c24;}
+
+.btnWon{
+ background:#27ae60;color:white;border:none;border-radius:6px;
+ padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;
+}
+.btnLost{
+ background:#e74c3c;color:white;border:none;border-radius:6px;
+ padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;
+}
+.btnWon:hover{background:#219a52;}
+.btnLost:hover{background:#c0392b;}
+
+.resolved{color:#999;font-size:13px;font-style:italic;}
+
+.section{margin-bottom:30px;}
+.sectionTitle{font-size:20px;font-weight:700;margin-bottom:12px;color:#0b2a3c;}
+
+.empty{color:#999;font-style:italic;font-size:14px;padding:10px 0;}
+
+.toast{
+ position:fixed;bottom:20px;right:20px;
+ background:#333;color:white;
+ padding:12px 20px;border-radius:8px;
+ font-size:14px;opacity:0;transition:opacity 0.3s;
+ pointer-events:none;z-index:999;
+}
+.toast.show{opacity:1;}
+
+@media(max-width:600px){
+ .betRow{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  padding:10px 0;
+ }
+ .betHeader{display:none;}
+ .btnWon,.btnLost{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+ <h1>Admin – Vyhodnocení sázek</h1>
+ <p class="subtitle">Zde vyhodnocuj pending sázky. Po kliknutí na Výhra/Prohra se automaticky aktualizuje DB a přepíše kredit.</p>
+
+ <div id="app">Načítám...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+let bets = []
+let players = {}
+let teams = {}
+
+async function load(){
+ document.getElementById("app").innerHTML = "Načítám..."
+
+ const { data: p } = await supabase.from("players").select("*")
+ p.forEach(pl => players[pl.id] = pl)
+
+ const { data: t } = await supabase.from("teams").select("*")
+ t.forEach(tm => teams[tm.id] = tm)
+
+ const { data: b } = await supabase.from("bets_special").select("*").order("created_at", { ascending: false })
+ bets = b || []
+
+ render()
+}
+
+function getTypLabel(type){
+ if(type === "winner_regular_season") return "Vítěz základní části"
+ if(type === "last_regular_season")   return "Poslední celek"
+ if(type?.startsWith("goals_")){
+  const thr = type.split("_")[1]
+  return `${thr}+ gólů`
+ }
+ return type
+}
+
+function getPlayerName(id){ return players[id]?.name || id }
+function getTeamName(id){ return teams[id]?.name || id }
+
+window.resolve = async function(betId, result){
+ const bet = bets.find(b => b.id === betId)
+ if(!bet) return
+
+ const newStatus = result === "won" ? "won" : "lost"
+
+ // Update bet status
+ await supabase.from("bets_special")
+  .update({ status: newStatus })
+  .eq("id", betId)
+
+ // Pokud vyhrál, přičti kredit
+ if(result === "won"){
+  const player = players[bet.player_id]
+  if(player){
+   await supabase.from("players")
+    .update({ credit: player.credit + bet.potential_win })
+    .eq("id", player.id)
+  }
+ }
+
+ showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
+ load()
+}
+
+function showToast(msg){
+ const t = document.getElementById("toast")
+ t.innerText = msg
+ t.classList.add("show")
+ setTimeout(() => t.classList.remove("show"), 2500)
+}
+
+function renderSection(title, filteredBets){
+ if(filteredBets.length === 0) return `
+  <div class="section">
+   <div class="sectionTitle">${title}</div>
+   <div class="card"><div class="empty">Žádné sázky.</div></div>
+  </div>`
+
+ // Seskup podle target_id (týmu)
+ const byTeam = {}
+ filteredBets.forEach(b => {
+  const key = b.target_id || "unknown"
+  if(!byTeam[key]) byTeam[key] = []
+  byTeam[key].push(b)
+ })
+
+ let html = `<div class="section"><div class="sectionTitle">${title}</div>`
+
+ Object.entries(byTeam).forEach(([teamId, teamBets]) => {
+  const teamName = getTeamName(teamId)
+  html += `<div class="card">`
+  html += `<div class="cardHeader">🏒 ${teamName}</div>`
+  html += `<div class="betRow betHeader">
+   <div>Hráč</div><div>Typ</div><div>Vsazeno</div><div>Možná výhra</div><div>Status</div><div>Akce</div>
+  </div>`
+
+  teamBets.forEach(b => {
+   const statusBadge = `<span class="badge badge-${b.status}">${b.status === "pending" ? "Čeká" : b.status === "won" ? "Výhra" : "Prohra"}</span>`
+   const akce = b.status === "pending"
+    ? `<button class="btnWon" onclick="resolve('${b.id}','won')">Výhra</button>
+       <button class="btnLost" onclick="resolve('${b.id}','lost')">Prohra</button>`
+    : `<span class="resolved">Vyhodnoceno</span>`
+
+   html += `<div class="betRow">
+    <div>${getPlayerName(b.player_id)}</div>
+    <div>${getTypLabel(b.type)}</div>
+    <div>${b.amount} Kč</div>
+    <div>${Math.round(b.potential_win)} Kč</div>
+    <div>${statusBadge}</div>
+    <div style="display:flex;gap:6px;">${akce}</div>
+   </div>`
+  })
+
+  html += `</div>`
+ })
+
+ html += `</div>`
+ return html
+}
+
+function render(){
+ const winner = bets.filter(b => b.type === "winner_regular_season")
+ const last   = bets.filter(b => b.type === "last_regular_season")
+ const goals  = bets.filter(b => b.type?.startsWith("goals_"))
+
+ document.getElementById("app").innerHTML =
+  renderSection("Vítěz základní části", winner) +
+  renderSection("Poslední celek základní části", last) +
+  renderSection("Počet vstřelených gólů", goals)
+}
+
+load()
+
+</script>
+</body>
+</html>
