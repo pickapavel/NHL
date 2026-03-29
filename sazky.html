@@ -107,7 +107,7 @@ button{
  display:flex;
  justify-content:space-between;
  align-items:center;
- gap:10px; /* 👈 tvoje úprava */
+ gap:10px;
 }
 
 .row div[data-label]::before{
@@ -144,6 +144,15 @@ button{width:100%;}
     <span>Poslední celek základní části</span>
   </div>
   <div class="blockContent" id="section_last"></div>
+</div>
+
+<!-- NOVÁ SEKCE GÓLY -->
+<div class="section" id="sec3">
+  <div class="sectionHeader" onclick="toggleSection('sec3')">
+    <span class="arrow">▶</span>
+    <span>Počet vstřelených gólů v sezóně</span>
+  </div>
+  <div class="blockContent" id="section_goals"></div>
 </div>
 
 </div>
@@ -324,6 +333,22 @@ function calculateLastOdds(){
  return map
 }
 
+/* ===== NOVÉ KURZY NA GÓLY ===== */
+
+function calculateGoalsOdds(threshold){
+
+ const map = {}
+
+ teams.forEach(t=>{
+  const form = Number(formRatings[t.id] || 1000)
+  const prob = (form / 1200) * (threshold / 35)
+  const margin = 2.2
+  map[t.id] = margin / Math.max(0.05, prob)
+ })
+
+ return map
+}
+
 /* ===== ZBYTEK BEZE ZMĚNY ===== */
 
 window.updateWin = function(player,team,odds){
@@ -439,6 +464,90 @@ function playerBlock(name,oddsMap,type){
  return html
 }
 
+/* ===== GOALS BLOCK ===== */
+
+function goalsBlock(name){
+
+ const p = players[name]
+
+ const odds35 = calculateGoalsOdds(35)
+ const odds30 = calculateGoalsOdds(30)
+ const odds25 = calculateGoalsOdds(25)
+
+ let html = `
+ <div class="playerCard">
+
+  <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+
+  <div class="grid headerRow">
+    <div>Tým</div>
+    <div>Forma</div>
+    <div>35+</div>
+    <div>30+</div>
+    <div>25+</div>
+    <div></div>
+  </div>
+ `
+
+ teams.forEach(t=>{
+
+  const form = formRatings[t.id] || 1000
+
+  html += `<div class="grid row">`
+
+  html += `
+    <div class="teamBlock">
+      <img class="logo" src="./logos/${t.logo}">
+      <div>${t.name}</div>
+    </div>
+
+    <div>${form}</div>
+  `
+
+  ;[
+    {thr:35, odds:odds35[t.id]},
+    {thr:30, odds:odds30[t.id]},
+    {thr:25, odds:odds25[t.id]}
+  ].forEach(opt=>{
+
+    const type = `goals_${opt.thr}`
+    const existing = getBet(p.id, t.id, type)
+    const id = `${name}_${t.id}_${type}`
+
+    if(existing){
+
+      html += `
+        <div>
+          ${existing.amount} Kč<br>
+          <small>${Math.round(existing.potential_win)} Kč</small>
+        </div>
+      `
+
+    } else {
+
+      html += `
+        <div>
+          <div><b>${opt.odds.toFixed(2)}</b></div>
+          <input id="a_${id}" type="number"
+            oninput="updateWin('${name}','${t.id}_${type}',${opt.odds})">
+          <div id="w_${id}">-</div>
+          <button onclick="bet('${name}','${t.id}',${opt.odds},'${type}')">
+            OK
+          </button>
+        </div>
+      `
+    }
+
+  })
+
+  html += `</div>`
+ })
+
+ html += `</div>`
+
+ return html
+}
+
 function render(){
 
  const odds = calculateOdds()
@@ -451,6 +560,10 @@ function render(){
  document.getElementById("section_last").innerHTML =
   playerBlock("Kubele",lastOdds,"last_regular_season") +
   playerBlock("Pici",lastOdds,"last_regular_season")
+
+ document.getElementById("section_goals").innerHTML =
+  goalsBlock("Kubele") +
+  goalsBlock("Pici")
 }
 
 window.toggleSection = function(id){
