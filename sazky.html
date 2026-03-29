@@ -102,7 +102,6 @@ button{
  gap:8px;
 }
 
-/* label vlevo, hodnota vpravo */
 .row div[data-label]{
  display:flex;
  justify-content:space-between;
@@ -146,7 +145,7 @@ button{width:100%;}
   <div class="blockContent" id="section_last"></div>
 </div>
 
-<!-- NOVÁ SEKCE GÓLY -->
+<!-- GÓLY -->
 <div class="section" id="sec3">
   <div class="sectionHeader" onclick="toggleSection('sec3')">
     <span class="arrow">▶</span>
@@ -173,8 +172,7 @@ let teams = []
 let players = {}
 let bets = []
 let formRatings = {}
-
-/* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
+let goalsData = {} // 👈 NOVÉ
 
 function getScore(match, teamId){
 
@@ -243,17 +241,34 @@ function calculateFormRatings(matches, teams){
   updateForm(h, a, sH)
   updateForm(a, h, sA)
 
-  const rH = ratings[h]
-  const rA = ratings[a]
-
-  const cH = K_FORM * (sH - (1 / (1 + Math.pow(10, (rA - rH)/400))))
-  const cA = K_FORM * (sA - (1 / (1 + Math.pow(10, (rH - rA)/400))))
-
-  ratings[h] = Math.round(rH + cH)
-  ratings[a] = Math.round(rA + cA)
  })
 
  return formRatings
+}
+
+/* ===== NOVÉ: GÓLY ===== */
+
+function calculateGoalsData(matches){
+
+ const data = {}
+
+ teams.forEach(t=>{
+  data[t.id] = { goals:0, matches:0 }
+ })
+
+ matches.forEach(m=>{
+
+  const h = m.home_team
+  const a = m.away_team
+
+  data[h].goals += Number(m.home_score)
+  data[a].goals += Number(m.away_score)
+
+  data[h].matches++
+  data[a].matches++
+ })
+
+ return data
 }
 
 /* ===== LOAD ===== */
@@ -275,6 +290,7 @@ async function load(){
   .order("round", { ascending:true })
 
  formRatings = calculateFormRatings(matches, teams)
+ goalsData = calculateGoalsData(matches) // 👈 NOVÉ
 
  const { data: p } = await supabase
   .from("players")
@@ -333,17 +349,33 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== NOVÉ KURZY NA GÓLY ===== */
+/* ===== NOVÉ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
 
  const map = {}
 
  teams.forEach(t=>{
-  const form = Number(formRatings[t.id] || 1000)
-  const prob = (form / 1200) * (threshold / 35)
+
+  const g = goalsData[t.id]
+  if(!g || g.matches === 0){
+    map[t.id] = 99
+    return
+  }
+
+  const avg = g.goals / g.matches
+  const expected = avg * 8
+
+  const diff = threshold - expected
+
+  // jednoduchý model
+  let prob = Math.exp(-Math.max(0, diff) / 5)
+
+  prob = Math.min(0.95, Math.max(0.05, prob))
+
   const margin = 2.2
-  map[t.id] = margin / Math.max(0.05, prob)
+  map[t.id] = margin / prob
+
  })
 
  return map
