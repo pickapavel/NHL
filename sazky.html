@@ -88,62 +88,34 @@ button{
 @media(max-width:768px){
 
 .grid{
- display:block;
+ display:flex;
+ flex-direction:column;
+ gap:8px;
 }
 
 .headerRow{display:none;}
 
 .row{
- display:block;
- background:white;
- border-radius:10px;
- padding:12px;
- margin-bottom:10px;
- border:1px solid #ddd;
-}
-
-.teamBlock{
- margin-bottom:8px;
- font-weight:600;
-}
-
-.row > div{
- margin-bottom:8px;
-}
-
-.row > div:not(.teamBlock){
- background:#f4f4f4;
- padding:10px;
- border-radius:8px;
  display:flex;
  flex-direction:column;
- gap:6px;
+ gap:8px;
 }
 
-.row > div b{
- font-size:20px;
+.row div[data-label]{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
 }
 
-input{
- width:100%;
- padding:8px;
- font-size:16px;
-}
-
-button{
- width:100%;
- padding:10px;
-}
-
-[id^="w_"]{
+.row div[data-label]::before{
+ content: attr(data-label);
+ font-weight:600;
  font-size:12px;
- color:#666;
-}
-
-.row small{
  color:#555;
 }
 
+button{width:100%;}
 }
 </style>
 </head>
@@ -200,6 +172,8 @@ let players = {}
 let bets = []
 let formRatings = {}
 let goalsData = {}
+
+/* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
 
 function getScore(match, teamId){
 
@@ -273,6 +247,8 @@ function calculateFormRatings(matches, teams){
  return formRatings
 }
 
+/* ===== GÓLY DATA ===== */
+
 function calculateGoalsData(matches){
 
  const data = {}
@@ -295,6 +271,8 @@ function calculateGoalsData(matches){
 
  return data
 }
+
+/* ===== LOAD ===== */
 
 async function load(){
 
@@ -372,47 +350,54 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== FIXNÍ GÓLOVÉ KURZY ===== */
+/* ===== UPRAVENÉ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
-
- const oddsTable = {
-  "Sparta": {25:3.20,30:5.00,35:7.50},
-  "Litvínov": {25:3.40,30:5.40,35:8.20},
-  "Motor": {25:3.60,30:5.80,35:9.00},
-  "Kladno": {25:3.90,30:6.50,35:10.5},
-  "Karlovy Vary": {25:4.20,30:7.20,35:12.0},
-  "Liberec": {25:4.60,30:8.20,35:14.5},
-  "Pardubice": {25:5.20,30:9.50,35:17.0},
-  "Třinec": {25:6.00,30:11.0,35:20.0}
- }
 
  const map = {}
 
  teams.forEach(t=>{
-  const key = Object.keys(oddsTable).find(k => t.name.includes(k))
-  if(key){
-    map[t.id] = oddsTable[key][threshold]
-  } else {
+
+  const g = goalsData[t.id]
+  if(!g || g.matches === 0){
     map[t.id] = 99
+    return
   }
+
+  const avg = g.goals / g.matches
+  const expected = avg * 8
+
+  const diff = threshold - expected
+
+  let prob = 1 / (1 + Math.exp(diff / 18))
+  prob = 0.2 + 0.5 * prob
+  prob = Math.min(0.4, Math.max(0.12, prob))
+
+  const margin = 2.2
+  map[t.id] = margin / prob
+
  })
 
  return map
 }
 
-/* ===== FUNKCE ===== */
+/* ===== ZBYTEK BEZE ZMĚNY ===== */
 
 window.updateWin = function(player,team,odds){
+
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
  const box = document.getElementById(`w_${player}_${team}`)
+
  if(!val){ box.innerText="-"; return }
+
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
 window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
+
  const player = players[playerName]
  const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
+
  if(!val||val<=0) return alert("Zadej částku")
  if(player.credit<val) return alert("Nedostatek kreditu")
 
@@ -448,7 +433,9 @@ function playerBlock(name,oddsMap,type){
 
  let html=`
  <div class="playerCard">
+
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+
   <div class="grid headerRow">
     <div>Tým</div>
     <div>Forma</div>
@@ -460,9 +447,11 @@ function playerBlock(name,oddsMap,type){
  `
 
  sorted.forEach(t=>{
+
   const o = oddsMap[t.id]
   const existing = getBet(p.id, t.id, type)
   const form = formRatings[t.id] || 1000
+
   const id = `${name}_${t.id}_${type}`
 
   html+=`<div class="grid row">`
@@ -472,23 +461,29 @@ function playerBlock(name,oddsMap,type){
       <img class="logo" src="./logos/${t.logo}">
       <div>${t.name}</div>
     </div>
+
     <div data-label="Forma">${form}</div>
     <div data-label="Kurz"><b>${o.toFixed(2)}</b></div>
   `
 
   if(existing){
+
     html+=`
       <div data-label="Vsazeno">${existing.amount} Kč</div>
       <div data-label="Výhra">${Math.round(existing.potential_win)} Kč</div>
       <div class="locked">Již vsazeno!</div>
     `
+
   } else {
+
     html+=`
       <div data-label="Vsadit">
         <input id="a_${id}" type="number"
           oninput="updateWin('${name}','${t.id}_${type}',${o})">
       </div>
+
       <div data-label="Výhra" id="w_${id}">-</div>
+
       <button onclick="bet('${name}','${t.id}',${o},'${type}')">Vsadit</button>
     `
   }
@@ -497,8 +492,11 @@ function playerBlock(name,oddsMap,type){
  })
 
  html+=`</div>`
+
  return html
 }
+
+/* ===== GOALS BLOCK ===== */
 
 function goalsBlock(name){
 
@@ -510,7 +508,9 @@ function goalsBlock(name){
 
  let html = `
  <div class="playerCard">
+
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+
   <div class="grid headerRow">
     <div>Tým</div>
     <div>35+</div>
@@ -545,9 +545,6 @@ function goalsBlock(name){
 
       html += `
         <div>
-          <div style="font-size:12px;color:#555;font-weight:600;">
-            ${opt.thr}+ gólů
-          </div>
           ${existing.amount} Kč<br>
           <small>${Math.round(existing.potential_win)} Kč</small>
         </div>
@@ -557,14 +554,7 @@ function goalsBlock(name){
 
       html += `
         <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-            <span style="font-size:13px;color:#555;font-weight:600;">
-              ${opt.thr}+ gólů
-            </span>
-            <span style="font-size:18px;font-weight:700;">
-              ${opt.odds.toFixed(2)}
-            </span>
-          </div>
+          <div><b>${opt.odds.toFixed(2)}</b></div>
           <input id="a_${id}" type="number"
             oninput="updateWin('${name}','${t.id}_${type}',${opt.odds})">
           <div id="w_${id}">-</div>
