@@ -39,7 +39,7 @@ h1{margin-bottom:15px}
 }
 
 .section.open .blockContent{
- max-height:3000px;
+ max-height:5000px;
  padding:10px;
 }
 
@@ -83,6 +83,26 @@ button{
  font-weight:600;
 }
 
+.goalButtons{
+ display:flex;
+ gap:10px;
+ margin:10px 0;
+}
+
+.goalBtn{
+ flex:1;
+ background:#34495e;
+ color:white;
+ border-radius:10px;
+ padding:10px;
+ text-align:center;
+ cursor:pointer;
+}
+
+.goalBtn span{
+ display:block;
+}
+
 .locked{font-size:13px;color:#333;}
 
 /* MOBILE */
@@ -102,12 +122,11 @@ button{
  gap:8px;
 }
 
-/* label vlevo, hodnota vpravo */
 .row div[data-label]{
  display:flex;
  justify-content:space-between;
  align-items:center;
- gap:10px; /* 👈 tvoje úprava */
+ gap:10px;
 }
 
 .row div[data-label]::before{
@@ -146,6 +165,14 @@ button{width:100%;}
   <div class="blockContent" id="section_last"></div>
 </div>
 
+<!-- NOVÁ SEKCE -->
+<div class="section" id="sec3">
+  <div class="sectionHeader" onclick="toggleSection('sec3')">
+    <span class="arrow">▶</span>
+    <span>Počet vstřelených gólů v základní části</span>
+  </div>
+  <div class="blockContent" id="section_goals"></div>
+</div>
 </div>
 
 <script type="module">
@@ -164,6 +191,18 @@ let teams = []
 let players = {}
 let bets = []
 let formRatings = {}
+
+/* ===== GOALS ODDS ===== */
+const GOAL_ODDS = {
+ "Sparta": {25:3.2,30:5.0,35:7.5},
+ "Litvínov": {25:3.4,30:5.4,35:8.2},
+ "Motor": {25:3.6,30:5.8,35:9.0},
+ "Kladno": {25:3.9,30:6.5,35:10.5},
+ "Karlovy Vary": {25:4.2,30:7.2,35:12.0},
+ "Liberec": {25:4.6,30:8.2,35:14.5},
+ "Pardubice": {25:5.2,30:9.5,35:17.0},
+ "Třinec": {25:6.0,30:11.0,35:20.0}
+}
 
 /* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
 
@@ -324,6 +363,83 @@ function calculateLastOdds(){
  return map
 }
 
+/* ===== GOALS UI ===== */
+
+function goalsBlock(name){
+
+ const p = players[name]
+
+ let html=`
+ <div class="playerCard">
+  <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+ `
+
+ teams.forEach(t=>{
+
+  const odds = GOAL_ODDS[t.name]
+  if(!odds) return
+
+  const id = `${name}_${t.id}_goals`
+
+  html+=`
+  <div class="row">
+
+    <div class="teamBlock">
+      <img class="logo" src="./logos/${t.logo}">
+      <div>${t.name}</div>
+    </div>
+
+    <div class="goalButtons">
+      <div class="goalBtn" onclick="selectGoal('${id}',${odds[25]})">
+        <span>25+</span>
+        <span>${odds[25]}</span>
+      </div>
+
+      <div class="goalBtn" onclick="selectGoal('${id}',${odds[30]})">
+        <span>30+</span>
+        <span>${odds[30]}</span>
+      </div>
+
+      <div class="goalBtn" onclick="selectGoal('${id}',${odds[35]})">
+        <span>35+</span>
+        <span>${odds[35]}</span>
+      </div>
+    </div>
+
+    <input id="a_${id}" type="number" placeholder="Částka"
+      oninput="updateWinGoals('${id}')">
+
+    <div id="w_${id}">-</div>
+
+  </div>
+  `
+ })
+
+ html+=`</div>`
+ return html
+}
+
+window.selectedGoals = {}
+
+window.selectGoal = function(id,odds){
+ selectedGoals[id]=odds
+ updateWinGoals(id)
+}
+
+window.updateWinGoals = function(id){
+
+ const val = Number(document.getElementById(`a_${id}`).value)
+ const odds = selectedGoals[id]
+ const box = document.getElementById(`w_${id}`)
+
+ if(!val || !odds){
+  box.innerText="-"
+  return
+ }
+
+ box.innerText = Math.round(val*odds)+" Kč"
+}
+
 /* ===== ZBYTEK BEZE ZMĚNY ===== */
 
 window.updateWin = function(player,team,odds){
@@ -451,6 +567,10 @@ function render(){
  document.getElementById("section_last").innerHTML =
   playerBlock("Kubele",lastOdds,"last_regular_season") +
   playerBlock("Pici",lastOdds,"last_regular_season")
+
+ document.getElementById("section_goals").innerHTML =
+  goalsBlock("Kubele") +
+  goalsBlock("Pici")
 }
 
 window.toggleSection = function(id){
