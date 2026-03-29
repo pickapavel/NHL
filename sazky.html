@@ -51,7 +51,7 @@ h1{margin-bottom:15px}
 
 .credit{font-weight:600;margin-bottom:10px;}
 
-/* GRID */
+/* GRID DESKTOP (beze změny) */
 .grid{
  display:grid;
  grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
@@ -85,37 +85,70 @@ button{
 
 .locked{font-size:13px;color:#333;}
 
+/* ===== MOBILE FIX ===== */
 @media(max-width:768px){
 
 .grid{
- display:flex;
- flex-direction:column;
- gap:8px;
+ display:block;
 }
 
 .headerRow{display:none;}
 
 .row{
+ display:block;
+ background:white;
+ border-radius:10px;
+ padding:12px;
+ margin-bottom:10px;
+ border:1px solid #ddd;
+}
+
+/* tým nahoře */
+.teamBlock{
+ margin-bottom:10px;
+}
+
+/* všechny položky pod sebe */
+.row > div{
+ margin-bottom:8px;
+}
+
+/* jednotlivé buňky */
+.row > div:not(.teamBlock){
+ background:#f4f4f4;
+ padding:10px;
+ border-radius:8px;
  display:flex;
  flex-direction:column;
- gap:8px;
+ gap:6px;
 }
 
-.row div[data-label]{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:10px;
+/* input full width */
+input{
+ width:100%;
 }
 
-.row div[data-label]::before{
- content: attr(data-label);
- font-weight:600;
- font-size:12px;
+/* button full */
+button{
+ width:100%;
+}
+
+/* kurz větší */
+.row b{
+ font-size:16px;
+}
+
+/* výhra text */
+[id^="w_"]{
+ font-size:13px;
  color:#555;
 }
 
-button{width:100%;}
+/* small text */
+.row small{
+ color:#555;
+}
+
 }
 </style>
 </head>
@@ -374,7 +407,6 @@ function calculateGoalsOdds(threshold){
 }
 
 /* ===== ZBYTEK BEZE ZMĚNY ===== */
-// (beze změny dál…)
 
 window.updateWin = function(player,team,odds){
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
