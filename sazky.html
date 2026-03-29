@@ -51,7 +51,7 @@ h1{margin-bottom:15px}
 
 .credit{font-weight:600;margin-bottom:10px;}
 
-/* GRID DESKTOP (beze změny) */
+/* GRID */
 .grid{
  display:grid;
  grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
@@ -85,7 +85,6 @@ button{
 
 .locked{font-size:13px;color:#333;}
 
-/* ===== MOBILE FIX ===== */
 @media(max-width:768px){
 
 .grid{
@@ -103,17 +102,15 @@ button{
  border:1px solid #ddd;
 }
 
-/* tým nahoře */
 .teamBlock{
- margin-bottom:10px;
+ margin-bottom:8px;
+ font-weight:600;
 }
 
-/* všechny položky pod sebe */
 .row > div{
  margin-bottom:8px;
 }
 
-/* jednotlivé buňky */
 .row > div:not(.teamBlock){
  background:#f4f4f4;
  padding:10px;
@@ -123,28 +120,26 @@ button{
  gap:6px;
 }
 
-/* input full width */
+.row > div b{
+ font-size:20px;
+}
+
 input{
  width:100%;
-}
-
-/* button full */
-button{
- width:100%;
-}
-
-/* kurz větší */
-.row b{
+ padding:8px;
  font-size:16px;
 }
 
-/* výhra text */
-[id^="w_"]{
- font-size:13px;
- color:#555;
+button{
+ width:100%;
+ padding:10px;
 }
 
-/* small text */
+[id^="w_"]{
+ font-size:12px;
+ color:#666;
+}
+
 .row small{
  color:#555;
 }
@@ -377,7 +372,7 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== FIXNÍ GÓLOVÉ KURZY (OPRAVA MATCHINGU) ===== */
+/* ===== FIXNÍ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
 
@@ -406,7 +401,7 @@ function calculateGoalsOdds(threshold){
  return map
 }
 
-/* ===== ZBYTEK BEZE ZMĚNY ===== */
+/* ===== FUNKCE ===== */
 
 window.updateWin = function(player,team,odds){
  const val = Number(document.getElementById(`a_${player}_${team}`).value)
@@ -550,6 +545,9 @@ function goalsBlock(name){
 
       html += `
         <div>
+          <div style="font-size:12px;color:#555;font-weight:600;">
+            ${opt.thr}+ gólů
+          </div>
           ${existing.amount} Kč<br>
           <small>${Math.round(existing.potential_win)} Kč</small>
         </div>
@@ -559,7 +557,14 @@ function goalsBlock(name){
 
       html += `
         <div>
-          <div><b>${opt.odds.toFixed(2)}</b></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:13px;color:#555;font-weight:600;">
+              ${opt.thr}+ gólů
+            </span>
+            <span style="font-size:18px;font-weight:700;">
+              ${opt.odds.toFixed(2)}
+            </span>
+          </div>
           <input id="a_${id}" type="number"
             oninput="updateWin('${name}','${t.id}_${type}',${opt.odds})">
           <div id="w_${id}">-</div>
