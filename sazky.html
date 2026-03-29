@@ -39,7 +39,7 @@ h1{margin-bottom:15px}
 }
 
 .section.open .blockContent{
- max-height:5000px;
+ max-height:3000px;
  padding:10px;
 }
 
@@ -83,26 +83,6 @@ button{
  font-weight:600;
 }
 
-.goalButtons{
- display:flex;
- gap:10px;
- margin:10px 0;
-}
-
-.goalBtn{
- flex:1;
- background:#34495e;
- color:white;
- border-radius:10px;
- padding:10px;
- text-align:center;
- cursor:pointer;
-}
-
-.goalBtn span{
- display:block;
-}
-
 .locked{font-size:13px;color:#333;}
 
 /* MOBILE */
@@ -122,11 +102,12 @@ button{
  gap:8px;
 }
 
+/* label vlevo, hodnota vpravo */
 .row div[data-label]{
  display:flex;
  justify-content:space-between;
  align-items:center;
- gap:10px;
+ gap:10px; /* 👈 tvoje úprava */
 }
 
 .row div[data-label]::before{
@@ -165,14 +146,6 @@ button{width:100%;}
   <div class="blockContent" id="section_last"></div>
 </div>
 
-<!-- NOVÁ SEKCE -->
-<div class="section" id="sec3">
-  <div class="sectionHeader" onclick="toggleSection('sec3')">
-    <span class="arrow">▶</span>
-    <span>Počet vstřelených gólů v základní části</span>
-  </div>
-  <div class="blockContent" id="section_goals"></div>
-</div>
 </div>
 
 <script type="module">
@@ -191,22 +164,6 @@ let teams = []
 let players = {}
 let bets = []
 let formRatings = {}
-
-/* ===== GOALS ODDS ===== */
-
-function getGoalOdds(teamName){
-
- if(teamName.includes("Sparta")) return {25:3.2,30:5.0,35:7.5}
- if(teamName.includes("Litvínov")) return {25:3.4,30:5.4,35:8.2}
- if(teamName.includes("Motor")) return {25:3.6,30:5.8,35:9.0}
- if(teamName.includes("Kladno")) return {25:3.9,30:6.5,35:10.5}
- if(teamName.includes("Karlovy")) return {25:4.2,30:7.2,35:12.0}
- if(teamName.includes("Liberec")) return {25:4.6,30:8.2,35:14.5}
- if(teamName.includes("Pardubice")) return {25:5.2,30:9.5,35:17.0}
- if(teamName.includes("Třinec")) return {25:6.0,30:11.0,35:20.0}
-
- return null
-}
 
 /* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
 
@@ -367,126 +324,25 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== GOALS UI ===== */
+/* ===== ZBYTEK BEZE ZMĚNY ===== */
 
-function goalsBlock(name){
+window.updateWin = function(player,team,odds){
 
- const p = players[name]
+ const val = Number(document.getElementById(`a_${player}_${team}`).value)
+ const box = document.getElementById(`w_${player}_${team}`)
 
- let html=`
- <div class="playerCard">
-  <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
- `
+ if(!val){ box.innerText="-"; return }
 
- teams.forEach(t=>{
-
-  const odds = getGoalOdds(t.name)
-  if(!odds) return
-
-  const id = `${name}_${t.id}_goals`
-
-  const existing = bets.find(b =>
-    b.player_id === p.id &&
-    b.target_id === t.id &&
-    b.type.startsWith("goals_")
-  )
-
-  html+=`<div class="row">`
-
-  html+=`
-    <div class="teamBlock">
-      <img class="logo" src="./logos/${t.logo}">
-      <div>${t.name}</div>
-    </div>
-  `
-
-  if(existing){
-
-    html+=`
-      <div class="locked">Již vsazeno (${existing.amount} Kč)</div>
-    `
-
-  } else {
-
-    html+=`
-      <div class="goalButtons">
-        <div class="goalBtn" id="btn_${id}_25"
-          onclick="selectGoal('${id}',25,${odds[25]})">
-          <span>25+</span>
-          <span>${odds[25]}</span>
-        </div>
-
-        <div class="goalBtn" id="btn_${id}_30"
-          onclick="selectGoal('${id}',30,${odds[30]})">
-          <span>30+</span>
-          <span>${odds[30]}</span>
-        </div>
-
-        <div class="goalBtn" id="btn_${id}_35"
-          onclick="selectGoal('${id}',35,${odds[35]})">
-          <span>35+</span>
-          <span>${odds[35]}</span>
-        </div>
-      </div>
-
-      <input id="a_${id}" type="number" placeholder="Částka"
-        oninput="updateWinGoals('${id}')">
-
-      <div id="w_${id}">Možná výhra: -</div>
-
-      <button onclick="betGoals('${name}','${t.id}','${id}')">
-        Vsadit
-      </button>
-    `
-  }
-
-  html+=`</div>`
- })
-
- html+=`</div>`
- return html
+ box.innerText = Math.round(val*odds)+" Kč"
 }
 
-window.selectedGoals = {}
-
-window.selectGoal = function(id,goal,odds){
-
- selectedGoals[id] = {goal,odds}
-
- ;[25,30,35].forEach(g=>{
-  const el = document.getElementById(`btn_${id}_${g}`)
-  if(el) el.style.background="#34495e"
- })
-
- const active = document.getElementById(`btn_${id}_${goal}`)
- if(active) active.style.background="#27ae60"
-
- updateWinGoals(id)
-}
-
-window.updateWinGoals = function(id){
-
- const val = Number(document.getElementById(`a_${id}`).value)
- const sel = selectedGoals[id]
- const box = document.getElementById(`w_${id}`)
-
- if(!val || !sel){
-  box.innerText="Možná výhra: -"
-  return
- }
-
- box.innerText = "Možná výhra: " + Math.round(val*sel.odds)+" Kč"
-}
-
-window.betGoals = async function(playerName,teamId,id){
+window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
 
  const player = players[playerName]
- const val = Number(document.getElementById(`a_${id}`).value)
- const sel = selectedGoals[id]
+ const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
 
- if(!sel) return alert("Vyber variantu")
- if(!val || val<=0) return alert("Zadej částku")
- if(player.credit < val) return alert("Nedostatek kreditu")
+ if(!val||val<=0) return alert("Zadej částku")
+ if(player.credit<val) return alert("Nedostatek kreditu")
 
  await supabase.from("players")
   .update({credit:player.credit-val})
@@ -494,18 +350,94 @@ window.betGoals = async function(playerName,teamId,id){
 
  await supabase.from("bets_special").insert({
   player_id:player.id,
-  type:"goals_"+sel.goal,
+  type:type,
   target_id:teamId,
-  odds:sel.odds,
+  odds:odds,
   amount:val,
-  potential_win:val*sel.odds,
+  potential_win:val*odds,
   status:"pending"
  })
 
  load()
 }
 
-/* ===== ZBYTEK ===== */
+function getBet(playerId, teamId, type){
+ return bets.find(b =>
+  b.player_id===playerId &&
+  b.target_id===teamId &&
+  b.type===type
+ )
+}
+
+function playerBlock(name,oddsMap,type){
+
+ const p = players[name]
+ const sorted = [...teams].sort((a,b)=> oddsMap[b.id]-oddsMap[a.id])
+
+ let html=`
+ <div class="playerCard">
+
+  <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
+
+  <div class="grid headerRow">
+    <div>Tým</div>
+    <div>Forma</div>
+    <div>Kurz</div>
+    <div>Vsazená částka</div>
+    <div>Výhra</div>
+    <div></div>
+  </div>
+ `
+
+ sorted.forEach(t=>{
+
+  const o = oddsMap[t.id]
+  const existing = getBet(p.id, t.id, type)
+  const form = formRatings[t.id] || 1000
+
+  const id = `${name}_${t.id}_${type}`
+
+  html+=`<div class="grid row">`
+
+  html+=`
+    <div class="teamBlock" data-label="Tým">
+      <img class="logo" src="./logos/${t.logo}">
+      <div>${t.name}</div>
+    </div>
+
+    <div data-label="Forma">${form}</div>
+    <div data-label="Kurz"><b>${o.toFixed(2)}</b></div>
+  `
+
+  if(existing){
+
+    html+=`
+      <div data-label="Vsazeno">${existing.amount} Kč</div>
+      <div data-label="Výhra">${Math.round(existing.potential_win)} Kč</div>
+      <div class="locked">Již vsazeno!</div>
+    `
+
+  } else {
+
+    html+=`
+      <div data-label="Vsadit">
+        <input id="a_${id}" type="number"
+          oninput="updateWin('${name}','${t.id}_${type}',${o})">
+      </div>
+
+      <div data-label="Výhra" id="w_${id}">-</div>
+
+      <button onclick="bet('${name}','${t.id}',${o},'${type}')">Vsadit</button>
+    `
+  }
+
+  html+=`</div>`
+ })
+
+ html+=`</div>`
+
+ return html
+}
 
 function render(){
 
@@ -519,10 +451,6 @@ function render(){
  document.getElementById("section_last").innerHTML =
   playerBlock("Kubele",lastOdds,"last_regular_season") +
   playerBlock("Pici",lastOdds,"last_regular_season")
-
- document.getElementById("section_goals").innerHTML =
-  goalsBlock("Kubele") +
-  goalsBlock("Pici")
 }
 
 window.toggleSection = function(id){
