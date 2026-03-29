@@ -344,34 +344,30 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== UPRAVENÉ GÓLOVÉ KURZY ===== */
+/* ===== NOVÉ FIXNÍ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
+
+ const oddsTable = {
+  "Sparta": {25:3.20,30:5.00,35:7.50},
+  "Litvínov": {25:3.40,30:5.40,35:8.20},
+  "Motor": {25:3.60,30:5.80,35:9.00},
+  "Kladno": {25:3.90,30:6.50,35:10.5},
+  "Karlovy Vary": {25:4.20,30:7.20,35:12.0},
+  "Liberec": {25:4.60,30:8.20,35:14.5},
+  "Pardubice": {25:5.20,30:9.50,35:17.0},
+  "Třinec": {25:6.00,30:11.0,35:20.0}
+ }
 
  const map = {}
 
  teams.forEach(t=>{
-
-  const g = goalsData[t.id]
-  if(!g || g.matches === 0){
+  const teamOdds = oddsTable[t.name]
+  if(teamOdds && teamOdds[threshold]){
+    map[t.id] = teamOdds[threshold]
+  } else {
     map[t.id] = 99
-    return
   }
-
-  const avg = g.goals / g.matches
-  const expected = avg * 8
-
-const diff = (threshold - expected) / threshold
-
-let prob = 1 / (1 + Math.exp(diff * 4))
-
-prob = Math.pow(prob, 0.8)   // lehké zploštění
-
-// ❗ mnohem vyšší strop
-prob = Math.min(0.95, Math.max(0.05, prob))
-  const margin = 2.2
-  map[t.id] = margin / prob
-
  })
 
  return map
