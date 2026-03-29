@@ -192,16 +192,20 @@ let players = {}
 let bets = []
 let formRatings = {}
 
-/* ===== GOALS ODDS ===== */
-const GOAL_ODDS = {
- "Sparta": {25:3.2,30:5.0,35:7.5},
- "Litvínov": {25:3.4,30:5.4,35:8.2},
- "Motor": {25:3.6,30:5.8,35:9.0},
- "Kladno": {25:3.9,30:6.5,35:10.5},
- "Karlovy Vary": {25:4.2,30:7.2,35:12.0},
- "Liberec": {25:4.6,30:8.2,35:14.5},
- "Pardubice": {25:5.2,30:9.5,35:17.0},
- "Třinec": {25:6.0,30:11.0,35:20.0}
+/* ===== GOALS ODDS (FIX) ===== */
+
+function getGoalOdds(teamName){
+
+ if(teamName.includes("Sparta")) return {25:3.2,30:5.0,35:7.5}
+ if(teamName.includes("Litvínov")) return {25:3.4,30:5.4,35:8.2}
+ if(teamName.includes("Motor")) return {25:3.6,30:5.8,35:9.0}
+ if(teamName.includes("Kladno")) return {25:3.9,30:6.5,35:10.5}
+ if(teamName.includes("Karlovy")) return {25:4.2,30:7.2,35:12.0}
+ if(teamName.includes("Liberec")) return {25:4.6,30:8.2,35:14.5}
+ if(teamName.includes("Pardubice")) return {25:5.2,30:9.5,35:17.0}
+ if(teamName.includes("Třinec")) return {25:6.0,30:11.0,35:20.0}
+
+ return null
 }
 
 /* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
@@ -376,7 +380,7 @@ function goalsBlock(name){
 
  teams.forEach(t=>{
 
-  const odds = GOAL_ODDS[t.name]
+  const odds = getGoalOdds(t.name)
   if(!odds) return
 
   const id = `${name}_${t.id}_goals`
