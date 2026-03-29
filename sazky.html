@@ -173,6 +173,8 @@ let bets = []
 let formRatings = {}
 let goalsData = {}
 
+/* ===== STEJNÝ VÝPOČET JAKO RATING ===== */
+
 function getScore(match, teamId){
 
  const hg = Number(match.home_score)
@@ -348,7 +350,7 @@ function calculateLastOdds(){
  return map
 }
 
-/* ===== VYLEPŠENÉ GÓLOVÉ KURZY ===== */
+/* ===== UPRAVENÉ GÓLOVÉ KURZY ===== */
 
 function calculateGoalsOdds(threshold){
 
@@ -367,11 +369,9 @@ function calculateGoalsOdds(threshold){
 
   const diff = threshold - expected
 
-  // 🔥 upraveno – menší extrémy
-  let prob = 1 / (1 + Math.exp(diff / 12))
-
-  // 🔥 omezení extrémů
-  prob = Math.min(0.8, Math.max(0.1, prob))
+  let prob = 1 / (1 + Math.exp(diff / 18))
+  prob = 0.2 + 0.5 * prob
+  prob = Math.min(0.4, Math.max(0.12, prob))
 
   const margin = 2.2
   map[t.id] = margin / prob
