@@ -49,7 +49,6 @@ h1{margin-bottom:15px}
 
 .credit{font-weight:600;margin-bottom:10px;}
 
-/* ORIGINAL GRID */
 .grid{
  display:grid;
  grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr 1fr;
@@ -83,7 +82,6 @@ button{
 
 .locked{font-size:13px;color:#333;}
 
-/* GOALS ROW - jeden řádek: tým | 3 tlačítka | input+výhra | vsadit */
 .goalsRow{
  display:grid;
  grid-template-columns: 2fr 3fr 130px 100px;
@@ -134,7 +132,6 @@ button{
 
 .goalWin{font-size:13px;color:#1a5276;font-weight:600;}
 
-/* MOBILE */
 @media(max-width:768px){
 
  .grid{
@@ -158,7 +155,6 @@ button{
 
  button{width:100%;}
 
- /* Goals mobile */
  .goalsHeaderRow{display:none;}
 
  .goalsRow{
@@ -172,11 +168,13 @@ button{
   display:flex;
   flex-direction:row;
   gap:8px;
+  width:100%;
  }
 
  .goalBtn{
   flex:1;
   padding:10px 4px;
+  min-width:0;
  }
 
  .goalInputWrap input{width:100%;}
@@ -232,14 +230,14 @@ const selectedGoal = {}
 
 function getGoalsOdds(teamName){
  const n = teamName.toLowerCase()
- if(n.includes("sparta"))                             return { "25": 3.20, "30": 5.00, "35": 7.50 }
- if(n.includes("litvínov")||n.includes("litvinov"))  return { "25": 3.40, "30": 5.40, "35": 8.20 }
- if(n.includes("motor"))                             return { "25": 3.60, "30": 5.80, "35": 9.00 }
- if(n.includes("kladno"))                            return { "25": 3.90, "30": 6.50, "35": 10.5 }
- if(n.includes("vary"))                              return { "25": 4.20, "30": 7.20, "35": 12.0 }
- if(n.includes("liberec"))                           return { "25": 4.60, "30": 8.20, "35": 14.5 }
- if(n.includes("pardubice"))                         return { "25": 5.20, "30": 9.50, "35": 17.0 }
- if(n.includes("třinec")||n.includes("trinec"))      return { "25": 6.00, "30": 11.0, "35": 20.0 }
+ if(n.includes("sparta"))                            return { "25": 3.20, "30": 5.00, "35": 7.50 }
+ if(n.includes("litvínov")||n.includes("litvinov")) return { "25": 3.40, "30": 5.40, "35": 8.20 }
+ if(n.includes("motor"))                            return { "25": 3.60, "30": 5.80, "35": 9.00 }
+ if(n.includes("kladno"))                           return { "25": 3.90, "30": 6.50, "35": 10.5 }
+ if(n.includes("vary"))                             return { "25": 4.20, "30": 7.20, "35": 12.0 }
+ if(n.includes("liberec"))                          return { "25": 4.60, "30": 8.20, "35": 14.5 }
+ if(n.includes("pardubice"))                        return { "25": 5.20, "30": 9.50, "35": 17.0 }
+ if(n.includes("třinec")||n.includes("trinec"))     return { "25": 6.00, "30": 11.0, "35": 20.0 }
  return null
 }
 
@@ -456,7 +454,6 @@ function goalsPlayerBlock(playerName){
 
   html += `<div class="goalsRow">`
 
-  // Tým
   html += `
    <div class="teamBlock" data-label="Tým">
     <img class="logo" src="./logos/${t.logo}">
