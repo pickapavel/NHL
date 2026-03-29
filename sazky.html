@@ -363,7 +363,7 @@ function calculateGoalsOdds(threshold){
 
 const diff = (threshold - expected) / threshold
 
-let prob = 1 / (1 + Math.exp(diff * 10))
+let prob = 1 / (1 + Math.exp(diff * 4))
 
 prob = Math.pow(prob, 0.8)   // lehké zploštění
 
