@@ -85,21 +85,40 @@ button{
 /* GOALS */
 .goalsGrid{
  display:grid;
- grid-template-columns: 2fr 1fr 1fr 1fr;
- gap:10px;align-items:start;
+ grid-template-columns: 2fr 3fr 1fr;
+ gap:10px;align-items:center;
 }
 
-.goalCell{
- display:flex;flex-direction:column;gap:4px;
- padding:6px 0;
+.goalBtns{
+ display:flex;gap:8px;
 }
 
-.goalLabel{
- font-weight:700;font-size:14px;
+.goalBtn{
+ flex:1;
  background:#1a5276;color:white;
- border-radius:6px;padding:5px 8px;
- text-align:center;
+ border:none;border-radius:8px;
+ padding:10px 6px;cursor:pointer;
+ font-weight:600;font-size:13px;
+ display:flex;flex-direction:column;
+ align-items:center;gap:3px;
+ transition:background 0.2s;
 }
+
+.goalBtn:hover{background:#21618c;}
+
+.goalBtn.selected{
+ background:#f39c12;
+ box-shadow:0 0 0 3px #f1c40f;
+}
+
+.goalBtnLabel{font-size:15px;font-weight:700;}
+.goalBtnOdds{font-size:12px;opacity:0.9;}
+
+.goalAction{
+ display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+}
+
+.goalAction input{width:90px;}
 
 .goalWin{font-size:13px;color:#1a5276;font-weight:600;}
 
@@ -129,6 +148,8 @@ button{width:100%;}
 .goalsGrid{
  display:flex;flex-direction:column;gap:8px;
 }
+
+.goalBtns{flex-direction:column;}
 }
 </style>
 </head>
@@ -177,16 +198,19 @@ const supabase = createClient(
 const START_RATING = 1000
 const K_FORM = 120
 
+// Vybraný tip pro každého hráče a tým: selectedGoal[playerName][teamId] = "25"|"30"|"35"|null
+const selectedGoal = {}
+
 function getGoalsOdds(teamName){
  const n = teamName.toLowerCase()
- if(n.includes("sparta"))                              return { "25": 3.20, "30": 5.00, "35": 7.50 }
- if(n.includes("litvínov")||n.includes("litvinov"))   return { "25": 3.40, "30": 5.40, "35": 8.20 }
- if(n.includes("motor"))                              return { "25": 3.60, "30": 5.80, "35": 9.00 }
- if(n.includes("kladno"))                             return { "25": 3.90, "30": 6.50, "35": 10.5 }
- if(n.includes("vary"))                               return { "25": 4.20, "30": 7.20, "35": 12.0 }
- if(n.includes("liberec"))                            return { "25": 4.60, "30": 8.20, "35": 14.5 }
- if(n.includes("pardubice"))                          return { "25": 5.20, "30": 9.50, "35": 17.0 }
- if(n.includes("třinec")||n.includes("trinec"))       return { "25": 6.00, "30": 11.0, "35": 20.0 }
+ if(n.includes("sparta"))                             return { "25": 3.20, "30": 5.00, "35": 7.50 }
+ if(n.includes("litvínov")||n.includes("litvinov"))  return { "25": 3.40, "30": 5.40, "35": 8.20 }
+ if(n.includes("motor"))                             return { "25": 3.60, "30": 5.80, "35": 9.00 }
+ if(n.includes("kladno"))                            return { "25": 3.90, "30": 6.50, "35": 10.5 }
+ if(n.includes("vary"))                              return { "25": 4.20, "30": 7.20, "35": 12.0 }
+ if(n.includes("liberec"))                           return { "25": 4.60, "30": 8.20, "35": 14.5 }
+ if(n.includes("pardubice"))                         return { "25": 5.20, "30": 9.50, "35": 17.0 }
+ if(n.includes("třinec")||n.includes("trinec"))      return { "25": 6.00, "30": 11.0, "35": 20.0 }
  return null
 }
 
@@ -275,18 +299,16 @@ async function load(){
 function calculateOdds(){
  const strengths = teams.map(t => Math.pow(Number(formRatings[t.id] || 1000),6))
  const total = strengths.reduce((a,b)=>a+b,0)
- const margin = 2.2
  const map = {}
- teams.forEach((t,i)=>{ map[t.id]=(margin/(strengths[i]/total)) })
+ teams.forEach((t,i)=>{ map[t.id]=(2.2/(strengths[i]/total)) })
  return map
 }
 
 function calculateLastOdds(){
  const strengths = teams.map(t => Math.pow(1/(Number(formRatings[t.id] || 1000)),6))
  const total = strengths.reduce((a,b)=>a+b,0)
- const margin = 2.2
  const map = {}
- teams.forEach((t,i)=>{ map[t.id]=(margin/(strengths[i]/total)) })
+ teams.forEach((t,i)=>{ map[t.id]=(2.2/(strengths[i]/total)) })
  return map
 }
 
@@ -297,43 +319,77 @@ window.updateWin = function(player,team,odds){
  box.innerText = Math.round(val*odds)+" Kč"
 }
 
-window.updateGoalWin = function(inputId, winId, odds){
- const val = Number(document.getElementById(inputId).value)
- const box = document.getElementById(winId)
- if(!val){ box.innerText="-"; return }
- box.innerText = Math.round(val*odds)+" Kč"
-}
+window.selectGoal = function(playerName, teamId, thr, odds){
+ if(!selectedGoal[playerName]) selectedGoal[playerName] = {}
 
-window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
- const player = players[playerName]
- const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
- if(!val||val<=0) return alert("Zadej částku")
- if(player.credit<val) return alert("Nedostatek kreditu")
- await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
- await supabase.from("bets_special").insert({
-  player_id:player.id, type, target_id:teamId,
-  odds, amount:val, potential_win:val*odds, status:"pending"
+ // toggle: klik na už vybrané = zruší výběr
+ if(selectedGoal[playerName][teamId] === thr){
+  selectedGoal[playerName][teamId] = null
+ } else {
+  selectedGoal[playerName][teamId] = thr
+ }
+
+ // Obarvi tlačítka
+ ;["25","30","35"].forEach(t => {
+  const btn = document.getElementById(`gbtn_${playerName}_${teamId}_${t}`)
+  if(btn) btn.classList.toggle("selected", selectedGoal[playerName][teamId] === t)
  })
- load()
+
+ // Aktualizuj výhru
+ const inputEl = document.getElementById(`gi_${playerName}_${teamId}`)
+ const winEl = document.getElementById(`gw_${playerName}_${teamId}`)
+ const val = inputEl ? Number(inputEl.value) : 0
+ const sel = selectedGoal[playerName][teamId]
+ if(sel && val && winEl){
+  winEl.innerText = Math.round(val * odds) + " Kč"
+ } else if(winEl){
+  winEl.innerText = "-"
+ }
 }
 
-window.betGoals = async function(playerName, teamId, threshold, odds){
- const type = `goals_${threshold}_regular_season`
- const inputId = `gi_${playerName}_${teamId}_${threshold}`
+window.updateGoalWin = function(playerName, teamId){
+ const sel = selectedGoal[playerName]?.[teamId]
+ const winEl = document.getElementById(`gw_${playerName}_${teamId}`)
+ const val = Number(document.getElementById(`gi_${playerName}_${teamId}`).value)
+ if(!sel || !val){ if(winEl) winEl.innerText="-"; return }
+ const odds = getGoalsOdds(teams.find(t=>t.id===teamId)?.name||"")
+ if(!odds){ return }
+ winEl.innerText = Math.round(val * odds[sel]) + " Kč"
+}
+
+window.betGoals = async function(playerName, teamId){
+ const sel = selectedGoal[playerName]?.[teamId]
+ if(!sel) return alert("Vyber počet gólů (25+, 30+ nebo 35+)")
+
  const player = players[playerName]
- const val = Number(document.getElementById(inputId).value)
+ const val = Number(document.getElementById(`gi_${playerName}_${teamId}`).value)
  if(!val||val<=0) return alert("Zadej částku")
  if(player.credit<val) return alert("Nedostatek kreditu")
+
+ const teamName = teams.find(t=>t.id===teamId)?.name || ""
+ const odds = getGoalsOdds(teamName)
+ const o = odds[sel]
+ const type = `goals_${sel}_regular_season`
+
  await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
  await supabase.from("bets_special").insert({
   player_id:player.id, type, target_id:teamId,
-  odds, amount:val, potential_win:val*odds, status:"pending"
+  odds:o, amount:val, potential_win:val*o, status:"pending"
  })
  load()
 }
 
 function getBet(playerId, teamId, type){
  return bets.find(b => b.player_id===playerId && b.target_id===teamId && b.type===type)
+}
+
+// Zjistí jestli hráč už vsadil na tento tým jakýkoli gólový tip
+function getExistingGoalBet(playerId, teamId){
+ return bets.find(b =>
+  b.player_id===playerId &&
+  b.target_id===teamId &&
+  b.type?.startsWith("goals_")
+ )
 }
 
 function playerBlock(name,oddsMap,type){
@@ -385,47 +441,48 @@ function goalsPlayerBlock(playerName){
  <div class="playerCard">
   <div class="credit">${playerName} — 💰 ${Math.round(p.credit)} Kč</div>
   <div class="goalsGrid headerRow">
-    <div>Tým</div><div>25+ gólů</div><div>30+ gólů</div><div>35+ gólů</div>
+    <div>Tým</div><div>Vyber tip</div><div>Vsadit</div>
   </div>`
 
  goalsTeams.forEach(t => {
   const odds = getGoalsOdds(t.name)
+  const existing = getExistingGoalBet(p.id, t.id)
+
   html += `<div class="goalsGrid row">
    <div class="teamBlock" data-label="Tým">
     <img class="logo" src="./logos/${t.logo}">
     <div>${t.name}</div>
    </div>`
 
-  ;["25","30","35"].forEach(thr => {
-   const type = `goals_${thr}_regular_season`
-   const existing = getBet(p.id, t.id, type)
-   const o = odds[thr]
-   const inputId = `gi_${playerName}_${t.id}_${thr}`
-   const winId = `gw_${playerName}_${t.id}_${thr}`
-
-   if(existing){
-    html += `
-     <div data-label="${thr}+ gólů">
-      <div class="goalCell">
-       <div class="goalLabel">${thr}+ gólů · ${o}</div>
-       <div style="font-size:13px;">Vsazeno: ${existing.amount} Kč</div>
-       <div style="font-size:13px;">Výhra: ${Math.round(existing.potential_win)} Kč</div>
-       <div class="locked">Již vsazeno!</div>
-      </div>
-     </div>`
-   } else {
-    html += `
-     <div data-label="${thr}+ gólů">
-      <div class="goalCell">
-       <div class="goalLabel">${thr}+ gólů<br><span style="font-size:12px;opacity:0.85;">Kurz: ${o}</span></div>
-       <input id="${inputId}" type="number" placeholder="Kč"
-        oninput="updateGoalWin('${inputId}','${winId}',${o})">
-       <div id="${winId}" class="goalWin">-</div>
-       <button onclick="betGoals('${playerName}','${t.id}','${thr}',${o})">Vsadit</button>
-      </div>
-     </div>`
-   }
-  })
+  if(existing){
+   // Zjisti threshold z type: goals_25_... → "25"
+   const thr = existing.type.split("_")[1]
+   html += `
+    <div>
+     <div style="font-weight:600;font-size:14px;">${thr}+ gólů · kurz ${existing.odds}</div>
+     <div style="font-size:13px;">Vsazeno: ${existing.amount} Kč · Výhra: ${Math.round(existing.potential_win)} Kč</div>
+    </div>
+    <div class="locked">Již vsazeno!</div>`
+  } else {
+   html += `
+    <div>
+     <div class="goalBtns">
+      ${["25","30","35"].map(thr => `
+       <button class="goalBtn" id="gbtn_${playerName}_${t.id}_${thr}"
+        onclick="selectGoal('${playerName}','${t.id}','${thr}',${odds[thr]})">
+        <span class="goalBtnLabel">${thr}+</span>
+        <span class="goalBtnOdds">${odds[thr]}</span>
+       </button>
+      `).join("")}
+     </div>
+    </div>
+    <div class="goalAction">
+     <input id="gi_${playerName}_${t.id}" type="number" placeholder="Kč"
+      oninput="updateGoalWin('${playerName}','${t.id}')">
+     <div id="gw_${playerName}_${t.id}" class="goalWin">-</div>
+     <button onclick="betGoals('${playerName}','${t.id}')">Vsadit</button>
+    </div>`
+  }
 
   html += `</div>`
  })
