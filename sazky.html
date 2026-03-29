@@ -196,6 +196,14 @@ button{
   <div class="blockContent" id="section"></div>
 </div>
 
+<div class="section" id="sec1b">
+  <div class="sectionHeader" onclick="toggleSection('sec1b')">
+    <span class="arrow">▶</span>
+    <span>Nevítěz základní části</span>
+  </div>
+  <div class="blockContent" id="section_nonwinner"></div>
+</div>
+
 <div class="section" id="sec2">
   <div class="sectionHeader" onclick="toggleSection('sec2')">
     <span class="arrow">▶</span>
@@ -225,6 +233,7 @@ const supabase = createClient(
 
 const START_RATING = 1000
 const K_FORM = 120
+const MARGIN = 2.2
 
 const selectedGoal = {}
 
@@ -315,7 +324,19 @@ function calculateOdds(){
  const strengths = teams.map(t => Math.pow(Number(formRatings[t.id] || 1000),6))
  const total = strengths.reduce((a,b)=>a+b,0)
  const map = {}
- teams.forEach((t,i)=>{ map[t.id]=(2.2/(strengths[i]/total)) })
+ teams.forEach((t,i)=>{ map[t.id] = MARGIN / (strengths[i]/total) })
+ return map
+}
+
+function calculateNonWinnerOdds(){
+ const strengths = teams.map(t => Math.pow(Number(formRatings[t.id] || 1000),6))
+ const total = strengths.reduce((a,b)=>a+b,0)
+ const map = {}
+ teams.forEach((t,i)=>{
+  const pWin = strengths[i] / total        // pravděpodobnost výhry (bez marginu)
+  const pNoWin = 1 - pWin                  // pravděpodobnost nevýhry
+  map[t.id] = MARGIN / pNoWin
+ })
  return map
 }
 
@@ -323,7 +344,7 @@ function calculateLastOdds(){
  const strengths = teams.map(t => Math.pow(1/(Number(formRatings[t.id] || 1000)),6))
  const total = strengths.reduce((a,b)=>a+b,0)
  const map = {}
- teams.forEach((t,i)=>{ map[t.id]=(2.2/(strengths[i]/total)) })
+ teams.forEach((t,i)=>{ map[t.id] = MARGIN / (strengths[i]/total) })
  return map
 }
 
@@ -375,7 +396,7 @@ window.betGoals = async function(playerName, teamId){
  load()
 }
 
-window.bet = async function(playerName,teamId,odds,type="winner_regular_season"){
+window.bet = async function(playerName,teamId,odds,type){
  const player = players[playerName]
  const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
  if(!val||val<=0) return alert("Zadej částku")
@@ -396,9 +417,9 @@ function getExistingGoalBet(playerId, teamId){
  return bets.find(b => b.player_id===playerId && b.target_id===teamId && b.type?.startsWith("goals_"))
 }
 
-function playerBlock(name,oddsMap,type){
+function playerBlock(name, oddsMap, type){
  const p = players[name]
- const sorted = [...teams].sort((a,b)=> oddsMap[b.id]-oddsMap[a.id])
+ const sorted = [...teams].sort((a,b)=> oddsMap[a.id]-oddsMap[b.id])
  let html=`
  <div class="playerCard">
   <div class="credit">${name} — 💰 ${Math.round(p.credit)} Kč</div>
@@ -453,7 +474,6 @@ function goalsPlayerBlock(playerName){
   const existing = getExistingGoalBet(p.id, t.id)
 
   html += `<div class="goalsRow">`
-
   html += `
    <div class="teamBlock" data-label="Tým">
     <img class="logo" src="./logos/${t.logo}">
@@ -497,14 +517,22 @@ function goalsPlayerBlock(playerName){
 }
 
 function render(){
- const odds = calculateOdds()
- const lastOdds = calculateLastOdds()
+ const odds        = calculateOdds()
+ const nonWinOdds  = calculateNonWinnerOdds()
+ const lastOdds    = calculateLastOdds()
+
  document.getElementById("section").innerHTML =
-  playerBlock("Kubele",odds,"winner_regular_season") +
-  playerBlock("Pici",odds,"winner_regular_season")
+  playerBlock("Kubele", odds, "winner_regular_season") +
+  playerBlock("Pici",   odds, "winner_regular_season")
+
+ document.getElementById("section_nonwinner").innerHTML =
+  playerBlock("Kubele", nonWinOdds, "nonwinner_regular_season") +
+  playerBlock("Pici",   nonWinOdds, "nonwinner_regular_season")
+
  document.getElementById("section_last").innerHTML =
-  playerBlock("Kubele",lastOdds,"last_regular_season") +
-  playerBlock("Pici",lastOdds,"last_regular_season")
+  playerBlock("Kubele", lastOdds, "last_regular_season") +
+  playerBlock("Pici",   lastOdds, "last_regular_season")
+
  document.getElementById("section_goals").innerHTML =
   goalsPlayerBlock("Kubele") +
   goalsPlayerBlock("Pici")
