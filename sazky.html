@@ -234,6 +234,8 @@ const supabase = createClient(
 const START_RATING = 1000
 const K_FORM = 120
 const MARGIN = 2.2
+const MARGIN_NONWINNER = 1.3
+const NONWINNER_EXP = 0.3
 
 const selectedGoal = {}
 
@@ -333,9 +335,9 @@ function calculateNonWinnerOdds(){
  const total = strengths.reduce((a,b)=>a+b,0)
  const map = {}
  teams.forEach((t,i)=>{
-  const pWin = strengths[i] / total        // pravděpodobnost výhry (bez marginu)
-  const pNoWin = 1 - pWin                  // pravděpodobnost nevýhry
-  map[t.id] = MARGIN / pNoWin
+  const pWin = strengths[i] / total
+  const pNoWin = Math.pow(1 - pWin, NONWINNER_EXP)
+  map[t.id] = MARGIN_NONWINNER / pNoWin
  })
  return map
 }
@@ -517,9 +519,9 @@ function goalsPlayerBlock(playerName){
 }
 
 function render(){
- const odds        = calculateOdds()
- const nonWinOdds  = calculateNonWinnerOdds()
- const lastOdds    = calculateLastOdds()
+ const odds       = calculateOdds()
+ const nonWinOdds = calculateNonWinnerOdds()
+ const lastOdds   = calculateLastOdds()
 
  document.getElementById("section").innerHTML =
   playerBlock("Kubele", odds, "winner_regular_season") +
