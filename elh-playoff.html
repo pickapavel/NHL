@@ -4,174 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Playoff Extraliga</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 
 body{
  font-family:'Inter',sans-serif;
- background:#0a0a0a;
- color:#e8d48b;
+ background:#f4f5f7;
+ color:#1a1a2e;
  min-height:100vh;
- padding:28px 20px;
+ padding:32px 20px;
 }
 
 /* HEADER */
 .page-header{
- text-align:center;
- margin-bottom:40px;
- padding-bottom:28px;
- border-bottom:1px solid #2a2200;
- position:relative;
+ max-width:1200px;margin:0 auto 36px;
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:12px;
 }
-.page-header::after{
- content:'';
- position:absolute;
- bottom:-1px;left:50%;transform:translateX(-50%);
- width:120px;height:2px;
- background:linear-gradient(90deg,transparent,#c9a227,transparent);
+.header-left h1{
+ font-size:26px;font-weight:800;color:#111827;
+ letter-spacing:-.5px;margin-bottom:4px;
+}
+.header-left p{
+ font-size:13px;color:#9ca3af;font-weight:500;
+}
+.header-badge{
+ background:white;border:1px solid #e5e7eb;
+ border-radius:10px;padding:10px 18px;
+ font-size:12px;font-weight:700;color:#6b7280;
+ letter-spacing:.06em;text-transform:uppercase;
+ box-shadow:0 1px 3px rgba(0,0,0,.06);
 }
 
-h1{
- font-size:30px;font-weight:800;
- letter-spacing:-.5px;
- color:#f0d060;
- text-shadow:0 0 40px rgba(201,162,39,.25);
- margin-bottom:6px;
-}
-.subtitle{color:#6b5a20;font-size:13px;letter-spacing:.06em;text-transform:uppercase;}
+.content{max-width:1200px;margin:0 auto;}
 
 /* ROUND */
-.round{margin-bottom:44px;}
-.round-title{
- font-size:10px;font-weight:700;
- letter-spacing:.2em;text-transform:uppercase;
- color:#6b5a20;
+.round{margin-bottom:40px;}
+.round-header{
+ display:flex;align-items:center;gap:14px;
  margin-bottom:16px;
- padding-left:2px;
- display:flex;align-items:center;gap:12px;
 }
-.round-title::after{
- content:'';flex:1;height:1px;
- background:linear-gradient(90deg,#2a2000,transparent);
+.round-label{
+ font-size:11px;font-weight:700;
+ letter-spacing:.14em;text-transform:uppercase;
+ color:#9ca3af;white-space:nowrap;
+}
+.round-line{
+ flex:1;height:1px;background:#e5e7eb;
 }
 
-.matches-grid{display:grid;gap:16px;}
+.matches-grid{display:grid;gap:14px;}
 .matches-grid.cols-4{grid-template-columns:repeat(4,1fr);}
 .matches-grid.cols-2{grid-template-columns:repeat(2,1fr);}
 .matches-grid.cols-1{grid-template-columns:1fr;}
 
 /* CARD */
 .match-card{
- background:#0f0d00;
+ background:white;
  border-radius:14px;
  overflow:hidden;
- border:1px solid #2a2000;
- transition:border-color .2s, box-shadow .2s;
+ border:1px solid #e5e7eb;
+ box-shadow:0 1px 4px rgba(0,0,0,.05);
+ transition:box-shadow .2s, border-color .2s;
 }
 .match-card:hover{
- border-color:#c9a227;
- box-shadow:0 0 24px rgba(201,162,39,.08);
+ box-shadow:0 4px 16px rgba(0,0,0,.09);
+ border-color:#d1d5db;
 }
 .match-card.is-final{
- border-color:#c9a227;
- box-shadow:0 0 32px rgba(201,162,39,.12);
+ border-color:#c7d2fe;
+ box-shadow:0 2px 12px rgba(99,102,241,.1);
 }
 .match-card.is-bronze{
- border-color:#7a6030;
+ border-color:#fde68a;
+ box-shadow:0 2px 8px rgba(245,158,11,.08);
 }
 
 /* CARD HEADER */
 .match-header{
- background:#0c0b00;
- padding:10px 14px;
+ padding:11px 16px;
  display:flex;justify-content:space-between;align-items:center;
- border-bottom:1px solid #2a2000;
+ border-bottom:1px solid #f3f4f6;
+ background:#fafafa;
 }
 .match-header-label{
  font-size:11px;font-weight:700;
- color:#a07820;letter-spacing:.1em;text-transform:uppercase;
+ color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;
 }
+.header-right{display:flex;align-items:center;gap:8px;}
+
 .series-state{
  font-size:13px;font-weight:800;
- color:#f0d060;
- background:rgba(201,162,39,.1);
- border:1px solid rgba(201,162,39,.2);
- padding:3px 12px;border-radius:20px;
- letter-spacing:.05em;
-}
-
-/* CARD BODY */
-.match-body{padding:14px;}
-
-.team-row{
- display:flex;align-items:center;gap:12px;
- padding:10px 12px;border-radius:10px;
- margin-bottom:6px;
- background:#0c0b00;
- border:1px solid #1a1500;
- transition:background .15s;
-}
-.team-row:last-of-type{margin-bottom:0;}
-
-.team-row.winner{
- background:#1a1400;
- border-color:#c9a227;
-}
-.team-row.loser{
- opacity:.4;
- filter:grayscale(.3);
-}
-.team-row.tbd{
- opacity:.3;
-}
-
-.team-logo{
- width:38px;height:38px;
- object-fit:contain;
- background:#0a0900;
- border-radius:8px;padding:3px;
- flex-shrink:0;
-}
-.team-logo-placeholder{
- width:38px;height:38px;
- border-radius:8px;
- background:#1a1500;
- border:1px solid #2a2000;
- flex-shrink:0;
- display:flex;align-items:center;justify-content:center;
- font-size:10px;color:#6b5a20;font-weight:700;
-}
-
-.team-info{flex:1;min-width:0;}
-.team-name{
- font-size:14px;font-weight:700;
- color:#e8d48b;
- white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.team-name.tbd{color:#4a3a10;font-weight:400;font-style:italic;}
-.team-row.winner .team-name{color:#f0d060;}
-
-/* DOTS */
-.game-dots{display:flex;gap:4px;margin-top:5px;}
-.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.dot-win{background:#c9a227;}
-.dot-loss{background:#3a1a00;}
-.dot-empty{background:#1a1500;border:1px solid #2a2000;}
-
-/* SCORE */
-.score-num{
- font-size:24px;font-weight:800;
- line-height:1;color:#e8d48b;
-}
-.score-num.win-color{color:#f0d060;}
-.score-num.loss-color{color:#3a2a00;}
-
-/* VS */
-.vs-divider{
- text-align:center;font-size:10px;
- color:#3a2a00;font-weight:700;
- letter-spacing:.15em;padding:5px 0;
+ color:#374151;
+ background:#f3f4f6;
+ border:1px solid #e5e7eb;
+ padding:3px 11px;border-radius:20px;
 }
 
 /* STATUS */
@@ -179,19 +107,89 @@ h1{
  display:inline-block;
  padding:2px 9px;border-radius:20px;
  font-size:10px;font-weight:700;
- text-transform:uppercase;letter-spacing:.08em;
- margin-right:6px;
+ text-transform:uppercase;letter-spacing:.07em;
 }
-.status-live{background:#7a1a00;color:#ff8060;animation:pulse 1.5s infinite;}
-.status-done{background:#1a1400;color:#c9a227;border:1px solid #3a2a00;}
-.status-upcoming{background:#0f0d00;color:#3a2a00;border:1px solid #1a1500;}
+.status-live{background:#fee2e2;color:#dc2626;animation:pulse 1.5s infinite;}
+.status-done{background:#d1fae5;color:#059669;}
+.status-upcoming{background:#f3f4f6;color:#9ca3af;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* BODY */
+.match-body{padding:14px 16px;}
+
+.team-row{
+ display:flex;align-items:center;gap:11px;
+ padding:10px 12px;border-radius:10px;
+ margin-bottom:6px;
+ background:#f9fafb;
+ border:1px solid #f3f4f6;
+ transition:all .15s;
+}
+.team-row:last-of-type{margin-bottom:0;}
+
+.team-row.winner{
+ background:#f0fdf4;
+ border-color:#bbf7d0;
+}
+.team-row.loser{opacity:.45;}
+.team-row.tbd{opacity:.35;}
+
+.team-logo{
+ width:36px;height:36px;
+ object-fit:contain;
+ background:white;
+ border-radius:8px;padding:3px;
+ flex-shrink:0;
+ border:1px solid #f3f4f6;
+}
+.team-logo-placeholder{
+ width:36px;height:36px;
+ border-radius:8px;
+ background:#f3f4f6;
+ flex-shrink:0;
+ display:flex;align-items:center;justify-content:center;
+ font-size:11px;color:#9ca3af;font-weight:700;
+ border:1px solid #e5e7eb;
+}
+
+.team-info{flex:1;min-width:0;}
+.team-name{
+ font-size:14px;font-weight:700;
+ color:#111827;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.team-name.tbd{color:#d1d5db;font-weight:400;font-style:italic;}
+.team-row.winner .team-name{color:#065f46;}
+
+/* DOTS */
+.game-dots{display:flex;gap:4px;margin-top:5px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-win{background:#10b981;}
+.dot-loss{background:#f87171;}
+.dot-empty{background:#e5e7eb;}
+
+/* SCORE */
+.score-num{
+ font-size:22px;font-weight:800;
+ line-height:1;color:#374151;
+ min-width:18px;text-align:center;
+}
+.score-num.win-color{color:#059669;}
+.score-num.loss-color{color:#d1d5db;}
+
+/* VS */
+.vs-divider{
+ text-align:center;font-size:11px;
+ color:#d1d5db;font-weight:600;
+ letter-spacing:.1em;padding:4px 0;
+}
 
 /* FOOTER */
 .match-footer{
- padding:10px 14px;
- border-top:1px solid #1a1500;
- display:flex;gap:8px;flex-wrap:wrap;
+ padding:10px 16px;
+ border-top:1px solid #f3f4f6;
+ display:flex;gap:7px;flex-wrap:wrap;
+ background:#fafafa;
 }
 .btn{
  display:inline-flex;align-items:center;gap:5px;
@@ -201,58 +199,72 @@ h1{
  transition:all .15s;font-family:'Inter',sans-serif;
 }
 .btn-bet{
- background:linear-gradient(135deg,#c9a227,#a07820);
- color:#0a0800;
+ background:#111827;color:white;
 }
-.btn-bet:hover{
- background:linear-gradient(135deg,#f0d060,#c9a227);
- box-shadow:0 0 14px rgba(201,162,39,.3);
+.btn-bet:hover{background:#1f2937;}
+.btn-stats{
+ background:white;color:#6b7280;
+ border:1px solid #e5e7eb;
 }
-.btn-stats{background:#1a1500;color:#a07820;border:1px solid #2a2000;}
-.btn-stats:hover{background:#2a2000;color:#c9a227;}
-.btn-schedule{background:#1a1500;color:#a07820;border:1px solid #2a2000;}
-.btn-schedule:hover{background:#2a2000;color:#c9a227;}
+.btn-stats:hover{background:#f9fafb;color:#374151;}
+.btn-schedule{
+ background:white;color:#6b7280;
+ border:1px solid #e5e7eb;
+}
+.btn-schedule:hover{background:#f9fafb;color:#374151;}
 
-/* TROPHY BADGE */
-.trophy-badge{
- display:inline-block;
- background:linear-gradient(135deg,#c9a227,#7a5010);
- -webkit-background-clip:text;
- -webkit-text-fill-color:transparent;
- background-clip:text;
- font-size:18px;margin-right:4px;
-}
+/* FINAL SPECIAL */
+.match-card.is-final .match-header{background:#eef2ff;}
+.match-card.is-final .match-header-label{color:#6366f1;}
+.match-card.is-bronze .match-header{background:#fffbeb;}
+.match-card.is-bronze .match-header-label{color:#d97706;}
 
 @media(max-width:900px){
  .matches-grid.cols-4{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:580px){
  .matches-grid.cols-4,.matches-grid.cols-2{grid-template-columns:1fr;}
- body{padding:14px 12px;}
- h1{font-size:22px;}
+ body{padding:16px 12px;}
+ .header-left h1{font-size:20px;}
 }
 </style>
 </head>
 <body>
 
 <div class="page-header">
- <h1>⛸ Playoff Extraliga</h1>
- <p class="subtitle">Tipsport Extraliga · Sezóna 2024/25</p>
+ <div class="header-left">
+  <h1>⛸ Playoff Extraliga</h1>
+  <p>Tipsport Extraliga · Sezóna 2024/25</p>
+ </div>
+ <div class="header-badge">🏆 Playoff 2025</div>
 </div>
 
-<div class="round">
- <div class="round-title">Čtvrtfinále — hraní na 4 výhry</div>
- <div class="matches-grid cols-4" id="qf"></div>
-</div>
+<div class="content">
 
-<div class="round">
- <div class="round-title">Semifinále — hraní na 4 výhry</div>
- <div class="matches-grid cols-2" id="sf"></div>
-</div>
+ <div class="round">
+  <div class="round-header">
+   <span class="round-label">Čtvrtfinále — hraní na 4 výhry</span>
+   <div class="round-line"></div>
+  </div>
+  <div class="matches-grid cols-4" id="qf"></div>
+ </div>
 
-<div class="round">
- <div class="round-title">Finálová fáze</div>
- <div class="matches-grid cols-2" id="finals"></div>
+ <div class="round">
+  <div class="round-header">
+   <span class="round-label">Semifinále — hraní na 4 výhry</span>
+   <div class="round-line"></div>
+  </div>
+  <div class="matches-grid cols-2" id="sf"></div>
+ </div>
+
+ <div class="round">
+  <div class="round-header">
+   <span class="round-label">Finálová fáze</span>
+   <div class="round-line"></div>
+  </div>
+  <div class="matches-grid cols-2" id="finals"></div>
+ </div>
+
 </div>
 
 <script>
@@ -333,15 +345,15 @@ function dotsHtml(games, perspective){
 
 function logoHtml(logo, name){
  if(logo) return `<img class="team-logo" src="${LOGO_PATH}${logo}" alt="${name}">`
- const tbd = name==="?" || name.startsWith("Vítěz") || name.startsWith("Poražený")
+ const tbd = name==="?"||name.startsWith("Vítěz")||name.startsWith("Poražený")
  const initials = tbd ? "?" : name.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()
  return `<div class="team-logo-placeholder">${initials}</div>`
 }
 
-function statusHtml(status){
- if(status==="live")     return `<span class="status-badge status-live">● Live</span>`
- if(status==="done")     return `<span class="status-badge status-done">✓ Hotovo</span>`
- return `<span class="status-badge status-upcoming">Připravuje se</span>`
+function statusHtml(s){
+ if(s==="live")     return `<span class="status-badge status-live">● Live</span>`
+ if(s==="done")     return `<span class="status-badge status-done">✓ Hotovo</span>`
+ return `<span class="status-badge status-upcoming">Brzy</span>`
 }
 
 function winnerOf(match){
@@ -369,26 +381,25 @@ function teamRowHtml(team, perspective, winner, isTbd){
 }
 
 function matchCardHtml(match){
- const {id,label,status,team1,team2,isFinal,isBronze} = match
+ const {label, status, team1, team2, isFinal, isBronze} = match
  const winner = winnerOf(match)
  const tbd1 = team1.name==="?"||team1.name.startsWith("Vítěz")||team1.name.startsWith("Poražený")
  const tbd2 = team2.name==="?"||team2.name.startsWith("Vítěz")||team2.name.startsWith("Poražený")
-
- const cardCls = isFinal?"match-card is-final":isBronze?"match-card is-bronze":"match-card"
- const labelIcon = isFinal?"🏆 ":isBronze?"🥉 ":""
+ const cardCls = `match-card${isFinal?" is-final":isBronze?" is-bronze":""}`
+ const icon = isFinal?"🏆 ":isBronze?"🥉 ":""
 
  return `
  <div class="${cardCls}">
   <div class="match-header">
-   <span class="match-header-label">${labelIcon}${label}</span>
-   <div style="display:flex;align-items:center;gap:6px;">
+   <span class="match-header-label">${icon}${label}</span>
+   <div class="header-right">
     ${statusHtml(status)}
     <span class="series-state">${team1.wins} : ${team2.wins}</span>
    </div>
   </div>
   <div class="match-body">
    ${teamRowHtml(team1,"team1",winner,tbd1)}
-   <div class="vs-divider">· · ·</div>
+   <div class="vs-divider">vs</div>
    ${teamRowHtml(team2,"team2",winner,tbd2)}
   </div>
   <div class="match-footer">
