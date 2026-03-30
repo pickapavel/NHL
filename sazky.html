@@ -331,20 +331,23 @@ function calculateOdds(){
 }
 
 function calculateNonWinnerOdds(){
- const MIN_ODDS = 1.30
+ const MIN_ODDS = 1.10
  const MAX_ODDS = 3.00
 
- // Seřaď týmy od nejslabšího po nejsilnější podle formy
  const sorted = [...teams].sort((a,b) =>
   (formRatings[a.id]||1000) - (formRatings[b.id]||1000)
  )
 
  const map = {}
  sorted.forEach((t, i) => {
-  // i=0 nejslabší → MIN_ODDS, i=n-1 nejsilnější → MAX_ODDS
   const ratio = sorted.length > 1 ? i / (sorted.length - 1) : 0
-  map[t.id] = MIN_ODDS + ratio * (MAX_ODDS - MIN_ODDS)
+  // exponenciální křivka – slabé týmy hodně nízko, silné rychle rostou
+  const curved = Math.pow(ratio, 3)
+  map[t.id] = MIN_ODDS + curved * (MAX_ODDS - MIN_ODDS)
  })
+
+ return map
+}
 
  return map
 }
