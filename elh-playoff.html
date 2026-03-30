@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playoff Extraliga</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#0b1a24;color:white;min-height:100vh;padding:24px;}
+
+h1{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
+.subtitle{color:#6b8fa8;font-size:14px;margin-bottom:32px;}
+
+/* ROUND SECTIONS */
+.round-title{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#4a7a99;margin-bottom:14px;padding-left:2px;}
+
+.round{margin-bottom:40px;}
+
+.matches-grid{display:grid;gap:14px;}
+.matches-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.matches-grid.cols-2{grid-template-columns:repeat(2,1fr);}
+.matches-grid.cols-1{grid-template-columns:1fr;}
+
+/* MATCH CARD */
+.match-card{background:#111f2c;border-radius:14px;overflow:hidden;border:1px solid #1a3044;transition:border-color .2s;}
+.match-card:hover{border-color:#2a5070;}
+
+.match-header{background:#0d1e2b;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3044;}
+.match-header-label{font-size:11px;font-weight:700;color:#4a7a99;letter-spacing:.1em;text-transform:uppercase;}
+.series-state{font-size:12px;font-weight:700;color:#e2b040;background:rgba(226,176,64,.12);padding:3px 10px;border-radius:20px;}
+
+.match-body{padding:14px;}
+
+/* TEAM ROW */
+.team-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;margin-bottom:6px;background:#0d1e2b;transition:background .15s;}
+.team-row:last-of-type{margin-bottom:0;}
+.team-row.winner{background:#0f2a1a;border:1px solid #1a5c30;}
+.team-row.loser{opacity:.55;}
+.team-row.tbd{opacity:.4;}
+
+.team-logo{width:36px;height:36px;object-fit:contain;background:#0b1a24;border-radius:8px;padding:3px;flex-shrink:0;}
+.team-logo-placeholder{width:36px;height:36px;border-radius:8px;background:#1a3044;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#4a7a99;font-weight:700;}
+
+.team-info{flex:1;min-width:0;}
+.team-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-name.tbd{color:#4a7a99;font-weight:400;font-style:italic;}
+
+/* GAME DOTS */
+.game-dots{display:flex;gap:4px;align-items:center;margin-top:4px;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-win{background:#27ae60;}
+.dot-loss{background:#e74c3c;}
+.dot-empty{background:#1a3044;}
+
+/* SERIES SCORE */
+.series-score{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.score-num{font-size:22px;font-weight:800;line-height:1;}
+.score-sep{font-size:16px;color:#4a7a99;font-weight:400;}
+
+/* MATCH FOOTER */
+.match-footer{padding:10px 14px;border-top:1px solid #1a3044;display:flex;gap:8px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background .15s;font-family:'Inter',sans-serif;}
+.btn-bet{background:#27ae60;color:white;}
+.btn-bet:hover{background:#219a52;}
+.btn-stats{background:#1a3044;color:#8ab4cc;}
+.btn-stats:hover{background:#1f3d55;}
+.btn-schedule{background:#1a3044;color:#8ab4cc;}
+.btn-schedule:hover{background:#1f3d55;}
+
+/* STATUS BADGE */
+.status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.status-live{background:#c0392b;color:white;animation:pulse 1.5s infinite;}
+.status-done{background:#1a5c30;color:#4ade80;}
+.status-upcoming{background:#1a3044;color:#4a7a99;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* VS DIVIDER */
+.vs-divider{text-align:center;font-size:10px;color:#4a7a99;font-weight:700;letter-spacing:.1em;padding:4px 0;}
+
+@media(max-width:900px){
+ .matches-grid.cols-4{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:600px){
+ .matches-grid.cols-4,.matches-grid.cols-2{grid-template-columns:1fr;}
+ body{padding:14px;}
+ h1{font-size:22px;}
+}
+</style>
+</head>
+<body>
+
+<h1>⛸ Playoff Tipsport Extraliga</h1>
+<p class="subtitle">Sezóna 2024/25 · Česká hokejová extraliga</p>
+
+<!-- ČTVRTFINÁLE -->
+<div class="round">
+ <div class="round-title">Čtvrtfinále — hraní na 4 výhry</div>
+ <div class="matches-grid cols-4" id="qf"></div>
+</div>
+
+<!-- SEMIFINÁLE -->
+<div class="round">
+ <div class="round-title">Semifinále — hraní na 4 výhry</div>
+ <div class="matches-grid cols-2" id="sf"></div>
+</div>
+
+<!-- O 3. MÍSTO + FINÁLE -->
+<div class="round">
+ <div class="round-title">Finálová fáze</div>
+ <div class="matches-grid cols-2" id="finals"></div>
+</div>
+
+<script>
+
+// =====================================================
+// DATA – UPRAVUJ ZDE
+// =====================================================
+
+const LOGO_PATH = "./logos/" // cesta k logům
+
+const quarterFinals = [
+ {
+  id: "qf1",
+  label: "Čtvrtfinále 1",
+  status: "upcoming", // "upcoming" | "live" | "done"
+  team1: { name: "?", logo: null, wins: 0, games: [] },
+  team2: { name: "?", logo: null, wins: 0, games: [] },
+  // games: pole výsledků každého zápasu: "W" = výhra team1, "L" = prohra team1, null = nesehráno
+  // např: ["W","L","W","W"] = team1 vede 3:1
+ },
+ {
+  id: "qf2",
+  label: "Čtvrtfinále 2",
+  status: "upcoming",
+  team1: { name: "?", logo: null, wins: 0, games: [] },
+  team2: { name: "?", logo: null, wins: 0, games: [] },
+ },
+ {
+  id: "qf3",
+  label: "Čtvrtfinále 3",
+  status: "upcoming",
+  team1: { name: "?", logo: null, wins: 0, games: [] },
+  team2: { name: "?", logo: null, wins: 0, games: [] },
+ },
+ {
+  id: "qf4",
+  label: "Čtvrtfinále 4",
+  status: "upcoming",
+  team1: { name: "?", logo: null, wins: 0, games: [] },
+  team2: { name: "?", logo: null, wins: 0, games: [] },
+ },
+]
+
+const semiFinals = [
+ {
+  id: "sf1",
+  label: "Semifinále 1",
+  status: "upcoming",
+  team1: { name: "Vítěz QF1", logo: null, wins: 0, games: [] },
+  team2: { name: "Vítěz QF2", logo: null, wins: 0, games: [] },
+ },
+ {
+  id: "sf2",
+  label: "Semifinále 2",
+  status: "upcoming",
+  team1: { name: "Vítěz QF3", logo: null, wins: 0, games: [] },
+  team2: { name: "Vítěz QF4", logo: null, wins: 0, games: [] },
+ },
+]
+
+const finalPhase = [
+ {
+  id: "bronze",
+  label: "O 3. místo",
+  status: "upcoming",
+  team1: { name: "Poražený SF1", logo: null, wins: 0, games: [] },
+  team2: { name: "Poražený SF2", logo: null, wins: 0, games: [] },
+  isBronze: true,
+ },
+ {
+  id: "final",
+  label: "Finále",
+  status: "upcoming",
+  team1: { name: "Vítěz SF1", logo: null, wins: 0, games: [] },
+  team2: { name: "Vítěz SF2", logo: null, wins: 0, games: [] },
+  isFinal: true,
+ },
+]
+
+// =====================================================
+// RENDER
+// =====================================================
+
+function dotsHtml(games, perspective){
+ // perspective: "team1" nebo "team2"
+ const maxGames = 7
+ let html = '<div class="game-dots">'
+ for(let i = 0; i < maxGames; i++){
+  if(i < games.length){
+   const result = games[i]
+   const win = perspective === "team1" ? result === "W" : result === "L"
+   html += `<div class="dot ${win ? "dot-win" : "dot-loss"}"></div>`
+  } else {
+   html += `<div class="dot dot-empty"></div>`
+  }
+ }
+ html += '</div>'
+ return html
+}
+
+function logoHtml(logo, name){
+ if(logo){
+  return `<img class="team-logo" src="${LOGO_PATH}${logo}" alt="${name}">`
+ }
+ const initials = name === "?" || name.startsWith("Vítěz") || name.startsWith("Poražený")
+  ? "?"
+  : name.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()
+ return `<div class="team-logo-placeholder">${initials}</div>`
+}
+
+function statusHtml(status){
+ if(status === "live")     return `<span class="status-badge status-live">● Live</span>`
+ if(status === "done")     return `<span class="status-badge status-done">✓ Hotovo</span>`
+ return `<span class="status-badge status-upcoming">Připravuje se</span>`
+}
+
+function seriesStateHtml(t1wins, t2wins, status){
+ if(status === "upcoming") return `<span class="series-state">0 : 0</span>`
+ return `<span class="series-state">${t1wins} : ${t2wins}</span>`
+}
+
+function winnerLoser(match){
+ const {team1, team2, status} = match
+ const maxWins = match.isBronze || match.isFinal ? 4 : 4
+ if(status !== "done") return {w: null, l: null}
+ if(team1.wins >= maxWins) return {w: "team1", l: "team2"}
+ if(team2.wins >= maxWins) return {w: "team2", l: "team1"}
+ return {w: null, l: null}
+}
+
+function matchCardHtml(match){
+ const {id, label, status, team1, team2, isFinal, isBronze} = match
+ const {w} = winnerLoser(match)
+
+ const t1class = w === "team1" ? "winner" : w === "team2" ? "loser" : (team1.name.startsWith("?") || team1.name.startsWith("Vítěz") || team1.name.startsWith("Poražený")) ? "tbd" : ""
+ const t2class = w === "team2" ? "winner" : w === "team1" ? "loser" : (team2.name.startsWith("?") || team2.name.startsWith("Vítěz") || team2.name.startsWith("Poražený")) ? "tbd" : ""
+
+ const isTbd1 = t1class === "tbd"
+ const isTbd2 = t2class === "tbd"
+
+ const cardAccent = isFinal ? "border:1px solid #4a7a20;" : isBronze ? "border:1px solid #7a5020;" : ""
+
+ return `
+ <div class="match-card" style="${cardAccent}">
+  <div class="match-header">
+   <span class="match-header-label">${isFinal ? "🏆 " : isBronze ? "🥉 " : ""}${label}</span>
+   <div style="display:flex;align-items:center;gap:8px;">
+    ${statusHtml(status)}
+    ${seriesStateHtml(team1.wins, team2.wins, status)}
+   </div>
+  </div>
+
+  <div class="match-body">
+   <div class="team-row ${t1class}">
+    ${logoHtml(team1.logo, team1.name)}
+    <div class="team-info">
+     <div class="team-name ${isTbd1 ? 'tbd' : ''}">${team1.name}</div>
+     ${team1.games.length > 0 ? dotsHtml(team1.games, "team1") : '<div class="game-dots"><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div></div>'}
+    </div>
+    <div class="series-score">
+     <span class="score-num" style="color:${w==="team1"?"#4ade80":w==="team2"?"#f87171":"white"}">${team1.wins}</span>
+    </div>
+   </div>
+
+   <div class="vs-divider">vs</div>
+
+   <div class="team-row ${t2class}">
+    ${logoHtml(team2.logo, team2.name)}
+    <div class="team-info">
+     <div class="team-name ${isTbd2 ? 'tbd' : ''}">${team2.name}</div>
+     ${team2.games.length > 0 ? dotsHtml(team2.games, "team2") : '<div class="game-dots"><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div><div class="dot dot-empty"></div></div>'}
+    </div>
+    <div class="series-score">
+     <span class="score-num" style="color:${w==="team2"?"#4ade80":w==="team1"?"#f87171":"white"}">${team2.wins}</span>
+    </div>
+   </div>
+  </div>
+
+  <div class="match-footer">
+   <a href="index.html" class="btn btn-bet">🎲 Vsadit</a>
+   <a href="#" class="btn btn-stats" onclick="alert('Statistiky brzy k dispozici');return false;">📊 Statistiky</a>
+   <a href="#" class="btn btn-schedule" onclick="alert('Rozpis zápasů brzy k dispozici');return false;">📅 Rozpis</a>
+  </div>
+ </div>
+ `
+}
+
+function render(containerId, matches){
+ document.getElementById(containerId).innerHTML = matches.map(matchCardHtml).join("")
+}
+
+render("qf", quarterFinals)
+render("sf", semiFinals)
+render("finals", finalPhase)
+
+</script>
+</body>
+</html>
