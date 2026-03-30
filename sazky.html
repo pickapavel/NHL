@@ -331,14 +331,21 @@ function calculateOdds(){
 }
 
 function calculateNonWinnerOdds(){
- const strengths = teams.map(t => Math.pow(Number(formRatings[t.id] || 1000),6))
- const total = strengths.reduce((a,b)=>a+b,0)
+ const MIN_ODDS = 1.30
+ const MAX_ODDS = 3.00
+
+ // Seřaď týmy od nejslabšího po nejsilnější podle formy
+ const sorted = [...teams].sort((a,b) =>
+  (formRatings[a.id]||1000) - (formRatings[b.id]||1000)
+ )
+
  const map = {}
- teams.forEach((t,i)=>{
-  const pWin = strengths[i] / total
-  const pNoWin = Math.pow(1 - pWin, NONWINNER_EXP)
-  map[t.id] = MARGIN_NONWINNER / pNoWin
+ sorted.forEach((t, i) => {
+  // i=0 nejslabší → MIN_ODDS, i=n-1 nejsilnější → MAX_ODDS
+  const ratio = sorted.length > 1 ? i / (sorted.length - 1) : 0
+  map[t.id] = MIN_ODDS + ratio * (MAX_ODDS - MIN_ODDS)
  })
+
  return map
 }
 
