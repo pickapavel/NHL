@@ -349,9 +349,6 @@ function calculateNonWinnerOdds(){
  return map
 }
 
- return map
-}
-
 function calculateLastOdds(){
  const strengths = teams.map(t => Math.pow(1/(Number(formRatings[t.id] || 1000)),6))
  const total = strengths.reduce((a,b)=>a+b,0)
