@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pavouk</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f2f2f2;padding:20px;}
+h1{margin-bottom:20px;color:#0b2a3c;}
+
+.bracket-outer{overflow-x:auto;padding-bottom:10px;}
+.bracket{display:flex;align-items:stretch;gap:0;min-width:900px;}
+
+.round-col{display:flex;flex-direction:column;flex:1;}
+.round-label{text-align:center;font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.08em;padding:0 0 12px;}
+
+.matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;}
+
+.match-wrap{display:flex;flex-direction:column;justify-content:center;flex:1;}
+
+.match{background:white;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+
+.team{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;color:#222;}
+.team:last-child{border-bottom:none;}
+.team.winner{background:#e8f5e9;font-weight:600;color:#1b5e20;}
+.team.loser{color:#aaa;}
+.seed{font-size:11px;color:#999;min-width:16px;}
+
+/* CONNECTOR */
+.connector-col{width:30px;flex-shrink:0;display:flex;flex-direction:column;position:relative;}
+.connector-col svg{position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;}
+
+/* TROPHY */
+.trophy-col{display:flex;align-items:center;justify-content:center;flex:0 0 50px;padding-top:28px;}
+.trophy-icon{font-size:32px;}
+</style>
+</head>
+<body>
+
+<h1>Playoff pavouk</h1>
+
+<div class="bracket-outer">
+ <div class="bracket" id="bracket"></div>
+</div>
+
+<script>
+const rounds = [
+ {
+  label: "Osmifinále",
+  matches: [
+   [{seed:1, name:"Tým 1"}, {seed:16, name:"Tým 16"}],
+   [{seed:8, name:"Tým 8"}, {seed:9,  name:"Tým 9"}],
+   [{seed:5, name:"Tým 5"}, {seed:12, name:"Tým 12"}],
+   [{seed:4, name:"Tým 4"}, {seed:13, name:"Tým 13"}],
+   [{seed:3, name:"Tým 3"}, {seed:14, name:"Tým 14"}],
+   [{seed:6, name:"Tým 6"}, {seed:11, name:"Tým 11"}],
+   [{seed:7, name:"Tým 7"}, {seed:10, name:"Tým 10"}],
+   [{seed:2, name:"Tým 2"}, {seed:15, name:"Tým 15"}],
+  ],
+  winners: [0,0,0,0,0,0,0,0] // index vítěze (0=první, 1=druhý)
+ },
+ {
+  label: "Čtvrtfinále",
+  matches: [
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+  ],
+  winners: [0,0,0,0]
+ },
+ {
+  label: "Semifinále",
+  matches: [
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+  ],
+  winners: [0,0]
+ },
+ {
+  label: "Finále",
+  matches: [
+   [{seed:"", name:"?"}, {seed:"", name:"?"}],
+  ],
+  winners: [0]
+ },
+];
+
+const bracket = document.getElementById("bracket");
+
+function buildMatch(teams, winnerIdx){
+ const match = document.createElement("div");
+ match.className = "match";
+ teams.forEach((t, i) => {
+  const row = document.createElement("div");
+  row.className = "team" + (t.name !== "?" && i === winnerIdx ? " winner" : t.name !== "?" && i !== winnerIdx ? " loser" : "");
+  row.innerHTML = `<span class="seed">${t.seed}</span><span>${t.name}</span>`;
+  match.appendChild(row);
+ });
+ return match;
+}
+
+rounds.forEach((round, ri) => {
+ const col = document.createElement("div");
+ col.className = "round-col";
+
+ const lbl = document.createElement("div");
+ lbl.className = "round-label";
+ lbl.textContent = round.label;
+ col.appendChild(lbl);
+
+ const matchesDiv = document.createElement("div");
+ matchesDiv.className = "matches";
+ matchesDiv.id = `round-${ri}`;
+
+ round.matches.forEach((teams, mi) => {
+  const wrap = document.createElement("div");
+  wrap.className = "match-wrap";
+  wrap.id = `match-${ri}-${mi}`;
+  wrap.appendChild(buildMatch(teams, round.winners[mi]));
+  matchesDiv.appendChild(wrap);
+ });
+
+ col.appendChild(matchesDiv);
+ bracket.appendChild(col);
+
+ // Connector SVG between rounds
+ if(ri < rounds.length - 1){
+  const connCol = document.createElement("div");
+  connCol.className = "connector-col";
+  connCol.id = `conn-${ri}`;
+  bracket.appendChild(connCol);
+ }
+});
+
+// Trophy
+const trophy = document.createElement("div");
+trophy.className = "trophy-col";
+trophy.innerHTML = `<div class="trophy-icon">🏆</div>`;
+bracket.appendChild(trophy);
+
+// Draw connectors after layout
+function drawConnectors(){
+ for(let ri = 0; ri < rounds.length - 1; ri++){
+  const connCol = document.getElementById(`conn-${ri}`);
+  if(!connCol) continue;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("width","30");
+  svg.setAttribute("height","100%");
+  svg.style.position = "absolute";
+  svg.style.top = "0";
+  svg.style.left = "0";
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+  svg.style.overflow = "visible";
+
+  const connRect = connCol.getBoundingClientRect();
+  const matchCount = rounds[ri].matches.length;
+
+  for(let mi = 0; mi < matchCount; mi += 2){
+   const wrapA = document.getElementById(`match-${ri}-${mi}`);
+   const wrapB = document.getElementById(`match-${ri}-${mi+1}`);
+   const nextWrap = document.getElementById(`match-${ri+1}-${Math.floor(mi/2)}`);
+
+   if(!wrapA || !wrapB || !nextWrap) continue;
+
+   const rA = wrapA.getBoundingClientRect();
+   const rB = wrapB.getBoundingClientRect();
+   const rN = nextWrap.getBoundingClientRect();
+
+   const y1 = rA.top + rA.height/2 - connRect.top;
+   const y2 = rB.top + rB.height/2 - connRect.top;
+   const yMid = (y1 + y2) / 2;
+   const yNext = rN.top + rN.height/2 - connRect.top;
+
+   const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+   path.setAttribute("d",`M0 ${y1} L15 ${y1} L15 ${yMid} M0 ${y2} L15 ${y2} L15 ${yMid} M15 ${yMid} L30 ${yNext}`);
+   path.setAttribute("fill","none");
+   path.setAttribute("stroke","#ccc");
+   path.setAttribute("stroke-width","1.5");
+   path.setAttribute("stroke-linecap","round");
+   path.setAttribute("stroke-linejoin","round");
+   svg.appendChild(path);
+  }
+
+  connCol.appendChild(svg);
+ }
+}
+
+// Počkat na vykreslení
+setTimeout(drawConnectors, 50);
+window.addEventListener("resize", () => {
+ document.querySelectorAll(".connector-col svg").forEach(s => s.remove());
+ drawConnectors();
+});
+</script>
+</body>
+</html>
