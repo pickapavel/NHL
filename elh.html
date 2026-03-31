@@ -43,7 +43,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .standings-table tbody tr:hover{background:#f0f4f8;}
-
 .standings-table tbody tr:nth-child(odd){background:#f7f8fa;}
 .standings-table tbody tr:nth-child(odd):hover{background:#edf2f7;}
 
@@ -60,13 +59,16 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-team{text-align:left;padding-left:10px;}
 
 .team-cell{
- display:flex;align-items:center;gap:10px;
+ display:flex;
+ align-items:flex-start;
+ gap:10px;
 }
 
 .team-logo{
  width:32px;height:32px;object-fit:contain;
  background:white;border-radius:6px;padding:2px;
  border:1px solid #e0e0e0;flex-shrink:0;
+ margin-top:2px;
 }
 
 .team-text{
@@ -75,10 +77,12 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .team-name{
  font-weight:700;font-size:13px;color:#111;
+ line-height:1.3;
 }
 
 .team-rating{
  font-size:10px;color:#888;
+ line-height:1.3;
 }
 
 .td-points{font-weight:800;font-size:15px;color:white;}
@@ -86,7 +90,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .points-pill{
  background:#0b2a3c;border-radius:6px;
  padding:4px 10px;display:inline-block;
- min-width:34px;text-align:center;
+ min-width:34px;text-align:center;color:white;
 }
 
 .td-score{font-weight:600;color:#333;}
@@ -338,7 +342,6 @@ function renderTable(matches, teamMap, teams){
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rank">${i+1}</td>
-
    <td class="td-team">
     <div class="team-cell">
      <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
@@ -348,7 +351,6 @@ function renderTable(matches, teamMap, teams){
      </div>
     </div>
    </td>
-
    <td class="td-num hide-mobile">${t.z}</td>
    <td class="td-wins">${t.v}</td>
    <td class="td-num hide-mobile">${t.vp}</td>
