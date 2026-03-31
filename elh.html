@@ -11,13 +11,65 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-.headerBar{display:flex;justify-content:center;margin-bottom:20px;}
-.seasonCard{
- background:#0b2a3c;color:white;font-size:22px;
- padding:10px 20px;border-radius:10px;
+/* HEADER */
+.headerBar{
+ background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
+ border-radius:14px;
+ padding:22px 30px;
+ margin-bottom:24px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ flex-wrap:wrap;
+ gap:12px;
 }
 
-.table-scroll{overflow-x:auto;margin-bottom:20px;}
+.headerLeft{display:flex;align-items:center;gap:16px;}
+
+.headerIcon{
+ font-size:36px;line-height:1;
+}
+
+.headerTitles{}
+
+.headerTitle{
+ font-size:22px;font-weight:800;
+ color:white;letter-spacing:-.3px;
+ line-height:1.2;
+}
+
+.headerSubtitle{
+ font-size:12px;color:#7ab0cc;
+ font-weight:500;margin-top:3px;
+ letter-spacing:.04em;text-transform:uppercase;
+}
+
+.headerBadge{
+ background:rgba(255,255,255,.12);
+ border:1px solid rgba(255,255,255,.2);
+ border-radius:20px;
+ padding:6px 16px;
+ font-size:12px;font-weight:700;
+ color:#a8d4ee;
+ letter-spacing:.06em;
+ white-space:nowrap;
+}
+
+/* SEKCE NADPIS */
+.sectionTitle{
+ font-size:17px;font-weight:700;
+ color:#0b2a3c;
+ margin:0 0 12px;
+ display:flex;align-items:center;gap:8px;
+}
+.sectionTitle::after{
+ content:'';flex:1;height:2px;
+ background:linear-gradient(90deg,#2f9ec9,transparent);
+ border-radius:2px;
+}
+
+/* TABULKA */
+.table-scroll{overflow-x:auto;margin-bottom:28px;}
 
 .standings-table{
  width:100%;border-collapse:collapse;
@@ -80,55 +132,92 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
 
-.filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
+/* FILTRY */
+.filterBar{margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .filterBar select{
- padding:8px 12px;border-radius:6px;border:none;
- font-weight:bold;background:#2f9ec9;color:white;cursor:pointer;
+ padding:8px 14px;border-radius:8px;border:none;
+ font-weight:700;font-size:13px;
+ background:#0b2a3c;color:white;cursor:pointer;
 }
 
+/* MATCH CARDS */
 .matchRow{
- background:#e9ecef;padding:12px;
- margin-bottom:8px;border-radius:10px;
- display:flex;flex-direction:column;gap:10px;
+ background:white;
+ border:1px solid #e0e8f0;
+ padding:12px 14px;
+ margin-bottom:8px;
+ border-radius:12px;
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ box-shadow:0 1px 4px rgba(0,0,0,.06);
+ transition:box-shadow .15s;
 }
 
-.teamBox{display:flex;align-items:center;gap:8px;font-weight:bold;font-size:14px;}
+.matchRow:hover{
+ box-shadow:0 3px 12px rgba(0,0,0,.1);
+ border-color:#b8d0e8;
+}
+
+.teamBox{
+ display:flex;align-items:center;gap:8px;
+ font-weight:700;font-size:14px;color:#1a2a3c;
+}
 
 .scoreBox{
  background:#0b2a3c;color:white;
- font-size:18px;font-weight:bold;
- padding:6px 10px;border-radius:6px;
+ font-size:18px;font-weight:800;
+ padding:6px 10px;border-radius:8px;
  min-width:45px;text-align:center;
 }
 
 .middleBox{text-align:center;font-size:12px;}
-.periods{color:#333;}
+
+.periods{
+ color:#888;font-size:11px;
+ background:#f0f0f0;
+ display:inline-block;
+ padding:2px 8px;border-radius:10px;
+}
 
 .winTag{
- font-size:11px;font-weight:bold;color:#fff;
- background:#2f9ec9;padding:3px 6px;
- border-radius:6px;display:inline-block;margin-top:3px;
+ font-size:11px;font-weight:700;color:#fff;
+ background:#2f9ec9;padding:3px 8px;
+ border-radius:6px;display:inline-block;margin-top:4px;
 }
 
 .btn{
- border:none;border-radius:6px;cursor:pointer;
- width:100%;font-weight:bold;height:38px;
- display:flex;align-items:center;justify-content:center;font-size:14px;
+ border:none;border-radius:8px;cursor:pointer;
+ width:100%;font-weight:700;height:36px;
+ display:flex;align-items:center;justify-content:center;
+ font-size:13px;gap:5px;transition:all .15s;
 }
-.detailBtn{background:#2f9ec9;color:white;}
+.detailBtn{background:#1a5276;color:white;}
+.detailBtn:hover{background:#0b2a3c;}
 .betBtn{background:#27ae60;color:white;}
+.betBtn:hover{background:#219a52;}
+
 .btnWrap{display:flex;flex-direction:column;gap:6px;}
 
 .logo{
- width:40px;height:40px;object-fit:contain;
+ width:36px;height:36px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
+ border:1px solid #e0e0e0;
+}
+
+/* Kolo tag */
+.roundTag{
+ font-size:10px;font-weight:700;color:#888;
+ background:#f0f0f0;padding:2px 8px;
+ border-radius:10px;letter-spacing:.05em;
+ text-transform:uppercase;
 }
 
 @media(min-width:768px){
  .matchRow{
   display:grid;
-  grid-template-columns:1fr 80px 180px 80px 1fr 120px;
-  align-items:start;
+  grid-template-columns:1fr 80px 160px 80px 1fr 120px;
+  align-items:center;
  }
  .homeTeam{grid-column:1;}
  .homeScore{grid-column:2;}
@@ -136,7 +225,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  .awayScore{grid-column:4;}
  .awayTeam{grid-column:5;justify-content:flex-end;text-align:right;}
  .btnWrap{grid-column:6;}
- .scoreBox{min-width:80px;}
+ .scoreBox{min-width:70px;}
 }
 </style>
 </head>
@@ -144,11 +233,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <body>
 <div class="wrapper">
 
+<!-- HEADER -->
 <div class="headerBar">
- <div class="seasonCard">Extraliga U dvou Blbounů</div>
+ <div class="headerLeft">
+  <div class="headerIcon">🏒</div>
+  <div class="headerTitles">
+   <div class="headerTitle">Extraliga U dvou Blbounů</div>
+   <div class="headerSubtitle">Hokejová fantasy liga · Sezóna 2024/25</div>
+  </div>
+ </div>
+ <div class="headerBadge">⚡ Live tabulka</div>
 </div>
 
-<h2>Tabulka</h2>
+<div class="sectionTitle">Tabulka</div>
 
 <div class="table-scroll">
 <table class="standings-table">
@@ -184,7 +281,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  </select>
 </div>
 
-<h2>Rozpis zápasů</h2>
+<div class="sectionTitle">Rozpis zápasů</div>
 <div id="schedule"></div>
 
 </div>
@@ -206,7 +303,6 @@ const K_FORM = 120
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
 
-// Stejná logika jako rating.html
 function getScore(match, teamId){
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
@@ -232,7 +328,6 @@ function calculateRatings(allMatches, teams){
   formRatings[t.id] = START_RATING
  })
 
- // Seřadit podle kola – stejně jako rating.html
  const sorted = [...allMatches].sort((a,b)=>Number(a.round)-Number(b.round))
 
  sorted.forEach(m=>{
@@ -243,7 +338,6 @@ function calculateRatings(allMatches, teams){
   const sH = getScore(m, h)
   const sA = getScore(m, a)
 
-  // Overall rating
   const rH = ratings[h]
   const rA = ratings[a]
   const eH = 1/(1+Math.pow(10,(rA-rH)/400))
@@ -251,12 +345,11 @@ function calculateRatings(allMatches, teams){
   ratings[h] = Math.round(rH + K_OVERALL*(sH-eH))
   ratings[a] = Math.round(rA + K_OVERALL*(sA-eA))
 
-  // Form rating (posledních 5 zápasů)
   function updateForm(teamId, opponentId, score){
-   const current  = formRatings[teamId]
-   const oppRating= formRatings[opponentId]
-   const expected = 1/(1+Math.pow(10,(oppRating-current)/400))
-   const change   = K_FORM*(score-expected)
+   const current   = formRatings[teamId]
+   const oppRating = formRatings[opponentId]
+   const expected  = 1/(1+Math.pow(10,(oppRating-current)/400))
+   const change    = K_FORM*(score-expected)
    formHistory[teamId].push(change)
    if(formHistory[teamId].length>5) formHistory[teamId].shift()
    formRatings[teamId] = Math.round(
@@ -293,7 +386,6 @@ async function load(){
   teams = res.data || []
  }
 
- // Načíst VŠECHNY odehrané zápasy pro výpočet ratingu (ne jen ze sezóny)
  const { data: allMatches } = await supabase
   .from("matches")
   .select("*")
@@ -301,14 +393,12 @@ async function load(){
   .not("away_score","is",null)
   .order("round",{ascending:true})
 
- // Načíst zápasy sezóny pro tabulku
  const { data: seasonMatches } = await supabase
   .from("matches").select("*").eq("season_id", SEASON_ID)
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
- // Spočítat rating dynamicky
  const { ratings, formRatings } = calculateRatings(allMatches||[], teams)
 
  const tf = document.getElementById("teamFilter")
@@ -394,10 +484,7 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
 
   const tr=document.createElement("tr")
   tr.innerHTML=`
-   <td class="td-rating">
-    ⭐ ${elo}<br>
-    🔥 ${form}
-   </td>
+   <td class="td-rating">⭐ ${elo}<br>🔥 ${form}</td>
    <td class="td-rank">${i+1}</td>
    <td class="td-team">
     <div class="team-cell">
@@ -443,7 +530,7 @@ function render(matches, teamMap){
    const a1=Number(stats[6]||0)
    const a2=Number(stats[7]||0)
    const a3=Number(stats[8]||0)
-   periods=`(${h1}:${a1}, ${h2}:${a2}, ${h3}:${a3})`
+   periods=`${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
    const isSN=stats[20]==="1"||stats[20]==="2"
    const isOT=!isSN&&(stats[9]==="11"||stats[19]==="11")
    if(isSN) tag="SN"
@@ -452,6 +539,7 @@ function render(matches, teamMap){
 
   const homeScore=m.home_score??"-"
   const awayScore=m.away_score??"-"
+  const played = m.home_score != null
 
   cont.innerHTML+=`
   <div class="matchRow">
@@ -459,24 +547,32 @@ function render(matches, teamMap){
     <img class="logo" src="./logos/${home.logo}">
     <div>${home.name}</div>
    </div>
+
    <div class="scoreBox homeScore">${homeScore}</div>
+
    <div class="middleBox">
-    <div class="periods">${periods}</div>
-    ${tag?`<div class="winTag">${tag}</div>`:""}
+    ${played
+     ? `<div class="periods">${periods}</div>
+        ${tag?`<div class="winTag">${tag}</div>`:""}`
+     : `<span class="roundTag">Kolo ${m.round}</span>`
+    }
    </div>
+
    <div class="scoreBox awayScore">${awayScore}</div>
+
    <div class="teamBox awayTeam">
     <div>${away.name}</div>
     <img class="logo" src="./logos/${away.logo}">
    </div>
+
    <div class="btnWrap">
     <button class="btn detailBtn"
      onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-     Detail
+     📊 Detail
     </button>
     <button class="btn betBtn"
      onclick="window.location.href='vsad-si.html?id=${m.id}'">
-     Vsaď si
+     🎲 Vsaď si
     </button>
    </div>
   </div>
