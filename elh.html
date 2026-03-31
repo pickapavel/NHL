@@ -17,11 +17,10 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px 20px;border-radius:10px;
 }
 
-/* ===== NOVÁ TABULKA ===== */
+/* ===== TABULKA ===== */
 .standings-table{
  width:100%;border-collapse:collapse;
- margin-bottom:20px;
- font-size:13px;
+ margin-bottom:20px;font-size:13px;
 }
 
 .standings-table thead tr{
@@ -29,12 +28,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .standings-table thead th{
- padding:10px 10px;
- text-align:center;
- font-size:11px;
- font-weight:700;
- letter-spacing:.05em;
- white-space:nowrap;
+ padding:10px 10px;text-align:center;
+ font-size:11px;font-weight:700;
+ letter-spacing:.05em;white-space:nowrap;
 }
 
 .standings-table thead th.th-team{
@@ -46,22 +42,14 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  transition:background .15s;
 }
 
-.standings-table tbody tr:hover{
- background:#f0f4f8;
-}
+.standings-table tbody tr:hover{background:#f0f4f8;}
 
-.standings-table tbody tr:nth-child(odd){
- background:#f7f8fa;
-}
-.standings-table tbody tr:nth-child(odd):hover{
- background:#edf2f7;
-}
+.standings-table tbody tr:nth-child(odd){background:#f7f8fa;}
+.standings-table tbody tr:nth-child(odd):hover{background:#edf2f7;}
 
 .standings-table tbody td{
- padding:9px 10px;
- text-align:center;
- color:#333;
- white-space:nowrap;
+ padding:9px 10px;text-align:center;
+ color:#333;white-space:nowrap;
 }
 
 .td-rank{
@@ -69,10 +57,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:14px;width:36px;
 }
 
-.td-team{
- text-align:left;
- padding-left:10px;
-}
+.td-team{text-align:left;padding-left:10px;}
 
 .team-cell{
  display:flex;align-items:center;gap:10px;
@@ -84,25 +69,24 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  border:1px solid #e0e0e0;flex-shrink:0;
 }
 
+.team-text{
+ display:flex;flex-direction:column;gap:2px;
+}
+
 .team-name{
  font-weight:700;font-size:13px;color:#111;
 }
 
 .team-rating{
- font-size:10px;color:#888;margin-top:1px;
+ font-size:10px;color:#888;
 }
 
-.td-points{
- font-weight:800;font-size:15px;color:white;
-}
+.td-points{font-weight:800;font-size:15px;color:white;}
 
 .points-pill{
- background:#0b2a3c;
- border-radius:6px;
- padding:4px 10px;
- display:inline-block;
- min-width:34px;
- text-align:center;
+ background:#0b2a3c;border-radius:6px;
+ padding:4px 10px;display:inline-block;
+ min-width:34px;text-align:center;
 }
 
 .td-score{font-weight:600;color:#333;}
@@ -116,20 +100,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
 
-/* Separator řádek mezi top 4 a zbytkem */
-.standings-table tbody tr.separator td{
- padding:0;height:3px;
- background:linear-gradient(90deg,#2f9ec9,#0b2a3c);
-}
-
-/* Legenda */
-.standings-legend{
- display:flex;gap:20px;flex-wrap:wrap;
- font-size:11px;color:#888;margin-bottom:16px;
-}
-.legend-item{display:flex;align-items:center;gap:5px;}
-.legend-dot{
- width:10px;height:10px;border-radius:50%;
+@media(max-width:700px){
+ .hide-mobile{display:none;}
+ .team-name{font-size:12px;}
+ .standings-table thead th,
+ .standings-table tbody td{padding:7px 5px;}
 }
 
 /* FILTRY */
@@ -176,14 +151,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .logo{
  width:40px;height:40px;object-fit:contain;
  background:white;padding:2px;border-radius:6px;
-}
-
-/* Mobile – schovat méně důležité sloupce */
-@media(max-width:700px){
- .hide-mobile{display:none;}
- .team-name{font-size:12px;}
- .standings-table thead th,
- .standings-table tbody td{padding:7px 5px;}
 }
 
 @media(min-width:768px){
@@ -369,16 +336,15 @@ function renderTable(matches, teamMap, teams){
   const pmClass=pm>0?"pos":pm<0?"neg":"neu"
 
   const tr=document.createElement("tr")
-
   tr.innerHTML=`
    <td class="td-rank">${i+1}</td>
 
    <td class="td-team">
     <div class="team-cell">
      <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
-     <div>
+     <div class="team-text">
       <div class="team-name">${team.name}</div>
-      <div class="team-rating">⭐ ${Math.round(team.rating_overall||0)} &nbsp; 🔥 ${Math.round(team.rating_form||0)}</div>
+      <div class="team-rating">⭐ ${Math.round(team.rating_overall||0)} &nbsp;🔥 ${Math.round(team.rating_form||0)}</div>
      </div>
     </div>
    </td>
@@ -392,12 +358,8 @@ function renderTable(matches, teamMap, teams){
    <td class="td-losses">${t.p}</td>
    <td class="td-score hide-mobile">${t.gf}:${t.ga}</td>
    <td class="td-pm ${pmClass} hide-mobile">${pmStr}</td>
-
-   <td class="td-points">
-    <span class="points-pill">${t.b}</span>
-   </td>
+   <td class="td-points"><span class="points-pill">${t.b}</span></td>
   `
-
   tbody.appendChild(tr)
  })
 }
