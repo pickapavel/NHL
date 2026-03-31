@@ -24,9 +24,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:13px;min-width:750px;
 }
 
-.standings-table thead tr{
- background:#0b2a3c;color:white;
-}
+.standings-table thead tr{background:#0b2a3c;color:white;}
 
 .standings-table thead th{
  padding:10px 8px;text-align:center;
@@ -34,13 +32,10 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  letter-spacing:.05em;white-space:nowrap;
 }
 
-.standings-table thead th.th-team{
- text-align:left;padding-left:10px;
-}
+.standings-table thead th.th-team{text-align:left;padding-left:10px;}
 
 .standings-table tbody tr{
- border-bottom:1px solid #e0e0e0;
- transition:background .15s;
+ border-bottom:1px solid #e0e0e0;transition:background .15s;
 }
 
 .standings-table tbody tr:hover{background:#f0f4f8;}
@@ -54,17 +49,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .td-rating{
  text-align:center;font-size:11px;color:#666;
- font-weight:600;line-height:1.8;
- padding:6px 6px;width:60px;
+ font-weight:600;line-height:1.8;padding:6px 6px;width:60px;
 }
 
-.td-rank{
- font-weight:700;color:#0b2a3c;
- font-size:14px;width:28px;
-}
-
+.td-rank{font-weight:700;color:#0b2a3c;font-size:14px;width:28px;}
 .td-team{text-align:left;padding-left:8px;}
-
 .team-cell{display:flex;align-items:center;gap:10px;}
 
 .team-logo{
@@ -91,14 +80,12 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
 
-/* FILTRY */
 .filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
 .filterBar select{
  padding:8px 12px;border-radius:6px;border:none;
  font-weight:bold;background:#2f9ec9;color:white;cursor:pointer;
 }
 
-/* MATCH */
 .matchRow{
  background:#e9ecef;padding:12px;
  margin-bottom:8px;border-radius:10px;
@@ -212,9 +199,77 @@ const supabase = createClient(
 )
 
 const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
+const START_RATING = 1000
+const K_OVERALL = 80
+const K_FORM = 120
 
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
+
+// Stejná logika jako rating.html
+function getScore(match, teamId){
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+ let stats = null
+ try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
+ const isSN = stats && (stats[20]==="1"||stats[20]==="2")
+ const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
+ const isHome = match.home_team === teamId
+ const teamGoals = isHome ? hg : ag
+ const oppGoals  = isHome ? ag : hg
+ if(teamGoals > oppGoals) return (isSN||isOT) ? 0.75 : 1
+ else return (isSN||isOT) ? 0.25 : 0
+}
+
+function calculateRatings(allMatches, teams){
+ const ratings     = {}
+ const formHistory = {}
+ const formRatings = {}
+
+ teams.forEach(t=>{
+  ratings[t.id]     = START_RATING
+  formHistory[t.id] = []
+  formRatings[t.id] = START_RATING
+ })
+
+ // Seřadit podle kola – stejně jako rating.html
+ const sorted = [...allMatches].sort((a,b)=>Number(a.round)-Number(b.round))
+
+ sorted.forEach(m=>{
+  const h = m.home_team
+  const a = m.away_team
+  if(!ratings[h]||!ratings[a]) return
+
+  const sH = getScore(m, h)
+  const sA = getScore(m, a)
+
+  // Overall rating
+  const rH = ratings[h]
+  const rA = ratings[a]
+  const eH = 1/(1+Math.pow(10,(rA-rH)/400))
+  const eA = 1/(1+Math.pow(10,(rH-rA)/400))
+  ratings[h] = Math.round(rH + K_OVERALL*(sH-eH))
+  ratings[a] = Math.round(rA + K_OVERALL*(sA-eA))
+
+  // Form rating (posledních 5 zápasů)
+  function updateForm(teamId, opponentId, score){
+   const current  = formRatings[teamId]
+   const oppRating= formRatings[opponentId]
+   const expected = 1/(1+Math.pow(10,(oppRating-current)/400))
+   const change   = K_FORM*(score-expected)
+   formHistory[teamId].push(change)
+   if(formHistory[teamId].length>5) formHistory[teamId].shift()
+   formRatings[teamId] = Math.round(
+    START_RATING + formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
+   )
+  }
+
+  updateForm(h, a, sH)
+  updateForm(a, h, sA)
+ })
+
+ return { ratings, formRatings }
+}
 
 document.getElementById("matchFilter").onchange = e=>{
  currentMatchFilter = e.target.value
@@ -233,19 +288,31 @@ async function load(){
  const teamIds = (seasonTeams||[]).map(t=>t.team_id)
 
  let teams = []
- if(teamIds.length > 0){
+ if(teamIds.length>0){
   const res = await supabase.from("teams").select("*").in("id", teamIds)
   teams = res.data || []
  }
 
- const { data: matches } = await supabase
+ // Načíst VŠECHNY odehrané zápasy pro výpočet ratingu (ne jen ze sezóny)
+ const { data: allMatches } = await supabase
+  .from("matches")
+  .select("*")
+  .not("home_score","is",null)
+  .not("away_score","is",null)
+  .order("round",{ascending:true})
+
+ // Načíst zápasy sezóny pro tabulku
+ const { data: seasonMatches } = await supabase
   .from("matches").select("*").eq("season_id", SEASON_ID)
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
+ // Spočítat rating dynamicky
+ const { ratings, formRatings } = calculateRatings(allMatches||[], teams)
+
  const tf = document.getElementById("teamFilter")
- if(tf.options.length === 1){
+ if(tf.options.length===1){
   teams.forEach(t=>{
    const opt = document.createElement("option")
    opt.value = t.id
@@ -254,22 +321,22 @@ async function load(){
   })
  }
 
- let safeMatches = matches || []
- safeMatches.sort((a,b)=> Number(a.round)-Number(b.round))
+ let safeMatches = seasonMatches || []
+ safeMatches.sort((a,b)=>Number(a.round)-Number(b.round))
 
- if(currentTeamFilter !== "all"){
+ if(currentTeamFilter!=="all"){
   safeMatches = safeMatches.filter(m=>
-   m.home_team===currentTeamFilter || m.away_team===currentTeamFilter
+   m.home_team===currentTeamFilter||m.away_team===currentTeamFilter
   )
  }
- if(currentMatchFilter==="played")   safeMatches = safeMatches.filter(m=>m.played)
- if(currentMatchFilter==="unplayed") safeMatches = safeMatches.filter(m=>!m.played)
+ if(currentMatchFilter==="played")   safeMatches=safeMatches.filter(m=>m.played)
+ if(currentMatchFilter==="unplayed") safeMatches=safeMatches.filter(m=>!m.played)
 
- renderTable(matches||[], teamMap, teams)
+ renderTable(seasonMatches||[], teamMap, teams, ratings, formRatings)
  render(safeMatches, teamMap)
 }
 
-function renderTable(matches, teamMap, teams){
+function renderTable(matches, teamMap, teams, ratings, formRatings){
 
  let table = {}
  teams.forEach(t=>{
@@ -322,11 +389,14 @@ function renderTable(matches, teamMap, teams){
   const pmStr=pm>0?`+${pm}`:String(pm)
   const pmClass=pm>0?"pos":pm<0?"neg":"neu"
 
+  const elo  = ratings[t.team]     || START_RATING
+  const form = formRatings[t.team] || START_RATING
+
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rating">
-    ⭐ ${Math.round(team.rating_overall||0)}<br>
-    🔥 ${Math.round(team.rating_form||0)}
+    ⭐ ${elo}<br>
+    🔥 ${form}
    </td>
    <td class="td-rank">${i+1}</td>
    <td class="td-team">
