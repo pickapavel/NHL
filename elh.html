@@ -7,6 +7,7 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
@@ -16,101 +17,136 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px 20px;border-radius:10px;
 }
 
-/* ===== TABULKA ===== */
-.standingsCard{
- background:#e9ecef;border-radius:10px;
- padding:12px 14px;margin-bottom:8px;
+/* ===== NOVÁ TABULKA ===== */
+.standings-table{
+ width:100%;border-collapse:collapse;
+ margin-bottom:20px;
+ font-size:13px;
+}
+
+.standings-table thead tr{
+ background:#0b2a3c;color:white;
+}
+
+.standings-table thead th{
+ padding:10px 10px;
+ text-align:center;
+ font-size:11px;
+ font-weight:700;
+ letter-spacing:.05em;
+ white-space:nowrap;
+}
+
+.standings-table thead th.th-team{
+ text-align:left;padding-left:12px;
+}
+
+.standings-table tbody tr{
+ border-bottom:1px solid #e0e0e0;
+ transition:background .15s;
+}
+
+.standings-table tbody tr:hover{
+ background:#f0f4f8;
+}
+
+.standings-table tbody tr:nth-child(odd){
+ background:#f7f8fa;
+}
+.standings-table tbody tr:nth-child(odd):hover{
+ background:#edf2f7;
+}
+
+.standings-table tbody td{
+ padding:9px 10px;
+ text-align:center;
+ color:#333;
+ white-space:nowrap;
+}
+
+.td-rank{
+ font-weight:700;color:#0b2a3c;
+ font-size:14px;width:36px;
+}
+
+.td-team{
+ text-align:left;
+ padding-left:10px;
+}
+
+.team-cell{
  display:flex;align-items:center;gap:10px;
 }
 
-.s-rating{
- display:flex;flex-direction:column;align-items:center;
- font-size:11px;font-weight:bold;color:#555;
- width:64px;flex-shrink:0;line-height:1.8;
+.team-logo{
+ width:32px;height:32px;object-fit:contain;
+ background:white;border-radius:6px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
 }
 
-.s-rank{
- font-size:16px;font-weight:bold;color:#0b2a3c;
- width:24px;text-align:center;flex-shrink:0;
+.team-name{
+ font-weight:700;font-size:13px;color:#111;
 }
 
-.s-logo{
- width:46px;height:46px;object-fit:contain;
- background:white;padding:3px;border-radius:6px;flex-shrink:0;
+.team-rating{
+ font-size:10px;color:#888;margin-top:1px;
 }
 
-.s-info{flex:1;min-width:0;}
-
-.s-name{
- font-weight:bold;font-size:14px;margin-bottom:6px;
+.td-points{
+ font-weight:800;font-size:15px;color:white;
 }
 
-/* Statistiky */
-.s-stats{
- display:flex;flex-direction:column;gap:4px;
+.points-pill{
+ background:#0b2a3c;
+ border-radius:6px;
+ padding:4px 10px;
+ display:inline-block;
+ min-width:34px;
+ text-align:center;
 }
 
-.s-row{
- display:flex;flex-wrap:wrap;gap:0;
+.td-score{font-weight:600;color:#333;}
+
+.td-pm{font-weight:600;}
+.td-pm.pos{color:#27ae60;}
+.td-pm.neg{color:#e74c3c;}
+.td-pm.neu{color:#888;}
+
+.td-wins{color:#27ae60;font-weight:700;}
+.td-losses{color:#e74c3c;font-weight:700;}
+.td-num{color:#555;font-weight:600;}
+
+/* Separator řádek mezi top 4 a zbytkem */
+.standings-table tbody tr.separator td{
+ padding:0;height:3px;
+ background:linear-gradient(90deg,#2f9ec9,#0b2a3c);
 }
 
-.s-cell{
- display:flex;align-items:baseline;
- padding-right:16px;
+/* Legenda */
+.standings-legend{
+ display:flex;gap:20px;flex-wrap:wrap;
+ font-size:11px;color:#888;margin-bottom:16px;
+}
+.legend-item{display:flex;align-items:center;gap:5px;}
+.legend-dot{
+ width:10px;height:10px;border-radius:50%;
 }
 
-.s-lbl{
- font-size:11px;color:#888;margin-right:3px;
-}
-
-.s-val{
- font-size:13px;font-weight:700;color:#1a1a1a;
-}
-
-.s-sep{
- width:100%;height:1px;background:#ccc;
- margin:3px 0;
-}
-
-.s-pm{
- font-size:12px;color:#555;
-}
-.s-pm b{color:#222;}
-
-.s-points{
- background:#0b2a3c;color:white;
- font-size:20px;font-weight:bold;
- padding:8px 14px;border-radius:8px;
- min-width:50px;text-align:center;flex-shrink:0;
-}
-
-/* Na mobilu schovat rating */
-@media(max-width:600px){
- .s-rating{display:none;}
- .s-name{font-size:13px;}
- .s-cell{padding-right:12px;}
- .s-val{font-size:12px;}
- .s-lbl{font-size:10px;}
-}
-
-/* ===== FILTRY ===== */
+/* FILTRY */
 .filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
 .filterBar select{
  padding:8px 12px;border-radius:6px;border:none;
  font-weight:bold;background:#2f9ec9;color:white;cursor:pointer;
 }
 
-/* ===== ZÁPASY ===== */
+/* MATCH */
 .matchRow{
  background:#e9ecef;padding:12px;
  margin-bottom:8px;border-radius:10px;
  display:flex;flex-direction:column;gap:10px;
 }
 
-.teamBox{
- display:flex;align-items:center;gap:8px;
- font-weight:bold;font-size:14px;
-}
+.teamBox{display:flex;align-items:center;gap:8px;font-weight:bold;font-size:14px;}
 
 .scoreBox{
  background:#0b2a3c;color:white;
@@ -139,7 +175,15 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .logo{
  width:40px;height:40px;object-fit:contain;
- background:white;padding:2px;border-radius:6px;flex-shrink:0;
+ background:white;padding:2px;border-radius:6px;
+}
+
+/* Mobile – schovat méně důležité sloupce */
+@media(max-width:700px){
+ .hide-mobile{display:none;}
+ .team-name{font-size:12px;}
+ .standings-table thead th,
+ .standings-table tbody td{padding:7px 5px;}
 }
 
 @media(min-width:768px){
@@ -167,7 +211,26 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 </div>
 
 <h2>Tabulka</h2>
-<div id="standings"></div>
+
+<table class="standings-table">
+ <thead>
+  <tr>
+   <th style="width:36px">#</th>
+   <th class="th-team">Tým</th>
+   <th class="hide-mobile" title="Zápasy">Z</th>
+   <th title="Výhry">V</th>
+   <th class="hide-mobile" title="Výhra po prodloužení">VP</th>
+   <th class="hide-mobile" title="Výhra po nájezdech">VSN</th>
+   <th class="hide-mobile" title="Prohra po nájezdech">PSN</th>
+   <th class="hide-mobile" title="Prohra po prodloužení">PP</th>
+   <th title="Prohry">P</th>
+   <th class="hide-mobile">Skóre</th>
+   <th class="hide-mobile" title="Vstřelené minus obdržené">+/-</th>
+   <th style="width:60px">Body</th>
+  </tr>
+ </thead>
+ <tbody id="standings"></tbody>
+</table>
 
 <div class="filterBar">
  <select id="teamFilter">
@@ -252,10 +315,6 @@ async function load(){
  render(safeMatches, teamMap)
 }
 
-function cell(lbl, val){
- return `<div class="s-cell"><span class="s-lbl">${lbl}</span><span class="s-val">${val}</span></div>`
-}
-
 function renderTable(matches, teamMap, teams){
 
  let table = {}
@@ -298,50 +357,48 @@ function renderTable(matches, teamMap, teams){
   return (b.gf-b.ga)-(a.gf-a.ga)
  })
 
- const cont=document.getElementById("standings")
- cont.innerHTML=""
+ const tbody=document.getElementById("standings")
+ tbody.innerHTML=""
 
  arr.forEach((t,i)=>{
   const team=teamMap[t.team]
   if(!team) return
+
   const pm=t.gf-t.ga
   const pmStr=pm>0?`+${pm}`:String(pm)
+  const pmClass=pm>0?"pos":pm<0?"neg":"neu"
 
-  const card=document.createElement("div")
-  card.className="standingsCard"
-  card.innerHTML=`
-   <div class="s-rating">
-    ⭐ ${Math.round(team.rating_overall||0)}<br>
-    🔥 ${Math.round(team.rating_form||0)}
-   </div>
+  const tr=document.createElement("tr")
 
-   <div class="s-rank">${i+1}</div>
+  tr.innerHTML=`
+   <td class="td-rank">${i+1}</td>
 
-   <img class="s-logo" src="./logos/${team.logo}" alt="${team.name}">
-
-   <div class="s-info">
-    <div class="s-name">${team.name}</div>
-    <div class="s-stats">
-     <div class="s-row">
-      ${cell("Z", t.z)}
-      ${cell("V", t.v)}
-      ${cell("P", t.p)}
-      ${cell("Skóre", t.gf+":"+t.ga)}
+   <td class="td-team">
+    <div class="team-cell">
+     <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
+     <div>
+      <div class="team-name">${team.name}</div>
+      <div class="team-rating">⭐ ${Math.round(team.rating_overall||0)} &nbsp; 🔥 ${Math.round(team.rating_form||0)}</div>
      </div>
-     <div class="s-sep"></div>
-     <div class="s-row">
-      ${cell("VP", t.vp)}
-      ${cell("PP", t.pp)}
-      ${cell("VSN", t.vsn)}
-      ${cell("PSN", t.psn)}
-     </div>
-     <div class="s-pm">+/- <b>${pmStr}</b></div>
     </div>
-   </div>
+   </td>
 
-   <div class="s-points">${t.b}</div>
+   <td class="td-num hide-mobile">${t.z}</td>
+   <td class="td-wins">${t.v}</td>
+   <td class="td-num hide-mobile">${t.vp}</td>
+   <td class="td-num hide-mobile">${t.vsn}</td>
+   <td class="td-num hide-mobile">${t.psn}</td>
+   <td class="td-num hide-mobile">${t.pp}</td>
+   <td class="td-losses">${t.p}</td>
+   <td class="td-score hide-mobile">${t.gf}:${t.ga}</td>
+   <td class="td-pm ${pmClass} hide-mobile">${pmStr}</td>
+
+   <td class="td-points">
+    <span class="points-pill">${t.b}</span>
+   </td>
   `
-  cont.appendChild(card)
+
+  tbody.appendChild(tr)
  })
 }
 
