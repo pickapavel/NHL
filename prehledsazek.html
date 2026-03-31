@@ -11,7 +11,6 @@ body{font-family:'Inter',sans-serif;background:#f2f2f2;padding:20px;}
 
 h1{color:#0b2a3c;margin-bottom:20px;}
 
-/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
 .stat{background:white;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 .stat-label{font-size:12px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
@@ -20,16 +19,14 @@ h1{color:#0b2a3c;margin-bottom:20px;}
 .stat-value.orange{color:#e67e22;}
 .stat-value.red{color:#e74c3c;}
 
-/* FILTERS */
 .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center;}
 .filters select{padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-family:'Inter',sans-serif;font-size:14px;background:white;cursor:pointer;color:#333;}
 .filters label{font-size:13px;color:#666;font-weight:600;}
 .reset-btn{padding:8px 14px;border-radius:8px;border:none;background:#e74c3c;color:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
 .reset-btn:hover{background:#c0392b;}
 
-/* TABLE */
-.table-wrap{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;}
-.table-wrap table{width:100%;border-collapse:collapse;font-size:13px;}
+.table-wrap{background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;overflow-x:auto;}
+.table-wrap table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px;}
 thead th{background:#0b2a3c;color:white;padding:12px 14px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
 tbody tr{border-bottom:1px solid #f0f0f0;transition:background .15s;}
 tbody tr:last-child{border-bottom:none;}
@@ -41,19 +38,24 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
 .badge-won{background:#d1e7dd;color:#155724;}
 .badge-lost{background:#f8d7da;color:#721c24;}
 
-.empty{padding:40px;text-align:center;color:#aaa;font-size:14px;}
+/* Odlišení zdrojů sázek */
+.source-badge{
+ display:inline-block;padding:2px 7px;border-radius:10px;
+ font-size:10px;font-weight:700;margin-left:4px;
+ vertical-align:middle;
+}
+.source-match{background:#e8f4fd;color:#1a5276;}
+.source-special{background:#f0e6ff;color:#6c3483;}
 
+.empty{padding:40px;text-align:center;color:#aaa;font-size:14px;}
 .count{font-size:13px;color:#888;margin-bottom:10px;}
 
-/* PLAYER TABS */
 .player-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .tab{padding:8px 18px;border-radius:20px;border:2px solid #ddd;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#666;transition:all .15s;}
 .tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
 @media(max-width:600px){
  .stats{grid-template-columns:repeat(2,1fr);}
- thead th:nth-child(3),tbody td:nth-child(3),
- thead th:nth-child(4),tbody td:nth-child(4){display:none;}
  h1{font-size:20px;}
 }
 </style>
@@ -67,15 +69,33 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
 <div class="player-tabs" id="playerTabs"></div>
 
 <div class="filters">
+ <label>Zdroj:</label>
+ <select id="filterSource" onchange="applyFilters()">
+  <option value="">Vše</option>
+  <option value="match">Výsledky zápasů</option>
+  <option value="special">Speciální sázky</option>
+ </select>
+
  <label>Typ sázky:</label>
  <select id="filterType" onchange="applyFilters()">
   <option value="">Všechny typy</option>
-  <option value="winner_regular_season">Vítěz základní části</option>
-  <option value="nonwinner_regular_season">Nevítěz základní části</option>
-  <option value="last_regular_season">Poslední celek</option>
-  <option value="goals_25_regular_season">Góly 25+</option>
-  <option value="goals_30_regular_season">Góly 30+</option>
-  <option value="goals_35_regular_season">Góly 35+</option>
+  <optgroup label="Výsledky zápasů">
+   <option value="1">Domácí vítěz (řádný čas)</option>
+   <option value="2">Hosté vítěz (řádný čas)</option>
+   <option value="0">Prodloužení / nájezdy</option>
+   <option value="10">Domácí vítěz (OT/SN)</option>
+   <option value="02">Hosté vítěz (OT/SN)</option>
+   <option value="11">Domácí vítěz (jakkoliv)</option>
+   <option value="22">Hosté vítěz (jakkoliv)</option>
+  </optgroup>
+  <optgroup label="Speciální sázky">
+   <option value="winner_regular_season">Vítěz základní části</option>
+   <option value="nonwinner_regular_season">Nevítěz základní části</option>
+   <option value="last_regular_season">Poslední celek</option>
+   <option value="goals_25_regular_season">Góly 25+</option>
+   <option value="goals_30_regular_season">Góly 30+</option>
+   <option value="goals_35_regular_season">Góly 35+</option>
+  </optgroup>
  </select>
 
  <label>Status:</label>
@@ -96,7 +116,7 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
    <tr>
     <th>Hráč</th>
     <th>Typ sázky</th>
-    <th>Tým</th>
+    <th>Zápas / Tým</th>
     <th>Datum</th>
     <th>Kurz</th>
     <th>Vsazeno</th>
@@ -119,10 +139,29 @@ const supabase = createClient(
 
 let allBets = []
 let players = {}
-let teams = {}
+let teams   = {}
+let matches = {}
 let activePlayer = ""
 
-function typeLabel(type){
+// Popis tipu ze zapasu
+function tipLabel(tip){
+ const map = {
+  "1":  "Domácí (řádný čas)",
+  "2":  "Hosté (řádný čas)",
+  "0":  "Prodloužení/nájezdy",
+  "10": "Domácí (OT/SN)",
+  "02": "Hosté (OT/SN)",
+  "11": "Domácí (jakkoliv)",
+  "22": "Hosté (jakkoliv)",
+ }
+ // kombinovaný tip
+ if(tip.includes(",")){
+  return tip.split(",").map(t=>map[t]||t).join(" + ")
+ }
+ return map[tip] || tip
+}
+
+function specialTypeLabel(type){
  if(type === "winner_regular_season")    return "Vítěz základní části"
  if(type === "nonwinner_regular_season") return "Nevítěz základní části"
  if(type === "last_regular_season")      return "Poslední celek"
@@ -134,30 +173,63 @@ function typeLabel(type){
 }
 
 function statusBadge(s){
- if(s === "won")     return `<span class="badge badge-won">Výhra</span>`
- if(s === "lost")    return `<span class="badge badge-lost">Prohra</span>`
+ if(s === "won")  return `<span class="badge badge-won">Výhra</span>`
+ if(s === "lost") return `<span class="badge badge-lost">Prohra</span>`
  return `<span class="badge badge-pending">Čeká</span>`
 }
 
 function formatDate(str){
  if(!str) return "—"
  const d = new Date(str)
- return d.toLocaleDateString("cs-CZ", {day:"2-digit",month:"2-digit",year:"numeric"})
+ return d.toLocaleDateString("cs-CZ",{day:"2-digit",month:"2-digit",year:"numeric"})
 }
 
 async function load(){
+
  const { data: p } = await supabase.from("players").select("*")
  p.forEach(pl => players[pl.id] = pl)
 
  const { data: t } = await supabase.from("teams").select("*")
  t.forEach(tm => teams[tm.id] = tm)
 
- const { data: b } = await supabase
+ const { data: m } = await supabase.from("matches").select("*")
+ m.forEach(mx => matches[mx.id] = mx)
+
+ // Načti obě tabulky sázek
+ const { data: betsSpecial } = await supabase
   .from("bets_special")
   .select("*")
-  .order("created_at", { ascending: false })
+  .order("created_at",{ascending:false})
 
- allBets = b || []
+ const { data: betsMatch } = await supabase
+  .from("bets")
+  .select("*")
+  .order("created_at",{ascending:false})
+
+ // Normalizuj na jednotný formát
+ const normalizedSpecial = (betsSpecial||[]).map(b=>({
+  ...b,
+  _source: "special",
+  _typeLabel: specialTypeLabel(b.type),
+  _target: teams[b.target_id]?.name || "—",
+ }))
+
+ const normalizedMatch = (betsMatch||[]).map(b=>{
+  const match = matches[b.match_id]
+  const home  = match ? (teams[match.home_team]?.name||"?") : "?"
+  const away  = match ? (teams[match.away_team]?.name||"?") : "?"
+  return {
+   ...b,
+   _source: "match",
+   _typeLabel: tipLabel(b.tip),
+   _target: match ? `${home} vs ${away}` : "—",
+   type: b.tip, // pro filtrování podle typu
+  }
+ })
+
+ // Sloučit a seřadit podle data
+ allBets = [...normalizedSpecial, ...normalizedMatch]
+  .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
 
  buildPlayerTabs()
  renderStats(allBets)
@@ -166,13 +238,15 @@ async function load(){
 
 function buildPlayerTabs(){
  const tabsEl = document.getElementById("playerTabs")
+ tabsEl.innerHTML = ""
+
  const all = document.createElement("button")
  all.className = "tab active"
  all.textContent = "Všichni hráči"
  all.onclick = () => setPlayer("")
  tabsEl.appendChild(all)
 
- Object.values(players).forEach(pl => {
+ Object.values(players).forEach(pl=>{
   const btn = document.createElement("button")
   btn.className = "tab"
   btn.textContent = pl.name
@@ -184,8 +258,8 @@ function buildPlayerTabs(){
 
 function setPlayer(id){
  activePlayer = id
- document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
- if(id === ""){
+ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
+ if(id===""){
   document.querySelector(".tab").classList.add("active")
  } else {
   const el = document.getElementById(`tab-${id}`)
@@ -195,12 +269,14 @@ function setPlayer(id){
 }
 
 function getFiltered(){
+ const source = document.getElementById("filterSource").value
  const type   = document.getElementById("filterType").value
  const status = document.getElementById("filterStatus").value
- return allBets.filter(b => {
+ return allBets.filter(b=>{
   if(activePlayer && b.player_id !== activePlayer) return false
-  if(type   && b.type   !== type)   return false
-  if(status && b.status !== status) return false
+  if(source && b._source !== source) return false
+  if(type   && b.type    !== type)   return false
+  if(status && b.status  !== status) return false
   return true
  })
 }
@@ -212,49 +288,29 @@ window.applyFilters = function(){
 }
 
 window.resetFilters = function(){
- document.getElementById("filterType").value = ""
+ document.getElementById("filterSource").value = ""
+ document.getElementById("filterType").value   = ""
  document.getElementById("filterStatus").value = ""
  applyFilters()
 }
 
 function renderStats(bets){
- const total      = bets.length
- const totalBet   = bets.reduce((s,b) => s + Number(b.amount), 0)
- const totalWin   = bets.filter(b=>b.status==="won").reduce((s,b) => s + Number(b.potential_win), 0)
- const pending    = bets.filter(b=>b.status==="pending").length
- const won        = bets.filter(b=>b.status==="won").length
- const lost       = bets.filter(b=>b.status==="lost").length
- const potentialPending = bets.filter(b=>b.status==="pending").reduce((s,b) => s + Number(b.potential_win), 0)
+ const total    = bets.length
+ const totalBet = bets.reduce((s,b)=>s+Number(b.amount),0)
+ const totalWin = bets.filter(b=>b.status==="won").reduce((s,b)=>s+Number(b.potential_win),0)
+ const pending  = bets.filter(b=>b.status==="pending").length
+ const won      = bets.filter(b=>b.status==="won").length
+ const lost     = bets.filter(b=>b.status==="lost").length
+ const potPend  = bets.filter(b=>b.status==="pending").reduce((s,b)=>s+Number(b.potential_win),0)
 
- document.getElementById("stats").innerHTML = `
-  <div class="stat">
-   <div class="stat-label">Celkem sázek</div>
-   <div class="stat-value">${total}</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Celkem vsazeno</div>
-   <div class="stat-value">${Math.round(totalBet).toLocaleString("cs-CZ")} Kč</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Čeká na výsledek</div>
-   <div class="stat-value orange">${pending}</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Výhry</div>
-   <div class="stat-value green">${won}</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Prohry</div>
-   <div class="stat-value red">${lost}</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Vyplaceno (výhry)</div>
-   <div class="stat-value green">${Math.round(totalWin).toLocaleString("cs-CZ")} Kč</div>
-  </div>
-  <div class="stat">
-   <div class="stat-label">Potenciální výhry (pending)</div>
-   <div class="stat-value orange">${Math.round(potentialPending).toLocaleString("cs-CZ")} Kč</div>
-  </div>
+ document.getElementById("stats").innerHTML=`
+  <div class="stat"><div class="stat-label">Celkem sázek</div><div class="stat-value">${total}</div></div>
+  <div class="stat"><div class="stat-label">Celkem vsazeno</div><div class="stat-value">${Math.round(totalBet).toLocaleString("cs-CZ")} Kč</div></div>
+  <div class="stat"><div class="stat-label">Čeká na výsledek</div><div class="stat-value orange">${pending}</div></div>
+  <div class="stat"><div class="stat-label">Výhry</div><div class="stat-value green">${won}</div></div>
+  <div class="stat"><div class="stat-label">Prohry</div><div class="stat-value red">${lost}</div></div>
+  <div class="stat"><div class="stat-label">Vyplaceno (výhry)</div><div class="stat-value green">${Math.round(totalWin).toLocaleString("cs-CZ")} Kč</div></div>
+  <div class="stat"><div class="stat-label">Potenciální výhry</div><div class="stat-value orange">${Math.round(potPend).toLocaleString("cs-CZ")} Kč</div></div>
  `
 }
 
@@ -265,27 +321,29 @@ function renderTable(bets){
 
  count.textContent = `Zobrazeno ${bets.length} sázek`
 
- if(bets.length === 0){
-  tbody.innerHTML = ""
-  empty.style.display = "block"
+ if(bets.length===0){
+  tbody.innerHTML=""
+  empty.style.display="block"
   return
  }
- empty.style.display = "none"
+ empty.style.display="none"
 
- tbody.innerHTML = bets.map(b => {
-  const player  = players[b.player_id]?.name || "—"
-  const team    = teams[b.target_id]?.name   || "—"
-  const date    = formatDate(b.created_at)
-  const type    = typeLabel(b.type)
-  const odds    = Number(b.odds).toFixed(2)
-  const amount  = Math.round(b.amount).toLocaleString("cs-CZ") + " Kč"
-  const potWin  = Math.round(b.potential_win).toLocaleString("cs-CZ") + " Kč"
-  const badge   = statusBadge(b.status)
+ tbody.innerHTML = bets.map(b=>{
+  const player = players[b.player_id]?.name || "—"
+  const date   = formatDate(b.created_at)
+  const odds   = Number(b.odds).toFixed(2)
+  const amount = Math.round(b.amount).toLocaleString("cs-CZ")+" Kč"
+  const potWin = Math.round(b.potential_win).toLocaleString("cs-CZ")+" Kč"
+  const badge  = statusBadge(b.status)
+  const srcBadge = b._source==="match"
+   ? `<span class="source-badge source-match">Zápas</span>`
+   : `<span class="source-badge source-special">Speciální</span>`
+
   return `
    <tr>
     <td><b>${player}</b></td>
-    <td>${type}</td>
-    <td>${team}</td>
+    <td>${b._typeLabel}${srcBadge}</td>
+    <td>${b._target}</td>
     <td>${date}</td>
     <td>${odds}</td>
     <td>${amount}</td>
