@@ -17,7 +17,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:10px 20px;border-radius:10px;
 }
 
-/* ===== TABULKA ===== */
 .table-scroll{overflow-x:auto;margin-bottom:20px;}
 
 .standings-table{
@@ -54,8 +53,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .td-rating{
- text-align:center;
- font-size:11px;color:#666;
+ text-align:center;font-size:11px;color:#666;
  font-weight:600;line-height:1.8;
  padding:6px 6px;width:60px;
 }
@@ -92,6 +90,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-wins{color:#27ae60;font-weight:700;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
+
+/* Oddělovač před sekundárními sloupci */
+.td-sep{
+ border-left:2px solid #d0d0d0;
+}
 
 /* FILTRY */
 .filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
@@ -169,19 +172,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <table class="standings-table">
  <thead>
   <tr>
-   <th style="width:60px" title="Rating celkový / forma">⭐🔥</th>
    <th style="width:28px">#</th>
    <th class="th-team">Tým</th>
-   <th title="Zápasy">Z</th>
+   <th style="width:60px">Body</th>
+   <th>Skóre</th>
+   <th title="Vstřelené minus obdržené">+/-</th>
+   <th class="td-sep" title="Zápasy">Z</th>
    <th title="Výhry">V</th>
    <th title="Výhra po prodloužení">VP</th>
    <th title="Výhra po nájezdech">VSN</th>
    <th title="Prohra po nájezdech">PSN</th>
    <th title="Prohra po prodloužení">PP</th>
    <th title="Prohry">P</th>
-   <th>Skóre</th>
-   <th title="Vstřelené minus obdržené">+/-</th>
-   <th style="width:60px">Body</th>
+   <th title="Rating celkový / forma">⭐🔥</th>
   </tr>
  </thead>
  <tbody id="standings"></tbody>
@@ -326,10 +329,6 @@ function renderTable(matches, teamMap, teams){
 
   const tr=document.createElement("tr")
   tr.innerHTML=`
-   <td class="td-rating">
-    ⭐ ${Math.round(team.rating_overall||0)}<br>
-    🔥 ${Math.round(team.rating_form||0)}
-   </td>
    <td class="td-rank">${i+1}</td>
    <td class="td-team">
     <div class="team-cell">
@@ -337,16 +336,20 @@ function renderTable(matches, teamMap, teams){
      <div class="team-name">${team.name}</div>
     </div>
    </td>
-   <td class="td-num">${t.z}</td>
+   <td><span class="points-pill">${t.b}</span></td>
+   <td class="td-score">${t.gf}:${t.ga}</td>
+   <td class="td-pm ${pmClass}">${pmStr}</td>
+   <td class="td-num td-sep">${t.z}</td>
    <td class="td-wins">${t.v}</td>
    <td class="td-num">${t.vp}</td>
    <td class="td-num">${t.vsn}</td>
    <td class="td-num">${t.psn}</td>
    <td class="td-num">${t.pp}</td>
    <td class="td-losses">${t.p}</td>
-   <td class="td-score">${t.gf}:${t.ga}</td>
-   <td class="td-pm ${pmClass}">${pmStr}</td>
-   <td><span class="points-pill">${t.b}</span></td>
+   <td class="td-rating">
+    ⭐ ${Math.round(team.rating_overall||0)}<br>
+    🔥 ${Math.round(team.rating_form||0)}
+   </td>
   `
   tbody.appendChild(tr)
  })
