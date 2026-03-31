@@ -2,52 +2,137 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zápisy zápasů</title>
 
 <style>
+*{box-sizing:border-box}
 body{font-family:Arial;background:#f2f2f2;margin:0;}
 .wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
 
+h1{color:#0b2a3c;margin-bottom:4px;}
+.subtitle{color:#888;font-size:13px;margin-bottom:20px;}
+
 table{
- width:100%;
- border-collapse:collapse;
- margin-top:20px;
-}
-
-th,td{
- border:1px solid #ccc;
- padding:8px;
- text-align:center;
-}
-
-td:nth-child(2),
-td:nth-child(3){
- text-align:left;
+ width:100%;border-collapse:collapse;margin-top:10px;
 }
 
 th{
- background:black;
- color:yellow;
+ background:#0b2a3c;color:white;
+ padding:12px 10px;text-align:center;
+ font-size:12px;letter-spacing:.05em;
+ white-space:nowrap;
 }
+
+th:nth-child(2),th:nth-child(3){text-align:left;}
+
+td{
+ padding:10px 10px;
+ border-bottom:1px solid #e8e8e8;
+ text-align:center;
+ vertical-align:middle;
+ font-size:13px;
+ color:#333;
+}
+
+td:nth-child(2),td:nth-child(3){text-align:left;}
+
+tr:nth-child(odd) td{background:#f7f8fa;}
+tr:hover td{background:#edf2f7;}
+
+/* Tým cell */
+.team-cell{
+ display:flex;align-items:center;gap:8px;
+}
+
+.team-logo{
+ width:28px;height:28px;object-fit:contain;
+ background:white;border-radius:5px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
+}
+
+.team-name{font-weight:600;font-size:13px;}
+
+/* Skóre */
+.score-badge{
+ display:inline-block;
+ background:#0b2a3c;color:white;
+ font-weight:700;font-size:14px;
+ padding:4px 12px;border-radius:6px;
+ min-width:60px;text-align:center;
+}
+
+.score-badge.empty{
+ background:#e0e0e0;color:#999;
+ font-weight:400;font-size:13px;
+}
+
+.result-tag{
+ display:inline-block;
+ font-size:10px;font-weight:700;
+ background:#2f9ec9;color:white;
+ padding:2px 6px;border-radius:4px;
+ margin-left:5px;vertical-align:middle;
+}
+
+/* File input */
+.file-label{
+ display:inline-flex;align-items:center;gap:6px;
+ background:#f0f0f0;border:1px solid #ccc;
+ border-radius:8px;padding:7px 12px;
+ cursor:pointer;font-size:12px;color:#555;
+ transition:background .15s;white-space:nowrap;
+}
+.file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
+.file-label input{display:none;}
+.file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
+
+/* Buttons */
+.btn-wrap{display:flex;gap:6px;justify-content:center;}
+
+.btn{
+ display:inline-flex;align-items:center;gap:5px;
+ border:none;border-radius:8px;cursor:pointer;
+ font-weight:700;font-size:13px;
+ padding:8px 14px;transition:all .15s;
+ white-space:nowrap;
+}
+
+.btn-save{background:#27ae60;color:white;}
+.btn-save:hover{background:#219a52;}
+.btn-reset{background:#e74c3c;color:white;}
+.btn-reset:hover{background:#c0392b;}
+
+/* Kolo badge */
+.round-badge{
+ display:inline-block;
+ background:#e9ecef;color:#0b2a3c;
+ font-weight:700;font-size:12px;
+ padding:3px 10px;border-radius:20px;
+ min-width:36px;text-align:center;
+}
+
+.played-row td{background:#f0fdf4 !important;}
+.played-row:hover td{background:#e0f7e9 !important;}
 </style>
 </head>
 
 <body>
-
 <div class="wrapper">
 
 <h1>Zápisy zápasů</h1>
+<p class="subtitle">Nahraj soubor se statistikami a ulož výsledek zápasu.</p>
 
 <table>
 <thead>
-<tr>
-<th>Kolo</th>
-<th>Domácí</th>
-<th>Hosté</th>
-<th>Skóre</th>
-<th>Soubor</th>
-<th>Akce</th>
-</tr>
+ <tr>
+  <th>Kolo</th>
+  <th>Domácí</th>
+  <th>Hosté</th>
+  <th>Skóre</th>
+  <th>Soubor</th>
+  <th>Akce</th>
+ </tr>
 </thead>
 <tbody id="matchesTable"></tbody>
 </table>
@@ -59,14 +144,13 @@ th{
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+ "https://qaocbodrflsaerxntfui.supabase.co",
+ "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
 let teamsMap = {}
 let filesMap = {}
 
-// ===== LOAD =====
 async function load(){
 
  const { data: teams } = await supabase.from("teams").select("*")
@@ -75,12 +159,11 @@ async function load(){
   .select("*")
   .order("round", { ascending:true })
 
- teams.forEach(t=> teamsMap[t.id] = t.name)
+ teams.forEach(t=> teamsMap[t.id] = t)
 
  render(matches)
 }
 
-// ===== RENDER =====
 function render(matches){
 
  const cont = document.getElementById("matchesTable")
@@ -88,231 +171,188 @@ function render(matches){
 
  matches.forEach(m=>{
 
+  const home = teamsMap[m.home_team]
+  const away = teamsMap[m.away_team]
+  if(!home||!away) return
+
+  const played = m.home_score != null && m.away_score != null
+
   let suffix = ""
-  if(m.result_type === "SN") suffix = " SN"
-  else if(m.result_type === "OT") suffix = " OT"
+  if(m.result_type==="SN") suffix = "SN"
+  else if(m.result_type==="OT") suffix = "OT"
+
+  const scoreHtml = played
+   ? `<span class="score-badge">${m.home_score} : ${m.away_score}</span>
+      ${suffix?`<span class="result-tag">${suffix}</span>`:""}`
+   : `<span class="score-badge empty">- : -</span>`
 
   cont.innerHTML += `
-  <tr>
-    <td>${m.round}</td>
-    <td>${teamsMap[m.home_team]}</td>
-    <td>${teamsMap[m.away_team]}</td>
-    <td>${m.home_score ?? "-"} : ${m.away_score ?? "-"}${suffix}</td>
+  <tr class="${played?"played-row":""}">
+   <td><span class="round-badge">${m.round}</span></td>
 
-    <td>
-      <input type="file" onchange="handleFile(event,'${m.id}')">
-    </td>
+   <td>
+    <div class="team-cell">
+     <img class="team-logo" src="./logos/${home.logo}" alt="${home.name}">
+     <span class="team-name">${home.name}</span>
+    </div>
+   </td>
 
-    <td>
-      <button onclick="saveMatch('${m.id}')">Uložit</button>
-      <button onclick="resetMatch('${m.id}')">Zrušit</button>
-    </td>
+   <td>
+    <div class="team-cell">
+     <img class="team-logo" src="./logos/${away.logo}" alt="${away.name}">
+     <span class="team-name">${away.name}</span>
+    </div>
+   </td>
+
+   <td>${scoreHtml}</td>
+
+   <td>
+    <label class="file-label" id="label-${m.id}">
+     📂 Vybrat soubor
+     <input type="file" onchange="handleFile(event,'${m.id}')">
+    </label>
+    <div class="file-name" id="fname-${m.id}"></div>
+   </td>
+
+   <td>
+    <div class="btn-wrap">
+     <button class="btn btn-save" onclick="saveMatch('${m.id}')">
+      ✅ Uložit
+     </button>
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">
+      ↩ Zrušit
+     </button>
+    </div>
+   </td>
   </tr>
   `
  })
 }
 
-// ===== FILE =====
 window.handleFile = function(e, matchId){
-
+ const file = e.target.files[0]
+ if(!file) return
  const reader = new FileReader()
-
  reader.onload = ev=>{
   filesMap[matchId] = ev.target.result.split(/\r?\n/)
+  const fname = document.getElementById(`fname-${matchId}`)
+  if(fname) fname.textContent = file.name
+  const lbl = document.getElementById(`label-${matchId}`)
+  if(lbl) lbl.style.borderColor = "#27ae60"
  }
-
- reader.readAsText(e.target.files[0])
+ reader.readAsText(file)
 }
 
-// ===== SCORE =====
 function calculateScore(lines){
-
  let ag =
-  Number(lines[6]||0) +
-  Number(lines[7]||0) +
+  Number(lines[6]||0)+
+  Number(lines[7]||0)+
   Number(lines[8]||0)
-
  let hg =
-  Number(lines[16]||0) +
-  Number(lines[17]||0) +
+  Number(lines[16]||0)+
+  Number(lines[17]||0)+
   Number(lines[18]||0)
-
- if(lines[9] === "11") hg++
- if(lines[19] === "11") ag++
-
- if(lines[20] === "1") hg++
- if(lines[20] === "2") ag++
-
+ if(lines[9]==="11") hg++
+ if(lines[19]==="11") ag++
+ if(lines[20]==="1") hg++
+ if(lines[20]==="2") ag++
  return {hg, ag}
 }
 
-// ===== RESULT TYPE =====
 function getResultType(lines){
-
- const isSN = lines[20] === "1" || lines[20] === "2"
- const isOT = !isSN && (lines[9] === "11" || lines[19] === "11")
-
+ const isSN = lines[20]==="1"||lines[20]==="2"
+ const isOT = !isSN&&(lines[9]==="11"||lines[19]==="11")
  if(isSN) return "SN"
  if(isOT) return "OT"
  return "REG"
 }
 
-// ===== TIP CHECK =====
 function checkSingleTip(match, tip){
-
  const type = match.result_type
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
-
- const homeWin = hg > ag
- const awayWin = ag > hg
-
+ const homeWin = hg>ag
+ const awayWin = ag>hg
  switch(tip){
-
-  case "1": return homeWin && type === "REG"
-  case "2": return awayWin && type === "REG"
-  case "0": return type !== "REG"
-
-  case "10": return homeWin && (type === "OT" || type === "SN")
-  case "02": return awayWin && (type === "OT" || type === "SN")
-
+  case "1":  return homeWin && type==="REG"
+  case "2":  return awayWin && type==="REG"
+  case "0":  return type!=="REG"
+  case "10": return homeWin && (type==="OT"||type==="SN")
+  case "02": return awayWin && (type==="OT"||type==="SN")
   case "11": return homeWin
   case "22": return awayWin
  }
-
  return false
 }
 
 function isWinningBet(match, tip){
- const tips = tip.includes(",") ? tip.split(",") : [tip]
- return tips.every(t => checkSingleTip(match, t))
+ const tips = tip.includes(",")?tip.split(","):[tip]
+ return tips.every(t=>checkSingleTip(match,t))
 }
 
-// ===== EVALUATE =====
 async function evaluateBets(match){
-
  const { data: bets } = await supabase
-  .from("bets")
-  .select("*")
-  .eq("match_id", match.id)
-
+  .from("bets").select("*").eq("match_id",match.id)
  if(!bets) return
-
  for(const bet of bets){
-
   const win = isWinningBet(match, bet.tip)
-
-  await supabase
-   .from("bets")
-   .update({
-    status: win ? "won" : "lost"
-   })
-   .eq("id", bet.id)
-
+  await supabase.from("bets")
+   .update({status:win?"won":"lost"})
+   .eq("id",bet.id)
   if(win){
-    const { data: player } = await supabase
-     .from("players")
-     .select("*")
-     .eq("id", bet.player_id)
-     .single()
-
-    if(player){
-      await supabase
-       .from("players")
-       .update({
-        credit: Number(player.credit) + Number(bet.potential_win)
-       })
-       .eq("id", player.id)
-    }
+   const { data: player } = await supabase
+    .from("players").select("*").eq("id",bet.player_id).single()
+   if(player){
+    await supabase.from("players")
+     .update({credit:Number(player.credit)+Number(bet.potential_win)})
+     .eq("id",player.id)
+   }
   }
  }
 }
 
-// ===== RESET (🔥 FIX) =====
 window.resetMatch = async function(matchId){
-
  if(!confirm("Opravdu zrušit zápas?")) return
-
  const { data: bets } = await supabase
-  .from("bets")
-  .select("*")
-  .eq("match_id", matchId)
-
- // 🔥 vrácení kreditů
+  .from("bets").select("*").eq("match_id",matchId)
  for(const bet of bets){
-
-  if(bet.status === "won"){
-
-    const { data: player } = await supabase
-     .from("players")
-     .select("*")
-     .eq("id", bet.player_id)
-     .single()
-
-    if(player){
-      await supabase
-       .from("players")
-       .update({
-        credit: Number(player.credit) - Number(bet.potential_win)
-       })
-       .eq("id", player.id)
-    }
+  if(bet.status==="won"){
+   const { data: player } = await supabase
+    .from("players").select("*").eq("id",bet.player_id).single()
+   if(player){
+    await supabase.from("players")
+     .update({credit:Number(player.credit)-Number(bet.potential_win)})
+     .eq("id",player.id)
+   }
   }
-
-  // vrátíme bet do pending
-  await supabase
-   .from("bets")
-   .update({ status: "pending" })
-   .eq("id", bet.id)
+  await supabase.from("bets")
+   .update({status:"pending"}).eq("id",bet.id)
  }
-
- await supabase
-  .from("matches")
+ await supabase.from("matches")
   .update({
-   home_score: null,
-   away_score: null,
-   played: false,
-   stats: null,
-   result_type: null
+   home_score:null,away_score:null,
+   played:false,stats:null,result_type:null
   })
-  .eq("id", matchId)
-
+  .eq("id",matchId)
  alert("Zápas zrušen 👍")
  load()
 }
 
-// ===== SAVE =====
 window.saveMatch = async function(matchId){
-
  const lines = filesMap[matchId]
-
- if(!lines){
-  alert("Nahraj soubor")
-  return
- }
-
+ if(!lines){ alert("Nahraj soubor"); return }
  const score = calculateScore(lines)
  const resultType = getResultType(lines)
-
- await supabase
-  .from("matches")
+ await supabase.from("matches")
   .update({
-   home_score: score.hg,
-   away_score: score.ag,
-   played: true,
-   stats: JSON.stringify(lines),
-   result_type: resultType
+   home_score:score.hg,away_score:score.ag,
+   played:true,stats:JSON.stringify(lines),
+   result_type:resultType
   })
-  .eq("id", matchId)
-
+  .eq("id",matchId)
  const { data: fullMatch } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
-
+  .from("matches").select("*").eq("id",matchId).single()
  await evaluateBets(fullMatch)
-
  alert("Uloženo 👍")
  load()
 }
@@ -320,6 +360,5 @@ window.saveMatch = async function(matchId){
 load()
 
 </script>
-
 </body>
 </html>
