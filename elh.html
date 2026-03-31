@@ -18,9 +18,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 /* ===== TABULKA ===== */
+.table-scroll{overflow-x:auto;margin-bottom:20px;}
+
 .standings-table{
  width:100%;border-collapse:collapse;
- margin-bottom:20px;font-size:13px;
+ font-size:13px;min-width:700px;
 }
 
 .standings-table thead tr{
@@ -28,13 +30,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 
 .standings-table thead th{
- padding:10px 10px;text-align:center;
+ padding:10px 8px;text-align:center;
  font-size:11px;font-weight:700;
  letter-spacing:.05em;white-space:nowrap;
 }
 
 .standings-table thead th.th-team{
- text-align:left;padding-left:12px;
+ text-align:left;padding-left:10px;
 }
 
 .standings-table tbody tr{
@@ -47,34 +49,25 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .standings-table tbody tr:nth-child(odd):hover{background:#edf2f7;}
 
 .standings-table tbody td{
- padding:9px 10px;text-align:center;
- color:#333;white-space:nowrap;
+ padding:8px 8px;text-align:center;
+ color:#333;white-space:nowrap;vertical-align:middle;
 }
 
-/* Rating sloupec – úplně vlevo */
 .td-rating{
  text-align:center;
- width:54px;
- font-size:11px;
- color:#666;
- font-weight:600;
- line-height:1.8;
- padding:6px 4px;
+ font-size:11px;color:#666;
+ font-weight:600;line-height:1.8;
+ padding:6px 6px;width:60px;
 }
 
 .td-rank{
  font-weight:700;color:#0b2a3c;
- font-size:14px;width:30px;
- padding-left:0;
+ font-size:14px;width:28px;
 }
 
-.td-team{text-align:left;padding-left:10px;}
+.td-team{text-align:left;padding-left:8px;}
 
-.team-cell{
- display:flex;
- align-items:center;
- gap:10px;
-}
+.team-cell{display:flex;align-items:center;gap:10px;}
 
 .team-logo{
  width:32px;height:32px;object-fit:contain;
@@ -82,36 +75,23 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  border:1px solid #e0e0e0;flex-shrink:0;
 }
 
-.team-name{
- font-weight:700;font-size:13px;color:#111;
-}
-
-.td-points{font-weight:800;font-size:15px;}
+.team-name{font-weight:700;font-size:13px;color:#111;}
 
 .points-pill{
  background:#0b2a3c;border-radius:6px;
  padding:4px 10px;display:inline-block;
  min-width:34px;text-align:center;color:white;
+ font-weight:800;font-size:14px;
 }
 
 .td-score{font-weight:600;color:#333;}
-
 .td-pm{font-weight:600;}
 .td-pm.pos{color:#27ae60;}
 .td-pm.neg{color:#e74c3c;}
 .td-pm.neu{color:#888;}
-
 .td-wins{color:#27ae60;font-weight:700;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
-
-@media(max-width:700px){
- .hide-mobile{display:none;}
- .team-name{font-size:12px;}
- .standings-table thead th,
- .standings-table tbody td{padding:7px 4px;}
- .td-rating{font-size:10px;width:44px;}
-}
 
 /* FILTRY */
 .filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
@@ -185,26 +165,28 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <h2>Tabulka</h2>
 
+<div class="table-scroll">
 <table class="standings-table">
  <thead>
   <tr>
-   <th style="width:54px" title="Rating celkový / forma">⭐🔥</th>
-   <th style="width:30px">#</th>
+   <th style="width:60px" title="Rating celkový / forma">⭐🔥</th>
+   <th style="width:28px">#</th>
    <th class="th-team">Tým</th>
-   <th class="hide-mobile" title="Zápasy">Z</th>
+   <th title="Zápasy">Z</th>
    <th title="Výhry">V</th>
-   <th class="hide-mobile" title="Výhra po prodloužení">VP</th>
-   <th class="hide-mobile" title="Výhra po nájezdech">VSN</th>
-   <th class="hide-mobile" title="Prohra po nájezdech">PSN</th>
-   <th class="hide-mobile" title="Prohra po prodloužení">PP</th>
+   <th title="Výhra po prodloužení">VP</th>
+   <th title="Výhra po nájezdech">VSN</th>
+   <th title="Prohra po nájezdech">PSN</th>
+   <th title="Prohra po prodloužení">PP</th>
    <th title="Prohry">P</th>
-   <th class="hide-mobile">Skóre</th>
-   <th class="hide-mobile" title="Vstřelené minus obdržené">+/-</th>
+   <th>Skóre</th>
+   <th title="Vstřelené minus obdržené">+/-</th>
    <th style="width:60px">Body</th>
   </tr>
  </thead>
  <tbody id="standings"></tbody>
 </table>
+</div>
 
 <div class="filterBar">
  <select id="teamFilter">
@@ -355,16 +337,16 @@ function renderTable(matches, teamMap, teams){
      <div class="team-name">${team.name}</div>
     </div>
    </td>
-   <td class="td-num hide-mobile">${t.z}</td>
+   <td class="td-num">${t.z}</td>
    <td class="td-wins">${t.v}</td>
-   <td class="td-num hide-mobile">${t.vp}</td>
-   <td class="td-num hide-mobile">${t.vsn}</td>
-   <td class="td-num hide-mobile">${t.psn}</td>
-   <td class="td-num hide-mobile">${t.pp}</td>
+   <td class="td-num">${t.vp}</td>
+   <td class="td-num">${t.vsn}</td>
+   <td class="td-num">${t.psn}</td>
+   <td class="td-num">${t.pp}</td>
    <td class="td-losses">${t.p}</td>
-   <td class="td-score hide-mobile">${t.gf}:${t.ga}</td>
-   <td class="td-pm ${pmClass} hide-mobile">${pmStr}</td>
-   <td class="td-points"><span class="points-pill">${t.b}</span></td>
+   <td class="td-score">${t.gf}:${t.ga}</td>
+   <td class="td-pm ${pmClass}">${pmStr}</td>
+   <td><span class="points-pill">${t.b}</span></td>
   `
   tbody.appendChild(tr)
  })
