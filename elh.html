@@ -7,89 +7,100 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-.headerBar{
- display:flex;justify-content:center;margin-bottom:20px;
-}
+.headerBar{display:flex;justify-content:center;margin-bottom:20px;}
 .seasonCard{
  background:#0b2a3c;color:white;font-size:22px;
  padding:10px 20px;border-radius:10px;
 }
 
-/* TABULKA */
+/* ===== TABULKA ===== */
 .standingsCard{
- display:flex;align-items:center;
  background:#e9ecef;border-radius:10px;
  padding:12px 14px;margin-bottom:8px;
- gap:12px;
+ display:flex;align-items:center;gap:10px;
 }
 
-.rank{
- width:26px;font-weight:bold;font-size:15px;
- text-align:center;flex-shrink:0;color:#0b2a3c;
+.s-rating{
+ display:flex;flex-direction:column;align-items:center;
+ font-size:11px;font-weight:bold;color:#555;
+ width:64px;flex-shrink:0;line-height:1.8;
 }
 
-.ratingBox{
- width:68px;text-align:center;
- font-size:11px;font-weight:bold;
- color:#555;flex-shrink:0;line-height:1.7;
+.s-rank{
+ font-size:16px;font-weight:bold;color:#0b2a3c;
+ width:24px;text-align:center;flex-shrink:0;
 }
 
-.teamBlock{
- display:flex;align-items:center;
- gap:10px;flex:1;min-width:0;
+.s-logo{
+ width:46px;height:46px;object-fit:contain;
+ background:white;padding:3px;border-radius:6px;flex-shrink:0;
 }
 
-.logo{
- width:45px;height:45px;object-fit:contain;
- background:white;padding:2px;border-radius:6px;flex-shrink:0;
+.s-info{flex:1;min-width:0;}
+
+.s-name{
+ font-weight:bold;font-size:14px;margin-bottom:6px;
 }
 
-.teamInfo{display:flex;flex-direction:column;flex:1;min-width:0;}
+/* Statistiky */
+.s-stats{
+ display:flex;flex-direction:column;gap:4px;
+}
 
-.teamName{font-weight:bold;font-size:14px;margin-bottom:5px;}
+.s-row{
+ display:flex;flex-wrap:wrap;gap:0;
+}
 
-.statsRow1,.statsRow2{
+.s-cell{
  display:flex;align-items:baseline;
- gap:16px;font-size:12px;flex-wrap:wrap;
-}
-.statsRow2{margin-top:3px;}
-
-.statItem{
- display:flex;align-items:baseline;gap:3px;white-space:nowrap;
-}
-.statLabel{color:#888;font-size:11px;}
-.statValue{font-weight:700;color:#222;}
-
-.statsDivider{
- width:100%;max-width:400px;
- height:1px;background:#ccc;margin:4px 0;
+ padding-right:16px;
 }
 
-.pmLine{
- font-size:12px;color:#555;margin-top:3px;
-}
-.pmLine strong{color:#222;}
-
-.pointsBox{
- background:#0b2a3c;color:white;font-size:18px;font-weight:bold;
- padding:8px 12px;border-radius:8px;min-width:46px;
- text-align:center;flex-shrink:0;
+.s-lbl{
+ font-size:11px;color:#888;margin-right:3px;
 }
 
-/* FILTRY */
-.filterBar{
- margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;
+.s-val{
+ font-size:13px;font-weight:700;color:#1a1a1a;
 }
+
+.s-sep{
+ width:100%;height:1px;background:#ccc;
+ margin:3px 0;
+}
+
+.s-pm{
+ font-size:12px;color:#555;
+}
+.s-pm b{color:#222;}
+
+.s-points{
+ background:#0b2a3c;color:white;
+ font-size:20px;font-weight:bold;
+ padding:8px 14px;border-radius:8px;
+ min-width:50px;text-align:center;flex-shrink:0;
+}
+
+/* Na mobilu schovat rating */
+@media(max-width:600px){
+ .s-rating{display:none;}
+ .s-name{font-size:13px;}
+ .s-cell{padding-right:12px;}
+ .s-val{font-size:12px;}
+ .s-lbl{font-size:10px;}
+}
+
+/* ===== FILTRY ===== */
+.filterBar{margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;}
 .filterBar select{
  padding:8px 12px;border-radius:6px;border:none;
  font-weight:bold;background:#2f9ec9;color:white;cursor:pointer;
 }
 
-/* MATCH */
+/* ===== ZÁPASY ===== */
 .matchRow{
  background:#e9ecef;padding:12px;
  margin-bottom:8px;border-radius:10px;
@@ -124,19 +135,13 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 }
 .detailBtn{background:#2f9ec9;color:white;}
 .betBtn{background:#27ae60;color:white;}
-
 .btnWrap{display:flex;flex-direction:column;gap:6px;}
 
-/* MOBILE */
-@media(max-width:600px){
- .ratingBox{display:none;}
- .teamName{font-size:13px;}
- .statsRow1,.statsRow2{gap:10px;}
- .statLabel{font-size:10px;}
- .statValue{font-size:12px;}
+.logo{
+ width:40px;height:40px;object-fit:contain;
+ background:white;padding:2px;border-radius:6px;flex-shrink:0;
 }
 
-/* DESKTOP MATCHES */
 @media(min-width:768px){
  .matchRow{
   display:grid;
@@ -243,12 +248,12 @@ async function load(){
  if(currentMatchFilter==="played")   safeMatches = safeMatches.filter(m=>m.played)
  if(currentMatchFilter==="unplayed") safeMatches = safeMatches.filter(m=>!m.played)
 
- render(safeMatches, teamMap)
  renderTable(matches||[], teamMap, teams)
+ render(safeMatches, teamMap)
 }
 
-function si(label, value){
- return `<div class="statItem"><span class="statLabel">${label}</span><span class="statValue">${value}</span></div>`
+function cell(lbl, val){
+ return `<div class="s-cell"><span class="s-lbl">${lbl}</span><span class="s-val">${val}</span></div>`
 }
 
 function renderTable(matches, teamMap, teams){
@@ -302,45 +307,41 @@ function renderTable(matches, teamMap, teams){
   const pm=t.gf-t.ga
   const pmStr=pm>0?`+${pm}`:String(pm)
 
-  cont.innerHTML+=`
-  <div class="standingsCard">
-
-   <div class="ratingBox">
+  const card=document.createElement("div")
+  card.className="standingsCard"
+  card.innerHTML=`
+   <div class="s-rating">
     ⭐ ${Math.round(team.rating_overall||0)}<br>
     🔥 ${Math.round(team.rating_form||0)}
    </div>
 
-   <div class="rank">${i+1}</div>
+   <div class="s-rank">${i+1}</div>
 
-   <div class="teamBlock">
-    <img class="logo" src="./logos/${team.logo}">
-    <div class="teamInfo">
-     <div class="teamName">${team.name}</div>
+   <img class="s-logo" src="./logos/${team.logo}" alt="${team.name}">
 
-     <div class="statsRow1">
-      ${si("Z", t.z)}
-      ${si("V", t.v)}
-      ${si("P", t.p)}
-      ${si("Skóre", `${t.gf}:${t.ga}`)}
+   <div class="s-info">
+    <div class="s-name">${team.name}</div>
+    <div class="s-stats">
+     <div class="s-row">
+      ${cell("Z", t.z)}
+      ${cell("V", t.v)}
+      ${cell("P", t.p)}
+      ${cell("Skóre", t.gf+":"+t.ga)}
      </div>
-
-     <div class="statsDivider"></div>
-
-     <div class="statsRow2">
-      ${si("VP", t.vp)}
-      ${si("PP", t.pp)}
-      ${si("VSN", t.vsn)}
-      ${si("PSN", t.psn)}
+     <div class="s-sep"></div>
+     <div class="s-row">
+      ${cell("VP", t.vp)}
+      ${cell("PP", t.pp)}
+      ${cell("VSN", t.vsn)}
+      ${cell("PSN", t.psn)}
      </div>
-
-     <div class="pmLine">+/- <strong>${pmStr}</strong></div>
-
+     <div class="s-pm">+/- <b>${pmStr}</b></div>
     </div>
    </div>
 
-   <div class="pointsBox">${t.b}</div>
-  </div>
+   <div class="s-points">${t.b}</div>
   `
+  cont.appendChild(card)
  })
 }
 
