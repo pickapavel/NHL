@@ -48,11 +48,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .team-row.winner .team-name{color:#166534;}
 
 .game-scores{display:flex;gap:3px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
-.gscore{font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;display:flex;align-items:center;gap:2px;}
+.gscore{font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;}
 .gscore-win{background:#dcfce7;color:#166534;}
 .gscore-loss{background:#fee2e2;color:#991b1b;}
 .gscore-empty{color:#d0d8e0;font-size:14px;font-weight:400;}
-.gscore-tag{font-size:8px;font-weight:800;background:rgba(0,0,0,.15);padding:1px 3px;border-radius:3px;}
 
 .series-score{font-size:16px;font-weight:800;color:#1a2a3c;min-width:14px;text-align:center;flex-shrink:0;}
 .series-score.win{color:#16a34a;}
@@ -69,25 +68,58 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .result-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .result-card-header{background:#f0f6fc;padding:8px 14px;font-size:11px;font-weight:700;color:#3a6a9c;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #e0ecf8;}
 
-/* MINI CARD ve výsledcích */
+/* MINI CARD */
 .result-mini-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;}
 .result-mini-card:last-child{border-bottom:none;}
 .result-mini-card.unplayed{background:#fafafa;}
 
-.rm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.rm-num{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;}
+.rm-header{
+ display:flex;justify-content:space-between;align-items:center;
+ margin-bottom:8px;
+}
+.rm-num{
+ font-size:11px;font-weight:800;
+ color:#0b2a3c;
+ letter-spacing:.04em;
+}
 
-.rm-team-row{display:flex;align-items:center;gap:8px;padding:4px 0;}
+.rm-teams{
+ display:flex;flex-direction:column;gap:3px;
+}
+
+.rm-team-row{
+ display:flex;align-items:center;gap:8px;
+ padding:3px 0;
+}
 .rm-loser{opacity:.45;}
-
-.rm-team-name{flex:1;font-size:12px;font-weight:700;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rm-winner .rm-team-name{color:#166534;}
 
-.rm-score{font-size:20px;font-weight:800;min-width:24px;text-align:center;color:#ccc;flex-shrink:0;}
+.rm-team-name{
+ flex:1;font-size:12px;font-weight:700;color:#1a2a3c;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Skóre + tag v pevném kontejneru aby bylo zarovnané */
+.rm-score-wrap{
+ display:flex;align-items:center;gap:4px;
+ width:60px;justify-content:flex-end;flex-shrink:0;
+}
+
+.rm-score{
+ font-size:20px;font-weight:800;
+ width:24px;text-align:center;color:#ccc;flex-shrink:0;
+}
 .rm-score-win{color:#16a34a;}
 .rm-score-loss{color:#d0d8e0;}
 
-.result-tag{font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+.result-tag{
+ font-size:9px;font-weight:800;
+ background:#2f9ec9;color:white;
+ padding:2px 5px;border-radius:4px;
+ flex-shrink:0;white-space:nowrap;
+ width:28px;text-align:center;
+}
+.result-tag-empty{width:28px;flex-shrink:0;}
 
 .btn-sm{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:6px 10px;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif;}
 .btn-stats{background:#1a5276;color:white;}
@@ -286,6 +318,7 @@ function logoHtml(teamName){
  return `<img class="team-logo" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
+// V pavouku – jen číslo bez tagu
 function gameScoresHtml(games, perspective){
  let html = '<div class="game-scores">'
  for(let i=0;i<7;i++){
@@ -294,8 +327,7 @@ function gameScoresHtml(games, perspective){
    const myScore = perspective===1 ? g.t1score : g.t2score
    const oppScore = perspective===1 ? g.t2score : g.t1score
    const win = myScore > oppScore
-   const tag = (win && g.type) ? `<span class="gscore-tag">${g.type}</span>` : ''
-   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}${tag}</span>`
+   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}</span>`
   } else {
    html += `<span class="gscore gscore-empty">·</span>`
   }
@@ -390,6 +422,15 @@ function renderResults(){
     const homeWin = played && m.home_score > m.away_score
     const awayWin = played && m.away_score > m.home_score
 
+    // Tag se zobrazí vždy na stejném místě – u poraženého bude prázdný placeholder
+    const homeTagHtml = (played && homeWin && type)
+     ? `<span class="result-tag">${type}</span>`
+     : `<span class="result-tag-empty"></span>`
+
+    const awayTagHtml = (played && awayWin && type)
+     ? `<span class="result-tag">${type}</span>`
+     : `<span class="result-tag-empty"></span>`
+
     matchesHtml += `
      <div class="result-mini-card ${played?'':'unplayed'}">
       <div class="rm-header">
@@ -399,17 +440,23 @@ function renderResults(){
         : `<button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
        }
       </div>
-      <div class="rm-team-row ${homeWin?'rm-winner':played&&!homeWin?'rm-loser':''}">
-       ${logoHtml(homeTeam)}
-       <span class="rm-team-name">${homeTeam}</span>
-       <span class="rm-score ${homeWin?'rm-score-win':played&&!homeWin?'rm-score-loss':''}">${played ? m.home_score : '-'}</span>
-       ${homeWin && type ? `<span class="result-tag">${type}</span>` : ''}
-      </div>
-      <div class="rm-team-row ${awayWin?'rm-winner':played&&!awayWin?'rm-loser':''}">
-       ${logoHtml(awayTeam)}
-       <span class="rm-team-name">${awayTeam}</span>
-       <span class="rm-score ${awayWin?'rm-score-win':played&&!awayWin?'rm-score-loss':''}">${played ? m.away_score : '-'}</span>
-       ${awayWin && type ? `<span class="result-tag">${type}</span>` : ''}
+      <div class="rm-teams">
+       <div class="rm-team-row ${homeWin?'rm-winner':played&&!homeWin?'rm-loser':''}">
+        ${logoHtml(homeTeam)}
+        <span class="rm-team-name">${homeTeam}</span>
+        <div class="rm-score-wrap">
+         ${homeTagHtml}
+         <span class="rm-score ${homeWin?'rm-score-win':played&&!homeWin?'rm-score-loss':''}">${played ? m.home_score : '-'}</span>
+        </div>
+       </div>
+       <div class="rm-team-row ${awayWin?'rm-winner':played&&!awayWin?'rm-loser':''}">
+        ${logoHtml(awayTeam)}
+        <span class="rm-team-name">${awayTeam}</span>
+        <div class="rm-score-wrap">
+         ${awayTagHtml}
+         <span class="rm-score ${awayWin?'rm-score-win':played&&!awayWin?'rm-score-loss':''}">${played ? m.away_score : '-'}</span>
+        </div>
+       </div>
       </div>
      </div>
     `
