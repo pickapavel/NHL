@@ -164,4 +164,251 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   <div class="team-row tbd" id="third-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF2</div></div>
  </div>
  <div class="series-card is-final" id="card-f">
-  <div class="series-header is-final"><span>🏆 Finále</span><span class="se
+  <div class="series-header is-final"><span>🏆 Finále</span><span class="series-state" id="state-f">Stav série</span></div>
+  <div class="team-row tbd" id="f-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF1</div></div>
+  <div class="team-row tbd" id="f-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF2</div></div>
+ </div>
+</div>
+
+<div style="max-width:400px;margin:20px auto 0;">
+ <div class="trophy-wrap">
+  <div class="trophy-icon">🏆</div>
+  <div class="trophy-label">Mistr ligy</div>
+  <div class="trophy-name" id="champion-label">—</div>
+ </div>
+</div>
+
+<div class="results-section">
+ <div class="section-title">Výsledky zápasů</div>
+ <div class="results-grid" id="results-grid">
+  <div class="loading-msg">Načítám...</div>
+ </div>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+
+const STAGE_IDS = {
+ qf1:   '13ae3494-6b7c-4b2e-bc5b-259478274b00',
+ qf2:   'f5544a65-f97a-4c15-b544-8e39c1ca533d',
+ qf3:   '70f62ac1-41bc-4a59-8f91-f4c3e27cc24d',
+ qf4:   'da97b17e-02ed-4cd7-8721-bbe7ec1e325d',
+ sf1:   '0619829c-acf5-4d81-9833-7f00923c4e24',
+ sf2:   'a132f953-b297-4bc7-958d-928de8128b0d',
+ third: 'cb18c2a9-b630-440e-a2e0-cfea1350b6b0',
+ f:     '4f644dca-d281-41ed-97e5-6ff38e860660',
+}
+
+const SEASON_ID = '4b05b50e-cfde-4473-aebe-33495c85a989'
+const LOGOS = './logos/'
+let teamsMap = {}
+
+const SERIES = {
+ qf1:   { label:'ČF 1',         t1:null, t2:null, games:[], winsNeeded:4 },
+ qf2:   { label:'ČF 2',         t1:null, t2:null, games:[], winsNeeded:4 },
+ qf3:   { label:'ČF 3',         t1:null, t2:null, games:[], winsNeeded:4 },
+ qf4:   { label:'ČF 4',         t1:null, t2:null, games:[], winsNeeded:4 },
+ sf1:   { label:'Semifinále 1',  t1:null, t2:null, games:[], winsNeeded:4 },
+ sf2:   { label:'Semifinále 2',  t1:null, t2:null, games:[], winsNeeded:4 },
+ third: { label:'O 3. místo',    t1:null, t2:null, games:[], winsNeeded:1 },
+ f:     { label:'Finále',        t1:null, t2:null, games:[], winsNeeded:4 },
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+async function loadData(){
+ const { data: teams } = await db.from("teams").select("*")
+ ;(teams||[]).forEach(t=> teamsMap[t.id] = t)
+
+ const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
+
+ const { data: matches } = await db
+  .from("matches")
+  .select("*")
+  .eq("season_id", SEASON_ID)
+  .in("stage_id", uniqueStageIds)
+  .order("round", { ascending: true })
+
+ if(!matches) return
+
+ const stageMatches = {}
+ matches.forEach(m=>{
+  if(!stageMatches[m.stage_id]) stageMatches[m.stage_id] = []
+  stageMatches[m.stage_id].push(m)
+ })
+
+ Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
+  const ms = stageMatches[stageId] || []
+  if(ms.length === 0) return
+
+  const s = SERIES[key]
+  const first = ms[0]
+  s.t1 = teamsMap[first.home_team]?.name || first.home_team
+  s.t2 = teamsMap[first.away_team]?.name || first.away_team
+
+  s.games = ms.filter(m=> m.played && m.home_score != null).map(m=>{
+   const isT1Home = m.home_team === first.home_team
+   return {
+    gh: isT1Home ? m.home_score : m.away_score,
+    ga: isT1Home ? m.away_score : m.home_score,
+    type: m.result_type === 'REG' ? '' : (m.result_type || ''),
+    matchId: m.id,
+    home_team_id: m.home_team,
+    away_team_id: m.away_team,
+    home_score: m.home_score,
+    away_score: m.away_score,
+   }
+  })
+ })
+
+ propagate()
+ Object.keys(SERIES).forEach(k=> renderSeries(k))
+ renderResults()
+ renderChampion()
+}
+
+function logoHtml(teamName){
+ const team = Object.values(teamsMap).find(t=> t.name === teamName)
+ if(!team || !team.logo) return `<div class="team-logo-placeholder">?</div>`
+ return `<img class="team-logo" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
+}
+
+function gameScoresHtml(games, perspective){
+ let html = '<div class="game-scores">'
+ for(let i=0;i<7;i++){
+  if(i < games.length){
+   const g = games[i]
+   const win = perspective===1 ? g.gh > g.ga : g.ga > g.gh
+   const score = perspective===1 ? `${g.gh}:${g.ga}` : `${g.ga}:${g.gh}`
+   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${score}</span>`
+  } else {
+   html += `<span class="gscore gscore-empty">·</span>`
+  }
+ }
+ return html + '</div>'
+}
+
+function getWins(series, t){
+ return series.games.filter(g => t===1 ? g.gh > g.ga : g.ga > g.gh).length
+}
+
+function getLoser(series){
+ const w1 = getWins(series,1), w2 = getWins(series,2)
+ if(w1 >= series.winsNeeded) return series.t2
+ if(w2 >= series.winsNeeded) return series.t1
+ return null
+}
+
+function getWinner(series){
+ const w1 = getWins(series,1), w2 = getWins(series,2)
+ if(w1 >= series.winsNeeded) return series.t1
+ if(w2 >= series.winsNeeded) return series.t2
+ return null
+}
+
+function propagate(){
+ SERIES.sf1.t1 = SERIES.sf1.t1 || getWinner(SERIES.qf1)
+ SERIES.sf1.t2 = SERIES.sf1.t2 || getWinner(SERIES.qf2)
+ SERIES.sf2.t1 = SERIES.sf2.t1 || getWinner(SERIES.qf3)
+ SERIES.sf2.t2 = SERIES.sf2.t2 || getWinner(SERIES.qf4)
+ SERIES.third.t1 = SERIES.third.t1 || getLoser(SERIES.sf1)
+ SERIES.third.t2 = SERIES.third.t2 || getLoser(SERIES.sf2)
+ SERIES.f.t1 = SERIES.f.t1 || getWinner(SERIES.sf1)
+ SERIES.f.t2 = SERIES.f.t2 || getWinner(SERIES.sf2)
+}
+
+function renderSeries(key){
+ const s = SERIES[key]
+ const w1 = getWins(s,1), w2 = getWins(s,2)
+ const winner = getWinner(s)
+
+ const stateEl = document.getElementById(`state-${key}`)
+ if(stateEl){
+  const hasGames = s.games.length > 0
+  stateEl.textContent = hasGames ? `${w1} : ${w2}` : 'Stav série'
+  stateEl.className = 'series-state' + (hasGames ? '' : ' neutral')
+ }
+
+ function renderTeamRow(rowId, team, wins, isWinner, isLoser){
+  const el = document.getElementById(rowId)
+  if(!el) return
+  const cls = isWinner ? 'winner' : isLoser ? 'loser' : team ? '' : 'tbd'
+  el.className = `team-row ${cls}`
+  el.innerHTML = `
+   ${logoHtml(team)}
+   <div class="team-name ${team?'':'tbd'}">${team || '?'}</div>
+   ${gameScoresHtml(s.games, rowId.endsWith('-t1') ? 1 : 2)}
+   <div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>
+  `
+ }
+
+ renderTeamRow(`${key}-t1`, s.t1, w1, winner===s.t1, winner && winner!==s.t1)
+ renderTeamRow(`${key}-t2`, s.t2, w2, winner===s.t2, winner && winner!==s.t2)
+}
+
+function renderResults(){
+ const grid = document.getElementById('results-grid')
+ grid.innerHTML = ''
+
+ const order = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ const labels = {
+  qf1:'ČF 1', qf2:'ČF 2', qf3:'ČF 3', qf4:'ČF 4',
+  sf1:'Semifinále 1', sf2:'Semifinále 2',
+  third:'🥉 O 3. místo', f:'🏆 Finále'
+ }
+
+ order.forEach(key=>{
+  const s = SERIES[key]
+  const card = document.createElement('div')
+  card.className = 'result-card'
+
+  let matchesHtml = ''
+  if(s.games.length === 0){
+   matchesHtml = `<div class="empty-msg">Zatím žádné zápasy</div>`
+  } else {
+   s.games.forEach((g,i)=>{
+    const homeTeam = teamsMap[g.home_team_id]?.name || s.t1
+    const awayTeam = teamsMap[g.away_team_id]?.name || s.t2
+    matchesHtml += `
+     <div class="result-match">
+      <span class="result-team">${homeTeam}</span>
+      <span class="result-score">${g.home_score} : ${g.away_score}</span>
+      <span class="result-team" style="text-align:right">${awayTeam}</span>
+      ${g.type?`<span class="result-tag">${g.type}</span>`:''}
+     </div>
+    `
+   })
+   matchesHtml += `
+    <div class="result-btns">
+     ${s.games.map((g,i)=>`
+      <button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${g.matchId}'">📊 Zápas ${i+1}</button>
+     `).join('')}
+     <button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html'">🎲 Vsaď si</button>
+    </div>
+   `
+  }
+
+  card.innerHTML = `
+   <div class="result-card-header">${labels[key]}</div>
+   ${matchesHtml}
+  `
+  grid.appendChild(card)
+ })
+}
+
+function renderChampion(){
+ const champion = getWinner(SERIES.f)
+ document.getElementById('champion-label').textContent = champion || '—'
+}
+
+loadData()
+</script>
+</body>
+</html>
