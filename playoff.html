@@ -14,7 +14,6 @@ body{
  min-height:100vh;
 }
 
-/* HEADER */
 .header{
  background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
  padding:20px 30px;
@@ -38,45 +37,36 @@ body{
  text-transform:uppercase;letter-spacing:.06em;
 }
 
-/* WRAPPER */
-.wrapper{max-width:1200px;margin:0 auto;padding:0 20px 40px;}
+.wrapper{max-width:1300px;margin:0 auto;padding:0 20px 40px;}
 
-/* PAVOUK */
-.bracket{
+.section-title{
+ font-size:17px;font-weight:700;color:#0b2a3c;
+ margin:0 0 16px;
+ display:flex;align-items:center;gap:8px;
+}
+.section-title::after{
+ content:'';flex:1;height:2px;
+ background:linear-gradient(90deg,#2f9ec9,transparent);
+ border-radius:2px;
+}
+
+/* BRACKET ROWS */
+.bracket-row{
  display:grid;
- grid-template-columns:1fr 80px 1fr 80px 1fr;
- gap:0;
- align-items:center;
- margin-bottom:40px;
+ gap:16px;
+ margin-bottom:16px;
 }
 
-.bracket-col{
- display:flex;
- flex-direction:column;
- gap:30px;
+.bracket-row-qf{ grid-template-columns:repeat(4,1fr); }
+.bracket-row-sf{ grid-template-columns:1fr 1fr; }
+.bracket-row-f{  grid-template-columns:1fr 1fr; }
+
+.bracket-connector{
+ display:flex;align-items:center;justify-content:center;
+ padding:8px 0;
 }
 
-.bracket-col.center{
- justify-content:center;
-}
-
-/* CONNECTORS */
-.connector-col{
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:space-around;
- height:100%;
- position:relative;
-}
-
-.connector-col svg{
- width:100%;
- height:100%;
- position:absolute;
- top:0;left:0;
- overflow:visible;
-}
+.bracket-connector svg{width:100%;height:40px;}
 
 /* SERIES CARD */
 .series-card{
@@ -88,8 +78,12 @@ body{
 }
 
 .series-card.is-final{
- border-color:#93c5fd;
- box-shadow:0 4px 16px rgba(59,130,246,.12);
+ border-color:#f0c040;
+ box-shadow:0 4px 16px rgba(240,192,64,.15);
+}
+
+.series-card.is-third{
+ border-color:#b0c8d0;
 }
 
 .series-header{
@@ -102,70 +96,77 @@ body{
 }
 
 .series-header.is-final{
- background:linear-gradient(135deg,#1a3a6c,#0b2a3c);
+ background:linear-gradient(135deg,#7a5200,#3a2800);
+ color:#f0d060;
+}
+
+.series-header.is-third{
+ background:#2a4a5a;
 }
 
 .series-state{
- font-size:13px;font-weight:800;
+ font-size:12px;font-weight:800;
  color:#f0d060;
  background:rgba(240,208,96,.15);
  padding:2px 10px;border-radius:20px;
  letter-spacing:.05em;
+ white-space:nowrap;
 }
 
-/* TEAM ROW */
+.series-state.neutral{
+ color:#7ab0cc;
+ background:rgba(122,176,204,.1);
+}
+
 .team-row{
- display:flex;align-items:center;gap:10px;
- padding:10px 14px;
+ display:flex;align-items:center;gap:8px;
+ padding:9px 12px;
  border-bottom:1px solid #f0f0f0;
- position:relative;
 }
 
-.team-row:last-child{border-bottom:none;}
+.team-row:last-of-type{border-bottom:none;}
 
 .team-row.winner{background:#f0fdf4;}
-.team-row.loser{opacity:.45;}
-.team-row.tbd{opacity:.35;}
+.team-row.loser{opacity:.4;}
+.team-row.tbd{opacity:.3;}
 
 .team-logo{
- width:30px;height:30px;object-fit:contain;
- background:white;border-radius:6px;padding:2px;
+ width:26px;height:26px;object-fit:contain;
+ background:white;border-radius:5px;padding:2px;
  border:1px solid #e0e0e0;flex-shrink:0;
 }
 
 .team-logo-placeholder{
- width:30px;height:30px;border-radius:6px;
+ width:26px;height:26px;border-radius:5px;
  background:#dce8f5;flex-shrink:0;
  display:flex;align-items:center;justify-content:center;
- font-size:10px;color:#7aaac8;font-weight:700;
+ font-size:9px;color:#7aaac8;font-weight:700;
  border:1px solid #c8d8e8;
 }
 
 .team-name{
- flex:1;font-size:13px;font-weight:700;color:#1a2a3c;
+ flex:1;font-size:12px;font-weight:700;color:#1a2a3c;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
 .team-name.tbd{color:#b0c8d8;font-weight:400;font-style:italic;}
 .team-row.winner .team-name{color:#166534;}
 
-/* GAME DOTS */
 .game-dots{
- display:flex;gap:3px;align-items:center;
+ display:flex;gap:2px;align-items:center;flex-shrink:0;
 }
 
 .dot{
- width:8px;height:8px;border-radius:50%;flex-shrink:0;
+ width:7px;height:7px;border-radius:50%;flex-shrink:0;
 }
 
 .dot-win{background:#22c55e;}
 .dot-loss{background:#f87171;}
 .dot-empty{background:#e2eaf0;}
 
-/* SCORE */
 .series-score{
- font-size:18px;font-weight:800;
- color:#1a2a3c;min-width:16px;text-align:center;
+ font-size:16px;font-weight:800;
+ color:#1a2a3c;min-width:14px;text-align:center;flex-shrink:0;
 }
 
 .series-score.win{color:#16a34a;}
@@ -173,31 +174,22 @@ body{
 
 /* TROPHY */
 .trophy-wrap{
- text-align:center;
- padding:20px;
+ background:white;border-radius:14px;
+ border:2px solid #f0c040;
+ padding:20px;text-align:center;
+ box-shadow:0 4px 16px rgba(240,192,64,.15);
 }
 
-.trophy-icon{font-size:48px;margin-bottom:8px;}
+.trophy-icon{font-size:40px;margin-bottom:6px;}
 .trophy-label{font-size:13px;font-weight:700;color:#888;}
+.trophy-name{font-size:15px;font-weight:800;color:#0b2a3c;margin-top:4px;}
 
-/* SECTION TITLE */
-.section-title{
- font-size:17px;font-weight:700;color:#0b2a3c;
- margin:0 0 16px;
- display:flex;align-items:center;gap:8px;
-}
-.section-title::after{
- content:'';flex:1;height:2px;
- background:linear-gradient(90deg,#2f9ec9,transparent);
- border-radius:2px;
-}
-
-/* RESULTS TABLE */
+/* RESULTS */
 .results-section{margin-top:32px;}
 
 .results-grid{
  display:grid;
- grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+ grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
  gap:16px;
 }
 
@@ -219,68 +211,54 @@ body{
 .result-match{
  display:flex;align-items:center;
  padding:8px 14px;border-bottom:1px solid #f3f4f6;
- font-size:13px;gap:8px;
+ font-size:12px;gap:8px;
 }
 
 .result-match:last-child{border-bottom:none;}
 
-.result-team{flex:1;font-weight:600;color:#1a2a3c;}
+.result-team{flex:1;font-weight:600;color:#1a2a3c;font-size:12px;}
+
 .result-score{
- font-weight:800;font-size:14px;
+ font-weight:800;font-size:13px;
  background:#0b2a3c;color:white;
  padding:3px 10px;border-radius:6px;
- min-width:50px;text-align:center;
+ min-width:46px;text-align:center;flex-shrink:0;
 }
-.result-score.empty{background:#e0e0e0;color:#999;font-weight:400;}
 
 .result-tag{
  font-size:10px;font-weight:700;
  background:#2f9ec9;color:white;
- padding:2px 6px;border-radius:4px;
+ padding:2px 6px;border-radius:4px;flex-shrink:0;
 }
 
-/* ADMIN */
-.admin-section{
- margin-top:32px;
- background:white;border-radius:14px;
- border:1px solid #c8d8e8;
- padding:20px;
- box-shadow:0 1px 4px rgba(0,0,0,.06);
+.result-btns{
+ display:flex;gap:6px;padding:8px 14px;
+ border-top:1px solid #f3f4f6;
 }
 
-.admin-grid{
- display:grid;
- grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
- gap:12px;align-items:end;
+.btn-sm{
+ display:inline-flex;align-items:center;gap:4px;
+ border:none;border-radius:7px;cursor:pointer;
+ font-weight:700;font-size:11px;
+ padding:6px 10px;transition:all .15s;
+ white-space:nowrap;font-family:'Inter',sans-serif;
 }
 
-.admin-field label{
- display:block;font-size:12px;font-weight:700;
- color:#666;margin-bottom:4px;
+.btn-stats{background:#1a5276;color:white;}
+.btn-stats:hover{background:#0b2a3c;}
+.btn-bet{background:#27ae60;color:white;}
+.btn-bet:hover{background:#219a52;}
+
+.empty-msg{
+ padding:16px;text-align:center;
+ color:#aaa;font-size:13px;
 }
 
-.admin-field select,
-.admin-field input{
- width:100%;padding:8px 12px;
- border-radius:8px;border:1px solid #ccc;
- font-size:13px;font-family:'Inter',sans-serif;
+@media(max-width:900px){
+ .bracket-row-qf{grid-template-columns:repeat(2,1fr);}
 }
-
-.btn-save-result{
- background:#27ae60;color:white;
- border:none;border-radius:8px;
- padding:9px 18px;font-weight:700;
- font-size:13px;cursor:pointer;
- font-family:'Inter',sans-serif;
- width:100%;
-}
-.btn-save-result:hover{background:#219a52;}
-
-@media(max-width:700px){
- .bracket{
-  grid-template-columns:1fr;
- }
- .connector-col{display:none;}
+@media(max-width:600px){
+ .bracket-row-qf,.bracket-row-sf,.bracket-row-f{grid-template-columns:1fr;}
  .header{padding:14px 16px;}
  .header-title{font-size:18px;}
 }
@@ -300,216 +278,151 @@ body{
 
 <div class="section-title">Pavouk</div>
 
-<div class="bracket" id="bracket">
+<!-- ČTVRTFINÁLE -->
+<div style="font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Čtvrtfinále</div>
+<div class="bracket-row bracket-row-qf" id="row-qf">
 
- <!-- SEMIFINÁLE -->
- <div class="bracket-col" id="col-sf">
-
-  <!-- SF1 -->
-  <div class="series-card" id="card-sf1">
-   <div class="series-header">
-    <span>Semifinále 1</span>
-    <span class="series-state" id="state-sf1">0 : 0</span>
-   </div>
-   <div class="team-row tbd" id="sf1-t1">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Tým 1</div>
-    <div class="game-dots" id="sf1-dots1"></div>
-    <div class="series-score" id="sf1-s1">0</div>
-   </div>
-   <div class="team-row tbd" id="sf1-t2">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Tým 2</div>
-    <div class="game-dots" id="sf1-dots2"></div>
-    <div class="series-score" id="sf1-s2">0</div>
-   </div>
+ <div class="series-card" id="card-qf1">
+  <div class="series-header">
+   <span>ČF 1</span>
+   <span class="series-state neutral" id="state-qf1">Stav série</span>
   </div>
-
-  <!-- SF2 -->
-  <div class="series-card" id="card-sf2">
-   <div class="series-header">
-    <span>Semifinále 2</span>
-    <span class="series-state" id="state-sf2">0 : 0</span>
-   </div>
-   <div class="team-row tbd" id="sf2-t1">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Tým 3</div>
-    <div class="game-dots" id="sf2-dots1"></div>
-    <div class="series-score" id="sf2-s1">0</div>
-   </div>
-   <div class="team-row tbd" id="sf2-t2">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Tým 4</div>
-    <div class="game-dots" id="sf2-dots2"></div>
-    <div class="series-score" id="sf2-s2">0</div>
-   </div>
-  </div>
-
+  <div class="team-row tbd" id="qf1-t1"></div>
+  <div class="team-row tbd" id="qf1-t2"></div>
  </div>
 
- <!-- CONNECTOR -->
- <div class="connector-col" id="conn1">
-  <svg id="conn1-svg" viewBox="0 0 80 300" preserveAspectRatio="none"></svg>
- </div>
-
- <!-- FINÁLE -->
- <div class="bracket-col center" id="col-f">
-  <div class="series-card is-final" id="card-f">
-   <div class="series-header is-final">
-    <span>🏆 Finále</span>
-    <span class="series-state" id="state-f">0 : 0</span>
-   </div>
-   <div class="team-row tbd" id="f-t1">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Vítěz SF1</div>
-    <div class="game-dots" id="f-dots1"></div>
-    <div class="series-score" id="f-s1">0</div>
-   </div>
-   <div class="team-row tbd" id="f-t2">
-    <div class="team-logo-placeholder">?</div>
-    <div class="team-name tbd">Vítěz SF2</div>
-    <div class="game-dots" id="f-dots2"></div>
-    <div class="series-score" id="f-s2">0</div>
-   </div>
+ <div class="series-card" id="card-qf2">
+  <div class="series-header">
+   <span>ČF 2</span>
+   <span class="series-state neutral" id="state-qf2">Stav série</span>
   </div>
+  <div class="team-row tbd" id="qf2-t1"></div>
+  <div class="team-row tbd" id="qf2-t2"></div>
  </div>
 
- <!-- CONNECTOR RIGHT (placeholder) -->
- <div class="connector-col"></div>
-
- <!-- TROPHY -->
- <div class="bracket-col center">
-  <div class="trophy-wrap">
-   <div class="trophy-icon">🏆</div>
-   <div class="trophy-label" id="champion-label">Mistr ligy</div>
+ <div class="series-card" id="card-qf3">
+  <div class="series-header">
+   <span>ČF 3</span>
+   <span class="series-state neutral" id="state-qf3">Stav série</span>
   </div>
+  <div class="team-row tbd" id="qf3-t1"></div>
+  <div class="team-row tbd" id="qf3-t2"></div>
  </div>
 
+ <div class="series-card" id="card-qf4">
+  <div class="series-header">
+   <span>ČF 4</span>
+   <span class="series-state neutral" id="state-qf4">Stav série</span>
+  </div>
+  <div class="team-row tbd" id="qf4-t1"></div>
+  <div class="team-row tbd" id="qf4-t2"></div>
+ </div>
+
+</div>
+
+<!-- SEMIFINÁLE -->
+<div style="font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin:20px 0 10px;">Semifinále</div>
+<div class="bracket-row bracket-row-sf">
+
+ <div class="series-card" id="card-sf1">
+  <div class="series-header">
+   <span>Semifinále 1</span>
+   <span class="series-state neutral" id="state-sf1">Stav série</span>
+  </div>
+  <div class="team-row tbd" id="sf1-t1"></div>
+  <div class="team-row tbd" id="sf1-t2"></div>
+ </div>
+
+ <div class="series-card" id="card-sf2">
+  <div class="series-header">
+   <span>Semifinále 2</span>
+   <span class="series-state neutral" id="state-sf2">Stav série</span>
+  </div>
+  <div class="team-row tbd" id="sf2-t1"></div>
+  <div class="team-row tbd" id="sf2-t2"></div>
+ </div>
+
+</div>
+
+<!-- FINÁLE + O 3. MÍSTO + TROFEJ -->
+<div style="font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin:20px 0 10px;">Finálová fáze</div>
+<div class="bracket-row bracket-row-f">
+
+ <div class="series-card is-third" id="card-third">
+  <div class="series-header is-third">
+   <span>🥉 O 3. místo</span>
+   <span class="series-state neutral" id="state-third">Stav série</span>
+  </div>
+  <div class="team-row tbd" id="third-t1"></div>
+  <div class="team-row tbd" id="third-t2"></div>
+ </div>
+
+ <div class="series-card is-final" id="card-f">
+  <div class="series-header is-final">
+   <span>🏆 Finále</span>
+   <span class="series-state" id="state-f">Stav série</span>
+  </div>
+  <div class="team-row tbd" id="f-t1"></div>
+  <div class="team-row tbd" id="f-t2"></div>
+ </div>
+
+</div>
+
+<!-- TROFEJ -->
+<div style="max-width:400px;margin:20px auto 0;">
+ <div class="trophy-wrap">
+  <div class="trophy-icon">🏆</div>
+  <div class="trophy-label">Mistr ligy</div>
+  <div class="trophy-name" id="champion-label">—</div>
+ </div>
 </div>
 
 <!-- VÝSLEDKY ZÁPASŮ -->
 <div class="results-section">
  <div class="section-title">Výsledky zápasů</div>
- <div class="results-grid">
-  <div class="result-card">
-   <div class="result-card-header">Semifinále 1</div>
-   <div id="results-sf1"></div>
-  </div>
-  <div class="result-card">
-   <div class="result-card-header">Semifinále 2</div>
-   <div id="results-sf2"></div>
-  </div>
-  <div class="result-card">
-   <div class="result-card-header">🏆 Finále</div>
-   <div id="results-f"></div>
-  </div>
- </div>
-</div>
-
-<!-- ADMIN -->
-<div class="admin-section">
- <div class="section-title">Admin – zápis výsledku</div>
- <div class="admin-grid">
-  <div class="admin-field">
-   <label>Heslo</label>
-   <input id="pass" type="password" placeholder="••••••••">
-  </div>
-  <div class="admin-field">
-   <label>Fáze</label>
-   <select id="phase">
-    <option value="sf1">Semifinále 1</option>
-    <option value="sf2">Semifinále 2</option>
-    <option value="f">Finále</option>
-   </select>
-  </div>
-  <div class="admin-field">
-   <label>Domácí</label>
-   <select id="home">
-    <option>HC Chemopetrol Litvínov (P)</option>
-    <option>HC Dynamo Pardubice (K)</option>
-    <option>HC Rytíři Kladno (P)</option>
-    <option>HC Sparta Praha (P)</option>
-   </select>
-  </div>
-  <div class="admin-field">
-   <label>Hosté</label>
-   <select id="away">
-    <option>HC Chemopetrol Litvínov (P)</option>
-    <option>HC Dynamo Pardubice (K)</option>
-    <option>HC Rytíři Kladno (P)</option>
-    <option>HC Sparta Praha (P)</option>
-   </select>
-  </div>
-  <div class="admin-field">
-   <label>Skóre domácí</label>
-   <input id="gh" type="number" min="0" placeholder="0">
-  </div>
-  <div class="admin-field">
-   <label>Skóre hosté</label>
-   <input id="ga" type="number" min="0" placeholder="0">
-  </div>
-  <div class="admin-field">
-   <label>Typ</label>
-   <select id="rtype">
-    <option value="">REG</option>
-    <option value="OT">OT</option>
-    <option value="SN">SN</option>
-   </select>
-  </div>
-  <div class="admin-field">
-   <label>&nbsp;</label>
-   <button class="btn-save-result" onclick="save()">✅ Uložit výsledek</button>
-  </div>
- </div>
+ <div class="results-grid" id="results-grid"></div>
 </div>
 
 </div>
 
 <script>
 // =====================================================
-// DATA – sem se ukládají výsledky
-// Formát: { home, away, gh, ga, type }
+// KONFIGURACE – uprav týmy a loga
 // =====================================================
 
 const LOGOS = './logos/'
 
-// Týmy – uprav podle skutečných log
 const TEAMS = {
- 'HC Chemopetrol Litvínov (P)': { logo: 'litvinov.png' },
- 'HC Dynamo Pardubice (K)':     { logo: 'pardubice.png' },
- 'HC Rytíři Kladno (P)':        { logo: 'kladno.png' },
- 'HC Sparta Praha (P)':         { logo: 'sparta.png' },
+ 'HC Bílí Tygři Liberec (K)':       { logo: 'liberec.png' },
+ 'HC Chemopetrol Litvínov (P)':      { logo: 'litvinov.png' },
+ 'HC Dynamo Pardubice (K)':          { logo: 'pardubice.png' },
+ 'HC Energie Karlovy Vary (P)':      { logo: 'kv.png' },
+ 'HC Motor České Budějovice (K)':    { logo: 'motor.png' },
+ 'HC Oceláři Třinec (K)':            { logo: 'trinec.png' },
+ 'HC Rytíři Kladno (P)':             { logo: 'kladno.png' },
+ 'HC Sparta Praha (P)':              { logo: 'sparta.png' },
 }
 
-// Konfigurace sérií – uprav týmy
+// Série – uprav t1/t2 podle skutečného losování
+// Pro SF a Finále se t1/t2 doplní automaticky z výsledků QF
 const SERIES = {
- sf1: {
-  t1: 'HC Chemopetrol Litvínov (P)',
-  t2: 'HC Dynamo Pardubice (K)',
-  games: [],  // sem se přidávají výsledky
-  winsNeeded: 4
- },
- sf2: {
-  t1: 'HC Rytíři Kladno (P)',
-  t2: 'HC Sparta Praha (P)',
-  games: [],
-  winsNeeded: 4
- },
- f: {
-  t1: null, // bude doplněno automaticky
-  t2: null,
-  games: [],
-  winsNeeded: 4
- }
+ qf1:   { label:'ČF 1',        t1:'HC Chemopetrol Litvínov (P)', t2:'HC Dynamo Pardubice (K)',       games:[], winsNeeded:4 },
+ qf2:   { label:'ČF 2',        t1:'HC Rytíři Kladno (P)',        t2:'HC Sparta Praha (P)',           games:[], winsNeeded:4 },
+ qf3:   { label:'ČF 3',        t1:'HC Bílí Tygři Liberec (K)',   t2:'HC Energie Karlovy Vary (P)',   games:[], winsNeeded:4 },
+ qf4:   { label:'ČF 4',        t1:'HC Motor České Budějovice (K)',t2:'HC Oceláři Třinec (K)',        games:[], winsNeeded:4 },
+ sf1:   { label:'Semifinále 1', t1:null, t2:null, games:[], winsNeeded:4, fromQF:[['qf1','w'],['qf2','w']] },
+ sf2:   { label:'Semifinále 2', t1:null, t2:null, games:[], winsNeeded:4, fromQF:[['qf3','w'],['qf4','w']] },
+ third: { label:'O 3. místo',   t1:null, t2:null, games:[], winsNeeded:1, fromQF:[['sf1','l'],['sf2','l']] },
+ f:     { label:'Finále',       t1:null, t2:null, games:[], winsNeeded:4, fromQF:[['sf1','w'],['sf2','w']] },
 }
 
 // =====================================================
-// RENDER
+// HELPERS
 // =====================================================
 
 function logoHtml(team){
  if(!team || !TEAMS[team]) return `<div class="team-logo-placeholder">?</div>`
- return `<img class="team-logo" src="${LOGOS}${TEAMS[team].logo}" alt="${team}">`
+ return `<img class="team-logo" src="${LOGOS}${TEAMS[team].logo}" alt="${team}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
 function dotsHtml(games, perspective){
@@ -527,147 +440,140 @@ function dotsHtml(games, perspective){
 }
 
 function getWins(series, t){
- return series.games.filter(g =>
-  t===1 ? g.gh > g.ga : g.ga > g.gh
- ).length
+ return series.games.filter(g => t===1 ? g.gh > g.ga : g.ga > g.gh).length
+}
+
+function getLoser(series){
+ const w1 = getWins(series,1), w2 = getWins(series,2)
+ if(w1 >= series.winsNeeded) return series.t2
+ if(w2 >= series.winsNeeded) return series.t1
+ return null
 }
 
 function getWinner(series){
- const w1 = getWins(series, 1)
- const w2 = getWins(series, 2)
+ const w1 = getWins(series,1), w2 = getWins(series,2)
  if(w1 >= series.winsNeeded) return series.t1
  if(w2 >= series.winsNeeded) return series.t2
  return null
 }
 
+// Propaguj vítěze/poražené do dalších kol
+function propagate(){
+ // SF1: vítězi QF1 a QF2
+ SERIES.sf1.t1 = getWinner(SERIES.qf1)
+ SERIES.sf1.t2 = getWinner(SERIES.qf2)
+ // SF2: vítězi QF3 a QF4
+ SERIES.sf2.t1 = getWinner(SERIES.qf3)
+ SERIES.sf2.t2 = getWinner(SERIES.qf4)
+ // O 3. místo: poražení SF
+ SERIES.third.t1 = getLoser(SERIES.sf1)
+ SERIES.third.t2 = getLoser(SERIES.sf2)
+ // Finále: vítězi SF
+ SERIES.f.t1 = getWinner(SERIES.sf1)
+ SERIES.f.t2 = getWinner(SERIES.sf2)
+}
+
+// =====================================================
+// RENDER
+// =====================================================
+
 function renderSeries(key){
  const s = SERIES[key]
- const w1 = getWins(s, 1)
- const w2 = getWins(s, 2)
+ const w1 = getWins(s,1), w2 = getWins(s,2)
  const winner = getWinner(s)
 
  // Stav série
- document.getElementById(`state-${key}`).textContent = `${w1} : ${w2}`
+ const stateEl = document.getElementById(`state-${key}`)
+ if(stateEl){
+  const hasGames = s.games.length > 0
+  stateEl.textContent = hasGames ? `${w1} : ${w2}` : 'Stav série'
+  stateEl.className = 'series-state' + (hasGames ? '' : ' neutral')
+ }
 
- // Tým 1
- const t1row = document.getElementById(`${key}-t1`)
- const t1cls = winner ? (winner===s.t1?'winner':'loser') : (s.t1?'':'tbd')
- t1row.className = `team-row ${t1cls}`
- t1row.innerHTML = `
-  ${logoHtml(s.t1)}
-  <div class="team-name ${s.t1?'':'tbd'}">${s.t1 || (key==='f'?'Vítěz SF1':'Tým 1')}</div>
-  ${dotsHtml(s.games, 1)}
-  <div class="series-score ${winner===s.t1?'win':winner?'loss':''}">${w1}</div>
- `
+ function renderTeamRow(rowId, team, wins, winsNeeded, isWinner, isLoser){
+  const el = document.getElementById(rowId)
+  if(!el) return
+  const cls = isWinner ? 'winner' : isLoser ? 'loser' : team ? '' : 'tbd'
+  el.className = `team-row ${cls}`
+  el.innerHTML = `
+   ${logoHtml(team)}
+   <div class="team-name ${team?'':'tbd'}">${team || '?'}</div>
+   ${dotsHtml(s.games, rowId.endsWith('-t1') ? 1 : 2)}
+   <div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>
+  `
+ }
 
- // Tým 2
- const t2row = document.getElementById(`${key}-t2`)
- const t2cls = winner ? (winner===s.t2?'winner':'loser') : (s.t2?'':'tbd')
- t2row.className = `team-row ${t2cls}`
- t2row.innerHTML = `
-  ${logoHtml(s.t2)}
-  <div class="team-name ${s.t2?'':'tbd'}">${s.t2 || (key==='f'?'Vítěz SF2':'Tým 2')}</div>
-  ${dotsHtml(s.games, 2)}
-  <div class="series-score ${winner===s.t2?'win':winner?'loss':''}">${w2}</div>
- `
+ renderTeamRow(`${key}-t1`, s.t1, w1, s.winsNeeded, winner===s.t1, winner && winner!==s.t1)
+ renderTeamRow(`${key}-t2`, s.t2, w2, s.winsNeeded, winner===s.t2, winner && winner!==s.t2)
+}
 
- // Výsledky
- const resEl = document.getElementById(`results-${key}`)
- if(resEl){
+function renderResults(){
+ const grid = document.getElementById('results-grid')
+ grid.innerHTML = ''
+
+ const order = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ const labels = {
+  qf1:'ČF 1', qf2:'ČF 2', qf3:'ČF 3', qf4:'ČF 4',
+  sf1:'Semifinále 1', sf2:'Semifinále 2',
+  third:'🥉 O 3. místo', f:'🏆 Finále'
+ }
+
+ order.forEach(key=>{
+  const s = SERIES[key]
+  const card = document.createElement('div')
+  card.className = 'result-card'
+
+  let matchesHtml = ''
   if(s.games.length === 0){
-   resEl.innerHTML = `<div style="padding:16px;text-align:center;color:#aaa;font-size:13px;">Zatím žádné zápasy</div>`
+   matchesHtml = `<div class="empty-msg">Zatím žádné zápasy</div>`
   } else {
-   resEl.innerHTML = s.games.map(g=>`
-    <div class="result-match">
-     <span class="result-team">${g.home}</span>
-     <span class="result-score">${g.gh} : ${g.ga}</span>
-     <span class="result-team" style="text-align:right">${g.away}</span>
-     ${g.type?`<span class="result-tag">${g.type}</span>`:''}
+   s.games.forEach((g,i)=>{
+    // Zobraz skutečné home/away názvy
+    const homeTeam = g.homeIsT1 ? s.t1 : s.t2
+    const awayTeam = g.homeIsT1 ? s.t2 : s.t1
+    const homeScore = g.homeIsT1 ? g.gh : g.ga
+    const awayScore = g.homeIsT1 ? g.ga : g.gh
+
+    matchesHtml += `
+     <div class="result-match">
+      <span class="result-team">${homeTeam||'?'}</span>
+      <span class="result-score">${homeScore} : ${awayScore}</span>
+      <span class="result-team" style="text-align:right">${awayTeam||'?'}</span>
+      ${g.type?`<span class="result-tag">${g.type}</span>`:''}
+     </div>
+    `
+   })
+
+   // Tlačítka pod výsledky
+   matchesHtml += `
+    <div class="result-btns">
+     <button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html'">📊 Statistiky zápasu</button>
+     <button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html'">🎲 Vsaď si</button>
     </div>
-   `).join('')
+   `
   }
- }
 
- // Aktualizuj finále pokud se změnil vítěz SF
- if(key === 'sf1'){
-  SERIES.f.t1 = winner
-  renderSeries('f')
- }
- if(key === 'sf2'){
-  SERIES.f.t2 = winner
-  renderSeries('f')
- }
+  card.innerHTML = `
+   <div class="result-card-header">${labels[key]}</div>
+   ${matchesHtml}
+  `
+  grid.appendChild(card)
+ })
+}
 
- // Šampion
- if(key === 'f' && winner){
-  document.getElementById('champion-label').innerHTML =
-   `🥇 ${winner}`
- }
+function renderChampion(){
+ const champion = getWinner(SERIES.f)
+ const el = document.getElementById('champion-label')
+ el.textContent = champion || '—'
 }
 
 function renderAll(){
- renderSeries('sf1')
- renderSeries('sf2')
- renderSeries('f')
+ propagate()
+ Object.keys(SERIES).forEach(k=> renderSeries(k))
+ renderResults()
+ renderChampion()
 }
 
-// =====================================================
-// ADMIN – uložení výsledku
-// =====================================================
-
-function save(){
- if(document.getElementById('pass').value !== 'Lokomotiva'){
-  alert('Špatné heslo!')
-  return
- }
-
- const phase = document.getElementById('phase').value
- const home  = document.getElementById('home').value
- const away  = document.getElementById('away').value
- const gh    = parseInt(document.getElementById('gh').value)
- const ga    = parseInt(document.getElementById('ga').value)
- const type  = document.getElementById('rtype').value
-
- if(isNaN(gh)||isNaN(ga)){ alert('Zadej skóre!'); return }
- if(home===away){ alert('Týmy nemohou být stejné!'); return }
-
- const s = SERIES[phase]
-
- // Zkontroluj že série ještě neskončila
- if(getWinner(s)){ alert('Série už skončila!'); return }
-
- // Zkontroluj že jde o týmy v sérii (jen pro SF, finále se doplní automaticky)
- if(phase !== 'f'){
-  if(![s.t1,s.t2].includes(home) || ![s.t1,s.t2].includes(away)){
-   alert('Tým není v této sérii!')
-   return
-  }
- }
-
- // Přidej výsledek – home/away jsou relativní k sérii
- // Normalizuj: t1 je vždy "home" pro počítání
- const isT1Home = home === s.t1
- s.games.push({
-  home,
-  away,
-  gh: isT1Home ? gh : ga,
-  ga: isT1Home ? ga : gh,
-  type
- })
-
- renderAll()
-
- // Reset formuláře
- document.getElementById('gh').value = ''
- document.getElementById('ga').value = ''
- document.getElementById('rtype').value = ''
-
- alert('Výsledek uložen ✅')
-}
-
-// =====================================================
-// INIT
-// =====================================================
 renderAll()
 </script>
 </body>
