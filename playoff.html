@@ -2,146 +2,673 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Extraliga – Play off</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff}
-.container{max-width:1100px;margin:0 auto;padding:20px}
-/* MENU */
-.topbar{background:#26a9e0}
-.menu{max-width:1100px;margin:0 auto;display:flex;gap:20px;padding:10px}
-.menu>li{list-style:none;position:relative}
-.menu a{color:#fff;text-decoration:none;font-weight:bold;padding:6px 10px;display:block}
-.menu li:hover>ul{display:block}
-.menu ul{display:none;position:absolute;top:100%;left:0;background:#fff;padding:0;margin:0;min-width:220px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.menu ul li a{color:#000;font-weight:normal}
-.menu ul li a:hover{background:#e6f4fb}
-h1{margin-top:20px}
-hr{border:0;border-top:3px solid #26a9e0;margin:30px 0}
+*{box-sizing:border-box;margin:0;padding:0;}
 
-/* TABLES */
-table{border-collapse:collapse;font-size:14px}
-th,td{border:1px solid #999;padding:6px 8px}
-th{background:#c9e6f8}
-.team{text-align:left;min-width:240px}
-.zcell{width:38px;text-align:center}
-.series{min-width:110px}
-.pavouk{display:grid;grid-template-columns:1fr 120px 1fr;gap:20px;align-items:center}
-.line{height:2px;background:#000}
+body{
+ font-family:'Inter',sans-serif;
+ background:#eef2f7;
+ min-height:100vh;
+}
+
+/* HEADER */
+.header{
+ background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
+ padding:20px 30px;
+ display:flex;align-items:center;gap:16px;
+ margin-bottom:32px;
+}
+
+.header-logo{
+ width:56px;height:56px;object-fit:contain;
+ mix-blend-mode:lighten;
+}
+
+.header-title{
+ font-size:22px;font-weight:800;color:white;
+ letter-spacing:-.3px;
+}
+
+.header-sub{
+ font-size:12px;color:#7ab0cc;
+ font-weight:500;margin-top:3px;
+ text-transform:uppercase;letter-spacing:.06em;
+}
+
+/* WRAPPER */
+.wrapper{max-width:1200px;margin:0 auto;padding:0 20px 40px;}
+
+/* PAVOUK */
+.bracket{
+ display:grid;
+ grid-template-columns:1fr 80px 1fr 80px 1fr;
+ gap:0;
+ align-items:center;
+ margin-bottom:40px;
+}
+
+.bracket-col{
+ display:flex;
+ flex-direction:column;
+ gap:30px;
+}
+
+.bracket-col.center{
+ justify-content:center;
+}
+
+/* CONNECTORS */
+.connector-col{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:space-around;
+ height:100%;
+ position:relative;
+}
+
+.connector-col svg{
+ width:100%;
+ height:100%;
+ position:absolute;
+ top:0;left:0;
+ overflow:visible;
+}
+
+/* SERIES CARD */
+.series-card{
+ background:white;
+ border-radius:14px;
+ overflow:hidden;
+ border:1px solid #c8d8e8;
+ box-shadow:0 2px 8px rgba(26,58,92,.07);
+}
+
+.series-card.is-final{
+ border-color:#93c5fd;
+ box-shadow:0 4px 16px rgba(59,130,246,.12);
+}
+
+.series-header{
+ background:#0b2a3c;
+ padding:8px 14px;
+ font-size:11px;font-weight:700;
+ color:#7ab0cc;
+ letter-spacing:.1em;text-transform:uppercase;
+ display:flex;justify-content:space-between;align-items:center;
+}
+
+.series-header.is-final{
+ background:linear-gradient(135deg,#1a3a6c,#0b2a3c);
+}
+
+.series-state{
+ font-size:13px;font-weight:800;
+ color:#f0d060;
+ background:rgba(240,208,96,.15);
+ padding:2px 10px;border-radius:20px;
+ letter-spacing:.05em;
+}
+
+/* TEAM ROW */
+.team-row{
+ display:flex;align-items:center;gap:10px;
+ padding:10px 14px;
+ border-bottom:1px solid #f0f0f0;
+ position:relative;
+}
+
+.team-row:last-child{border-bottom:none;}
+
+.team-row.winner{background:#f0fdf4;}
+.team-row.loser{opacity:.45;}
+.team-row.tbd{opacity:.35;}
+
+.team-logo{
+ width:30px;height:30px;object-fit:contain;
+ background:white;border-radius:6px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
+}
+
+.team-logo-placeholder{
+ width:30px;height:30px;border-radius:6px;
+ background:#dce8f5;flex-shrink:0;
+ display:flex;align-items:center;justify-content:center;
+ font-size:10px;color:#7aaac8;font-weight:700;
+ border:1px solid #c8d8e8;
+}
+
+.team-name{
+ flex:1;font-size:13px;font-weight:700;color:#1a2a3c;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.team-name.tbd{color:#b0c8d8;font-weight:400;font-style:italic;}
+.team-row.winner .team-name{color:#166534;}
+
+/* GAME DOTS */
+.game-dots{
+ display:flex;gap:3px;align-items:center;
+}
+
+.dot{
+ width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+
+.dot-win{background:#22c55e;}
+.dot-loss{background:#f87171;}
+.dot-empty{background:#e2eaf0;}
+
+/* SCORE */
+.series-score{
+ font-size:18px;font-weight:800;
+ color:#1a2a3c;min-width:16px;text-align:center;
+}
+
+.series-score.win{color:#16a34a;}
+.series-score.loss{color:#d0d8e0;}
+
+/* TROPHY */
+.trophy-wrap{
+ text-align:center;
+ padding:20px;
+}
+
+.trophy-icon{font-size:48px;margin-bottom:8px;}
+.trophy-label{font-size:13px;font-weight:700;color:#888;}
+
+/* SECTION TITLE */
+.section-title{
+ font-size:17px;font-weight:700;color:#0b2a3c;
+ margin:0 0 16px;
+ display:flex;align-items:center;gap:8px;
+}
+.section-title::after{
+ content:'';flex:1;height:2px;
+ background:linear-gradient(90deg,#2f9ec9,transparent);
+ border-radius:2px;
+}
+
+/* RESULTS TABLE */
+.results-section{margin-top:32px;}
+
+.results-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+ gap:16px;
+}
+
+.result-card{
+ background:white;border-radius:12px;
+ border:1px solid #c8d8e8;
+ overflow:hidden;
+ box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+
+.result-card-header{
+ background:#f0f6fc;
+ padding:8px 14px;
+ font-size:11px;font-weight:700;
+ color:#3a6a9c;letter-spacing:.1em;text-transform:uppercase;
+ border-bottom:1px solid #e0ecf8;
+}
+
+.result-match{
+ display:flex;align-items:center;
+ padding:8px 14px;border-bottom:1px solid #f3f4f6;
+ font-size:13px;gap:8px;
+}
+
+.result-match:last-child{border-bottom:none;}
+
+.result-team{flex:1;font-weight:600;color:#1a2a3c;}
+.result-score{
+ font-weight:800;font-size:14px;
+ background:#0b2a3c;color:white;
+ padding:3px 10px;border-radius:6px;
+ min-width:50px;text-align:center;
+}
+.result-score.empty{background:#e0e0e0;color:#999;font-weight:400;}
+
+.result-tag{
+ font-size:10px;font-weight:700;
+ background:#2f9ec9;color:white;
+ padding:2px 6px;border-radius:4px;
+}
 
 /* ADMIN */
-label{display:inline-block;width:120px}
-input,select{padding:4px}
-button{padding:6px 10px}
+.admin-section{
+ margin-top:32px;
+ background:white;border-radius:14px;
+ border:1px solid #c8d8e8;
+ padding:20px;
+ box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+
+.admin-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+ gap:12px;align-items:end;
+}
+
+.admin-field label{
+ display:block;font-size:12px;font-weight:700;
+ color:#666;margin-bottom:4px;
+}
+
+.admin-field select,
+.admin-field input{
+ width:100%;padding:8px 12px;
+ border-radius:8px;border:1px solid #ccc;
+ font-size:13px;font-family:'Inter',sans-serif;
+}
+
+.btn-save-result{
+ background:#27ae60;color:white;
+ border:none;border-radius:8px;
+ padding:9px 18px;font-weight:700;
+ font-size:13px;cursor:pointer;
+ font-family:'Inter',sans-serif;
+ width:100%;
+}
+.btn-save-result:hover{background:#219a52;}
+
+@media(max-width:700px){
+ .bracket{
+  grid-template-columns:1fr;
+ }
+ .connector-col{display:none;}
+ .header{padding:14px 16px;}
+ .header-title{font-size:18px;}
+}
 </style>
 </head>
 <body>
-<div class="topbar">
-<ul class="menu">
-<li><a href="index.html">Extraliga</a>
-  <ul>
-    <li><a href="index.html">Extraliga – základní část</a></li>
-    <li><a href="playoff.html">Extraliga – play off</a></li>
-  </ul>
-</li>
-<li><a href="ms.html">Mistrovství světa</a></li>
-<li><a href="olympiada.html">Olympijský turnaj</a></li>
-<li><a href="worldcup.html">Světový pohár</a></li>
-</ul>
+
+<div class="header">
+ <img class="header-logo" src="./logos/lokomotiva.png" alt="logo">
+ <div>
+  <div class="header-title">Extraliga U dvou Blbounů</div>
+  <div class="header-sub">Play off · Sezóna 1</div>
+ </div>
 </div>
 
-<div class="container">
-<h1>Extraliga – Play off</h1>
+<div class="wrapper">
 
-<div class="pavouk">
-<div>
-<h3>1. Semifinále</h3>
-<table id="sf1">
-<tr><th class="team">Tým</th>
-<th class="zcell">Z1</th><th class="zcell">Z2</th><th class="zcell">Z3</th>
-<th class="zcell">Z4</th><th class="zcell">Z5</th><th class="zcell">Z6</th><th class="zcell">Z7</th>
-<th class="series">Stav série</th></tr>
-<tr><td class="team">HC Chemopetrol Litvínov</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-<tr><td class="team">HC Dynamo Pardubice</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-</table>
+<div class="section-title">Pavouk</div>
 
-<h3 style="margin-top:25px">2. Semifinále</h3>
-<table id="sf2">
-<tr><th class="team">Tým</th>
-<th class="zcell">Z1</th><th class="zcell">Z2</th><th class="zcell">Z3</th>
-<th class="zcell">Z4</th><th class="zcell">Z5</th><th class="zcell">Z6</th><th class="zcell">Z7</th>
-<th class="series">Stav série</th></tr>
-<tr><td class="team">HC Geus Okna Kladno</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-<tr><td class="team">HC Sparta Praha</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-</table>
+<div class="bracket" id="bracket">
+
+ <!-- SEMIFINÁLE -->
+ <div class="bracket-col" id="col-sf">
+
+  <!-- SF1 -->
+  <div class="series-card" id="card-sf1">
+   <div class="series-header">
+    <span>Semifinále 1</span>
+    <span class="series-state" id="state-sf1">0 : 0</span>
+   </div>
+   <div class="team-row tbd" id="sf1-t1">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Tým 1</div>
+    <div class="game-dots" id="sf1-dots1"></div>
+    <div class="series-score" id="sf1-s1">0</div>
+   </div>
+   <div class="team-row tbd" id="sf1-t2">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Tým 2</div>
+    <div class="game-dots" id="sf1-dots2"></div>
+    <div class="series-score" id="sf1-s2">0</div>
+   </div>
+  </div>
+
+  <!-- SF2 -->
+  <div class="series-card" id="card-sf2">
+   <div class="series-header">
+    <span>Semifinále 2</span>
+    <span class="series-state" id="state-sf2">0 : 0</span>
+   </div>
+   <div class="team-row tbd" id="sf2-t1">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Tým 3</div>
+    <div class="game-dots" id="sf2-dots1"></div>
+    <div class="series-score" id="sf2-s1">0</div>
+   </div>
+   <div class="team-row tbd" id="sf2-t2">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Tým 4</div>
+    <div class="game-dots" id="sf2-dots2"></div>
+    <div class="series-score" id="sf2-s2">0</div>
+   </div>
+  </div>
+
+ </div>
+
+ <!-- CONNECTOR -->
+ <div class="connector-col" id="conn1">
+  <svg id="conn1-svg" viewBox="0 0 80 300" preserveAspectRatio="none"></svg>
+ </div>
+
+ <!-- FINÁLE -->
+ <div class="bracket-col center" id="col-f">
+  <div class="series-card is-final" id="card-f">
+   <div class="series-header is-final">
+    <span>🏆 Finále</span>
+    <span class="series-state" id="state-f">0 : 0</span>
+   </div>
+   <div class="team-row tbd" id="f-t1">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Vítěz SF1</div>
+    <div class="game-dots" id="f-dots1"></div>
+    <div class="series-score" id="f-s1">0</div>
+   </div>
+   <div class="team-row tbd" id="f-t2">
+    <div class="team-logo-placeholder">?</div>
+    <div class="team-name tbd">Vítěz SF2</div>
+    <div class="game-dots" id="f-dots2"></div>
+    <div class="series-score" id="f-s2">0</div>
+   </div>
+  </div>
+ </div>
+
+ <!-- CONNECTOR RIGHT (placeholder) -->
+ <div class="connector-col"></div>
+
+ <!-- TROPHY -->
+ <div class="bracket-col center">
+  <div class="trophy-wrap">
+   <div class="trophy-icon">🏆</div>
+   <div class="trophy-label" id="champion-label">Mistr ligy</div>
+  </div>
+ </div>
+
 </div>
 
-<div>
-<div class="line"></div>
-<div style="height:120px"></div>
-<div class="line"></div>
+<!-- VÝSLEDKY ZÁPASŮ -->
+<div class="results-section">
+ <div class="section-title">Výsledky zápasů</div>
+ <div class="results-grid">
+  <div class="result-card">
+   <div class="result-card-header">Semifinále 1</div>
+   <div id="results-sf1"></div>
+  </div>
+  <div class="result-card">
+   <div class="result-card-header">Semifinále 2</div>
+   <div id="results-sf2"></div>
+  </div>
+  <div class="result-card">
+   <div class="result-card-header">🏆 Finále</div>
+   <div id="results-f"></div>
+  </div>
+ </div>
 </div>
 
-<div>
-<h3>Finále</h3>
-<table id="finale">
-<tr><th class="team">Tým</th>
-<th class="zcell">Z1</th><th class="zcell">Z2</th><th class="zcell">Z3</th>
-<th class="zcell">Z4</th><th class="zcell">Z5</th><th class="zcell">Z6</th><th class="zcell">Z7</th>
-<th class="series">Stav série</th></tr>
-<tr><td class="team">Vítěz SF1</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-<tr><td class="team">Vítěz SF2</td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td class="zcell"></td><td></td></tr>
-</table>
-</div>
-</div>
-
-<hr>
-
-<h2>Admin – zápis výsledku (play off)</h2>
-<div>
-<label>Heslo:</label><input id="pass" type="password"><br><br>
-<label>Fáze:</label>
-<select id="phase">
-<option value="sf1">Semifinále 1</option>
-<option value="sf2">Semifinále 2</option>
-</select><br><br>
-<label>Domácí:</label>
-<select id="home">
-<option>HC Chemopetrol Litvínov</option>
-<option>HC Dynamo Pardubice</option>
-<option>HC Geus Okna Kladno</option>
-<option>HC Sparta Praha</option>
-</select><br><br>
-<label>Hosté:</label>
-<select id="away">
-<option>HC Chemopetrol Litvínov</option>
-<option>HC Dynamo Pardubice</option>
-<option>HC Geus Okna Kladno</option>
-<option>HC Sparta Praha</option>
-</select><br><br>
-<label>Skóre:</label>
-<input id="gh" size="2"> : <input id="ga" size="2"><br><br>
-<button onclick="save()">Uložit výsledek</button>
+<!-- ADMIN -->
+<div class="admin-section">
+ <div class="section-title">Admin – zápis výsledku</div>
+ <div class="admin-grid">
+  <div class="admin-field">
+   <label>Heslo</label>
+   <input id="pass" type="password" placeholder="••••••••">
+  </div>
+  <div class="admin-field">
+   <label>Fáze</label>
+   <select id="phase">
+    <option value="sf1">Semifinále 1</option>
+    <option value="sf2">Semifinále 2</option>
+    <option value="f">Finále</option>
+   </select>
+  </div>
+  <div class="admin-field">
+   <label>Domácí</label>
+   <select id="home">
+    <option>HC Chemopetrol Litvínov (P)</option>
+    <option>HC Dynamo Pardubice (K)</option>
+    <option>HC Rytíři Kladno (P)</option>
+    <option>HC Sparta Praha (P)</option>
+   </select>
+  </div>
+  <div class="admin-field">
+   <label>Hosté</label>
+   <select id="away">
+    <option>HC Chemopetrol Litvínov (P)</option>
+    <option>HC Dynamo Pardubice (K)</option>
+    <option>HC Rytíři Kladno (P)</option>
+    <option>HC Sparta Praha (P)</option>
+   </select>
+  </div>
+  <div class="admin-field">
+   <label>Skóre domácí</label>
+   <input id="gh" type="number" min="0" placeholder="0">
+  </div>
+  <div class="admin-field">
+   <label>Skóre hosté</label>
+   <input id="ga" type="number" min="0" placeholder="0">
+  </div>
+  <div class="admin-field">
+   <label>Typ</label>
+   <select id="rtype">
+    <option value="">REG</option>
+    <option value="OT">OT</option>
+    <option value="SN">SN</option>
+   </select>
+  </div>
+  <div class="admin-field">
+   <label>&nbsp;</label>
+   <button class="btn-save-result" onclick="save()">✅ Uložit výsledek</button>
+  </div>
+ </div>
 </div>
 
 </div>
 
 <script>
-function save(){
- if(document.getElementById('pass').value!=='Lokomotiva')return;
- const phase=document.getElementById('phase').value;
- const home=document.getElementById('home').value;
- const away=document.getElementById('away').value;
- const gh=document.getElementById('gh').value;
- const ga=document.getElementById('ga').value;
- const table=document.getElementById(phase);
- const rows=[...table.rows].slice(1);
- const zIndex=[...rows[0].cells].findIndex(c=>c.classList.contains('zcell') && c.textContent==='');
- if(zIndex<0)return;
- rows.forEach(r=>{
-  if(r.cells[0].textContent===home) r.cells[zIndex].textContent=gh;
-  if(r.cells[0].textContent===away) r.cells[zIndex].textContent=ga;
- });
+// =====================================================
+// DATA – sem se ukládají výsledky
+// Formát: { home, away, gh, ga, type }
+// =====================================================
+
+const LOGOS = './logos/'
+
+// Týmy – uprav podle skutečných log
+const TEAMS = {
+ 'HC Chemopetrol Litvínov (P)': { logo: 'litvinov.png' },
+ 'HC Dynamo Pardubice (K)':     { logo: 'pardubice.png' },
+ 'HC Rytíři Kladno (P)':        { logo: 'kladno.png' },
+ 'HC Sparta Praha (P)':         { logo: 'sparta.png' },
 }
+
+// Konfigurace sérií – uprav týmy
+const SERIES = {
+ sf1: {
+  t1: 'HC Chemopetrol Litvínov (P)',
+  t2: 'HC Dynamo Pardubice (K)',
+  games: [],  // sem se přidávají výsledky
+  winsNeeded: 4
+ },
+ sf2: {
+  t1: 'HC Rytíři Kladno (P)',
+  t2: 'HC Sparta Praha (P)',
+  games: [],
+  winsNeeded: 4
+ },
+ f: {
+  t1: null, // bude doplněno automaticky
+  t2: null,
+  games: [],
+  winsNeeded: 4
+ }
+}
+
+// =====================================================
+// RENDER
+// =====================================================
+
+function logoHtml(team){
+ if(!team || !TEAMS[team]) return `<div class="team-logo-placeholder">?</div>`
+ return `<img class="team-logo" src="${LOGOS}${TEAMS[team].logo}" alt="${team}">`
+}
+
+function dotsHtml(games, perspective){
+ let html = '<div class="game-dots">'
+ for(let i=0;i<7;i++){
+  if(i < games.length){
+   const g = games[i]
+   const win = perspective===1 ? g.gh > g.ga : g.ga > g.gh
+   html += `<div class="dot ${win?'dot-win':'dot-loss'}"></div>`
+  } else {
+   html += `<div class="dot dot-empty"></div>`
+  }
+ }
+ return html + '</div>'
+}
+
+function getWins(series, t){
+ return series.games.filter(g =>
+  t===1 ? g.gh > g.ga : g.ga > g.gh
+ ).length
+}
+
+function getWinner(series){
+ const w1 = getWins(series, 1)
+ const w2 = getWins(series, 2)
+ if(w1 >= series.winsNeeded) return series.t1
+ if(w2 >= series.winsNeeded) return series.t2
+ return null
+}
+
+function renderSeries(key){
+ const s = SERIES[key]
+ const w1 = getWins(s, 1)
+ const w2 = getWins(s, 2)
+ const winner = getWinner(s)
+
+ // Stav série
+ document.getElementById(`state-${key}`).textContent = `${w1} : ${w2}`
+
+ // Tým 1
+ const t1row = document.getElementById(`${key}-t1`)
+ const t1cls = winner ? (winner===s.t1?'winner':'loser') : (s.t1?'':'tbd')
+ t1row.className = `team-row ${t1cls}`
+ t1row.innerHTML = `
+  ${logoHtml(s.t1)}
+  <div class="team-name ${s.t1?'':'tbd'}">${s.t1 || (key==='f'?'Vítěz SF1':'Tým 1')}</div>
+  ${dotsHtml(s.games, 1)}
+  <div class="series-score ${winner===s.t1?'win':winner?'loss':''}">${w1}</div>
+ `
+
+ // Tým 2
+ const t2row = document.getElementById(`${key}-t2`)
+ const t2cls = winner ? (winner===s.t2?'winner':'loser') : (s.t2?'':'tbd')
+ t2row.className = `team-row ${t2cls}`
+ t2row.innerHTML = `
+  ${logoHtml(s.t2)}
+  <div class="team-name ${s.t2?'':'tbd'}">${s.t2 || (key==='f'?'Vítěz SF2':'Tým 2')}</div>
+  ${dotsHtml(s.games, 2)}
+  <div class="series-score ${winner===s.t2?'win':winner?'loss':''}">${w2}</div>
+ `
+
+ // Výsledky
+ const resEl = document.getElementById(`results-${key}`)
+ if(resEl){
+  if(s.games.length === 0){
+   resEl.innerHTML = `<div style="padding:16px;text-align:center;color:#aaa;font-size:13px;">Zatím žádné zápasy</div>`
+  } else {
+   resEl.innerHTML = s.games.map(g=>`
+    <div class="result-match">
+     <span class="result-team">${g.home}</span>
+     <span class="result-score">${g.gh} : ${g.ga}</span>
+     <span class="result-team" style="text-align:right">${g.away}</span>
+     ${g.type?`<span class="result-tag">${g.type}</span>`:''}
+    </div>
+   `).join('')
+  }
+ }
+
+ // Aktualizuj finále pokud se změnil vítěz SF
+ if(key === 'sf1'){
+  SERIES.f.t1 = winner
+  renderSeries('f')
+ }
+ if(key === 'sf2'){
+  SERIES.f.t2 = winner
+  renderSeries('f')
+ }
+
+ // Šampion
+ if(key === 'f' && winner){
+  document.getElementById('champion-label').innerHTML =
+   `🥇 ${winner}`
+ }
+}
+
+function renderAll(){
+ renderSeries('sf1')
+ renderSeries('sf2')
+ renderSeries('f')
+}
+
+// =====================================================
+// ADMIN – uložení výsledku
+// =====================================================
+
+function save(){
+ if(document.getElementById('pass').value !== 'Lokomotiva'){
+  alert('Špatné heslo!')
+  return
+ }
+
+ const phase = document.getElementById('phase').value
+ const home  = document.getElementById('home').value
+ const away  = document.getElementById('away').value
+ const gh    = parseInt(document.getElementById('gh').value)
+ const ga    = parseInt(document.getElementById('ga').value)
+ const type  = document.getElementById('rtype').value
+
+ if(isNaN(gh)||isNaN(ga)){ alert('Zadej skóre!'); return }
+ if(home===away){ alert('Týmy nemohou být stejné!'); return }
+
+ const s = SERIES[phase]
+
+ // Zkontroluj že série ještě neskončila
+ if(getWinner(s)){ alert('Série už skončila!'); return }
+
+ // Zkontroluj že jde o týmy v sérii (jen pro SF, finále se doplní automaticky)
+ if(phase !== 'f'){
+  if(![s.t1,s.t2].includes(home) || ![s.t1,s.t2].includes(away)){
+   alert('Tým není v této sérii!')
+   return
+  }
+ }
+
+ // Přidej výsledek – home/away jsou relativní k sérii
+ // Normalizuj: t1 je vždy "home" pro počítání
+ const isT1Home = home === s.t1
+ s.games.push({
+  home,
+  away,
+  gh: isT1Home ? gh : ga,
+  ga: isT1Home ? ga : gh,
+  type
+ })
+
+ renderAll()
+
+ // Reset formuláře
+ document.getElementById('gh').value = ''
+ document.getElementById('ga').value = ''
+ document.getElementById('rtype').value = ''
+
+ alert('Výsledek uložen ✅')
+}
+
+// =====================================================
+// INIT
+// =====================================================
+renderAll()
 </script>
 </body>
 </html>
