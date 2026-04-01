@@ -143,6 +143,8 @@ tr:hover td{background:#edf2f7;}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
 .btn-confirm{background:#27ae60;color:white;}
 .btn-cancel{background:#e0e0e0;color:#333;}
+
+.match-count{font-size:12px;color:#888;margin-bottom:8px;}
 </style>
 </head>
 
@@ -163,8 +165,15 @@ tr:hover td{background:#edf2f7;}
   <option value="">-- Vyber stage --</option>
  </select>
 
+ <label>Tým:</label>
+ <select id="teamFilter" onchange="applyTeamFilter()">
+  <option value="">Všechny týmy</option>
+ </select>
+
  <button class="btn-add" onclick="openModal()">➕ Přidat zápas</button>
 </div>
+
+<div class="match-count" id="matchCount"></div>
 
 <table>
 <thead>
@@ -210,8 +219,6 @@ tr:hover td{background:#edf2f7;}
 <script>
 const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-
-// ⚙️ ID aktuální sezóny – změň když přijde nová
 const CURRENT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -226,6 +233,8 @@ let allTeams = []
 let allStages = []
 let currentSeasonId = ""
 let currentStageId = ""
+let allMatches = []       // všechny zápasy stage
+let currentTeamFilter = "" // ID vybraného týmu
 
 async function init(){
 
@@ -249,19 +258,14 @@ async function init(){
   seasonSel.appendChild(opt)
  })
 
- // Načti stages
  const { data: stages } = await db
-  .from("stages")
-  .select("*")
-  .order("order", { ascending: true })
+  .from("stages").select("*").order("order", { ascending: true })
  allStages = stages || []
 
- // Načti týmy
  const { data: teams } = await db.from("teams").select("*")
  allTeams = teams || []
  teams.forEach(t=> teamsMap[t.id] = t)
 
- // Nastav týmy do modalu
  const homeS = document.getElementById("m-home")
  const awayS = document.getElementById("m-away")
  homeS.innerHTML = ""
@@ -271,7 +275,6 @@ async function init(){
   awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
  })
 
- // Vyber aktuální sezónu, jinak první v seznamu
  const found = seasons.find(s => s.id === CURRENT_SEASON_ID)
  seasonSel.value = found ? CURRENT_SEASON_ID : seasons[0].id
  onSeasonChange()
@@ -293,7 +296,6 @@ function onSeasonChange(){
   stageSel.appendChild(opt)
  })
 
- // Vyber Základní část automaticky (order 1 = první stage bez parenta)
  const zakladni = seasonStages.find(s => !s.parent_stage_id && s.order === 1)
   || seasonStages[0]
 
@@ -320,7 +322,65 @@ async function loadMatches(){
   return
  }
 
- render(matches || [])
+ allMatches = matches || []
+
+ // Obnov team filter pro aktuální stage
+ updateTeamFilter()
+
+ // Aplikuj filtr
+ applyTeamFilter()
+}
+
+function updateTeamFilter(){
+ // Zjisti unikátní týmy v aktuální stage
+ const teamIds = new Set()
+ allMatches.forEach(m=>{
+  teamIds.add(m.home_team)
+  teamIds.add(m.away_team)
+ })
+
+ const sel = document.getElementById("teamFilter")
+ const prev = sel.value // zapamatuj předchozí výběr
+ sel.innerHTML = '<option value="">Všechny týmy</option>'
+
+ // Seřaď týmy podle jména
+ const sorted = [...teamIds]
+  .map(id => teamsMap[id])
+  .filter(Boolean)
+  .sort((a,b) => a.name.localeCompare(b.name))
+
+ sorted.forEach(t=>{
+  const opt = document.createElement("option")
+  opt.value = t.id
+  opt.textContent = t.name
+  sel.appendChild(opt)
+ })
+
+ // Obnov předchozí výběr pokud existuje
+ if(prev && [...teamIds].includes(prev)){
+  sel.value = prev
+ } else {
+  sel.value = ""
+ }
+
+ currentTeamFilter = sel.value
+}
+
+function applyTeamFilter(){
+ currentTeamFilter = document.getElementById("teamFilter").value
+
+ let filtered = allMatches
+ if(currentTeamFilter){
+  filtered = allMatches.filter(m=>
+   m.home_team === currentTeamFilter ||
+   m.away_team === currentTeamFilter
+  )
+ }
+
+ const count = document.getElementById("matchCount")
+ count.textContent = `Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
+
+ render(filtered)
 }
 
 function render(matches){
@@ -328,7 +388,7 @@ function render(matches){
  cont.innerHTML=""
 
  if(matches.length === 0){
-  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage. Přidej první zápas tlačítkem ➕.</td></tr>`
+  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy. Přidej první zápas tlačítkem ➕ nebo změň filtr.</td></tr>`
   return
  }
 
