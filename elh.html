@@ -49,6 +49,31 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  white-space:nowrap;
 }
 
+/* SEASON TABS */
+.season-tabs{
+ display:flex;gap:8px;flex-wrap:wrap;
+ margin-bottom:20px;
+}
+
+.season-tab{
+ padding:8px 18px;
+ border-radius:20px;
+ border:2px solid #c8d8e8;
+ background:white;
+ font-family:Arial;font-size:13px;font-weight:700;
+ cursor:pointer;color:#1a3a5c;
+ transition:all .15s;
+}
+
+.season-tab:hover{
+ background:#dce8f5;border-color:#2f9ec9;
+}
+
+.season-tab.active{
+ background:#0b2a3c;color:white;
+ border-color:#0b2a3c;
+}
+
 .sectionTitle{
  font-size:17px;font-weight:700;
  color:#0b2a3c;
@@ -179,12 +204,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
 
-/* Skóre buňka – vše pod sebou zarovnané na střed */
 .score-cell{
- display:flex;
- flex-direction:column;
- align-items:center;
- gap:3px;
+ display:flex;flex-direction:column;
+ align-items:center;gap:3px;
 }
 
 .score-badge{
@@ -207,9 +229,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  padding:2px 6px;border-radius:4px;
 }
 
-.periods-small{
- font-size:11px;color:#888;
-}
+.periods-small{font-size:11px;color:#888;}
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
 
@@ -228,6 +248,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
+
+.loading{text-align:center;padding:30px;color:#888;font-size:14px;}
 </style>
 </head>
 
@@ -241,6 +263,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  </div>
  <div class="headerBadge">⚡ Live tabulka</div>
 </div>
+
+<!-- SEASON TABS -->
+<div class="season-tabs" id="seasonTabs"></div>
 
 <div class="sectionTitle">Tabulka</div>
 
@@ -263,7 +288,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
    <th title="Prohra po nájezdech">PSN</th>
   </tr>
  </thead>
- <tbody id="standings"></tbody>
+ <tbody id="standings"><tr><td colspan="13" class="loading">Načítám...</td></tr></tbody>
 </table>
 </div>
 
@@ -304,13 +329,18 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
+// ID aktuální (nejnovější) sezóny – zobrazí se jako výchozí
+const DEFAULT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
+const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+
 const START_RATING = 1000
 const K_OVERALL = 80
 const K_FORM = 120
 
+let currentSeasonId = DEFAULT_SEASON_ID
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
+let allTeams = []
 
 function getScore(match, teamId){
  const hg = Number(match.home_score)
@@ -382,10 +412,45 @@ document.getElementById("teamFilter").onchange = e=>{
  load()
 }
 
+async function initSeasons(){
+ // Načti jen Extraliga sezóny
+ const { data: seasons } = await supabase
+  .from("seasons")
+  .select("*")
+  .eq("competition_id", EXTRALIGA_COMPETITION_ID)
+  .order("created_at", { ascending: true })
+
+ if(!seasons || seasons.length === 0) return
+
+ const tabsEl = document.getElementById("seasonTabs")
+ tabsEl.innerHTML = ""
+
+ seasons.forEach(s=>{
+  const btn = document.createElement("button")
+  btn.className = "season-tab" + (s.id === currentSeasonId ? " active" : "")
+  btn.textContent = s.name
+  btn.onclick = ()=>{
+   currentSeasonId = s.id
+   // Reset filtrů
+   currentTeamFilter = "all"
+   currentMatchFilter = "all"
+   document.getElementById("matchFilter").value = "all"
+   // Reset team filter options
+   const tf = document.getElementById("teamFilter")
+   tf.innerHTML = '<option value="all">Všechny týmy</option>'
+   // Zvýraznit aktivní tab
+   tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
+   btn.classList.add("active")
+   load()
+  }
+  tabsEl.appendChild(btn)
+ })
+}
+
 async function load(){
 
  const { data: seasonTeams } = await supabase
-  .from("season_teams").select("team_id").eq("season_id", SEASON_ID)
+  .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
 
  const teamIds = (seasonTeams||[]).map(t=>t.team_id)
 
@@ -403,15 +468,16 @@ async function load(){
   .order("round",{ascending:true})
 
  const { data: seasonMatches } = await supabase
-  .from("matches").select("*").eq("season_id", SEASON_ID)
+  .from("matches").select("*").eq("season_id", currentSeasonId)
 
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
  const { ratings, formRatings } = calculateRatings(allMatches||[], teams)
 
+ // Obnov team filter jen pokud se změnila sezóna
  const tf = document.getElementById("teamFilter")
- if(tf.options.length===1){
+ if(tf.options.length === 1){
   teams.forEach(t=>{
    const opt = document.createElement("option")
    opt.value = t.id
@@ -480,6 +546,11 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
  const tbody=document.getElementById("standings")
  tbody.innerHTML=""
 
+ if(arr.length===0){
+  tbody.innerHTML=`<tr><td colspan="13" class="loading">Žádná data pro tuto sezónu.</td></tr>`
+  return
+ }
+
  arr.forEach((t,i)=>{
   const team=teamMap[t.team]
   if(!team) return
@@ -488,7 +559,7 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   const pmStr=pm>0?`+${pm}`:String(pm)
   const pmClass=pm>0?"pos":pm<0?"neg":"neu"
 
-  const elo  = ratings[t.team]     || START_RATING
+  const elo  = ratings[t.team]  || START_RATING
   const form = formRatings[t.team] || START_RATING
 
   const tr=document.createElement("tr")
@@ -520,6 +591,11 @@ function render(matches, teamMap){
 
  const cont = document.getElementById("schedule")
  cont.innerHTML=""
+
+ if(matches.length===0){
+  cont.innerHTML=`<tr><td colspan="5" class="loading">Žádné zápasy.</td></tr>`
+  return
+ }
 
  matches.forEach(m=>{
   const home = teamMap[m.home_team]
@@ -590,6 +666,8 @@ function render(matches, teamMap){
  })
 }
 
+// Spustit
+await initSeasons()
 load()
 
 </script>
