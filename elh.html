@@ -11,7 +11,6 @@
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-/* HEADER */
 .headerBar{
  background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
  border-radius:14px;
@@ -62,7 +61,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  border-radius:2px;
 }
 
-/* TABULKA */
 .table-scroll{overflow-x:auto;margin-bottom:28px;}
 
 .standings-table{
@@ -126,7 +124,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-losses{color:#e74c3c;font-weight:700;}
 .td-num{color:#555;font-weight:600;}
 
-/* FILTRY */
 .filterBar{margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .filterBar select{
  padding:8px 14px;border-radius:8px;border:none;
@@ -134,14 +131,11 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;cursor:pointer;
 }
 
-/* MATCH TABLE – stejný styl jako zapis.html */
 .match-table{
  width:100%;border-collapse:collapse;margin-bottom:8px;
 }
 
-.match-table thead tr{
- background:#0b2a3c;color:white;
-}
+.match-table thead tr{background:#0b2a3c;color:white;}
 
 .match-table thead th{
  padding:12px 10px;text-align:center;
@@ -185,6 +179,14 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
 
+/* Skóre buňka – vše pod sebou zarovnané na střed */
+.score-cell{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:3px;
+}
+
 .score-badge{
  display:inline-block;
  background:#0b2a3c;color:white;
@@ -203,11 +205,10 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-size:10px;font-weight:700;
  background:#2f9ec9;color:white;
  padding:2px 6px;border-radius:4px;
- margin-left:4px;
 }
 
 .periods-small{
- font-size:11px;color:#888;display:block;margin-top:2px;
+ font-size:11px;color:#888;
 }
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
@@ -285,7 +286,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
    <th style="width:60px">Kolo</th>
    <th class="th-left">Domácí</th>
    <th class="th-left">Hosté</th>
-   <th style="width:140px">Skóre</th>
+   <th style="width:160px">Skóre</th>
    <th style="width:220px">Akce</th>
   </tr>
  </thead>
@@ -549,11 +550,6 @@ function render(matches, teamMap){
   const awayScore = m.away_score ?? "-"
   const played    = m.home_score != null
 
-  const scoreHtml = played
-   ? `<span class="score-badge">${homeScore} : ${awayScore}</span>
-      ${tag?`<span class="result-tag">${tag}</span>`:""}`
-   : `<span class="score-badge empty">- : -</span>`
-
   const tr = document.createElement("tr")
   tr.className = played ? "played-row" : ""
   tr.innerHTML = `
@@ -571,8 +567,11 @@ function render(matches, teamMap){
     </div>
    </td>
    <td>
-    ${scoreHtml}
-    ${played && periods ? `<span class="periods-small">${periods}</span>` : ""}
+    <div class="score-cell">
+     <span class="score-badge ${played?"":"empty"}">${played ? homeScore+" : "+awayScore : "- : -"}</span>
+     ${tag ? `<span class="result-tag">${tag}</span>` : ""}
+     ${played && periods ? `<span class="periods-small">${periods}</span>` : ""}
+    </div>
    </td>
    <td>
     <div class="btn-wrap">
