@@ -143,8 +143,6 @@ tr:hover td{background:#edf2f7;}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
 .btn-confirm{background:#27ae60;color:white;}
 .btn-cancel{background:#e0e0e0;color:#333;}
-
-.debug{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px;color:#333;}
 </style>
 </head>
 
@@ -153,8 +151,6 @@ tr:hover td{background:#edf2f7;}
 
 <h1>Zápisy zápasů</h1>
 <p class="subtitle">Nahraj soubor se statistikami a ulož výsledek zápasu.</p>
-
-<div id="debugBox" class="debug" style="display:none;"></div>
 
 <div class="filterBar">
  <label>Sezóna:</label>
@@ -182,7 +178,7 @@ tr:hover td{background:#edf2f7;}
  </tr>
 </thead>
 <tbody id="matchesTable">
- <tr><td colspan="6" class="empty-msg">Vyber sezónu a stage.</td></tr>
+ <tr><td colspan="6" class="empty-msg">Načítám...</td></tr>
 </tbody>
 </table>
 
@@ -212,9 +208,11 @@ tr:hover td{background:#edf2f7;}
 </div>
 
 <script>
-// Použijeme UMD verzi místo ESM – spolehlivější
 const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+
+// ⚙️ ID aktuální sezóny – změň když přijde nová
+const CURRENT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -229,35 +227,21 @@ let allStages = []
 let currentSeasonId = ""
 let currentStageId = ""
 
-function debug(msg){
- const box = document.getElementById("debugBox")
- box.style.display = "block"
- box.innerHTML += msg + "<br>"
-}
-
 async function init(){
- debug("🔄 Načítám sezóny...")
 
  const { data: seasons, error: err1 } = await db
   .from("seasons")
   .select("*")
   .order("created_at", { ascending: false })
 
- if(err1){
-  debug("❌ Chyba seasons: " + JSON.stringify(err1))
+ if(err1 || !seasons){
+  document.getElementById("matchesTable").innerHTML =
+   `<tr><td colspan="6" class="empty-msg">❌ Chyba načítání sezón.</td></tr>`
   return
  }
-
- debug("✅ Sezóny načteny: " + (seasons?.length || 0))
 
  const seasonSel = document.getElementById("seasonSelect")
  seasonSel.innerHTML = '<option value="">-- Vyber sezónu --</option>'
-
- if(!seasons || seasons.length === 0){
-  debug("⚠️ Žádné sezóny v DB")
-  return
- }
-
  seasons.forEach(s=>{
   const opt = document.createElement("option")
   opt.value = s.id
@@ -266,45 +250,31 @@ async function init(){
  })
 
  // Načti stages
- debug("🔄 Načítám stages...")
- const { data: stages, error: err2 } = await db
+ const { data: stages } = await db
   .from("stages")
   .select("*")
   .order("order", { ascending: true })
-
- if(err2){
-  debug("❌ Chyba stages: " + JSON.stringify(err2))
- } else {
-  allStages = stages || []
-  debug("✅ Stages načteny: " + allStages.length)
- }
+ allStages = stages || []
 
  // Načti týmy
- debug("🔄 Načítám týmy...")
- const { data: teams, error: err3 } = await db.from("teams").select("*")
+ const { data: teams } = await db.from("teams").select("*")
+ allTeams = teams || []
+ teams.forEach(t=> teamsMap[t.id] = t)
 
- if(err3){
-  debug("❌ Chyba teams: " + JSON.stringify(err3))
- } else {
-  allTeams = teams || []
-  teams.forEach(t=> teamsMap[t.id] = t)
-  debug("✅ Týmy načteny: " + allTeams.length)
+ // Nastav týmy do modalu
+ const homeS = document.getElementById("m-home")
+ const awayS = document.getElementById("m-away")
+ homeS.innerHTML = ""
+ awayS.innerHTML = ""
+ allTeams.forEach(t=>{
+  homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ })
 
-  const homeS = document.getElementById("m-home")
-  const awayS = document.getElementById("m-away")
-  homeS.innerHTML = ""
-  awayS.innerHTML = ""
-  allTeams.forEach(t=>{
-   homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
-   awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  })
- }
-
- // Vyber první sezónu automaticky
- if(seasons.length > 0){
-  seasonSel.value = seasons[0].id
-  onSeasonChange()
- }
+ // Vyber aktuální sezónu, jinak první v seznamu
+ const found = seasons.find(s => s.id === CURRENT_SEASON_ID)
+ seasonSel.value = found ? CURRENT_SEASON_ID : seasons[0].id
+ onSeasonChange()
 }
 
 function onSeasonChange(){
@@ -314,8 +284,7 @@ function onSeasonChange(){
  const stageSel = document.getElementById("stageSelect")
  stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
 
- const seasonStages = allStages.filter(s=> s.season_id === currentSeasonId)
- debug("📋 Stages pro sezónu: " + seasonStages.length)
+ const seasonStages = allStages.filter(s => s.season_id === currentSeasonId)
 
  seasonStages.forEach(s=>{
   const opt = document.createElement("option")
@@ -324,8 +293,12 @@ function onSeasonChange(){
   stageSel.appendChild(opt)
  })
 
- if(seasonStages.length > 0){
-  stageSel.value = seasonStages[0].id
+ // Vyber Základní část automaticky (order 1 = první stage bez parenta)
+ const zakladni = seasonStages.find(s => !s.parent_stage_id && s.order === 1)
+  || seasonStages[0]
+
+ if(zakladni){
+  stageSel.value = zakladni.id
   loadMatches()
  }
 }
@@ -342,7 +315,8 @@ async function loadMatches(){
   .order("round", { ascending: true })
 
  if(error){
-  debug("❌ Chyba matches: " + JSON.stringify(error))
+  document.getElementById("matchesTable").innerHTML =
+   `<tr><td colspan="6" class="empty-msg">❌ Chyba načítání zápasů.</td></tr>`
   return
  }
 
@@ -354,7 +328,7 @@ function render(matches){
  cont.innerHTML=""
 
  if(matches.length === 0){
-  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage.</td></tr>`
+  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage. Přidej první zápas tlačítkem ➕.</td></tr>`
   return
  }
 
@@ -548,16 +522,12 @@ async function addMatch(){
   played: false
  })
 
- if(error){
-  debug("❌ Chyba při přidávání: " + JSON.stringify(error))
-  return
- }
+ if(error){ alert("❌ Chyba: " + error.message); return }
 
  closeModal()
  loadMatches()
 }
 
-// Spusť
 init()
 </script>
 </body>
