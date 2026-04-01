@@ -7,23 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-
 body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
-.header{
- background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
- padding:20px 30px;display:flex;align-items:center;gap:16px;margin-bottom:32px;
-}
+.header{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);padding:20px 30px;display:flex;align-items:center;gap:16px;margin-bottom:32px;}
 .header-logo{width:56px;height:56px;object-fit:contain;mix-blend-mode:lighten;}
 .header-title{font-size:22px;font-weight:800;color:white;letter-spacing:-.3px;}
 .header-sub{font-size:12px;color:#7ab0cc;font-weight:500;margin-top:3px;text-transform:uppercase;letter-spacing:.06em;}
 
 .wrapper{max-width:1300px;margin:0 auto;padding:0 20px 40px;}
 
-.section-title{
- font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;
- display:flex;align-items:center;gap:8px;
-}
+.section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
 .bracket-row{display:grid;gap:16px;margin-bottom:16px;}
@@ -35,11 +28,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .series-card.is-final{border-color:#f0c040;box-shadow:0 4px 16px rgba(240,192,64,.15);}
 .series-card.is-third{border-color:#b0c8d0;}
 
-.series-header{
- background:#0b2a3c;padding:8px 14px;font-size:11px;font-weight:700;
- color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;
- display:flex;justify-content:space-between;align-items:center;
-}
+.series-header{background:#0b2a3c;padding:8px 14px;font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
 .series-header.is-final{background:linear-gradient(135deg,#7a5200,#3a2800);color:#f0d060;}
 .series-header.is-third{background:#2a4a5a;}
 
@@ -58,11 +47,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .team-name.tbd{color:#b0c8d8;font-weight:400;font-style:italic;}
 .team-row.winner .team-name{color:#166534;}
 
+/* Výsledky v pavouku */
 .game-scores{display:flex;gap:3px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
-.gscore{font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;}
+.gscore{font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;display:flex;align-items:center;gap:2px;}
 .gscore-win{background:#dcfce7;color:#166534;}
 .gscore-loss{background:#fee2e2;color:#991b1b;}
 .gscore-empty{color:#d0d8e0;font-size:14px;font-weight:400;}
+.gscore-tag{font-size:8px;font-weight:800;background:rgba(0,0,0,.15);padding:1px 3px;border-radius:3px;}
 
 .series-score{font-size:16px;font-weight:800;color:#1a2a3c;min-width:14px;text-align:center;flex-shrink:0;}
 .series-score.win{color:#16a34a;}
@@ -81,9 +72,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 .result-match{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid #f3f4f6;font-size:12px;gap:8px;}
 .result-match:last-child{border-bottom:none;}
+.result-match.unplayed{background:#fafafa;}
 .result-team{flex:1;font-weight:600;color:#1a2a3c;font-size:12px;}
 .result-score{font-weight:800;font-size:13px;background:#0b2a3c;color:white;padding:3px 10px;border-radius:6px;min-width:46px;text-align:center;flex-shrink:0;}
+.result-score.empty{background:#e0e0e0;color:#999;font-weight:400;}
 .result-tag{font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+.result-round{font-size:10px;color:#aaa;min-width:20px;text-align:center;flex-shrink:0;}
 
 .result-btns{display:flex;gap:6px;padding:8px 14px;border-top:1px solid #f3f4f6;flex-wrap:wrap;}
 .btn-sm{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:6px 10px;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif;}
@@ -91,6 +85,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .btn-stats:hover{background:#0b2a3c;}
 .btn-bet{background:#27ae60;color:white;}
 .btn-bet:hover{background:#219a52;}
+.btn-bet.disabled{background:#ccc;cursor:default;}
 
 .empty-msg{padding:16px;text-align:center;color:#aaa;font-size:13px;}
 .loading-msg{padding:30px;text-align:center;color:#7ab0cc;font-size:13px;}
@@ -115,7 +110,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div class="wrapper">
-
 <div class="section-title">Pavouk</div>
 
 <div class="phase-label">Čtvrtfinále</div>
@@ -179,12 +173,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div class="results-section">
- <div class="section-title">Výsledky zápasů</div>
+ <div class="section-title">Rozpis / Výsledky zápasů</div>
  <div class="results-grid" id="results-grid">
   <div class="loading-msg">Načítám...</div>
  </div>
 </div>
-
 </div>
 
 <script>
@@ -207,14 +200,14 @@ const LOGOS = './logos/'
 let teamsMap = {}
 
 const SERIES = {
- qf1:   { label:'ČF 1',         t1:null, t2:null, games:[], winsNeeded:4 },
- qf2:   { label:'ČF 2',         t1:null, t2:null, games:[], winsNeeded:4 },
- qf3:   { label:'ČF 3',         t1:null, t2:null, games:[], winsNeeded:4 },
- qf4:   { label:'ČF 4',         t1:null, t2:null, games:[], winsNeeded:4 },
- sf1:   { label:'Semifinále 1',  t1:null, t2:null, games:[], winsNeeded:4 },
- sf2:   { label:'Semifinále 2',  t1:null, t2:null, games:[], winsNeeded:4 },
- third: { label:'O 3. místo',    t1:null, t2:null, games:[], winsNeeded:1 },
- f:     { label:'Finále',        t1:null, t2:null, games:[], winsNeeded:4 },
+ qf1:   { label:'ČF 1',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ qf2:   { label:'ČF 2',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ qf3:   { label:'ČF 3',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ qf4:   { label:'ČF 4',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ sf1:   { label:'Semifinále 1',  t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ sf2:   { label:'Semifinále 2',  t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
+ third: { label:'O 3. místo',    t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:1 },
+ f:     { label:'Finále',        t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -229,6 +222,7 @@ async function loadData(){
 
  const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
 
+ // Načti VŠECHNY zápasy – i neodehrané
  const { data: matches } = await db
   .from("matches")
   .select("*")
@@ -250,14 +244,23 @@ async function loadData(){
 
   const s = SERIES[key]
   const first = ms[0]
+  s.t1id = first.home_team
+  s.t2id = first.away_team
   s.t1 = teamsMap[first.home_team]?.name || first.home_team
   s.t2 = teamsMap[first.away_team]?.name || first.away_team
 
+  // Všechny zápasy (i neodehrané) pro rozpis
+  s.allMatches = ms
+
+  // Jen odehrané pro počítání série
   s.games = ms.filter(m=> m.played && m.home_score != null).map(m=>{
    const isT1Home = m.home_team === first.home_team
    return {
     gh: isT1Home ? m.home_score : m.away_score,
     ga: isT1Home ? m.away_score : m.home_score,
+    // Skóre z pohledu každého týmu
+    t1score: isT1Home ? m.home_score : m.away_score,
+    t2score: isT1Home ? m.away_score : m.home_score,
     type: m.result_type === 'REG' ? '' : (m.result_type || ''),
     matchId: m.id,
     home_team_id: m.home_team,
@@ -280,14 +283,17 @@ function logoHtml(teamName){
  return `<img class="team-logo" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
+// Zobraz skóre z pohledu každého týmu s SN/OT tagem u vítěze
 function gameScoresHtml(games, perspective){
  let html = '<div class="game-scores">'
  for(let i=0;i<7;i++){
   if(i < games.length){
    const g = games[i]
-   const win = perspective===1 ? g.gh > g.ga : g.ga > g.gh
-   const score = perspective===1 ? `${g.gh}:${g.ga}` : `${g.ga}:${g.gh}`
-   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${score}</span>`
+   const myScore = perspective===1 ? g.t1score : g.t2score
+   const oppScore = perspective===1 ? g.t2score : g.t1score
+   const win = myScore > oppScore
+   const tag = (win && g.type) ? `<span class="gscore-tag">${g.type}</span>` : ''
+   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}${tag}</span>`
   } else {
    html += `<span class="gscore gscore-empty">·</span>`
   }
@@ -336,7 +342,7 @@ function renderSeries(key){
   stateEl.className = 'series-state' + (hasGames ? '' : ' neutral')
  }
 
- function renderTeamRow(rowId, team, wins, isWinner, isLoser){
+ function renderTeamRow(rowId, team, wins, isWinner, isLoser, perspective){
   const el = document.getElementById(rowId)
   if(!el) return
   const cls = isWinner ? 'winner' : isLoser ? 'loser' : team ? '' : 'tbd'
@@ -344,13 +350,13 @@ function renderSeries(key){
   el.innerHTML = `
    ${logoHtml(team)}
    <div class="team-name ${team?'':'tbd'}">${team || '?'}</div>
-   ${gameScoresHtml(s.games, rowId.endsWith('-t1') ? 1 : 2)}
+   ${gameScoresHtml(s.games, perspective)}
    <div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>
   `
  }
 
- renderTeamRow(`${key}-t1`, s.t1, w1, winner===s.t1, winner && winner!==s.t1)
- renderTeamRow(`${key}-t2`, s.t2, w2, winner===s.t2, winner && winner!==s.t2)
+ renderTeamRow(`${key}-t1`, s.t1, w1, winner===s.t1, winner && winner!==s.t1, 1)
+ renderTeamRow(`${key}-t2`, s.t2, w2, winner===s.t2, winner && winner!==s.t2, 2)
 }
 
 function renderResults(){
@@ -370,29 +376,34 @@ function renderResults(){
   card.className = 'result-card'
 
   let matchesHtml = ''
-  if(s.games.length === 0){
+
+  if(s.allMatches.length === 0){
    matchesHtml = `<div class="empty-msg">Zatím žádné zápasy</div>`
   } else {
-   s.games.forEach((g,i)=>{
-    const homeTeam = teamsMap[g.home_team_id]?.name || s.t1
-    const awayTeam = teamsMap[g.away_team_id]?.name || s.t2
+   s.allMatches.forEach((m, i)=>{
+    const homeTeam = teamsMap[m.home_team]?.name || '?'
+    const awayTeam = teamsMap[m.away_team]?.name || '?'
+    const played = m.played && m.home_score != null
+    const type = m.result_type === 'REG' ? '' : (m.result_type || '')
+
+    const scoreHtml = played
+     ? `<span class="result-score">${m.home_score} : ${m.away_score}</span>
+        ${type ? `<span class="result-tag">${type}</span>` : ''}`
+     : `<span class="result-score empty">- : -</span>`
+
     matchesHtml += `
-     <div class="result-match">
+     <div class="result-match ${played?'':'unplayed'}">
+      <span class="result-round">${i+1}.</span>
       <span class="result-team">${homeTeam}</span>
-      <span class="result-score">${g.home_score} : ${g.away_score}</span>
+      ${scoreHtml}
       <span class="result-team" style="text-align:right">${awayTeam}</span>
-      ${g.type?`<span class="result-tag">${g.type}</span>`:''}
+      ${played
+       ? `<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊</button>`
+       : `<button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
+      }
      </div>
     `
    })
-   matchesHtml += `
-    <div class="result-btns">
-     ${s.games.map((g,i)=>`
-      <button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${g.matchId}'">📊 Zápas ${i+1}</button>
-     `).join('')}
-     <button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html'">🎲 Vsaď si</button>
-    </div>
-   `
   }
 
   card.innerHTML = `
