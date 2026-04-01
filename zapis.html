@@ -13,7 +13,6 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 h1{color:#0b2a3c;margin-bottom:4px;}
 .subtitle{color:#888;font-size:13px;margin-bottom:20px;}
 
-/* FILTRY */
 .filterBar{
  display:flex;gap:10px;flex-wrap:wrap;
  margin-bottom:20px;align-items:center;
@@ -115,11 +114,8 @@ tr:hover td{background:#edf2f7;}
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
 
-.empty-msg{
- text-align:center;padding:40px;color:#999;font-size:14px;
-}
+.empty-msg{text-align:center;padding:40px;color:#999;font-size:14px;}
 
-/* MODAL pro přidání zápasu */
 .modal-overlay{
  display:none;position:fixed;top:0;left:0;
  width:100%;height:100%;
@@ -147,6 +143,8 @@ tr:hover td{background:#edf2f7;}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
 .btn-confirm{background:#27ae60;color:white;}
 .btn-cancel{background:#e0e0e0;color:#333;}
+
+.debug{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px;color:#333;}
 </style>
 </head>
 
@@ -156,11 +154,12 @@ tr:hover td{background:#edf2f7;}
 <h1>Zápisy zápasů</h1>
 <p class="subtitle">Nahraj soubor se statistikami a ulož výsledek zápasu.</p>
 
-<!-- FILTRY -->
+<div id="debugBox" class="debug" style="display:none;"></div>
+
 <div class="filterBar">
  <label>Sezóna:</label>
  <select id="seasonSelect" onchange="onSeasonChange()">
-  <option value="">-- Vyber sezónu --</option>
+  <option value="">-- Načítám... --</option>
  </select>
 
  <label>Stage:</label>
@@ -182,7 +181,9 @@ tr:hover td{background:#edf2f7;}
   <th>Akce</th>
  </tr>
 </thead>
-<tbody id="matchesTable"></tbody>
+<tbody id="matchesTable">
+ <tr><td colspan="6" class="empty-msg">Vyber sezónu a stage.</td></tr>
+</tbody>
 </table>
 
 </div>
@@ -191,22 +192,18 @@ tr:hover td{background:#edf2f7;}
 <div class="modal-overlay" id="modalOverlay">
  <div class="modal">
   <h2>➕ Přidat zápas</h2>
-
   <div class="modal-field">
    <label>Domácí tým</label>
    <select id="m-home"></select>
   </div>
-
   <div class="modal-field">
    <label>Hosté tým</label>
    <select id="m-away"></select>
   </div>
-
   <div class="modal-field">
    <label>Kolo</label>
    <input type="number" id="m-round" min="1" value="1">
   </div>
-
   <div class="modal-btns">
    <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
    <button class="btn-confirm" onclick="addMatch()">✅ Přidat</button>
@@ -214,14 +211,16 @@ tr:hover td{background:#edf2f7;}
  </div>
 </div>
 
-<script type="module">
+<script>
+// Použijeme UMD verzi místo ESM – spolehlivější
+const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const supabase = createClient(
- "https://qaocbodrflsaerxntfui.supabase.co",
- "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-)
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 let teamsMap = {}
 let filesMap = {}
@@ -230,15 +229,35 @@ let allStages = []
 let currentSeasonId = ""
 let currentStageId = ""
 
-async function init(){
+function debug(msg){
+ const box = document.getElementById("debugBox")
+ box.style.display = "block"
+ box.innerHTML += msg + "<br>"
+}
 
- // Načti sezóny
- const { data: seasons } = await supabase
+async function init(){
+ debug("🔄 Načítám sezóny...")
+
+ const { data: seasons, error: err1 } = await db
   .from("seasons")
   .select("*")
   .order("created_at", { ascending: false })
 
+ if(err1){
+  debug("❌ Chyba seasons: " + JSON.stringify(err1))
+  return
+ }
+
+ debug("✅ Sezóny načteny: " + (seasons?.length || 0))
+
  const seasonSel = document.getElementById("seasonSelect")
+ seasonSel.innerHTML = '<option value="">-- Vyber sezónu --</option>'
+
+ if(!seasons || seasons.length === 0){
+  debug("⚠️ Žádné sezóny v DB")
+  return
+ }
+
  seasons.forEach(s=>{
   const opt = document.createElement("option")
   opt.value = s.id
@@ -246,81 +265,96 @@ async function init(){
   seasonSel.appendChild(opt)
  })
 
- // Načti všechny stages
- const { data: stages } = await supabase
+ // Načti stages
+ debug("🔄 Načítám stages...")
+ const { data: stages, error: err2 } = await db
   .from("stages")
   .select("*")
   .order("order", { ascending: true })
- allStages = stages || []
+
+ if(err2){
+  debug("❌ Chyba stages: " + JSON.stringify(err2))
+ } else {
+  allStages = stages || []
+  debug("✅ Stages načteny: " + allStages.length)
+ }
 
  // Načti týmy
- const { data: teams } = await supabase.from("teams").select("*")
- allTeams = teams || []
- teams.forEach(t=> teamsMap[t.id] = t)
+ debug("🔄 Načítám týmy...")
+ const { data: teams, error: err3 } = await db.from("teams").select("*")
 
- // Nastav týmy do modalu
- const homeS = document.getElementById("m-home")
- const awayS = document.getElementById("m-away")
- allTeams.forEach(t=>{
-  homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
- })
+ if(err3){
+  debug("❌ Chyba teams: " + JSON.stringify(err3))
+ } else {
+  allTeams = teams || []
+  teams.forEach(t=> teamsMap[t.id] = t)
+  debug("✅ Týmy načteny: " + allTeams.length)
 
- // Automaticky vyber první sezónu
+  const homeS = document.getElementById("m-home")
+  const awayS = document.getElementById("m-away")
+  homeS.innerHTML = ""
+  awayS.innerHTML = ""
+  allTeams.forEach(t=>{
+   homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+   awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  })
+ }
+
+ // Vyber první sezónu automaticky
  if(seasons.length > 0){
   seasonSel.value = seasons[0].id
   onSeasonChange()
  }
 }
 
-window.onSeasonChange = function(){
+function onSeasonChange(){
  currentSeasonId = document.getElementById("seasonSelect").value
  if(!currentSeasonId) return
 
- // Filtruj stages podle sezóny (jen ty bez parent = hlavní stages)
  const stageSel = document.getElementById("stageSelect")
  stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
 
- const seasonStages = allStages.filter(s=>
-  s.season_id === currentSeasonId
- )
+ const seasonStages = allStages.filter(s=> s.season_id === currentSeasonId)
+ debug("📋 Stages pro sezónu: " + seasonStages.length)
 
  seasonStages.forEach(s=>{
   const opt = document.createElement("option")
   opt.value = s.id
-  // Odsazení pro child stages
   opt.textContent = s.parent_stage_id ? `  └ ${s.name}` : s.name
   stageSel.appendChild(opt)
  })
 
- // Vyber první stage automaticky
  if(seasonStages.length > 0){
   stageSel.value = seasonStages[0].id
   loadMatches()
  }
 }
 
-window.loadMatches = async function(){
+async function loadMatches(){
  currentStageId = document.getElementById("stageSelect").value
- if(!currentStageId) return
+ if(!currentStageId || !currentSeasonId) return
 
- const { data: matches } = await supabase
+ const { data: matches, error } = await db
   .from("matches")
   .select("*")
   .eq("season_id", currentSeasonId)
   .eq("stage_id", currentStageId)
   .order("round", { ascending: true })
 
+ if(error){
+  debug("❌ Chyba matches: " + JSON.stringify(error))
+  return
+ }
+
  render(matches || [])
 }
 
 function render(matches){
-
  const cont = document.getElementById("matchesTable")
  cont.innerHTML=""
 
  if(matches.length === 0){
-  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage. Přidej první zápas.</td></tr>`
+  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage.</td></tr>`
   return
  }
 
@@ -343,23 +377,19 @@ function render(matches){
   cont.innerHTML += `
   <tr class="${played?"played-row":""}">
    <td><span class="round-badge">${m.round}</span></td>
-
    <td>
     <div class="team-cell">
      <img class="team-logo" src="./logos/${home.logo}" alt="${home.name}">
      <span class="team-name">${home.name}</span>
     </div>
    </td>
-
    <td>
     <div class="team-cell">
      <img class="team-logo" src="./logos/${away.logo}" alt="${away.name}">
      <span class="team-name">${away.name}</span>
     </div>
    </td>
-
    <td>${scoreHtml}</td>
-
    <td>
     <label class="file-label" id="label-${m.id}">
      📂 Vybrat soubor
@@ -367,15 +397,10 @@ function render(matches){
     </label>
     <div class="file-name" id="fname-${m.id}"></div>
    </td>
-
    <td>
     <div class="btn-wrap">
-     <button class="btn btn-save" onclick="saveMatch('${m.id}')">
-      ✅ Uložit
-     </button>
-     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">
-      ↩ Zrušit
-     </button>
+     <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit</button>
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">↩ Zrušit</button>
     </div>
    </td>
   </tr>
@@ -383,9 +408,157 @@ function render(matches){
  })
 }
 
-window.handleFile = function(e, matchId){
+function handleFile(e, matchId){
  const file = e.target.files[0]
  if(!file) return
  const reader = new FileReader()
  reader.onload = ev=>{
-  filesMap[matchId] = ev.target.result.split(/\
+  filesMap[matchId] = ev.target.result.split(/\r?\n/)
+  const fname = document.getElementById(`fname-${matchId}`)
+  if(fname) fname.textContent = file.name
+  const lbl = document.getElementById(`label-${matchId}`)
+  if(lbl) lbl.style.borderColor = "#27ae60"
+ }
+ reader.readAsText(file)
+}
+
+function calculateScore(lines){
+ let ag = Number(lines[6]||0)+Number(lines[7]||0)+Number(lines[8]||0)
+ let hg = Number(lines[16]||0)+Number(lines[17]||0)+Number(lines[18]||0)
+ if(lines[9]==="11") hg++
+ if(lines[19]==="11") ag++
+ if(lines[20]==="1") hg++
+ if(lines[20]==="2") ag++
+ return {hg, ag}
+}
+
+function getResultType(lines){
+ const isSN = lines[20]==="1"||lines[20]==="2"
+ const isOT = !isSN&&(lines[9]==="11"||lines[19]==="11")
+ if(isSN) return "SN"
+ if(isOT) return "OT"
+ return "REG"
+}
+
+function checkSingleTip(match, tip){
+ const type = match.result_type
+ const hg = Number(match.home_score)
+ const ag = Number(match.away_score)
+ const homeWin = hg>ag
+ const awayWin = ag>hg
+ switch(tip){
+  case "1":  return homeWin && type==="REG"
+  case "2":  return awayWin && type==="REG"
+  case "0":  return type!=="REG"
+  case "10": return homeWin && (type==="OT"||type==="SN")
+  case "02": return awayWin && (type==="OT"||type==="SN")
+  case "11": return homeWin
+  case "22": return awayWin
+ }
+ return false
+}
+
+function isWinningBet(match, tip){
+ const tips = tip.includes(",")?tip.split(","):[tip]
+ return tips.every(t=>checkSingleTip(match,t))
+}
+
+async function evaluateBets(match){
+ const { data: bets } = await db.from("bets").select("*").eq("match_id",match.id)
+ if(!bets) return
+ for(const bet of bets){
+  const win = isWinningBet(match, bet.tip)
+  await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
+  if(win){
+   const { data: player } = await db.from("players").select("*").eq("id",bet.player_id).single()
+   if(player){
+    await db.from("players")
+     .update({credit:Number(player.credit)+Number(bet.potential_win)})
+     .eq("id",player.id)
+   }
+  }
+ }
+}
+
+async function resetMatch(matchId){
+ if(!confirm("Opravdu zrušit zápas?")) return
+ const { data: bets } = await db.from("bets").select("*").eq("match_id",matchId)
+ for(const bet of bets){
+  if(bet.status==="won"){
+   const { data: player } = await db.from("players").select("*").eq("id",bet.player_id).single()
+   if(player){
+    await db.from("players")
+     .update({credit:Number(player.credit)-Number(bet.potential_win)})
+     .eq("id",player.id)
+   }
+  }
+  await db.from("bets").update({status:"pending"}).eq("id",bet.id)
+ }
+ await db.from("matches")
+  .update({home_score:null,away_score:null,played:false,stats:null,result_type:null})
+  .eq("id",matchId)
+ alert("Zápas zrušen 👍")
+ loadMatches()
+}
+
+async function saveMatch(matchId){
+ const lines = filesMap[matchId]
+ if(!lines){ alert("Nahraj soubor"); return }
+ const score = calculateScore(lines)
+ const resultType = getResultType(lines)
+ await db.from("matches")
+  .update({
+   home_score:score.hg,away_score:score.ag,
+   played:true,stats:JSON.stringify(lines),
+   result_type:resultType
+  })
+  .eq("id",matchId)
+ const { data: fullMatch } = await db.from("matches").select("*").eq("id",matchId).single()
+ await evaluateBets(fullMatch)
+ alert("Uloženo 👍")
+ loadMatches()
+}
+
+function openModal(){
+ if(!currentSeasonId || !currentStageId){
+  alert("Nejdřív vyber sezónu a stage!")
+  return
+ }
+ document.getElementById("modalOverlay").classList.add("open")
+}
+
+function closeModal(){
+ document.getElementById("modalOverlay").classList.remove("open")
+}
+
+async function addMatch(){
+ const homeId = document.getElementById("m-home").value
+ const awayId = document.getElementById("m-away").value
+ const round  = Number(document.getElementById("m-round").value)
+
+ if(homeId === awayId){ alert("Domácí a hosté nemohou být stejný tým!"); return }
+ if(!round || round < 1){ alert("Zadej číslo kola!"); return }
+
+ const { error } = await db.from("matches").insert({
+  home_team: homeId,
+  away_team: awayId,
+  round: round,
+  season_id: currentSeasonId,
+  stage_id: currentStageId,
+  played: false
+ })
+
+ if(error){
+  debug("❌ Chyba při přidávání: " + JSON.stringify(error))
+  return
+ }
+
+ closeModal()
+ loadMatches()
+}
+
+// Spusť
+init()
+</script>
+</body>
+</html>
