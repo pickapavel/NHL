@@ -13,37 +13,53 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 h1{color:#0b2a3c;margin-bottom:4px;}
 .subtitle{color:#888;font-size:13px;margin-bottom:20px;}
 
-table{
- width:100%;border-collapse:collapse;margin-top:10px;
+/* FILTRY */
+.filterBar{
+ display:flex;gap:10px;flex-wrap:wrap;
+ margin-bottom:20px;align-items:center;
+ background:#f7f8fa;padding:14px;border-radius:10px;
+ border:1px solid #e0e0e0;
 }
+
+.filterBar label{font-size:13px;font-weight:700;color:#0b2a3c;}
+
+.filterBar select{
+ padding:8px 12px;border-radius:8px;
+ border:1px solid #ccc;font-size:13px;
+ background:white;cursor:pointer;color:#333;
+ min-width:200px;
+}
+
+.btn-add{
+ display:inline-flex;align-items:center;gap:5px;
+ border:none;border-radius:8px;cursor:pointer;
+ font-weight:700;font-size:13px;
+ padding:8px 14px;
+ background:#0b2a3c;color:white;
+ margin-left:auto;
+}
+.btn-add:hover{background:#1a3a5c;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
 
 th{
  background:#0b2a3c;color:white;
  padding:12px 10px;text-align:center;
- font-size:12px;letter-spacing:.05em;
- white-space:nowrap;
+ font-size:12px;letter-spacing:.05em;white-space:nowrap;
 }
-
 th:nth-child(2),th:nth-child(3){text-align:left;}
 
 td{
- padding:10px 10px;
- border-bottom:1px solid #e8e8e8;
- text-align:center;
- vertical-align:middle;
- font-size:13px;
- color:#333;
+ padding:10px 10px;border-bottom:1px solid #e8e8e8;
+ text-align:center;vertical-align:middle;
+ font-size:13px;color:#333;
 }
-
 td:nth-child(2),td:nth-child(3){text-align:left;}
 
 tr:nth-child(odd) td{background:#f7f8fa;}
 tr:hover td{background:#edf2f7;}
 
-/* Tým cell */
-.team-cell{
- display:flex;align-items:center;gap:8px;
-}
+.team-cell{display:flex;align-items:center;gap:8px;}
 
 .team-logo{
  width:28px;height:28px;object-fit:contain;
@@ -53,29 +69,19 @@ tr:hover td{background:#edf2f7;}
 
 .team-name{font-weight:600;font-size:13px;}
 
-/* Skóre */
 .score-badge{
- display:inline-block;
- background:#0b2a3c;color:white;
+ display:inline-block;background:#0b2a3c;color:white;
  font-weight:700;font-size:14px;
- padding:4px 12px;border-radius:6px;
- min-width:60px;text-align:center;
+ padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;
 }
-
-.score-badge.empty{
- background:#e0e0e0;color:#999;
- font-weight:400;font-size:13px;
-}
+.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
 
 .result-tag{
- display:inline-block;
- font-size:10px;font-weight:700;
+ display:inline-block;font-size:10px;font-weight:700;
  background:#2f9ec9;color:white;
- padding:2px 6px;border-radius:4px;
- margin-left:5px;vertical-align:middle;
+ padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;
 }
 
-/* File input */
 .file-label{
  display:inline-flex;align-items:center;gap:6px;
  background:#f0f0f0;border:1px solid #ccc;
@@ -87,33 +93,60 @@ tr:hover td{background:#edf2f7;}
 .file-label input{display:none;}
 .file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
 
-/* Buttons */
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
 
 .btn{
  display:inline-flex;align-items:center;gap:5px;
  border:none;border-radius:8px;cursor:pointer;
  font-weight:700;font-size:13px;
- padding:8px 14px;transition:all .15s;
- white-space:nowrap;
+ padding:8px 14px;transition:all .15s;white-space:nowrap;
 }
-
 .btn-save{background:#27ae60;color:white;}
 .btn-save:hover{background:#219a52;}
 .btn-reset{background:#e74c3c;color:white;}
 .btn-reset:hover{background:#c0392b;}
 
-/* Kolo badge */
 .round-badge{
- display:inline-block;
- background:#e9ecef;color:#0b2a3c;
+ display:inline-block;background:#e9ecef;color:#0b2a3c;
  font-weight:700;font-size:12px;
- padding:3px 10px;border-radius:20px;
- min-width:36px;text-align:center;
+ padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;
 }
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
+
+.empty-msg{
+ text-align:center;padding:40px;color:#999;font-size:14px;
+}
+
+/* MODAL pro přidání zápasu */
+.modal-overlay{
+ display:none;position:fixed;top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,.5);z-index:100;
+ align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+
+.modal{
+ background:white;border-radius:14px;
+ padding:24px;width:100%;max-width:480px;
+ box-shadow:0 8px 32px rgba(0,0,0,.2);
+}
+
+.modal h2{color:#0b2a3c;margin-bottom:16px;font-size:18px;}
+
+.modal-field{margin-bottom:12px;}
+.modal-field label{display:block;font-size:12px;font-weight:700;color:#666;margin-bottom:4px;}
+.modal-field select,.modal-field input{
+ width:100%;padding:9px 12px;border-radius:8px;
+ border:1px solid #ccc;font-size:13px;
+}
+
+.modal-btns{display:flex;gap:8px;margin-top:18px;}
+.modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
+.btn-confirm{background:#27ae60;color:white;}
+.btn-cancel{background:#e0e0e0;color:#333;}
 </style>
 </head>
 
@@ -122,6 +155,21 @@ tr:hover td{background:#edf2f7;}
 
 <h1>Zápisy zápasů</h1>
 <p class="subtitle">Nahraj soubor se statistikami a ulož výsledek zápasu.</p>
+
+<!-- FILTRY -->
+<div class="filterBar">
+ <label>Sezóna:</label>
+ <select id="seasonSelect" onchange="onSeasonChange()">
+  <option value="">-- Vyber sezónu --</option>
+ </select>
+
+ <label>Stage:</label>
+ <select id="stageSelect" onchange="loadMatches()">
+  <option value="">-- Vyber stage --</option>
+ </select>
+
+ <button class="btn-add" onclick="openModal()">➕ Přidat zápas</button>
+</div>
 
 <table>
 <thead>
@@ -139,6 +187,33 @@ tr:hover td{background:#edf2f7;}
 
 </div>
 
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+ <div class="modal">
+  <h2>➕ Přidat zápas</h2>
+
+  <div class="modal-field">
+   <label>Domácí tým</label>
+   <select id="m-home"></select>
+  </div>
+
+  <div class="modal-field">
+   <label>Hosté tým</label>
+   <select id="m-away"></select>
+  </div>
+
+  <div class="modal-field">
+   <label>Kolo</label>
+   <input type="number" id="m-round" min="1" value="1">
+  </div>
+
+  <div class="modal-btns">
+   <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
+   <button class="btn-confirm" onclick="addMatch()">✅ Přidat</button>
+  </div>
+ </div>
+</div>
+
 <script type="module">
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
@@ -150,18 +225,93 @@ const supabase = createClient(
 
 let teamsMap = {}
 let filesMap = {}
+let allTeams = []
+let allStages = []
+let currentSeasonId = ""
+let currentStageId = ""
 
-async function load(){
+async function init(){
 
+ // Načti sezóny
+ const { data: seasons } = await supabase
+  .from("seasons")
+  .select("*")
+  .order("created_at", { ascending: false })
+
+ const seasonSel = document.getElementById("seasonSelect")
+ seasons.forEach(s=>{
+  const opt = document.createElement("option")
+  opt.value = s.id
+  opt.textContent = s.name
+  seasonSel.appendChild(opt)
+ })
+
+ // Načti všechny stages
+ const { data: stages } = await supabase
+  .from("stages")
+  .select("*")
+  .order("order", { ascending: true })
+ allStages = stages || []
+
+ // Načti týmy
  const { data: teams } = await supabase.from("teams").select("*")
+ allTeams = teams || []
+ teams.forEach(t=> teamsMap[t.id] = t)
+
+ // Nastav týmy do modalu
+ const homeS = document.getElementById("m-home")
+ const awayS = document.getElementById("m-away")
+ allTeams.forEach(t=>{
+  homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+  awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ })
+
+ // Automaticky vyber první sezónu
+ if(seasons.length > 0){
+  seasonSel.value = seasons[0].id
+  onSeasonChange()
+ }
+}
+
+window.onSeasonChange = function(){
+ currentSeasonId = document.getElementById("seasonSelect").value
+ if(!currentSeasonId) return
+
+ // Filtruj stages podle sezóny (jen ty bez parent = hlavní stages)
+ const stageSel = document.getElementById("stageSelect")
+ stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
+
+ const seasonStages = allStages.filter(s=>
+  s.season_id === currentSeasonId
+ )
+
+ seasonStages.forEach(s=>{
+  const opt = document.createElement("option")
+  opt.value = s.id
+  // Odsazení pro child stages
+  opt.textContent = s.parent_stage_id ? `  └ ${s.name}` : s.name
+  stageSel.appendChild(opt)
+ })
+
+ // Vyber první stage automaticky
+ if(seasonStages.length > 0){
+  stageSel.value = seasonStages[0].id
+  loadMatches()
+ }
+}
+
+window.loadMatches = async function(){
+ currentStageId = document.getElementById("stageSelect").value
+ if(!currentStageId) return
+
  const { data: matches } = await supabase
   .from("matches")
   .select("*")
-  .order("round", { ascending:true })
+  .eq("season_id", currentSeasonId)
+  .eq("stage_id", currentStageId)
+  .order("round", { ascending: true })
 
- teams.forEach(t=> teamsMap[t.id] = t)
-
- render(matches)
+ render(matches || [])
 }
 
 function render(matches){
@@ -169,8 +319,12 @@ function render(matches){
  const cont = document.getElementById("matchesTable")
  cont.innerHTML=""
 
- matches.forEach(m=>{
+ if(matches.length === 0){
+  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy v této stage. Přidej první zápas.</td></tr>`
+  return
+ }
 
+ matches.forEach(m=>{
   const home = teamsMap[m.home_team]
   const away = teamsMap[m.away_team]
   if(!home||!away) return
@@ -234,131 +388,4 @@ window.handleFile = function(e, matchId){
  if(!file) return
  const reader = new FileReader()
  reader.onload = ev=>{
-  filesMap[matchId] = ev.target.result.split(/\r?\n/)
-  const fname = document.getElementById(`fname-${matchId}`)
-  if(fname) fname.textContent = file.name
-  const lbl = document.getElementById(`label-${matchId}`)
-  if(lbl) lbl.style.borderColor = "#27ae60"
- }
- reader.readAsText(file)
-}
-
-function calculateScore(lines){
- let ag =
-  Number(lines[6]||0)+
-  Number(lines[7]||0)+
-  Number(lines[8]||0)
- let hg =
-  Number(lines[16]||0)+
-  Number(lines[17]||0)+
-  Number(lines[18]||0)
- if(lines[9]==="11") hg++
- if(lines[19]==="11") ag++
- if(lines[20]==="1") hg++
- if(lines[20]==="2") ag++
- return {hg, ag}
-}
-
-function getResultType(lines){
- const isSN = lines[20]==="1"||lines[20]==="2"
- const isOT = !isSN&&(lines[9]==="11"||lines[19]==="11")
- if(isSN) return "SN"
- if(isOT) return "OT"
- return "REG"
-}
-
-function checkSingleTip(match, tip){
- const type = match.result_type
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
- const homeWin = hg>ag
- const awayWin = ag>hg
- switch(tip){
-  case "1":  return homeWin && type==="REG"
-  case "2":  return awayWin && type==="REG"
-  case "0":  return type!=="REG"
-  case "10": return homeWin && (type==="OT"||type==="SN")
-  case "02": return awayWin && (type==="OT"||type==="SN")
-  case "11": return homeWin
-  case "22": return awayWin
- }
- return false
-}
-
-function isWinningBet(match, tip){
- const tips = tip.includes(",")?tip.split(","):[tip]
- return tips.every(t=>checkSingleTip(match,t))
-}
-
-async function evaluateBets(match){
- const { data: bets } = await supabase
-  .from("bets").select("*").eq("match_id",match.id)
- if(!bets) return
- for(const bet of bets){
-  const win = isWinningBet(match, bet.tip)
-  await supabase.from("bets")
-   .update({status:win?"won":"lost"})
-   .eq("id",bet.id)
-  if(win){
-   const { data: player } = await supabase
-    .from("players").select("*").eq("id",bet.player_id).single()
-   if(player){
-    await supabase.from("players")
-     .update({credit:Number(player.credit)+Number(bet.potential_win)})
-     .eq("id",player.id)
-   }
-  }
- }
-}
-
-window.resetMatch = async function(matchId){
- if(!confirm("Opravdu zrušit zápas?")) return
- const { data: bets } = await supabase
-  .from("bets").select("*").eq("match_id",matchId)
- for(const bet of bets){
-  if(bet.status==="won"){
-   const { data: player } = await supabase
-    .from("players").select("*").eq("id",bet.player_id).single()
-   if(player){
-    await supabase.from("players")
-     .update({credit:Number(player.credit)-Number(bet.potential_win)})
-     .eq("id",player.id)
-   }
-  }
-  await supabase.from("bets")
-   .update({status:"pending"}).eq("id",bet.id)
- }
- await supabase.from("matches")
-  .update({
-   home_score:null,away_score:null,
-   played:false,stats:null,result_type:null
-  })
-  .eq("id",matchId)
- alert("Zápas zrušen 👍")
- load()
-}
-
-window.saveMatch = async function(matchId){
- const lines = filesMap[matchId]
- if(!lines){ alert("Nahraj soubor"); return }
- const score = calculateScore(lines)
- const resultType = getResultType(lines)
- await supabase.from("matches")
-  .update({
-   home_score:score.hg,away_score:score.ag,
-   played:true,stats:JSON.stringify(lines),
-   result_type:resultType
-  })
-  .eq("id",matchId)
- const { data: fullMatch } = await supabase
-  .from("matches").select("*").eq("id",matchId).single()
- await evaluateBets(fullMatch)
- alert("Uloženo 👍")
- load()
-}
-
-load()
-
-</script>
-</body>
-</html>
+  filesMap[matchId] = ev.target.result.split(/\
