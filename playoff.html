@@ -19,7 +19,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
-.bracket-row{display:grid;gap:16px;margin-bottom:16px;}
+.bracket-row{display:grid;gap:12px;margin-bottom:16px;}
 .bracket-row-qf{grid-template-columns:repeat(4,1fr);}
 .bracket-row-sf{grid-template-columns:1fr 1fr;}
 .bracket-row-f{grid-template-columns:1fr 1fr;}
@@ -28,32 +28,32 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .series-card.is-final{border-color:#f0c040;box-shadow:0 4px 16px rgba(240,192,64,.15);}
 .series-card.is-third{border-color:#b0c8d0;}
 
-.series-header{background:#0b2a3c;padding:8px 14px;font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+.series-header{background:#0b2a3c;padding:7px 12px;font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
 .series-header.is-final{background:linear-gradient(135deg,#7a5200,#3a2800);color:#f0d060;}
 .series-header.is-third{background:#2a4a5a;}
 
-.series-state{font-size:12px;font-weight:800;color:#f0d060;background:rgba(240,208,96,.15);padding:2px 10px;border-radius:20px;letter-spacing:.05em;white-space:nowrap;}
+.series-state{font-size:11px;font-weight:800;color:#f0d060;background:rgba(240,208,96,.15);padding:2px 8px;border-radius:20px;letter-spacing:.05em;white-space:nowrap;}
 .series-state.neutral{color:#7ab0cc;background:rgba(122,176,204,.1);}
 
-.team-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #f0f0f0;}
+.team-row{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #f0f0f0;}
 .team-row:last-of-type{border-bottom:none;}
 .team-row.winner{background:#f0fdf4;}
 .team-row.loser{opacity:.4;}
 .team-row.tbd{opacity:.3;}
 
-.team-logo{width:26px;height:26px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
-.team-logo-placeholder{width:26px;height:26px;border-radius:5px;background:#dce8f5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#7aaac8;font-weight:700;border:1px solid #c8d8e8;}
-.team-name{flex:1;font-size:12px;font-weight:700;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-logo{width:22px;height:22px;object-fit:contain;background:white;border-radius:4px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.team-logo-placeholder{width:22px;height:22px;border-radius:4px;background:#dce8f5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#7aaac8;font-weight:700;border:1px solid #c8d8e8;}
+.team-name{flex:1;font-size:11px;font-weight:700;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .team-name.tbd{color:#b0c8d8;font-weight:400;font-style:italic;}
 .team-row.winner .team-name{color:#166534;}
 
-.game-scores{display:flex;gap:3px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
-.gscore{font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;}
+.game-scores{display:flex;gap:2px;align-items:center;flex-shrink:0;}
+.gscore{font-size:10px;font-weight:700;padding:2px 4px;border-radius:3px;white-space:nowrap;}
 .gscore-win{background:#dcfce7;color:#166534;}
 .gscore-loss{background:#fee2e2;color:#991b1b;}
-.gscore-empty{color:#d0d8e0;font-size:14px;font-weight:400;}
+.gscore-empty{color:#d0d8e0;font-size:12px;font-weight:400;}
 
-.series-score{font-size:16px;font-weight:800;color:#1a2a3c;min-width:14px;text-align:center;flex-shrink:0;}
+.series-score{font-size:15px;font-weight:800;color:#1a2a3c;min-width:12px;text-align:center;flex-shrink:0;}
 .series-score.win{color:#16a34a;}
 .series-score.loss{color:#d0d8e0;}
 
@@ -63,55 +63,43 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .trophy-name{font-size:15px;font-weight:800;color:#0b2a3c;margin-top:4px;}
 
 .results-section{margin-top:32px;}
-.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
 
 .result-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.result-card-header{background:#f0f6fc;padding:8px 14px;font-size:11px;font-weight:700;color:#3a6a9c;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #e0ecf8;}
+
+/* Hlavička výsledkové karty – stejná barva jako pavouk */
+.result-card-header{
+ background:#0b2a3c;
+ padding:8px 14px;
+ font-size:11px;font-weight:700;
+ color:#7ab0cc;
+ letter-spacing:.1em;text-transform:uppercase;
+ border-bottom:1px solid rgba(255,255,255,.05);
+}
 
 /* MINI CARD */
 .result-mini-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;}
 .result-mini-card:last-child{border-bottom:none;}
 .result-mini-card.unplayed{background:#fafafa;}
 
-.rm-header{
- display:flex;justify-content:space-between;align-items:center;
- margin-bottom:8px;
-}
-.rm-num{
- font-size:11px;font-weight:800;
- color:#0b2a3c;
- letter-spacing:.04em;
-}
+.rm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rm-num{font-size:11px;font-weight:800;color:#0b2a3c;letter-spacing:.04em;}
 
-.rm-teams{
- display:flex;flex-direction:column;gap:3px;
-}
+.rm-teams{display:flex;flex-direction:column;gap:3px;}
 
-.rm-team-row{
- display:flex;align-items:center;gap:8px;
- padding:3px 0;
-}
-.rm-loser{opacity:.45;}
-.rm-winner .rm-team-name{color:#166534;}
+.rm-team-row{display:flex;align-items:center;gap:8px;padding:3px 0;}
+.rm-loser .rm-team-name{opacity:.45;}
 
-.rm-team-name{
- flex:1;font-size:12px;font-weight:700;color:#1a2a3c;
- white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.rm-team-name{flex:1;font-size:12px;font-weight:700;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* Skóre + tag v pevném kontejneru aby bylo zarovnané */
+/* Skóre kontejner – pevná šířka aby bylo zarovnané */
 .rm-score-wrap{
  display:flex;align-items:center;gap:4px;
- width:60px;justify-content:flex-end;flex-shrink:0;
+ flex-shrink:0;
+ justify-content:flex-end;
 }
 
-.rm-score{
- font-size:20px;font-weight:800;
- width:24px;text-align:center;color:#ccc;flex-shrink:0;
-}
-.rm-score-win{color:#16a34a;}
-.rm-score-loss{color:#d0d8e0;}
-
+/* Tag s pevnou šířkou */
 .result-tag{
  font-size:9px;font-weight:800;
  background:#2f9ec9;color:white;
@@ -120,6 +108,15 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  width:28px;text-align:center;
 }
 .result-tag-empty{width:28px;flex-shrink:0;}
+
+/* Skóre ve výsledcích – stejná barva jako čísla v pavouku (tmavá) */
+.rm-score{
+ font-size:20px;font-weight:800;
+ width:26px;text-align:center;
+ color:#1a2a3c;
+ flex-shrink:0;
+}
+.rm-score.empty{color:#ccc;font-size:14px;font-weight:400;}
 
 .btn-sm{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:6px 10px;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif;}
 .btn-stats{background:#1a5276;color:white;}
@@ -131,7 +128,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .loading-msg{padding:30px;text-align:center;color:#7ab0cc;font-size:13px;}
 .phase-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
 
-@media(max-width:900px){.bracket-row-qf{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:1100px){.bracket-row-qf{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){
  .bracket-row-qf,.bracket-row-sf,.bracket-row-f{grid-template-columns:1fr;}
  .header{padding:14px 16px;}
@@ -263,8 +260,7 @@ async function loadData(){
  const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
 
  const { data: matches } = await db
-  .from("matches")
-  .select("*")
+  .from("matches").select("*")
   .eq("season_id", SEASON_ID)
   .in("stage_id", uniqueStageIds)
   .order("round", { ascending: true })
@@ -312,13 +308,12 @@ async function loadData(){
  renderChampion()
 }
 
-function logoHtml(teamName){
+function logoHtml(teamName, size=22){
  const team = Object.values(teamsMap).find(t=> t.name === teamName)
- if(!team || !team.logo) return `<div class="team-logo-placeholder">?</div>`
- return `<img class="team-logo" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
+ if(!team || !team.logo) return `<div class="team-logo-placeholder" style="width:${size}px;height:${size}px">?</div>`
+ return `<img class="team-logo" style="width:${size}px;height:${size}px" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
-// V pavouku – jen číslo bez tagu
 function gameScoresHtml(games, perspective){
  let html = '<div class="game-scores">'
  for(let i=0;i<7;i++){
@@ -422,7 +417,6 @@ function renderResults(){
     const homeWin = played && m.home_score > m.away_score
     const awayWin = played && m.away_score > m.home_score
 
-    // Tag se zobrazí vždy na stejném místě – u poraženého bude prázdný placeholder
     const homeTagHtml = (played && homeWin && type)
      ? `<span class="result-tag">${type}</span>`
      : `<span class="result-tag-empty"></span>`
@@ -441,20 +435,20 @@ function renderResults(){
        }
       </div>
       <div class="rm-teams">
-       <div class="rm-team-row ${homeWin?'rm-winner':played&&!homeWin?'rm-loser':''}">
-        ${logoHtml(homeTeam)}
+       <div class="rm-team-row ${played&&!homeWin?'rm-loser':''}">
+        ${logoHtml(homeTeam, 22)}
         <span class="rm-team-name">${homeTeam}</span>
         <div class="rm-score-wrap">
          ${homeTagHtml}
-         <span class="rm-score ${homeWin?'rm-score-win':played&&!homeWin?'rm-score-loss':''}">${played ? m.home_score : '-'}</span>
+         <span class="rm-score ${played?'':'empty'}">${played ? m.home_score : '–'}</span>
         </div>
        </div>
-       <div class="rm-team-row ${awayWin?'rm-winner':played&&!awayWin?'rm-loser':''}">
-        ${logoHtml(awayTeam)}
+       <div class="rm-team-row ${played&&!awayWin?'rm-loser':''}">
+        ${logoHtml(awayTeam, 22)}
         <span class="rm-team-name">${awayTeam}</span>
         <div class="rm-score-wrap">
          ${awayTagHtml}
-         <span class="rm-score ${awayWin?'rm-score-win':played&&!awayWin?'rm-score-loss':''}">${played ? m.away_score : '-'}</span>
+         <span class="rm-score ${played?'':'empty'}">${played ? m.away_score : '–'}</span>
         </div>
        </div>
       </div>
