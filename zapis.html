@@ -233,15 +233,12 @@ let allTeams = []
 let allStages = []
 let currentSeasonId = ""
 let currentStageId = ""
-let allMatches = []       // všechny zápasy stage
-let currentTeamFilter = "" // ID vybraného týmu
+let allMatches = []
+let currentTeamFilter = ""
 
 async function init(){
-
  const { data: seasons, error: err1 } = await db
-  .from("seasons")
-  .select("*")
-  .order("created_at", { ascending: false })
+  .from("seasons").select("*").order("created_at", { ascending: false })
 
  if(err1 || !seasons){
   document.getElementById("matchesTable").innerHTML =
@@ -258,8 +255,7 @@ async function init(){
   seasonSel.appendChild(opt)
  })
 
- const { data: stages } = await db
-  .from("stages").select("*").order("order", { ascending: true })
+ const { data: stages } = await db.from("stages").select("*").order("order", { ascending: true })
  allStages = stages || []
 
  const { data: teams } = await db.from("teams").select("*")
@@ -296,9 +292,7 @@ function onSeasonChange(){
   stageSel.appendChild(opt)
  })
 
- const zakladni = seasonStages.find(s => !s.parent_stage_id && s.order === 1)
-  || seasonStages[0]
-
+ const zakladni = seasonStages.find(s => !s.parent_stage_id && s.order === 1) || seasonStages[0]
  if(zakladni){
   stageSel.value = zakladni.id
   loadMatches()
@@ -310,8 +304,7 @@ async function loadMatches(){
  if(!currentStageId || !currentSeasonId) return
 
  const { data: matches, error } = await db
-  .from("matches")
-  .select("*")
+  .from("matches").select("*")
   .eq("season_id", currentSeasonId)
   .eq("stage_id", currentStageId)
   .order("round", { ascending: true })
@@ -323,32 +316,19 @@ async function loadMatches(){
  }
 
  allMatches = matches || []
-
- // Obnov team filter pro aktuální stage
  updateTeamFilter()
-
- // Aplikuj filtr
  applyTeamFilter()
 }
 
 function updateTeamFilter(){
- // Zjisti unikátní týmy v aktuální stage
  const teamIds = new Set()
- allMatches.forEach(m=>{
-  teamIds.add(m.home_team)
-  teamIds.add(m.away_team)
- })
+ allMatches.forEach(m=>{ teamIds.add(m.home_team); teamIds.add(m.away_team) })
 
  const sel = document.getElementById("teamFilter")
- const prev = sel.value // zapamatuj předchozí výběr
+ const prev = sel.value
  sel.innerHTML = '<option value="">Všechny týmy</option>'
 
- // Seřaď týmy podle jména
- const sorted = [...teamIds]
-  .map(id => teamsMap[id])
-  .filter(Boolean)
-  .sort((a,b) => a.name.localeCompare(b.name))
-
+ const sorted = [...teamIds].map(id => teamsMap[id]).filter(Boolean).sort((a,b) => a.name.localeCompare(b.name))
  sorted.forEach(t=>{
   const opt = document.createElement("option")
   opt.value = t.id
@@ -356,30 +336,18 @@ function updateTeamFilter(){
   sel.appendChild(opt)
  })
 
- // Obnov předchozí výběr pokud existuje
- if(prev && [...teamIds].includes(prev)){
-  sel.value = prev
- } else {
-  sel.value = ""
- }
-
+ if(prev && [...teamIds].includes(prev)) sel.value = prev
+ else sel.value = ""
  currentTeamFilter = sel.value
 }
 
 function applyTeamFilter(){
  currentTeamFilter = document.getElementById("teamFilter").value
-
  let filtered = allMatches
  if(currentTeamFilter){
-  filtered = allMatches.filter(m=>
-   m.home_team === currentTeamFilter ||
-   m.away_team === currentTeamFilter
-  )
+  filtered = allMatches.filter(m=> m.home_team===currentTeamFilter || m.away_team===currentTeamFilter)
  }
-
- const count = document.getElementById("matchCount")
- count.textContent = `Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
-
+ document.getElementById("matchCount").textContent = `Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
  render(filtered)
 }
 
@@ -434,7 +402,7 @@ function render(matches){
    <td>
     <div class="btn-wrap">
      <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit</button>
-     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">↩ Zrušit</button>
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">🗑 Smazat</button>
     </div>
    </td>
   </tr>
@@ -478,8 +446,7 @@ function checkSingleTip(match, tip){
  const type = match.result_type
  const hg = Number(match.home_score)
  const ag = Number(match.away_score)
- const homeWin = hg>ag
- const awayWin = ag>hg
+ const homeWin = hg>ag, awayWin = ag>hg
  switch(tip){
   case "1":  return homeWin && type==="REG"
   case "2":  return awayWin && type==="REG"
@@ -515,9 +482,11 @@ async function evaluateBets(match){
 }
 
 async function resetMatch(matchId){
- if(!confirm("Opravdu zrušit zápas?")) return
+ if(!confirm("Opravdu smazat celý zápas? Tato akce je nevratná.")) return
+
+ // Zruš sázky
  const { data: bets } = await db.from("bets").select("*").eq("match_id",matchId)
- for(const bet of bets){
+ for(const bet of bets||[]){
   if(bet.status==="won"){
    const { data: player } = await db.from("players").select("*").eq("id",bet.player_id).single()
    if(player){
@@ -528,10 +497,11 @@ async function resetMatch(matchId){
   }
   await db.from("bets").update({status:"pending"}).eq("id",bet.id)
  }
- await db.from("matches")
-  .update({home_score:null,away_score:null,played:false,stats:null,result_type:null})
-  .eq("id",matchId)
- alert("Zápas zrušen 👍")
+
+ // Smaž zápas
+ await db.from("matches").delete().eq("id",matchId)
+
+ alert("Zápas smazán 👍")
  loadMatches()
 }
 
@@ -542,8 +512,8 @@ async function saveMatch(matchId){
  const resultType = getResultType(lines)
  await db.from("matches")
   .update({
-   home_score:score.hg,away_score:score.ag,
-   played:true,stats:JSON.stringify(lines),
+   home_score:score.hg, away_score:score.ag,
+   played:true, stats:JSON.stringify(lines),
    result_type:resultType
   })
   .eq("id",matchId)
@@ -554,10 +524,7 @@ async function saveMatch(matchId){
 }
 
 function openModal(){
- if(!currentSeasonId || !currentStageId){
-  alert("Nejdřív vyber sezónu a stage!")
-  return
- }
+ if(!currentSeasonId || !currentStageId){ alert("Nejdřív vyber sezónu a stage!"); return }
  document.getElementById("modalOverlay").classList.add("open")
 }
 
@@ -583,7 +550,6 @@ async function addMatch(){
  })
 
  if(error){ alert("❌ Chyba: " + error.message); return }
-
  closeModal()
  loadMatches()
 }
