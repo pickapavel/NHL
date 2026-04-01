@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zápisy – Sezóna 1</title>
+
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
+
+h1{color:#0b2a3c;margin-bottom:4px;}
+.subtitle{color:#888;font-size:13px;margin-bottom:20px;}
+
+.info-bar{
+ background:#e8f4fd;border:1px solid #b8d8f0;
+ border-radius:10px;padding:12px 16px;
+ margin-bottom:20px;font-size:13px;color:#1a5276;
+ display:flex;align-items:center;gap:8px;
+}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+
+th{
+ background:#0b2a3c;color:white;
+ padding:12px 10px;text-align:center;
+ font-size:12px;letter-spacing:.05em;white-space:nowrap;
+}
+th:nth-child(2),th:nth-child(3){text-align:left;}
+
+td{
+ padding:10px 10px;border-bottom:1px solid #e8e8e8;
+ text-align:center;vertical-align:middle;
+ font-size:13px;color:#333;
+}
+td:nth-child(2),td:nth-child(3){text-align:left;}
+
+tr:nth-child(odd) td{background:#f7f8fa;}
+tr:hover td{background:#edf2f7;}
+
+.team-cell{display:flex;align-items:center;gap:8px;}
+
+.team-logo{
+ width:28px;height:28px;object-fit:contain;
+ background:white;border-radius:5px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
+}
+
+.team-name{font-weight:600;font-size:13px;}
+
+.score-cell{
+ display:flex;flex-direction:column;
+ align-items:center;gap:3px;
+}
+
+.score-badge{
+ display:inline-block;background:#0b2a3c;color:white;
+ font-weight:700;font-size:14px;
+ padding:4px 12px;border-radius:6px;
+ min-width:60px;text-align:center;
+}
+.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
+
+.result-tag{
+ display:inline-block;font-size:10px;font-weight:700;
+ background:#2f9ec9;color:white;
+ padding:2px 6px;border-radius:4px;
+}
+
+.periods-small{font-size:11px;color:#888;}
+
+.file-label{
+ display:inline-flex;align-items:center;gap:6px;
+ background:#f0f0f0;border:1px solid #ccc;
+ border-radius:8px;padding:7px 12px;
+ cursor:pointer;font-size:12px;color:#555;
+ transition:background .15s;white-space:nowrap;
+}
+.file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
+.file-label input{display:none;}
+.file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
+
+.btn-wrap{display:flex;gap:6px;justify-content:center;}
+
+.btn{
+ display:inline-flex;align-items:center;gap:5px;
+ border:none;border-radius:8px;cursor:pointer;
+ font-weight:700;font-size:13px;
+ padding:8px 14px;transition:all .15s;white-space:nowrap;
+}
+.btn-save{background:#27ae60;color:white;}
+.btn-save:hover{background:#219a52;}
+.btn-reset{background:#e74c3c;color:white;}
+.btn-reset:hover{background:#c0392b;}
+
+.round-badge{
+ display:inline-block;background:#e9ecef;color:#0b2a3c;
+ font-weight:700;font-size:12px;
+ padding:3px 10px;border-radius:20px;
+ min-width:36px;text-align:center;
+}
+
+.played-row td{background:#f0fdf4 !important;}
+.played-row:hover td{background:#e0f7e9 !important;}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<h1>Zápisy – Extraliga 1. sezóna</h1>
+<p class="subtitle">Základní část · Nahraj soubor se statistikami a ulož výsledek.</p>
+
+<div class="info-bar">
+ ℹ️ Tato stránka zapisuje výsledky do <strong>Extraliga – 1. sezóna, Základní část</strong>.
+</div>
+
+<table>
+<thead>
+ <tr>
+  <th>Kolo</th>
+  <th>Domácí</th>
+  <th>Hosté</th>
+  <th>Skóre</th>
+  <th>Soubor</th>
+  <th>Akce</th>
+ </tr>
+</thead>
+<tbody id="matchesTable"></tbody>
+</table>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+
+// ID sezóny 1 a její základní části
+const SEASON_ID = "7d8d5cba-add3-4295-9721-74bafe2c92b7"
+const STAGE_ID  = "80920813-10a8-42b1-b5ce-c09cd12e2c0e"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let teamsMap = {}
+let filesMap = {}
+
+async function load(){
+
+ const { data: teams } = await db.from("teams").select("*")
+ teams.forEach(t=> teamsMap[t.id] = t)
+
+ const { data: matches } = await db
+  .from("matches")
+  .select("*")
+  .eq("season_id", SEASON_ID)
+  .eq("stage_id", STAGE_ID)
+  .order("round", { ascending: true })
+
+ render(matches || [])
+}
+
+function render(matches){
+
+ const cont = document.getElementById("matchesTable")
+ cont.innerHTML=""
+
+ if(matches.length === 0){
+  cont.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">
+   Žádné zápasy. Přidej je přes <strong>zapis.html</strong>.
+  </td></tr>`
+  return
+ }
+
+ matches.forEach(m=>{
+
+  const home = teamsMap[m.home_team]
+  const away = teamsMap[m.away_team]
+  if(!home||!away) return
+
+  const played = m.home_score != null && m.away_score != null
+
+  let stats = null
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+
+  let periods = ""
+  let tag = ""
+
+  if(stats){
+   const h1=Number(stats[16]||0)
+   const h2=Number(stats[17]||0)
+   const h3=Number(stats[18]||0)
+   const a1=Number(stats[6]||0)
+   const a2=Number(stats[7]||0)
+   const a3=Number(stats[8]||0)
+   periods = `${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
+   const isSN = stats[20]==="1"||stats[20]==="2"
+   const isOT = !isSN&&(stats[9]==="11"||stats[19]==="11")
+   if(isSN) tag="SN"
+   else if(isOT) tag="OT"
+  }
+
+  cont.innerHTML += `
+  <tr class="${played?"played-row":""}">
+   <td><span class="round-badge">${m.round}</span></td>
+
+   <td>
+    <div class="team-cell">
+     <img class="team-logo" src="./logos/${home.logo}" alt="${home.name}">
+     <span class="team-name">${home.name}</span>
+    </div>
+   </td>
+
+   <td>
+    <div class="team-cell">
+     <img class="team-logo" src="./logos/${away.logo}" alt="${away.name}">
+     <span class="team-name">${away.name}</span>
+    </div>
+   </td>
+
+   <td>
+    <div class="score-cell">
+     <span class="score-badge ${played?"":"empty"}">
+      ${played ? m.home_score+" : "+m.away_score : "- : -"}
+     </span>
+     ${tag ? `<span class="result-tag">${tag}</span>` : ""}
+     ${played && periods ? `<span class="periods-small">${periods}</span>` : ""}
+    </div>
+   </td>
+
+   <td>
+    <label class="file-label" id="label-${m.id}">
+     📂 Vybrat soubor
+     <input type="file" onchange="handleFile(event,'${m.id}')">
+    </label>
+    <div class="file-name" id="fname-${m.id}"></div>
+   </td>
+
+   <td>
+    <div class="btn-wrap">
+     <button class="btn btn-save" onclick="saveMatch('${m.id}')">
+      ✅ Uložit
+     </button>
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">
+      ↩ Zrušit
+     </button>
+    </div>
+   </td>
+  </tr>
+  `
+ })
+}
+
+function handleFile(e, matchId){
+ const file = e.target.files[0]
+ if(!file) return
+ const reader = new FileReader()
+ reader.onload = ev=>{
+  filesMap[matchId] = ev.target.result.split(/\r?\n/)
+  const fname = document.getElementById(`fname-${matchId}`)
+  if(fname) fname.textContent = file.name
+  const lbl = document.getElementById(`label-${matchId}`)
+  if(lbl) lbl.style.borderColor = "#27ae60"
+ }
+ reader.readAsText(file)
+}
+
+function calculateScore(lines){
+ let ag = Number(lines[6]||0)+Number(lines[7]||0)+Number(lines[8]||0)
+ let hg = Number(lines[16]||0)+Number(lines[17]||0)+Number(lines[18]||0)
+ if(lines[9]==="11") hg++
+ if(lines[19]==="11") ag++
+ if(lines[20]==="1") hg++
+ if(lines[20]==="2") ag++
+ return {hg, ag}
+}
+
+function getResultType(lines){
+ const isSN = lines[20]==="1"||lines[20]==="2"
+ const isOT = !isSN&&(lines[9]==="11"||lines[19]==="11")
+ if(isSN) return "SN"
+ if(isOT) return "OT"
+ return "REG"
+}
+
+async function saveMatch(matchId){
+ const lines = filesMap[matchId]
+ if(!lines){ alert("Nahraj soubor"); return }
+ const score = calculateScore(lines)
+ const resultType = getResultType(lines)
+ await db.from("matches")
+  .update({
+   home_score: score.hg,
+   away_score: score.ag,
+   played: true,
+   stats: JSON.stringify(lines),
+   result_type: resultType
+  })
+  .eq("id", matchId)
+ alert("Uloženo 👍")
+ load()
+}
+
+async function resetMatch(matchId){
+ if(!confirm("Opravdu zrušit výsledek?")) return
+ await db.from("matches")
+  .update({
+   home_score: null,
+   away_score: null,
+   played: false,
+   stats: null,
+   result_type: null
+  })
+  .eq("id", matchId)
+ alert("Zrušeno 👍")
+ load()
+}
+
+load()
+</script>
+</body>
+</html>
