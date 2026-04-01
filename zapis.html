@@ -13,6 +13,7 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 h1{color:#0b2a3c;margin-bottom:4px;}
 .subtitle{color:#888;font-size:13px;margin-bottom:20px;}
 
+/* FILTER BAR */
 .filterBar{
  display:flex;gap:10px;flex-wrap:wrap;
  margin-bottom:20px;align-items:center;
@@ -26,19 +27,20 @@ h1{color:#0b2a3c;margin-bottom:4px;}
  padding:8px 12px;border-radius:8px;
  border:1px solid #ccc;font-size:13px;
  background:white;cursor:pointer;color:#333;
- min-width:200px;
+ min-width:180px;
 }
 
 .btn-add{
  display:inline-flex;align-items:center;gap:5px;
  border:none;border-radius:8px;cursor:pointer;
  font-weight:700;font-size:13px;
- padding:8px 14px;
+ padding:8px 16px;
  background:#0b2a3c;color:white;
  margin-left:auto;
 }
 .btn-add:hover{background:#1a3a5c;}
 
+/* TABLE */
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 
 th{
@@ -59,92 +61,102 @@ tr:nth-child(odd) td{background:#f7f8fa;}
 tr:hover td{background:#edf2f7;}
 
 .team-cell{display:flex;align-items:center;gap:8px;}
-
-.team-logo{
- width:28px;height:28px;object-fit:contain;
- background:white;border-radius:5px;padding:2px;
- border:1px solid #e0e0e0;flex-shrink:0;
-}
-
+.team-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
 .team-name{font-weight:600;font-size:13px;}
 
-.score-badge{
- display:inline-block;background:#0b2a3c;color:white;
- font-weight:700;font-size:14px;
- padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;
-}
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
 .score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
 
-.result-tag{
- display:inline-block;font-size:10px;font-weight:700;
- background:#2f9ec9;color:white;
- padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;
-}
+.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;}
 
-.file-label{
- display:inline-flex;align-items:center;gap:6px;
- background:#f0f0f0;border:1px solid #ccc;
- border-radius:8px;padding:7px 12px;
- cursor:pointer;font-size:12px;color:#555;
- transition:background .15s;white-space:nowrap;
-}
+.file-label{display:inline-flex;align-items:center;gap:6px;background:#f0f0f0;border:1px solid #ccc;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:#555;transition:background .15s;white-space:nowrap;}
 .file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
 .file-label input{display:none;}
 .file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
-
-.btn{
- display:inline-flex;align-items:center;gap:5px;
- border:none;border-radius:8px;cursor:pointer;
- font-weight:700;font-size:13px;
- padding:8px 14px;transition:all .15s;white-space:nowrap;
-}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
 .btn-save{background:#27ae60;color:white;}
 .btn-save:hover{background:#219a52;}
 .btn-reset{background:#e74c3c;color:white;}
 .btn-reset:hover{background:#c0392b;}
 
-.round-badge{
- display:inline-block;background:#e9ecef;color:#0b2a3c;
- font-weight:700;font-size:12px;
- padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;
-}
+.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
 
 .empty-msg{text-align:center;padding:40px;color:#999;font-size:14px;}
+.match-count{font-size:12px;color:#888;margin-bottom:8px;}
 
-.modal-overlay{
- display:none;position:fixed;top:0;left:0;
- width:100%;height:100%;
- background:rgba(0,0,0,.5);z-index:100;
- align-items:center;justify-content:center;
-}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;}
 .modal-overlay.open{display:flex;}
 
-.modal{
- background:white;border-radius:14px;
- padding:24px;width:100%;max-width:480px;
- box-shadow:0 8px 32px rgba(0,0,0,.2);
+.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:600px;box-shadow:0 8px 32px rgba(0,0,0,.2);margin-bottom:40px;}
+.modal h2{color:#0b2a3c;margin-bottom:4px;font-size:18px;}
+.modal-sub{color:#888;font-size:12px;margin-bottom:20px;}
+
+/* Sekce výběru sezóny/stage */
+.modal-section{
+ background:#f7f8fa;border:1px solid #e0e0e0;
+ border-radius:10px;padding:14px;margin-bottom:20px;
+}
+.modal-section-title{font-size:12px;font-weight:700;color:#0b2a3c;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
+
+.modal-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.modal-row:last-child{margin-bottom:0;}
+.modal-row label{font-size:12px;font-weight:700;color:#666;min-width:60px;}
+.modal-row select{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;min-width:150px;}
+
+/* Zápasy v modalu */
+.match-entries{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+
+.match-entry{
+ background:#f7f8fa;border:1px solid #e0e0e0;
+ border-radius:10px;padding:12px;
+ position:relative;
 }
 
-.modal h2{color:#0b2a3c;margin-bottom:16px;font-size:18px;}
-
-.modal-field{margin-bottom:12px;}
-.modal-field label{display:block;font-size:12px;font-weight:700;color:#666;margin-bottom:4px;}
-.modal-field select,.modal-field input{
- width:100%;padding:9px 12px;border-radius:8px;
- border:1px solid #ccc;font-size:13px;
+.match-entry-header{
+ display:flex;justify-content:space-between;align-items:center;
+ margin-bottom:10px;
 }
 
-.modal-btns{display:flex;gap:8px;margin-top:18px;}
+.match-entry-num{font-size:12px;font-weight:700;color:#0b2a3c;}
+
+.btn-remove-entry{
+ background:#fee2e2;color:#991b1b;
+ border:none;border-radius:6px;
+ padding:4px 8px;cursor:pointer;
+ font-size:12px;font-weight:700;
+}
+.btn-remove-entry:hover{background:#fca5a5;}
+
+.entry-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;}
+
+.entry-fields select{padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;width:100%;}
+.entry-fields input{padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;width:60px;text-align:center;}
+
+.entry-label{font-size:11px;color:#888;margin-bottom:3px;font-weight:600;}
+
+.btn-add-entry{
+ display:inline-flex;align-items:center;gap:6px;
+ background:#e8f4fd;color:#0b2a3c;
+ border:2px dashed #b8d8f0;
+ border-radius:10px;padding:10px 16px;
+ cursor:pointer;font-weight:700;font-size:13px;
+ width:100%;justify-content:center;
+ transition:all .15s;
+}
+.btn-add-entry:hover{background:#d0eafb;border-color:#2f9ec9;}
+
+.modal-btns{display:flex;gap:8px;margin-top:16px;}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
 .btn-confirm{background:#27ae60;color:white;}
+.btn-confirm:hover{background:#219a52;}
 .btn-cancel{background:#e0e0e0;color:#333;}
-
-.match-count{font-size:12px;color:#888;margin-bottom:8px;}
+.btn-cancel:hover{background:#ccc;}
 </style>
 </head>
 
@@ -156,12 +168,12 @@ tr:hover td{background:#edf2f7;}
 
 <div class="filterBar">
  <label>Sezóna:</label>
- <select id="seasonSelect" onchange="onSeasonChange()">
+ <select id="seasonFilter" onchange="onSeasonFilterChange()">
   <option value="">-- Načítám... --</option>
  </select>
 
  <label>Stage:</label>
- <select id="stageSelect" onchange="loadMatches()">
+ <select id="stageFilter" onchange="loadMatches()">
   <option value="">-- Vyber stage --</option>
  </select>
 
@@ -170,7 +182,7 @@ tr:hover td{background:#edf2f7;}
   <option value="">Všechny týmy</option>
  </select>
 
- <button class="btn-add" onclick="openModal()">➕ Přidat zápas</button>
+ <button class="btn-add" onclick="openModal()">➕ Přidat zápasy</button>
 </div>
 
 <div class="match-count" id="matchCount"></div>
@@ -187,7 +199,7 @@ tr:hover td{background:#edf2f7;}
  </tr>
 </thead>
 <tbody id="matchesTable">
- <tr><td colspan="6" class="empty-msg">Načítám...</td></tr>
+ <tr><td colspan="6" class="empty-msg">Vyberte sezónu a stage.</td></tr>
 </tbody>
 </table>
 
@@ -196,22 +208,35 @@ tr:hover td{background:#edf2f7;}
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
  <div class="modal">
-  <h2>➕ Přidat zápas</h2>
-  <div class="modal-field">
-   <label>Domácí tým</label>
-   <select id="m-home"></select>
+  <h2>➕ Přidat zápasy</h2>
+  <p class="modal-sub">Nastav sezónu, soutěž a přidej jeden nebo více zápasů najednou.</p>
+
+  <!-- Sezóna + Stage výběr -->
+  <div class="modal-section">
+   <div class="modal-section-title">Kam zápasy přidat</div>
+   <div class="modal-row">
+    <label>Sezóna:</label>
+    <select id="m-season" onchange="onModalSeasonChange()">
+     <option value="">-- Vyber sezónu --</option>
+    </select>
+   </div>
+   <div class="modal-row">
+    <label>Stage:</label>
+    <select id="m-stage">
+     <option value="">-- Vyber stage --</option>
+    </select>
+   </div>
   </div>
-  <div class="modal-field">
-   <label>Hosté tým</label>
-   <select id="m-away"></select>
-  </div>
-  <div class="modal-field">
-   <label>Kolo</label>
-   <input type="number" id="m-round" min="1" value="1">
-  </div>
+
+  <!-- Seznam zápasů -->
+  <div class="modal-section-title" style="font-size:12px;font-weight:700;color:#0b2a3c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Zápasy</div>
+  <div class="match-entries" id="matchEntries"></div>
+
+  <button class="btn-add-entry" onclick="addEntry()">➕ Přidat další zápas</button>
+
   <div class="modal-btns">
    <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
-   <button class="btn-confirm" onclick="addMatch()">✅ Přidat</button>
+   <button class="btn-confirm" onclick="saveAllMatches()">✅ Uložit vše</button>
   </div>
  </div>
 </div>
@@ -231,60 +256,68 @@ let teamsMap = {}
 let filesMap = {}
 let allTeams = []
 let allStages = []
+let allSeasons = []
+let allMatches = []
 let currentSeasonId = ""
 let currentStageId = ""
-let allMatches = []
 let currentTeamFilter = ""
+let entryCount = 0
+
+// =====================================================
+// INIT
+// =====================================================
 
 async function init(){
- const { data: seasons, error: err1 } = await db
-  .from("seasons").select("*").order("created_at", { ascending: false })
+ // Načti sezóny
+ const { data: seasons } = await db.from("seasons").select("*").order("created_at", { ascending: false })
+ allSeasons = seasons || []
 
- if(err1 || !seasons){
-  document.getElementById("matchesTable").innerHTML =
-   `<tr><td colspan="6" class="empty-msg">❌ Chyba načítání sezón.</td></tr>`
-  return
- }
-
- const seasonSel = document.getElementById("seasonSelect")
+ const seasonSel = document.getElementById("seasonFilter")
  seasonSel.innerHTML = '<option value="">-- Vyber sezónu --</option>'
- seasons.forEach(s=>{
+ allSeasons.forEach(s=>{
   const opt = document.createElement("option")
   opt.value = s.id
   opt.textContent = s.name
   seasonSel.appendChild(opt)
  })
 
+ // Načti stages
  const { data: stages } = await db.from("stages").select("*").order("order", { ascending: true })
  allStages = stages || []
 
- const { data: teams } = await db.from("teams").select("*")
+ // Načti týmy
+ const { data: teams } = await db.from("teams").select("*").order("name")
  allTeams = teams || []
  teams.forEach(t=> teamsMap[t.id] = t)
 
- const homeS = document.getElementById("m-home")
- const awayS = document.getElementById("m-away")
- homeS.innerHTML = ""
- awayS.innerHTML = ""
- allTeams.forEach(t=>{
-  homeS.innerHTML += `<option value="${t.id}">${t.name}</option>`
-  awayS.innerHTML += `<option value="${t.id}">${t.name}</option>`
+ // Nastav modal sezóny
+ const mSeason = document.getElementById("m-season")
+ mSeason.innerHTML = '<option value="">-- Vyber sezónu --</option>'
+ allSeasons.forEach(s=>{
+  const opt = document.createElement("option")
+  opt.value = s.id
+  opt.textContent = s.name
+  mSeason.appendChild(opt)
  })
 
- const found = seasons.find(s => s.id === CURRENT_SEASON_ID)
- seasonSel.value = found ? CURRENT_SEASON_ID : seasons[0].id
- onSeasonChange()
+ // Vyber aktuální sezónu ve filtru
+ const found = allSeasons.find(s => s.id === CURRENT_SEASON_ID)
+ seasonSel.value = found ? CURRENT_SEASON_ID : (allSeasons[0]?.id || "")
+ onSeasonFilterChange()
 }
 
-function onSeasonChange(){
- currentSeasonId = document.getElementById("seasonSelect").value
+// =====================================================
+// FILTER – sezóna změna
+// =====================================================
+
+function onSeasonFilterChange(){
+ currentSeasonId = document.getElementById("seasonFilter").value
  if(!currentSeasonId) return
 
- const stageSel = document.getElementById("stageSelect")
+ const stageSel = document.getElementById("stageFilter")
  stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
 
  const seasonStages = allStages.filter(s => s.season_id === currentSeasonId)
-
  seasonStages.forEach(s=>{
   const opt = document.createElement("option")
   opt.value = s.id
@@ -300,7 +333,7 @@ function onSeasonChange(){
 }
 
 async function loadMatches(){
- currentStageId = document.getElementById("stageSelect").value
+ currentStageId = document.getElementById("stageFilter").value
  if(!currentStageId || !currentSeasonId) return
 
  const { data: matches, error } = await db
@@ -351,12 +384,16 @@ function applyTeamFilter(){
  render(filtered)
 }
 
+// =====================================================
+// RENDER TABLE
+// =====================================================
+
 function render(matches){
  const cont = document.getElementById("matchesTable")
  cont.innerHTML=""
 
  if(matches.length === 0){
-  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy. Přidej první zápas tlačítkem ➕ nebo změň filtr.</td></tr>`
+  cont.innerHTML = `<tr><td colspan="6" class="empty-msg">Žádné zápasy. Přidej zápasy tlačítkem ➕ nebo změň filtr.</td></tr>`
   return
  }
 
@@ -366,7 +403,6 @@ function render(matches){
   if(!home||!away) return
 
   const played = m.home_score != null && m.away_score != null
-
   let suffix = ""
   if(m.result_type==="SN") suffix = "SN"
   else if(m.result_type==="OT") suffix = "OT"
@@ -410,6 +446,170 @@ function render(matches){
  })
 }
 
+// =====================================================
+// MODAL
+// =====================================================
+
+function openModal(){
+ entryCount = 0
+ document.getElementById("matchEntries").innerHTML = ""
+
+ // Předvyber sezónu podle aktuálního filtru
+ const mSeason = document.getElementById("m-season")
+ mSeason.value = currentSeasonId || ""
+ onModalSeasonChange()
+
+ addEntry()
+ document.getElementById("modalOverlay").classList.add("open")
+}
+
+function closeModal(){
+ document.getElementById("modalOverlay").classList.remove("open")
+}
+
+function onModalSeasonChange(){
+ const seasonId = document.getElementById("m-season").value
+ const stageSel = document.getElementById("m-stage")
+ stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
+
+ if(!seasonId) return
+
+ const seasonStages = allStages.filter(s => s.season_id === seasonId)
+ seasonStages.forEach(s=>{
+  const opt = document.createElement("option")
+  opt.value = s.id
+  opt.textContent = s.parent_stage_id ? `  └ ${s.name}` : s.name
+  stageSel.appendChild(opt)
+ })
+
+ // Předvyber stage podle aktuálního filtru
+ if(currentStageId){
+  const found = seasonStages.find(s => s.id === currentStageId)
+  if(found) stageSel.value = currentStageId
+ } else {
+  const zakladni = seasonStages.find(s => !s.parent_stage_id && s.order === 1) || seasonStages[0]
+  if(zakladni) stageSel.value = zakladni.id
+ }
+}
+
+function addEntry(){
+ entryCount++
+ const id = entryCount
+ const cont = document.getElementById("matchEntries")
+
+ // Možné kolo – auto-increment
+ const existingEntries = cont.querySelectorAll(".match-entry").length
+ const nextRound = allMatches.length + existingEntries + 1
+
+ let teamOptions = allTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+
+ const div = document.createElement("div")
+ div.className = "match-entry"
+ div.id = `entry-${id}`
+ div.innerHTML = `
+  <div class="match-entry-header">
+   <span class="match-entry-num">Zápas ${id}</span>
+   <button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button>
+  </div>
+  <div class="entry-fields">
+   <div>
+    <div class="entry-label">Domácí tým</div>
+    <select id="e-home-${id}">${teamOptions}</select>
+   </div>
+   <div>
+    <div class="entry-label">Hosté tým</div>
+    <select id="e-away-${id}">${teamOptions}</select>
+   </div>
+   <div>
+    <div class="entry-label">Kolo</div>
+    <input type="number" id="e-round-${id}" min="1" value="${nextRound}">
+   </div>
+  </div>
+ `
+ cont.appendChild(div)
+
+ // Vyber různé týmy jako default
+ if(allTeams.length >= 2){
+  document.getElementById(`e-away-${id}`).value = allTeams[1].id
+ }
+}
+
+function removeEntry(id){
+ const el = document.getElementById(`entry-${id}`)
+ if(el){
+  const cont = document.getElementById("matchEntries")
+  if(cont.querySelectorAll(".match-entry").length <= 1){
+   alert("Musí zůstat alespoň jeden zápas!")
+   return
+  }
+  el.remove()
+ }
+}
+
+async function saveAllMatches(){
+ const seasonId = document.getElementById("m-season").value
+ const stageId  = document.getElementById("m-stage").value
+
+ if(!seasonId){ alert("Vyber sezónu!"); return }
+ if(!stageId){  alert("Vyber stage!"); return }
+
+ const entries = document.querySelectorAll(".match-entry")
+ if(entries.length === 0){ alert("Přidej alespoň jeden zápas!"); return }
+
+ const toInsert = []
+ let valid = true
+
+ entries.forEach(entry=>{
+  const id = entry.id.replace("entry-","")
+  const homeId = document.getElementById(`e-home-${id}`)?.value
+  const awayId = document.getElementById(`e-away-${id}`)?.value
+  const round  = Number(document.getElementById(`e-round-${id}`)?.value)
+
+  if(homeId === awayId){
+   alert(`Zápas ${id}: Domácí a hosté nemohou být stejný tým!`)
+   valid = false; return
+  }
+  if(!round || round < 1){
+   alert(`Zápas ${id}: Zadej platné číslo kola!`)
+   valid = false; return
+  }
+
+  toInsert.push({
+   home_team: homeId,
+   away_team: awayId,
+   round: round,
+   season_id: seasonId,
+   stage_id: stageId,
+   played: false
+  })
+ })
+
+ if(!valid) return
+
+ const { error } = await db.from("matches").insert(toInsert)
+
+ if(error){
+  alert("❌ Chyba: " + error.message)
+  return
+ }
+
+ closeModal()
+
+ // Přepni filter na přidanou sezónu/stage
+ document.getElementById("seasonFilter").value = seasonId
+ onSeasonFilterChange()
+ setTimeout(()=>{
+  document.getElementById("stageFilter").value = stageId
+  loadMatches()
+ }, 100)
+
+ alert(`✅ Přidáno ${toInsert.length} zápas${toInsert.length===1?'':'ů'}!`)
+}
+
+// =====================================================
+// FILE + SAVE + DELETE
+// =====================================================
+
 function handleFile(e, matchId){
  const file = e.target.files[0]
  if(!file) return
@@ -444,8 +644,7 @@ function getResultType(lines){
 
 function checkSingleTip(match, tip){
  const type = match.result_type
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
+ const hg = Number(match.home_score), ag = Number(match.away_score)
  const homeWin = hg>ag, awayWin = ag>hg
  switch(tip){
   case "1":  return homeWin && type==="REG"
@@ -484,7 +683,6 @@ async function evaluateBets(match){
 async function resetMatch(matchId){
  if(!confirm("Opravdu smazat celý zápas? Tato akce je nevratná.")) return
 
- // Zruš sázky
  const { data: bets } = await db.from("bets").select("*").eq("match_id",matchId)
  for(const bet of bets||[]){
   if(bet.status==="won"){
@@ -498,9 +696,7 @@ async function resetMatch(matchId){
   await db.from("bets").update({status:"pending"}).eq("id",bet.id)
  }
 
- // Smaž zápas
  await db.from("matches").delete().eq("id",matchId)
-
  alert("Zápas smazán 👍")
  loadMatches()
 }
@@ -520,37 +716,6 @@ async function saveMatch(matchId){
  const { data: fullMatch } = await db.from("matches").select("*").eq("id",matchId).single()
  await evaluateBets(fullMatch)
  alert("Uloženo 👍")
- loadMatches()
-}
-
-function openModal(){
- if(!currentSeasonId || !currentStageId){ alert("Nejdřív vyber sezónu a stage!"); return }
- document.getElementById("modalOverlay").classList.add("open")
-}
-
-function closeModal(){
- document.getElementById("modalOverlay").classList.remove("open")
-}
-
-async function addMatch(){
- const homeId = document.getElementById("m-home").value
- const awayId = document.getElementById("m-away").value
- const round  = Number(document.getElementById("m-round").value)
-
- if(homeId === awayId){ alert("Domácí a hosté nemohou být stejný tým!"); return }
- if(!round || round < 1){ alert("Zadej číslo kola!"); return }
-
- const { error } = await db.from("matches").insert({
-  home_team: homeId,
-  away_team: awayId,
-  round: round,
-  season_id: currentSeasonId,
-  stage_id: currentStageId,
-  played: false
- })
-
- if(error){ alert("❌ Chyba: " + error.message); return }
- closeModal()
  loadMatches()
 }
 
