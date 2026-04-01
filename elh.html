@@ -29,7 +29,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .headerLogo{
  width:64px;height:64px;
  object-fit:contain;
- /* odstraní bílé pozadí u PNG s průhledností */
  mix-blend-mode:lighten;
  flex-shrink:0;
 }
@@ -51,7 +50,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  white-space:nowrap;
 }
 
-/* SEKCE NADPIS */
 .sectionTitle{
  font-size:17px;font-weight:700;
  color:#0b2a3c;
@@ -136,92 +134,99 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;cursor:pointer;
 }
 
-/* MATCH CARDS */
-.matchRow{
- background:white;
- border:1px solid #e0e8f0;
- padding:12px 14px;
- margin-bottom:8px;
- border-radius:12px;
- display:flex;
- flex-direction:column;
- gap:10px;
- box-shadow:0 1px 4px rgba(0,0,0,.06);
- transition:box-shadow .15s;
+/* MATCH TABLE – stejný styl jako zapis.html */
+.match-table{
+ width:100%;border-collapse:collapse;margin-bottom:8px;
 }
 
-.matchRow:hover{
- box-shadow:0 3px 12px rgba(0,0,0,.1);
- border-color:#b8d0e8;
-}
-
-.teamBox{
- display:flex;align-items:center;gap:8px;
- font-weight:700;font-size:14px;color:#1a2a3c;
-}
-
-.scoreBox{
+.match-table thead tr{
  background:#0b2a3c;color:white;
- font-size:18px;font-weight:800;
- padding:6px 10px;border-radius:8px;
- min-width:45px;text-align:center;
 }
 
-.middleBox{text-align:center;font-size:12px;}
+.match-table thead th{
+ padding:12px 10px;text-align:center;
+ font-size:12px;letter-spacing:.05em;white-space:nowrap;
+}
 
-.periods{
- color:#888;font-size:11px;
- background:#f0f0f0;
+.match-table thead th.th-left{text-align:left;}
+
+.match-table tbody tr{
+ border-bottom:1px solid #e8e8e8;
+ transition:background .15s;
+}
+
+.match-table tbody tr:nth-child(odd) td{background:#f7f8fa;}
+.match-table tbody tr:hover td{background:#edf2f7;}
+
+.match-table tbody td{
+ padding:10px 10px;
+ text-align:center;
+ vertical-align:middle;
+ font-size:13px;
+ color:#333;
+}
+
+.match-table tbody td.td-left{text-align:left;}
+
+.round-badge{
  display:inline-block;
- padding:2px 8px;border-radius:10px;
+ background:#e9ecef;color:#0b2a3c;
+ font-weight:700;font-size:12px;
+ padding:3px 10px;border-radius:20px;
+ min-width:36px;text-align:center;
 }
 
-.winTag{
- font-size:11px;font-weight:700;color:#fff;
- background:#2f9ec9;padding:3px 8px;
- border-radius:6px;display:inline-block;margin-top:4px;
+.match-logo{
+ width:28px;height:28px;object-fit:contain;
+ background:white;border-radius:5px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
 }
+
+.match-team-cell{display:flex;align-items:center;gap:8px;}
+.match-team-name{font-weight:600;font-size:13px;}
+
+.score-badge{
+ display:inline-block;
+ background:#0b2a3c;color:white;
+ font-weight:700;font-size:14px;
+ padding:4px 12px;border-radius:6px;
+ min-width:60px;text-align:center;
+}
+
+.score-badge.empty{
+ background:#e0e0e0;color:#999;
+ font-weight:400;font-size:13px;
+}
+
+.result-tag{
+ display:inline-block;
+ font-size:10px;font-weight:700;
+ background:#2f9ec9;color:white;
+ padding:2px 6px;border-radius:4px;
+ margin-left:5px;vertical-align:middle;
+}
+
+.periods-small{
+ font-size:11px;color:#888;display:block;margin-top:2px;
+}
+
+.btn-wrap{display:flex;gap:6px;justify-content:center;}
 
 .btn{
+ display:inline-flex;align-items:center;gap:5px;
  border:none;border-radius:8px;cursor:pointer;
- width:100%;font-weight:700;height:36px;
- display:flex;align-items:center;justify-content:center;
- font-size:13px;gap:5px;transition:all .15s;
-}
-.detailBtn{background:#1a5276;color:white;}
-.detailBtn:hover{background:#0b2a3c;}
-.betBtn{background:#27ae60;color:white;}
-.betBtn:hover{background:#219a52;}
-
-.btnWrap{display:flex;flex-direction:column;gap:6px;}
-
-.logo{
- width:36px;height:36px;object-fit:contain;
- background:white;padding:2px;border-radius:6px;
- border:1px solid #e0e0e0;
+ font-weight:700;font-size:13px;
+ padding:8px 14px;transition:all .15s;
+ white-space:nowrap;
 }
 
-.roundTag{
- font-size:10px;font-weight:700;color:#888;
- background:#f0f0f0;padding:2px 8px;
- border-radius:10px;letter-spacing:.05em;
- text-transform:uppercase;
-}
+.btn-detail{background:#1a5276;color:white;}
+.btn-detail:hover{background:#0b2a3c;}
+.btn-bet{background:#27ae60;color:white;}
+.btn-bet:hover{background:#219a52;}
 
-@media(min-width:768px){
- .matchRow{
-  display:grid;
-  grid-template-columns:1fr 80px 160px 80px 1fr 120px;
-  align-items:center;
- }
- .homeTeam{grid-column:1;}
- .homeScore{grid-column:2;}
- .middleBox{grid-column:3;}
- .awayScore{grid-column:4;}
- .awayTeam{grid-column:5;justify-content:flex-end;text-align:right;}
- .btnWrap{grid-column:6;}
- .scoreBox{min-width:70px;}
-}
+.played-row td{background:#f0fdf4 !important;}
+.played-row:hover td{background:#e0f7e9 !important;}
 </style>
 </head>
 
@@ -273,7 +278,19 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 </div>
 
 <div class="sectionTitle">Rozpis zápasů</div>
-<div id="schedule"></div>
+
+<table class="match-table">
+ <thead>
+  <tr>
+   <th style="width:60px">Kolo</th>
+   <th class="th-left">Domácí</th>
+   <th class="th-left">Hosté</th>
+   <th style="width:140px">Skóre</th>
+   <th style="width:220px">Akce</th>
+  </tr>
+ </thead>
+ <tbody id="schedule"></tbody>
+</table>
 
 </div>
 
@@ -500,19 +517,19 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
 
 function render(matches, teamMap){
 
- const cont=document.getElementById("schedule")
+ const cont = document.getElementById("schedule")
  cont.innerHTML=""
 
  matches.forEach(m=>{
-  const home=teamMap[m.home_team]
-  const away=teamMap[m.away_team]
+  const home = teamMap[m.home_team]
+  const away = teamMap[m.away_team]
   if(!home||!away) return
 
-  let stats=null
-  try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+  let stats = null
+  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
 
-  let periods=""
-  let tag=""
+  let periods = ""
+  let tag = ""
 
   if(stats){
    const h1=Number(stats[16]||0)
@@ -521,47 +538,56 @@ function render(matches, teamMap){
    const a1=Number(stats[6]||0)
    const a2=Number(stats[7]||0)
    const a3=Number(stats[8]||0)
-   periods=`${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
-   const isSN=stats[20]==="1"||stats[20]==="2"
-   const isOT=!isSN&&(stats[9]==="11"||stats[19]==="11")
+   periods = `${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
+   const isSN = stats[20]==="1"||stats[20]==="2"
+   const isOT = !isSN&&(stats[9]==="11"||stats[19]==="11")
    if(isSN) tag="SN"
    else if(isOT) tag="OT"
   }
 
-  const homeScore=m.home_score??"-"
-  const awayScore=m.away_score??"-"
-  const played = m.home_score != null
+  const homeScore = m.home_score ?? "-"
+  const awayScore = m.away_score ?? "-"
+  const played    = m.home_score != null
 
-  cont.innerHTML+=`
-  <div class="matchRow">
-   <div class="teamBox homeTeam">
-    <img class="logo" src="./logos/${home.logo}">
-    <div>${home.name}</div>
-   </div>
-   <div class="scoreBox homeScore">${homeScore}</div>
-   <div class="middleBox">
-    ${played
-     ? `<div class="periods">${periods}</div>${tag?`<div class="winTag">${tag}</div>`:""}`
-     : `<span class="roundTag">Kolo ${m.round}</span>`
-    }
-   </div>
-   <div class="scoreBox awayScore">${awayScore}</div>
-   <div class="teamBox awayTeam">
-    <div>${away.name}</div>
-    <img class="logo" src="./logos/${away.logo}">
-   </div>
-   <div class="btnWrap">
-    <button class="btn detailBtn"
-     onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-     📊 Detail
-    </button>
-    <button class="btn betBtn"
-     onclick="window.location.href='vsad-si.html?id=${m.id}'">
-     🎲 Vsaď si
-    </button>
-   </div>
-  </div>
+  const scoreHtml = played
+   ? `<span class="score-badge">${homeScore} : ${awayScore}</span>
+      ${tag?`<span class="result-tag">${tag}</span>`:""}`
+   : `<span class="score-badge empty">- : -</span>`
+
+  const tr = document.createElement("tr")
+  tr.className = played ? "played-row" : ""
+  tr.innerHTML = `
+   <td><span class="round-badge">${m.round}</span></td>
+   <td class="td-left">
+    <div class="match-team-cell">
+     <img class="match-logo" src="./logos/${home.logo}" alt="${home.name}">
+     <span class="match-team-name">${home.name}</span>
+    </div>
+   </td>
+   <td class="td-left">
+    <div class="match-team-cell">
+     <img class="match-logo" src="./logos/${away.logo}" alt="${away.name}">
+     <span class="match-team-name">${away.name}</span>
+    </div>
+   </td>
+   <td>
+    ${scoreHtml}
+    ${played && periods ? `<span class="periods-small">${periods}</span>` : ""}
+   </td>
+   <td>
+    <div class="btn-wrap">
+     <button class="btn btn-detail"
+      onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
+      📊 Statistiky
+     </button>
+     <button class="btn btn-bet"
+      onclick="window.location.href='vsad-si.html?id=${m.id}'">
+      🎲 Vsaď si
+     </button>
+    </div>
+   </td>
   `
+  cont.appendChild(tr)
  })
 }
 
