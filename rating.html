@@ -15,7 +15,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .header-sub{font-size:12px;color:#7ab0cc;font-weight:500;margin-top:3px;text-transform:uppercase;letter-spacing:.06em;}
 
 .wrapper{max-width:1100px;margin:0 auto;padding:0 20px 40px;}
-
 .section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
@@ -25,7 +24,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .filter-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
 .team-card{background:white;border-radius:14px;overflow:hidden;border:1px solid #c8d8e8;box-shadow:0 2px 8px rgba(26,58,92,.07);margin-bottom:20px;}
-
 .team-header{background:#0b2a3c;padding:14px 16px;display:flex;align-items:center;gap:12px;}
 .team-logo{width:40px;height:40px;object-fit:contain;background:white;border-radius:8px;padding:3px;border:1px solid #e0e0e0;flex-shrink:0;}
 .team-logo-placeholder{width:40px;height:40px;border-radius:8px;background:#1a3a5c;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#7ab0cc;font-weight:700;}
@@ -47,13 +45,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .badge-win{background:#dcfce7;color:#166534;font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;}
 .badge-loss{background:#fee2e2;color:#991b1b;font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;}
 .badge-ot{background:#fef9c3;color:#854d0e;font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;}
-
 .score-cell{font-weight:800;font-size:13px;color:#0b2a3c;text-align:center;}
-
 .change-pos{color:#16a34a;font-weight:700;}
 .change-neg{color:#dc2626;font-weight:700;}
 .change-neu{color:#888;font-weight:700;}
-
 .season-badge{font-size:10px;font-weight:700;background:#e8f0f8;color:#1a5276;padding:2px 7px;border-radius:10px;white-space:nowrap;}
 
 .form-dots{display:flex;gap:3px;justify-content:center;align-items:center;}
@@ -63,14 +58,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .form-dot-ot{background:#fbbf24;}
 .form-dot-empty{background:#e2eaf0;}
 .form-dot.active{width:12px;height:12px;box-shadow:0 0 0 2px #0b2a3c;}
-
 .in-form{background:#fff8e1 !important;}
-
 .no-matches{padding:20px;text-align:center;color:#aaa;font-size:13px;}
 .loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
 </style>
 </head>
 <body>
+<script src="./menu.js"></script>
 
 <div class="header">
  <img class="header-logo" src="./logos/lokomotiva.png" alt="logo">
@@ -81,7 +75,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div class="wrapper">
-
 <div class="section-title">Žebříček a historie</div>
 
 <div class="filter-bar">
@@ -91,7 +84,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div id="content"><div class="loading">Načítám...</div></div>
-
 </div>
 
 <script type="module">
@@ -104,97 +96,66 @@ const supabase = createClient(
 )
 
 const START_RATING = 1000
-const K_OVERALL = 80
 const K_FORM = 120
 const FORM_WINDOW = 5
 
 let allTeams = []
-let ratings = {}
-let formRatings = {}
-let history = {}
 let teamMap = {}
 let seasonMap = {}
 let seasonOrder = {}
+let historyMap = {}
+let formSnapshotMap = {}
 let currentFilter = "extraliga"
 
 function getScore(match, teamId){
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
- let stats = null
- try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
- const isSN = stats && (stats[20]==="1"||stats[20]==="2")
- const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
- const isHome = match.home_team === teamId
- const tg = isHome ? hg : ag
- const og = isHome ? ag : hg
- if(tg > og) return (isSN||isOT) ? 0.75 : 1
- return (isSN||isOT) ? 0.25 : 0
+ const hg=Number(match.home_score), ag=Number(match.away_score)
+ let stats=null
+ try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
+ const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+ const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+ const isHome=match.home_team===teamId
+ const tg=isHome?hg:ag, og=isHome?ag:hg
+ if(tg>og) return (isSN||isOT)?0.75:1
+ return (isSN||isOT)?0.25:0
 }
 
 function getResultType(match, teamId){
- let stats = null
- try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
- const isSN = stats && (stats[20]==="1"||stats[20]==="2")
- const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
+ let stats=null
+ try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
+ const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+ const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
  if(isSN||isOT) return "ot"
- const isHome = match.home_team === teamId
- const hg = Number(match.home_score), ag = Number(match.away_score)
- const tg = isHome ? hg : ag, og = isHome ? ag : hg
- return tg > og ? "win" : "loss"
+ const isHome=match.home_team===teamId
+ const hg=Number(match.home_score), ag=Number(match.away_score)
+ const tg=isHome?hg:ag, og=isHome?ag:hg
+ return tg>og?"win":"loss"
 }
 
 async function load(){
- const [teamsRes, matchesRes, seasonsRes, stagesRes] = await Promise.all([
+ const [teamsRes, matchesRes, seasonsRes] = await Promise.all([
   supabase.from("teams").select("*"),
   supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null),
-  supabase.from("seasons").select("*").order("created_at", { ascending: true }),
-  supabase.from("stages").select("id, season_id, name").eq("name", "Základní část"),
+  supabase.from("seasons").select("*").order("created_at",{ascending:true}),
  ])
 
  allTeams = teamsRes.data || []
  const matches = matchesRes.data || []
  const seasons = seasonsRes.data || []
- const zakladniStages = stagesRes.data || []
 
- const zakladniStageIds = new Set(zakladniStages.map(s=>s.id))
+ seasons.forEach((s,i)=>{ seasonMap[s.id]=s.name; seasonOrder[s.id]=i })
+ allTeams.forEach(t=>{ teamMap[t.id]=t; historyMap[t.id]=[]; })
 
- seasons.forEach((s, i)=>{
-  seasonMap[s.id] = s.name
-  seasonOrder[s.id] = i
+ // Seřaď zápasy chronologicky
+ matches.sort((a,b)=>{
+  const sA=seasonOrder[a.season_id]??999, sB=seasonOrder[b.season_id]??999
+  if(sA!==sB) return sA-sB
+  return Number(a.round)-Number(b.round)
  })
 
- allTeams.forEach(t=>{
-  ratings[t.id] = START_RATING
-  formRatings[t.id] = START_RATING
-  history[t.id] = []
-  teamMap[t.id] = t
- })
-
- // Seřaď podle sezóny pak kola
- matches.sort((a, b)=>{
-  const sA = seasonOrder[a.season_id] ?? 999
-  const sB = seasonOrder[b.season_id] ?? 999
-  if(sA !== sB) return sA - sB
-  return Number(a.round) - Number(b.round)
- })
-
- // ELO – jen Základní část
- const zakladniMatches = matches.filter(m=> zakladniStageIds.has(m.stage_id))
-
- zakladniMatches.forEach(m=>{
-  const h=m.home_team, a=m.away_team
-  if(ratings[h]===undefined||ratings[a]===undefined) return
-  const sH=getScore(m,h), sA=getScore(m,a)
-  const rH=ratings[h], rA=ratings[a]
-  const eH=1/(1+Math.pow(10,(rA-rH)/400))
-  const eA=1/(1+Math.pow(10,(rH-rA)/400))
-  ratings[h]=Math.round(rH+K_OVERALL*(sH-eH))
-  ratings[a]=Math.round(rA+K_OVERALL*(sA-eA))
- })
-
- // FORMA – všechny zápasy napříč sezónami
+ // Počítej POUZE formu (pro zobrazení history) – ELO bereme z DB
+ const formRatings = {}
  const formHistory = {}
- allTeams.forEach(t=> formHistory[t.id] = [])
+ allTeams.forEach(t=>{ formRatings[t.id]=START_RATING; formHistory[t.id]=[] })
 
  matches.forEach(m=>{
   const h=m.home_team, a=m.away_team
@@ -210,30 +171,19 @@ async function load(){
    const newForm=Math.round(START_RATING+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
    const before=formRatings[teamId]
    formRatings[teamId]=newForm
-   return { before, after: newForm, change: Math.round(ch) }
+   return {before, after:newForm, change:Math.round(ch)}
   }
 
   const fH=updateForm(h,a,sH)
   const fA=updateForm(a,h,sA)
 
-  // Uložit do history pomocí ELO hodnot (pro zobrazení)
-  const eloBeforeH = history[h].length>0 ? history[h][history[h].length-1].eloAfter : START_RATING
-  const eloBeforeA = history[a].length>0 ? history[a][history[a].length-1].eloAfter : START_RATING
-
-  history[h].push({
-   match: m,
-   eloBefore: eloBeforeH, eloAfter: ratings[h], eloChange: ratings[h]-eloBeforeH,
-   formBefore: fH.before, formAfter: fH.after, formChange: fH.change,
-   resultType: getResultType(m, h),
-   formSnapshot: [...formHistory[h]],
+  historyMap[h].push({
+   match:m, formBefore:fH.before, formAfter:fH.after, formChange:fH.change,
+   resultType:getResultType(m,h), formSnapshot:[...formHistory[h]]
   })
-
-  history[a].push({
-   match: m,
-   eloBefore: eloBeforeA, eloAfter: ratings[a], eloChange: ratings[a]-eloBeforeA,
-   formBefore: fA.before, formAfter: fA.after, formChange: fA.change,
-   resultType: getResultType(m, a),
-   formSnapshot: [...formHistory[a]],
+  historyMap[a].push({
+   match:m, formBefore:fA.before, formAfter:fA.after, formChange:fA.change,
+   resultType:getResultType(m,a), formSnapshot:[...formHistory[a]]
   })
  })
 
@@ -241,69 +191,59 @@ async function load(){
 }
 
 function setFilter(val, btn){
- currentFilter = val
+ currentFilter=val
  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"))
  btn.classList.add("active")
  render()
 }
-
-window.setFilter = setFilter
+window.setFilter=setFilter
 
 function render(){
- const cont = document.getElementById("content")
- cont.innerHTML = ""
+ const cont=document.getElementById("content")
+ cont.innerHTML=""
 
- let filtered = allTeams
- if(currentFilter !== "all"){
-  filtered = allTeams.filter(t=>(t.competition||"").toLowerCase()===currentFilter)
- }
+ let filtered=allTeams
+ if(currentFilter!=="all") filtered=allTeams.filter(t=>(t.competition||"").toLowerCase()===currentFilter)
 
- const sorted = filtered
-  .map(t=>({...t, elo:ratings[t.id]||START_RATING, form:formRatings[t.id]||START_RATING}))
+ // Řaď podle rating_overall z DB
+ const sorted=filtered
+  .map(t=>({...t, elo:t.rating_overall||START_RATING, form:t.rating_form||START_RATING}))
   .sort((a,b)=>b.elo-a.elo)
 
- sorted.forEach((team, idx)=>{
-  const teamHistory = (history[team.id]||[]).slice().reverse()
-  const lastFiveIds = new Set(
-   (history[team.id]||[]).slice(-FORM_WINDOW).map(h=>h.match.id)
-  )
+ sorted.forEach((team,idx)=>{
+  const teamHistory=(historyMap[team.id]||[]).slice().reverse()
+  const lastFiveIds=new Set((historyMap[team.id]||[]).slice(-FORM_WINDOW).map(h=>h.match.id))
 
-  let matchRows = ""
+  let matchRows=""
   if(!teamHistory.length){
-   matchRows = `<tr><td colspan="7" class="no-matches">Žádné odehrané zápasy</td></tr>`
+   matchRows=`<tr><td colspan="6" class="no-matches">Žádné odehrané zápasy</td></tr>`
   } else {
    teamHistory.forEach(h=>{
-    const m = h.match
-    const home = teamMap[m.home_team]
-    const away = teamMap[m.away_team]
-    const isHome = m.home_team === team.id
-    const opp = isHome ? away : home
-    const seasonName = seasonMap[m.season_id] || "—"
-    const inForm = lastFiveIds.has(m.id)
+    const m=h.match
+    const home=teamMap[m.home_team], away=teamMap[m.away_team]
+    const isHome=m.home_team===team.id
+    const opp=isHome?away:home
+    const seasonName=seasonMap[m.season_id]||"—"
+    const inForm=lastFiveIds.has(m.id)
 
-    const resultLabel = h.resultType==="win"?"Výhra":h.resultType==="loss"?"Prohra":"OT/SN"
-    const resultClass = h.resultType==="win"?"badge-win":h.resultType==="loss"?"badge-loss":"badge-ot"
+    const resultLabel=h.resultType==="win"?"Výhra":h.resultType==="loss"?"Prohra":"OT/SN"
+    const resultClass=h.resultType==="win"?"badge-win":h.resultType==="loss"?"badge-loss":"badge-ot"
+    const formStr=`${h.formChange>=0?"+":""}${h.formChange}`
+    const formClass=h.formChange>0?"change-pos":h.formChange<0?"change-neg":"change-neu"
 
-    const eloStr = `${h.eloChange>=0?"+":""}${h.eloChange}`
-    const eloClass = h.eloChange>0?"change-pos":h.eloChange<0?"change-neg":"change-neu"
-
-    const formStr = `${h.formChange>=0?"+":""}${h.formChange}`
-    const formClass = h.formChange>0?"change-pos":h.formChange<0?"change-neg":"change-neu"
-
-    let formDots = '<div class="form-dots">'
+    let formDots='<div class="form-dots">'
     for(let d=0;d<FORM_WINDOW;d++){
-     const val = h.formSnapshot[d]
-     if(val===undefined){
-      formDots += `<div class="form-dot form-dot-empty"></div>`
-     } else {
-      const isLast = d===h.formSnapshot.length-1
-      const dotType = val>0?"form-dot-win":val<0?"form-dot-loss":"form-dot-ot"
-      formDots += `<div class="form-dot ${dotType}${isLast?" active":""}"></div>`
+     const val=h.formSnapshot[d]
+     if(val===undefined) formDots+=`<div class="form-dot form-dot-empty"></div>`
+     else {
+      const isLast=d===h.formSnapshot.length-1
+      const dotType=val>0?"form-dot-win":val<0?"form-dot-loss":"form-dot-ot"
+      formDots+=`<div class="form-dot ${dotType}${isLast?" active":""}"></div>`
      }
     }
-    formDots += '</div>'
+    formDots+='</div>'
 
-    matchRows += `
+    matchRows+=`
      <tr${inForm?' class="in-form"':''}>
       <td><span class="season-badge">${seasonName}</span></td>
       <td>
@@ -316,30 +256,20 @@ function render(){
       <td class="score-cell">${m.home_score} : ${m.away_score}</td>
       <td style="text-align:center;"><span class="${resultClass}">${resultLabel}</span></td>
       <td style="text-align:center;">
-       <div style="font-size:11px;color:#666;">${h.eloBefore} → ${h.eloAfter}</div>
-       <div class="${eloClass}" style="font-size:12px;">${eloStr}</div>
-      </td>
-      <td style="text-align:center;">
        <div style="font-size:11px;color:#666;">${h.formBefore} → ${h.formAfter}</div>
        <div class="${formClass}" style="font-size:12px;">${formStr}</div>
       </td>
       <td style="text-align:center;">${formDots}</td>
-     </tr>
-    `
+     </tr>`
    })
   }
 
-  cont.innerHTML += `
+  cont.innerHTML+=`
    <div class="team-card">
     <div class="team-header">
      <div style="font-size:15px;font-weight:800;color:#7ab0cc;min-width:28px;">#${idx+1}</div>
-     ${team.logo
-      ?`<img class="team-logo" src="./logos/${team.logo}" onerror="this.style.display='none'">`
-      :`<div class="team-logo-placeholder">?</div>`
-     }
-     <div class="team-name-wrap">
-      <div class="team-name">${team.name}</div>
-     </div>
+     ${team.logo?`<img class="team-logo" src="./logos/${team.logo}" onerror="this.style.display='none'">`:`<div class="team-logo-placeholder">?</div>`}
+     <div class="team-name-wrap"><div class="team-name">${team.name}</div></div>
      <div class="ratings-wrap">
       <div class="rating-box">
        <div class="rating-val">⭐ ${team.elo}</div>
@@ -355,25 +285,19 @@ function render(){
      <table class="matches-table">
       <thead>
        <tr>
-        <th>Sezóna</th>
-        <th>Soupeř</th>
-        <th class="center">Skóre</th>
-        <th class="center">Výsledek</th>
-        <th class="center">ELO změna</th>
-        <th class="center">Forma změna</th>
-        <th class="center">Forma okno</th>
+        <th>Sezóna</th><th>Soupeř</th>
+        <th class="center">Skóre</th><th class="center">Výsledek</th>
+        <th class="center">Forma změna</th><th class="center">Forma okno</th>
        </tr>
       </thead>
       <tbody>${matchRows}</tbody>
      </table>
     </div>
-   </div>
-  `
+   </div>`
  })
 }
 
 load()
-
 </script>
 </body>
 </html>
