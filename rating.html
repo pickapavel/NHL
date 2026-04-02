@@ -26,26 +26,17 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 .team-card{background:white;border-radius:14px;overflow:hidden;border:1px solid #c8d8e8;box-shadow:0 2px 8px rgba(26,58,92,.07);margin-bottom:20px;}
 
-.team-header{
- background:#0b2a3c;padding:14px 16px;
- display:flex;align-items:center;gap:12px;
-}
-
+.team-header{background:#0b2a3c;padding:14px 16px;display:flex;align-items:center;gap:12px;}
 .team-logo{width:40px;height:40px;object-fit:contain;background:white;border-radius:8px;padding:3px;border:1px solid #e0e0e0;flex-shrink:0;}
 .team-logo-placeholder{width:40px;height:40px;border-radius:8px;background:#1a3a5c;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#7ab0cc;font-weight:700;}
-
 .team-name-wrap{flex:1;}
 .team-name{font-size:15px;font-weight:800;color:white;}
-.team-rank{font-size:11px;color:#7ab0cc;margin-top:2px;}
-
 .ratings-wrap{display:flex;gap:16px;align-items:center;}
-
 .rating-box{text-align:center;}
 .rating-val{font-size:20px;font-weight:800;color:white;}
 .rating-label{font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;}
 .rating-form{color:#ffd166;}
 
-/* TABULKA ZÁPASŮ */
 .matches-table{width:100%;border-collapse:collapse;font-size:12px;}
 .matches-table th{background:#f0f6fc;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#3a6a9c;letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #e0ecf8;}
 .matches-table th.center{text-align:center;}
@@ -63,14 +54,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .change-neg{color:#dc2626;font-weight:700;}
 .change-neu{color:#888;font-weight:700;}
 
-.season-badge{
- font-size:10px;font-weight:700;
- background:#e8f0f8;color:#1a5276;
- padding:2px 7px;border-radius:10px;
- white-space:nowrap;
-}
+.season-badge{font-size:10px;font-weight:700;background:#e8f0f8;color:#1a5276;padding:2px 7px;border-radius:10px;white-space:nowrap;}
 
-/* Forma tečky */
 .form-dots{display:flex;gap:3px;justify-content:center;align-items:center;}
 .form-dot{width:10px;height:10px;border-radius:50%;}
 .form-dot-win{background:#22c55e;}
@@ -82,7 +67,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .in-form{background:#fff8e1 !important;}
 
 .no-matches{padding:20px;text-align:center;color:#aaa;font-size:13px;}
-
 .loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
 </style>
 </head>
@@ -130,6 +114,7 @@ let formRatings = {}
 let history = {}
 let teamMap = {}
 let seasonMap = {}
+let seasonOrder = {}
 let currentFilter = "extraliga"
 
 function getScore(match, teamId){
@@ -161,15 +146,20 @@ function getResultType(match, teamId){
 async function load(){
  const [teamsRes, matchesRes, seasonsRes] = await Promise.all([
   supabase.from("teams").select("*"),
-  supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null).order("round",{ascending:true}),
-  supabase.from("seasons").select("*"),
+  supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null),
+  supabase.from("seasons").select("*").order("created_at", { ascending: true }),
  ])
 
  allTeams = teamsRes.data || []
  const matches = matchesRes.data || []
  const seasons = seasonsRes.data || []
 
- seasons.forEach(s=> seasonMap[s.id] = s.name)
+ // Mapování sezón – seřazeno podle created_at (nejstarší = 0)
+ seasons.forEach((s, i)=>{
+  seasonMap[s.id] = s.name
+  seasonOrder[s.id] = i
+ })
+
  allTeams.forEach(t=>{
   ratings[t.id] = START_RATING
   formRatings[t.id] = START_RATING
@@ -177,7 +167,15 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // Výpočet ratingu
+ // Seřaď zápasy: nejdřív podle sezóny (chronologicky), pak podle kola
+ matches.sort((a, b)=>{
+  const sA = seasonOrder[a.season_id] ?? 999
+  const sB = seasonOrder[b.season_id] ?? 999
+  if(sA !== sB) return sA - sB
+  return Number(a.round) - Number(b.round)
+ })
+
+ // Výpočet ratingů v správném chronologickém pořadí
  const formHistory = {}
  allTeams.forEach(t=> formHistory[t.id] = [])
 
@@ -193,7 +191,6 @@ async function load(){
   const cH = Math.round(K_OVERALL*(sH-eH))
   const cA = Math.round(K_OVERALL*(sA-eA))
 
-  // Forma
   function updateForm(teamId, opponentId, score){
    const cur = formRatings[teamId]
    const opp = formRatings[opponentId]
@@ -201,7 +198,7 @@ async function load(){
    const ch = K_FORM*(score-exp)
    formHistory[teamId].push(ch)
    if(formHistory[teamId].length > FORM_WINDOW) formHistory[teamId].shift()
-   const newForm = Math.round(START_RATING + formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
+   const newForm = Math.round(START_RATING + formHistory[teamId].reduce((acc,b)=>acc+Math.round(b),0))
    const before = cur
    formRatings[teamId] = newForm
    return { before, after: newForm, change: Math.round(ch) }
@@ -215,7 +212,6 @@ async function load(){
    eloBefore: rH, eloAfter: rH+cH, eloChange: cH,
    formBefore: fH.before, formAfter: fH.after, formChange: fH.change,
    resultType: getResultType(m, h),
-   // Snapshot formy (posledních 5 zápasů do tohoto momentu)
    formSnapshot: [...formHistory[h]],
   })
 
@@ -257,9 +253,10 @@ function render(){
   .sort((a,b)=>b.elo-a.elo)
 
  sorted.forEach((team, idx)=>{
-  const teamHistory = (history[team.id]||[]).slice().reverse() // nejnovější první
+  // Historie – nejnovější nahoře (reverse)
+  const teamHistory = (history[team.id]||[]).slice().reverse()
 
-  // Zjisti které zápasy jsou v aktuální formě (posledních 5 odehraných)
+  // Posledních 5 zápasů pro formu
   const lastFiveIds = new Set(
    (history[team.id]||[]).slice(-FORM_WINDOW).map(h=>h.match.id)
   )
@@ -268,7 +265,7 @@ function render(){
   if(!teamHistory.length){
    matchRows = `<tr><td colspan="7" class="no-matches">Žádné odehrané zápasy</td></tr>`
   } else {
-   teamHistory.forEach((h, i)=>{
+   teamHistory.forEach(h=>{
     const m = h.match
     const home = teamMap[m.home_team]
     const away = teamMap[m.away_team]
@@ -286,7 +283,6 @@ function render(){
     const formStr = `${h.formChange>=0?"+":""}${h.formChange}`
     const formClass = h.formChange>0?"change-pos":h.formChange<0?"change-neg":"change-neu"
 
-    // Forma dots pro tento zápas
     let formDots = '<div class="form-dots">'
     for(let d=0;d<FORM_WINDOW;d++){
      const val = h.formSnapshot[d]
@@ -302,9 +298,7 @@ function render(){
 
     matchRows += `
      <tr${inForm?' class="in-form"':''}>
-      <td>
-       <span class="season-badge">${seasonName}</span>
-      </td>
+      <td><span class="season-badge">${seasonName}</span></td>
       <td>
        <div style="display:flex;align-items:center;gap:6px;">
         ${opp?.logo?`<img src="./logos/${opp.logo}" style="width:20px;height:20px;object-fit:contain;border-radius:4px;background:white;padding:1px;border:1px solid #e0e0e0;">`:''}
