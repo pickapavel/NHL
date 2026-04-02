@@ -18,8 +18,6 @@ const MENU_ITEMS = [
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:4px;
-  flex-wrap:wrap;
   position:sticky;
   top:0;
   z-index:999;
@@ -28,34 +26,34 @@ const MENU_ITEMS = [
 
  const logo = document.createElement('img')
  logo.src = './logos/lokomotiva.png'
- logo.style.cssText = 'width:32px;height:32px;object-fit:contain;margin-right:8px;opacity:.9;'
+ logo.style.cssText = `
+  width:32px;height:32px;object-fit:contain;
+  opacity:.9;position:absolute;left:20px;
+ `
  nav.appendChild(logo)
+
+ const linksWrap = document.createElement('div')
+ linksWrap.style.cssText = 'display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;'
 
  MENU_ITEMS.forEach(item=>{
   const a = document.createElement('a')
   a.href = item.href
   a.textContent = item.label
-  const isActive = current === item.href || (current==='' && item.href==='elh.html')
+  const isActive = current === item.href || (current===''&&item.href==='elh.html')
   a.style.cssText = `
-   color:${isActive ? 'white' : '#7ab0cc'};
+   color:${isActive?'white':'#7ab0cc'};
    text-decoration:none;
    font-family:'Inter',Arial,sans-serif;
-   font-size:13px;
-   font-weight:700;
-   padding:12px 14px;
-   border-radius:6px;
-   background:${isActive ? 'rgba(255,255,255,.1)' : 'transparent'};
-   transition:all .15s;
-   white-space:nowrap;
+   font-size:13px;font-weight:700;
+   padding:12px 14px;border-radius:6px;
+   background:${isActive?'rgba(255,255,255,.1)':'transparent'};
+   transition:all .15s;white-space:nowrap;
   `
-  a.onmouseover = ()=>{
-   if(!isActive){ a.style.background='rgba(255,255,255,.06)'; a.style.color='white' }
-  }
-  a.onmouseout = ()=>{
-   if(!isActive){ a.style.background='transparent'; a.style.color='#7ab0cc' }
-  }
-  nav.appendChild(a)
+  a.onmouseover=()=>{ if(!isActive){ a.style.background='rgba(255,255,255,.06)'; a.style.color='white' } }
+  a.onmouseout =()=>{ if(!isActive){ a.style.background='transparent'; a.style.color='#7ab0cc' } }
+  linksWrap.appendChild(a)
  })
 
+ nav.appendChild(linksWrap)
  document.body.insertBefore(nav, document.body.firstChild)
 })()
