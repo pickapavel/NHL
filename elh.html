@@ -273,7 +273,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="headerBar">
  <div class="headerLeft">
-  <img class="headerLogo" src="./logos/lokomotiva.png" alt="logo">
+  <img class="headerLogo" src=".//lokomotiva.png" alt="logo">
   <div class="headerTitle">Extraliga U dvou Blbounů</div>
  </div>
  <div class="headerBadge">⚡ Live tabulka</div>
@@ -371,7 +371,8 @@ function getScore(match, teamId){
  else return (isSN||isOT) ? 0.25 : 0
 }
 
-function calculateRatings(allMatches, teams){
+// ELO ze Základní části, FORMA ze všech zápasů
+function calculateRatings(zakladniMatches, allMatches, teams){
  const ratings     = {}
  const formHistory = {}
  const formRatings = {}
@@ -382,37 +383,37 @@ function calculateRatings(allMatches, teams){
   formRatings[t.id] = START_RATING
  })
 
- const sorted = [...allMatches].sort((a,b)=>Number(a.round)-Number(b.round))
-
- sorted.forEach(m=>{
-  const h = m.home_team
-  const a = m.away_team
+ // ELO – jen Základní část
+ const sortedZakladni = [...zakladniMatches].sort((a,b)=>Number(a.round)-Number(b.round))
+ sortedZakladni.forEach(m=>{
+  const h=m.home_team, a=m.away_team
   if(!ratings[h]||!ratings[a]) return
+  const sH=getScore(m,h), sA=getScore(m,a)
+  const rH=ratings[h], rA=ratings[a]
+  const eH=1/(1+Math.pow(10,(rA-rH)/400))
+  const eA=1/(1+Math.pow(10,(rH-rA)/400))
+  ratings[h]=Math.round(rH+K_OVERALL*(sH-eH))
+  ratings[a]=Math.round(rA+K_OVERALL*(sA-eA))
+ })
 
-  const sH = getScore(m, h)
-  const sA = getScore(m, a)
-
-  const rH = ratings[h]
-  const rA = ratings[a]
-  const eH = 1/(1+Math.pow(10,(rA-rH)/400))
-  const eA = 1/(1+Math.pow(10,(rH-rA)/400))
-  ratings[h] = Math.round(rH + K_OVERALL*(sH-eH))
-  ratings[a] = Math.round(rA + K_OVERALL*(sA-eA))
+ // FORMA – všechny zápasy napříč sezónami
+ const sortedAll = [...allMatches].sort((a,b)=>Number(a.round)-Number(b.round))
+ sortedAll.forEach(m=>{
+  const h=m.home_team, a=m.away_team
+  if(formRatings[h]===undefined||formRatings[a]===undefined) return
+  const sH=getScore(m,h), sA=getScore(m,a)
 
   function updateForm(teamId, opponentId, score){
-   const current   = formRatings[teamId]
-   const oppRating = formRatings[opponentId]
-   const expected  = 1/(1+Math.pow(10,(oppRating-current)/400))
-   const change    = K_FORM*(score-expected)
+   const current=formRatings[teamId], oppRating=formRatings[opponentId]
+   const expected=1/(1+Math.pow(10,(oppRating-current)/400))
+   const change=K_FORM*(score-expected)
    formHistory[teamId].push(change)
    if(formHistory[teamId].length>5) formHistory[teamId].shift()
-   formRatings[teamId] = Math.round(
-    START_RATING + formHistory[teamId].reduce((a,b)=>a+Math.round(b),0)
-   )
+   formRatings[teamId]=Math.round(START_RATING+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
   }
 
-  updateForm(h, a, sH)
-  updateForm(a, h, sA)
+  updateForm(h,a,sH)
+  updateForm(a,h,sA)
  })
 
  return { ratings, formRatings }
@@ -485,19 +486,20 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
+ // Všechny odehrané zápasy (pro formu)
  const { data: allPlayedMatches } = await supabase
   .from("matches")
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
-  .order("round",{ascending:true})
 
+ // Jen Základní část (pro ELO)
  const zakladniStageIds = new Set(Object.values(zakladniStageMap))
- const allMatchesFiltered = (allPlayedMatches||[]).filter(m=>
+ const zakladniMatches = (allPlayedMatches||[]).filter(m=>
   zakladniStageIds.has(m.stage_id)
  )
 
- const { ratings, formRatings } = calculateRatings(allMatchesFiltered, teams)
+ const { ratings, formRatings } = calculateRatings(zakladniMatches, allPlayedMatches||[], teams)
 
  let seasonMatchesQuery = supabase
   .from("matches")
@@ -580,11 +582,8 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   return (b.gf-b.ga)-(a.gf-a.ga)
  })
 
- // Načti předchozí pořadí z localStorage
  const storageKey = `standings_order_${currentSeasonId}`
  const prevOrder = JSON.parse(localStorage.getItem(storageKey) || '{}')
-
- // Ulož aktuální pořadí
  const newOrder = {}
  arr.forEach((t,i)=> newOrder[t.team] = i+1)
  localStorage.setItem(storageKey, JSON.stringify(newOrder))
@@ -608,17 +607,14 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   const elo  = ratings[t.team]  || START_RATING
   const form = formRatings[t.team] || START_RATING
 
-  // Pohyb v tabulce
   const prev = prevOrder[t.team]
   const curr = i+1
   let moveHtml = ''
   if(prev && prev !== curr){
    const diff = prev - curr
    if(diff > 0){
-    // Posun nahoru – zelená šipka nahoru + číslo
     moveHtml = `<span class="move-badge move-up"><span class="move-arrow">▲</span><span class="move-num">${diff}</span></span>`
    } else {
-    // Posun dolů – červená šipka dolů + číslo
     moveHtml = `<span class="move-badge move-down"><span class="move-arrow">▼</span><span class="move-num">${Math.abs(diff)}</span></span>`
    }
   }
