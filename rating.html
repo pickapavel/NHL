@@ -71,7 +71,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </style>
 </head>
 <body>
-<script src="./menu.js"></script>
 
 <div class="header">
  <img class="header-logo" src="./logos/lokomotiva.png" alt="logo">
@@ -145,17 +144,20 @@ function getResultType(match, teamId){
 }
 
 async function load(){
- const [teamsRes, matchesRes, seasonsRes] = await Promise.all([
+ const [teamsRes, matchesRes, seasonsRes, stagesRes] = await Promise.all([
   supabase.from("teams").select("*"),
   supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null),
   supabase.from("seasons").select("*").order("created_at", { ascending: true }),
+  supabase.from("stages").select("id, season_id, name").eq("name", "Základní část"),
  ])
 
  allTeams = teamsRes.data || []
  const matches = matchesRes.data || []
  const seasons = seasonsRes.data || []
+ const zakladniStages = stagesRes.data || []
 
- // Mapování sezón – seřazeno podle created_at (nejstarší = 0)
+ const zakladniStageIds = new Set(zakladniStages.map(s=>s.id))
+
  seasons.forEach((s, i)=>{
   seasonMap[s.id] = s.name
   seasonOrder[s.id] = i
@@ -168,7 +170,7 @@ async function load(){
   teamMap[t.id] = t
  })
 
- // Seřaď zápasy: nejdřív podle sezóny (chronologicky), pak podle kola
+ // Seřaď podle sezóny pak kola
  matches.sort((a, b)=>{
   const sA = seasonOrder[a.season_id] ?? 999
   const sB = seasonOrder[b.season_id] ?? 999
@@ -176,41 +178,51 @@ async function load(){
   return Number(a.round) - Number(b.round)
  })
 
- // Výpočet ratingů v správném chronologickém pořadí
+ // ELO – jen Základní část
+ const zakladniMatches = matches.filter(m=> zakladniStageIds.has(m.stage_id))
+
+ zakladniMatches.forEach(m=>{
+  const h=m.home_team, a=m.away_team
+  if(ratings[h]===undefined||ratings[a]===undefined) return
+  const sH=getScore(m,h), sA=getScore(m,a)
+  const rH=ratings[h], rA=ratings[a]
+  const eH=1/(1+Math.pow(10,(rA-rH)/400))
+  const eA=1/(1+Math.pow(10,(rH-rA)/400))
+  ratings[h]=Math.round(rH+K_OVERALL*(sH-eH))
+  ratings[a]=Math.round(rA+K_OVERALL*(sA-eA))
+ })
+
+ // FORMA – všechny zápasy napříč sezónami
  const formHistory = {}
  allTeams.forEach(t=> formHistory[t.id] = [])
 
  matches.forEach(m=>{
-  const h = m.home_team, a = m.away_team
-  if(!ratings[h]||!ratings[a]) return
-
-  const rH = ratings[h], rA = ratings[a]
-  const sH = getScore(m, h), sA = getScore(m, a)
-
-  const eH = 1/(1+Math.pow(10,(rA-rH)/400))
-  const eA = 1/(1+Math.pow(10,(rH-rA)/400))
-  const cH = Math.round(K_OVERALL*(sH-eH))
-  const cA = Math.round(K_OVERALL*(sA-eA))
+  const h=m.home_team, a=m.away_team
+  if(formRatings[h]===undefined||formRatings[a]===undefined) return
+  const sH=getScore(m,h), sA=getScore(m,a)
 
   function updateForm(teamId, opponentId, score){
-   const cur = formRatings[teamId]
-   const opp = formRatings[opponentId]
-   const exp = 1/(1+Math.pow(10,(opp-cur)/400))
-   const ch = K_FORM*(score-exp)
+   const cur=formRatings[teamId], opp=formRatings[opponentId]
+   const exp=1/(1+Math.pow(10,(opp-cur)/400))
+   const ch=K_FORM*(score-exp)
    formHistory[teamId].push(ch)
-   if(formHistory[teamId].length > FORM_WINDOW) formHistory[teamId].shift()
-   const newForm = Math.round(START_RATING + formHistory[teamId].reduce((acc,b)=>acc+Math.round(b),0))
-   const before = cur
-   formRatings[teamId] = newForm
+   if(formHistory[teamId].length>FORM_WINDOW) formHistory[teamId].shift()
+   const newForm=Math.round(START_RATING+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
+   const before=formRatings[teamId]
+   formRatings[teamId]=newForm
    return { before, after: newForm, change: Math.round(ch) }
   }
 
-  const fH = updateForm(h, a, sH)
-  const fA = updateForm(a, h, sA)
+  const fH=updateForm(h,a,sH)
+  const fA=updateForm(a,h,sA)
+
+  // Uložit do history pomocí ELO hodnot (pro zobrazení)
+  const eloBeforeH = history[h].length>0 ? history[h][history[h].length-1].eloAfter : START_RATING
+  const eloBeforeA = history[a].length>0 ? history[a][history[a].length-1].eloAfter : START_RATING
 
   history[h].push({
    match: m,
-   eloBefore: rH, eloAfter: rH+cH, eloChange: cH,
+   eloBefore: eloBeforeH, eloAfter: ratings[h], eloChange: ratings[h]-eloBeforeH,
    formBefore: fH.before, formAfter: fH.after, formChange: fH.change,
    resultType: getResultType(m, h),
    formSnapshot: [...formHistory[h]],
@@ -218,14 +230,11 @@ async function load(){
 
   history[a].push({
    match: m,
-   eloBefore: rA, eloAfter: rA+cA, eloChange: cA,
+   eloBefore: eloBeforeA, eloAfter: ratings[a], eloChange: ratings[a]-eloBeforeA,
    formBefore: fA.before, formAfter: fA.after, formChange: fA.change,
    resultType: getResultType(m, a),
    formSnapshot: [...formHistory[a]],
   })
-
-  ratings[h] = rH + cH
-  ratings[a] = rA + cA
  })
 
  render()
@@ -254,10 +263,7 @@ function render(){
   .sort((a,b)=>b.elo-a.elo)
 
  sorted.forEach((team, idx)=>{
-  // Historie – nejnovější nahoře (reverse)
   const teamHistory = (history[team.id]||[]).slice().reverse()
-
-  // Posledních 5 zápasů pro formu
   const lastFiveIds = new Set(
    (history[team.id]||[]).slice(-FORM_WINDOW).map(h=>h.match.id)
   )
