@@ -2,6 +2,7 @@ const MENU_ITEMS = [
  { label: '⚡ ELH',      href: 'elh.html' },
  { label: '🏆 Play off', href: 'playoff.html' },
  { label: '⭐ Rating',   href: 'rating.html' },
+ { label: '📊 Sázky - přehled',    href: 'sazky.html' },
  { label: '📊 Sázky',    href: 'sazky.html' },
  { label: '✏️ Zápisy',   href: 'zapis.html' },
 ]
