@@ -7,130 +7,38 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{font-family:Arial;margin:0;background:#f2f2f2;}
 .wrapper{max-width:1200px;margin:auto;padding:15px;background:white;}
 
-.headerBar{
- background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
- border-radius:14px;
- padding:18px 24px;
- margin-bottom:24px;
- display:flex;
- align-items:center;
- justify-content:space-between;
- flex-wrap:wrap;
- gap:12px;
-}
-
+.headerBar{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);border-radius:14px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 .headerLeft{display:flex;align-items:center;gap:16px;}
+.headerLogo{width:64px;height:64px;object-fit:contain;mix-blend-mode:lighten;flex-shrink:0;}
+.headerTitle{font-size:22px;font-weight:800;color:white;letter-spacing:-.3px;line-height:1.2;}
+.headerBadge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;color:#a8d4ee;letter-spacing:.06em;white-space:nowrap;}
 
-.headerLogo{
- width:64px;height:64px;
- object-fit:contain;
- mix-blend-mode:lighten;
- flex-shrink:0;
-}
-
-.headerTitle{
- font-size:22px;font-weight:800;
- color:white;letter-spacing:-.3px;
- line-height:1.2;
-}
-
-.headerBadge{
- background:rgba(255,255,255,.12);
- border:1px solid rgba(255,255,255,.2);
- border-radius:20px;
- padding:6px 16px;
- font-size:12px;font-weight:700;
- color:#a8d4ee;
- letter-spacing:.06em;
- white-space:nowrap;
-}
-
-.season-tabs{
- display:flex;gap:8px;flex-wrap:wrap;
- margin-bottom:20px;
-}
-
-.season-tab{
- padding:8px 18px;
- border-radius:20px;
- border:2px solid #c8d8e8;
- background:white;
- font-family:Arial;font-size:13px;font-weight:700;
- cursor:pointer;color:#1a3a5c;
- transition:all .15s;
-}
-
+.season-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.season-tab{padding:8px 18px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:Arial;font-size:13px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
 .season-tab:hover{background:#dce8f5;border-color:#2f9ec9;}
 .season-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
-.sectionTitle{
- font-size:17px;font-weight:700;
- color:#0b2a3c;
- margin:0 0 12px;
- display:flex;align-items:center;gap:8px;
-}
-.sectionTitle::after{
- content:'';flex:1;height:2px;
- background:linear-gradient(90deg,#2f9ec9,transparent);
- border-radius:2px;
-}
+.sectionTitle{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+.sectionTitle::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
 .table-scroll{overflow-x:auto;margin-bottom:28px;}
-
-.standings-table{
- width:100%;border-collapse:collapse;
- font-size:13px;min-width:750px;
-}
-
+.standings-table{width:100%;border-collapse:collapse;font-size:13px;min-width:750px;}
 .standings-table thead tr{background:#0b2a3c;color:white;}
-
-.standings-table thead th{
- padding:10px 8px;text-align:center;
- font-size:11px;font-weight:700;
- letter-spacing:.05em;white-space:nowrap;
-}
-
+.standings-table thead th{padding:10px 8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.05em;white-space:nowrap;}
 .standings-table thead th.th-team{text-align:left;padding-left:10px;}
-
-.standings-table tbody tr{
- border-bottom:1px solid #e0e0e0;transition:background .15s;
-}
-
+.standings-table tbody tr{border-bottom:1px solid #e0e0e0;transition:background .15s;}
 .standings-table tbody tr:hover{background:#f0f4f8;}
 .standings-table tbody tr:nth-child(odd){background:#f7f8fa;}
 .standings-table tbody tr:nth-child(odd):hover{background:#edf2f7;}
+.standings-table tbody td{padding:8px 8px;text-align:center;color:#333;white-space:nowrap;vertical-align:middle;}
 
-.standings-table tbody td{
- padding:8px 8px;text-align:center;
- color:#333;white-space:nowrap;vertical-align:middle;
-}
-
-.td-rating{
- text-align:center;font-size:11px;color:#666;
- font-weight:600;line-height:1.8;padding:6px 6px;width:60px;
-}
-
-.td-rank{
- font-weight:700;color:#0b2a3c;font-size:14px;
- width:52px;
- white-space:nowrap;
- vertical-align:middle;
-}
-
-.rank-wrap{
- display:inline-flex;align-items:center;gap:4px;
-}
-
-.move-badge{
- display:inline-flex;align-items:center;gap:1px;
- font-size:10px;font-weight:800;
- line-height:1;
-}
-
+.td-rating{text-align:center;font-size:11px;color:#666;font-weight:600;line-height:1.8;padding:6px 6px;width:60px;}
+.td-rank{font-weight:700;color:#0b2a3c;font-size:14px;width:52px;white-space:nowrap;vertical-align:middle;}
+.rank-wrap{display:inline-flex;align-items:center;gap:4px;}
+.move-badge{display:inline-flex;align-items:center;gap:1px;font-size:10px;font-weight:800;line-height:1;}
 .move-up .move-arrow{color:#22c55e;}
 .move-up .move-num{color:#22c55e;font-size:9px;}
 .move-down .move-arrow{color:#ef4444;}
@@ -138,21 +46,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .td-team{text-align:left;padding-left:8px;}
 .team-cell{display:flex;align-items:center;gap:10px;}
-
-.team-logo{
- width:32px;height:32px;object-fit:contain;
- background:white;border-radius:6px;padding:2px;
- border:1px solid #e0e0e0;flex-shrink:0;
-}
-
+.team-logo{width:32px;height:32px;object-fit:contain;background:white;border-radius:6px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
 .team-name{font-weight:700;font-size:13px;color:#111;}
-
-.points-pill{
- background:#0b2a3c;border-radius:6px;
- padding:4px 10px;display:inline-block;
- min-width:34px;text-align:center;color:white;
- font-weight:800;font-size:14px;
-}
+.points-pill{background:#0b2a3c;border-radius:6px;padding:4px 10px;display:inline-block;min-width:34px;text-align:center;color:white;font-weight:800;font-size:14px;}
 
 .td-score{font-weight:600;color:#333;}
 .td-pm{font-weight:600;}
@@ -164,97 +60,31 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .td-num{color:#555;font-weight:600;}
 
 .filterBar{margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.filterBar select{
- padding:8px 14px;border-radius:8px;border:none;
- font-weight:700;font-size:13px;
- background:#0b2a3c;color:white;cursor:pointer;
-}
+.filterBar select{padding:8px 14px;border-radius:8px;border:none;font-weight:700;font-size:13px;background:#0b2a3c;color:white;cursor:pointer;}
 
-.match-table{
- width:100%;border-collapse:collapse;margin-bottom:8px;
-}
-
+.match-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
 .match-table thead tr{background:#0b2a3c;color:white;}
-
-.match-table thead th{
- padding:12px 10px;text-align:center;
- font-size:12px;letter-spacing:.05em;white-space:nowrap;
-}
-
+.match-table thead th{padding:12px 10px;text-align:center;font-size:12px;letter-spacing:.05em;white-space:nowrap;}
 .match-table thead th.th-left{text-align:left;}
-
-.match-table tbody tr{
- border-bottom:1px solid #e8e8e8;
- transition:background .15s;
-}
-
+.match-table tbody tr{border-bottom:1px solid #e8e8e8;transition:background .15s;}
 .match-table tbody tr:nth-child(odd) td{background:#f7f8fa;}
 .match-table tbody tr:hover td{background:#edf2f7;}
-
-.match-table tbody td{
- padding:10px 10px;
- text-align:center;
- vertical-align:middle;
- font-size:13px;
- color:#333;
-}
-
+.match-table tbody td{padding:10px 10px;text-align:center;vertical-align:middle;font-size:13px;color:#333;}
 .match-table tbody td.td-left{text-align:left;}
 
-.round-badge{
- display:inline-block;
- background:#e9ecef;color:#0b2a3c;
- font-weight:700;font-size:12px;
- padding:3px 10px;border-radius:20px;
- min-width:36px;text-align:center;
-}
-
-.match-logo{
- width:28px;height:28px;object-fit:contain;
- background:white;border-radius:5px;padding:2px;
- border:1px solid #e0e0e0;flex-shrink:0;
-}
-
+.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
+.match-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
 
-.score-cell{
- display:flex;flex-direction:column;
- align-items:center;gap:3px;
-}
-
-.score-badge{
- display:inline-block;
- background:#0b2a3c;color:white;
- font-weight:700;font-size:14px;
- padding:4px 12px;border-radius:6px;
- min-width:60px;text-align:center;
-}
-
-.score-badge.empty{
- background:#e0e0e0;color:#999;
- font-weight:400;font-size:13px;
-}
-
-.result-tag{
- display:inline-block;
- font-size:10px;font-weight:700;
- background:#2f9ec9;color:white;
- padding:2px 6px;border-radius:4px;
-}
-
+.score-cell{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
+.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
+.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;}
 .periods-small{font-size:11px;color:#888;}
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
-
-.btn{
- display:inline-flex;align-items:center;gap:5px;
- border:none;border-radius:8px;cursor:pointer;
- font-weight:700;font-size:13px;
- padding:8px 14px;transition:all .15s;
- white-space:nowrap;
-}
-
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
 .btn-detail{background:#1a5276;color:white;}
 .btn-detail:hover{background:#0b2a3c;}
 .btn-bet{background:#27ae60;color:white;}
@@ -262,7 +92,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
-
 .loading{text-align:center;padding:30px;color:#888;font-size:14px;}
 </style>
 </head>
@@ -288,7 +117,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  <thead>
   <tr>
    <th style="width:60px" title="Rating celkový / forma">⭐🔥</th>
-   <th style="width:28px">#</th>
+   <th style="width:52px">#</th>
    <th class="th-team">Tým</th>
    <th style="width:60px">Body</th>
    <th>Skóre</th>
@@ -346,120 +175,44 @@ const supabase = createClient(
 const DEFAULT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 
-const START_RATING = 1000
-const K_OVERALL = 80
-const K_FORM = 120
-
 let currentSeasonId = DEFAULT_SEASON_ID
 let currentStageId  = null
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
-
 const zakladniStageMap = {}
 
-function getScore(match, teamId){
- const hg = Number(match.home_score)
- const ag = Number(match.away_score)
- let stats = null
- try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
- const isSN = stats && (stats[20]==="1"||stats[20]==="2")
- const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
- const isHome = match.home_team === teamId
- const teamGoals = isHome ? hg : ag
- const oppGoals  = isHome ? ag : hg
- if(teamGoals > oppGoals) return (isSN||isOT) ? 0.75 : 1
- else return (isSN||isOT) ? 0.25 : 0
-}
-
-// ELO ze Základní části, FORMA ze všech zápasů
-function calculateRatings(zakladniMatches, allMatches, teams){
- const ratings     = {}
- const formHistory = {}
- const formRatings = {}
-
- teams.forEach(t=>{
-  ratings[t.id]     = START_RATING
-  formHistory[t.id] = []
-  formRatings[t.id] = START_RATING
- })
-
- // ELO – jen Základní část
- const sortedZakladni = [...zakladniMatches].sort((a,b)=>Number(a.round)-Number(b.round))
- sortedZakladni.forEach(m=>{
-  const h=m.home_team, a=m.away_team
-  if(!ratings[h]||!ratings[a]) return
-  const sH=getScore(m,h), sA=getScore(m,a)
-  const rH=ratings[h], rA=ratings[a]
-  const eH=1/(1+Math.pow(10,(rA-rH)/400))
-  const eA=1/(1+Math.pow(10,(rH-rA)/400))
-  ratings[h]=Math.round(rH+K_OVERALL*(sH-eH))
-  ratings[a]=Math.round(rA+K_OVERALL*(sA-eA))
- })
-
- // FORMA – všechny zápasy napříč sezónami
- const sortedAll = [...allMatches].sort((a,b)=>Number(a.round)-Number(b.round))
- sortedAll.forEach(m=>{
-  const h=m.home_team, a=m.away_team
-  if(formRatings[h]===undefined||formRatings[a]===undefined) return
-  const sH=getScore(m,h), sA=getScore(m,a)
-
-  function updateForm(teamId, opponentId, score){
-   const current=formRatings[teamId], oppRating=formRatings[opponentId]
-   const expected=1/(1+Math.pow(10,(oppRating-current)/400))
-   const change=K_FORM*(score-expected)
-   formHistory[teamId].push(change)
-   if(formHistory[teamId].length>5) formHistory[teamId].shift()
-   formRatings[teamId]=Math.round(START_RATING+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
-  }
-
-  updateForm(h,a,sH)
-  updateForm(a,h,sA)
- })
-
- return { ratings, formRatings }
-}
-
-document.getElementById("matchFilter").onchange = e=>{
- currentMatchFilter = e.target.value
- load()
-}
-document.getElementById("teamFilter").onchange = e=>{
- currentTeamFilter = e.target.value
- load()
-}
+document.getElementById("matchFilter").onchange = e=>{ currentMatchFilter=e.target.value; load() }
+document.getElementById("teamFilter").onchange  = e=>{ currentTeamFilter=e.target.value; load() }
 
 async function initSeasons(){
  const { data: seasons } = await supabase
-  .from("seasons")
-  .select("*")
+  .from("seasons").select("*")
   .eq("competition_id", EXTRALIGA_COMPETITION_ID)
   .order("created_at", { ascending: true })
 
- if(!seasons || seasons.length === 0) return
+ if(!seasons||!seasons.length) return
 
  const { data: stages } = await supabase
-  .from("stages")
-  .select("id, season_id, name")
+  .from("stages").select("id, season_id, name")
   .in("season_id", seasons.map(s=>s.id))
   .eq("name", "Základní část")
 
- ;(stages||[]).forEach(s=> zakladniStageMap[s.season_id] = s.id)
+ ;(stages||[]).forEach(s=> zakladniStageMap[s.season_id]=s.id)
 
  const tabsEl = document.getElementById("seasonTabs")
  tabsEl.innerHTML = ""
 
  seasons.forEach(s=>{
   const btn = document.createElement("button")
-  btn.className = "season-tab" + (s.id === currentSeasonId ? " active" : "")
+  btn.className = "season-tab"+(s.id===currentSeasonId?" active":"")
   btn.textContent = s.name
   btn.onclick = ()=>{
-   currentSeasonId = s.id
-   currentStageId  = zakladniStageMap[s.id] || null
-   currentTeamFilter = "all"
-   currentMatchFilter = "all"
-   document.getElementById("matchFilter").value = "all"
-   const tf = document.getElementById("teamFilter")
-   tf.innerHTML = '<option value="all">Všechny týmy</option>'
+   currentSeasonId=s.id
+   currentStageId=zakladniStageMap[s.id]||null
+   currentTeamFilter="all"; currentMatchFilter="all"
+   document.getElementById("matchFilter").value="all"
+   const tf=document.getElementById("teamFilter")
+   tf.innerHTML='<option value="all">Všechny týmy</option>'
    tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
    btn.classList.add("active")
    load()
@@ -467,11 +220,11 @@ async function initSeasons(){
   tabsEl.appendChild(btn)
  })
 
- currentStageId = zakladniStageMap[currentSeasonId] || null
+ currentStageId = zakladniStageMap[currentSeasonId]||null
 }
 
 async function load(){
-
+ // Načti týmy sezóny s jejich ratingy přímo z DB
  const { data: seasonTeams } = await supabase
   .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
 
@@ -486,38 +239,16 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
- // Všechny odehrané zápasy (pro formu)
- const { data: allPlayedMatches } = await supabase
-  .from("matches")
-  .select("*")
-  .not("home_score","is",null)
-  .not("away_score","is",null)
+ // Načti zápasy Základní části aktuální sezóny
+ let query = supabase.from("matches").select("*").eq("season_id", currentSeasonId)
+ if(currentStageId) query = query.eq("stage_id", currentStageId)
+ const { data: seasonMatches } = await query
 
- // Jen Základní část (pro ELO)
- const zakladniStageIds = new Set(Object.values(zakladniStageMap))
- const zakladniMatches = (allPlayedMatches||[]).filter(m=>
-  zakladniStageIds.has(m.stage_id)
- )
-
- const { ratings, formRatings } = calculateRatings(zakladniMatches, allPlayedMatches||[], teams)
-
- let seasonMatchesQuery = supabase
-  .from("matches")
-  .select("*")
-  .eq("season_id", currentSeasonId)
-
- if(currentStageId){
-  seasonMatchesQuery = seasonMatchesQuery.eq("stage_id", currentStageId)
- }
-
- const { data: seasonMatches } = await seasonMatchesQuery
-
+ // Obnov team filter
  const tf = document.getElementById("teamFilter")
- if(tf.options.length === 1){
+ if(tf.options.length===1){
   teams.forEach(t=>{
-   const opt = document.createElement("option")
-   opt.value = t.id
-   opt.textContent = t.name
+   const opt=document.createElement("option"); opt.value=t.id; opt.textContent=t.name
    tf.appendChild(opt)
   })
  }
@@ -525,43 +256,32 @@ async function load(){
  let safeMatches = (seasonMatches||[])
  safeMatches.sort((a,b)=>Number(a.round)-Number(b.round))
 
- if(currentTeamFilter!=="all"){
-  safeMatches = safeMatches.filter(m=>
-   m.home_team===currentTeamFilter||m.away_team===currentTeamFilter
-  )
- }
+ if(currentTeamFilter!=="all") safeMatches=safeMatches.filter(m=>m.home_team===currentTeamFilter||m.away_team===currentTeamFilter)
  if(currentMatchFilter==="played")   safeMatches=safeMatches.filter(m=>m.played)
  if(currentMatchFilter==="unplayed") safeMatches=safeMatches.filter(m=>!m.played)
 
- const tableMatches = (seasonMatches||[]).filter(m=>
-  m.home_score!=null && m.away_score!=null
- )
+ const tableMatches=(seasonMatches||[]).filter(m=>m.home_score!=null&&m.away_score!=null)
 
- renderTable(tableMatches, teamMap, teams, ratings, formRatings)
+ renderTable(tableMatches, teamMap, teams)
  render(safeMatches, teamMap)
 }
 
-function renderTable(matches, teamMap, teams, ratings, formRatings){
-
+function renderTable(matches, teamMap, teams){
  let table = {}
  teams.forEach(t=>{
   table[t.id]={team:t.id,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
  })
 
  matches.forEach(m=>{
-  const h=table[m.home_team]
-  const a=table[m.away_team]
+  const h=table[m.home_team], a=table[m.away_team]
   if(!h||!a) return
-
-  const hg=Number(m.home_score)
-  const ag=Number(m.away_score)
+  const hg=Number(m.home_score), ag=Number(m.away_score)
   h.z++;a.z++
   h.gf+=hg;h.ga+=ag
   a.gf+=ag;a.ga+=hg
 
   let stats=null
   try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
-
   const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
   const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
 
@@ -582,16 +302,17 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   return (b.gf-b.ga)-(a.gf-a.ga)
  })
 
- const storageKey = `standings_order_${currentSeasonId}`
- const prevOrder = JSON.parse(localStorage.getItem(storageKey) || '{}')
- const newOrder = {}
- arr.forEach((t,i)=> newOrder[t.team] = i+1)
+ // Pohyb v tabulce
+ const storageKey=`standings_order_${currentSeasonId}`
+ const prevOrder=JSON.parse(localStorage.getItem(storageKey)||'{}')
+ const newOrder={}
+ arr.forEach((t,i)=>newOrder[t.team]=i+1)
  localStorage.setItem(storageKey, JSON.stringify(newOrder))
 
  const tbody=document.getElementById("standings")
  tbody.innerHTML=""
 
- if(arr.length===0){
+ if(!arr.length){
   tbody.innerHTML=`<tr><td colspan="13" class="loading">Žádná data pro tuto sezónu.</td></tr>`
   return
  }
@@ -604,30 +325,22 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   const pmStr=pm>0?`+${pm}`:String(pm)
   const pmClass=pm>0?"pos":pm<0?"neg":"neu"
 
-  const elo  = ratings[t.team]  || START_RATING
-  const form = formRatings[t.team] || START_RATING
+  // Rating přímo z DB
+  const elo  = team.rating_overall || 1000
+  const form = team.rating_form    || 1000
 
-  const prev = prevOrder[t.team]
-  const curr = i+1
-  let moveHtml = ''
-  if(prev && prev !== curr){
-   const diff = prev - curr
-   if(diff > 0){
-    moveHtml = `<span class="move-badge move-up"><span class="move-arrow">▲</span><span class="move-num">${diff}</span></span>`
-   } else {
-    moveHtml = `<span class="move-badge move-down"><span class="move-arrow">▼</span><span class="move-num">${Math.abs(diff)}</span></span>`
-   }
+  const prev=prevOrder[t.team], curr=i+1
+  let moveHtml=''
+  if(prev&&prev!==curr){
+   const diff=prev-curr
+   if(diff>0) moveHtml=`<span class="move-badge move-up"><span class="move-arrow">▲</span><span class="move-num">${diff}</span></span>`
+   else       moveHtml=`<span class="move-badge move-down"><span class="move-arrow">▼</span><span class="move-num">${Math.abs(diff)}</span></span>`
   }
 
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rating">⭐ ${elo}<br>🔥 ${form}</td>
-   <td class="td-rank">
-    <span class="rank-wrap">
-     <span>${i+1}</span>
-     ${moveHtml}
-    </span>
-   </td>
+   <td class="td-rank"><span class="rank-wrap"><span>${i+1}</span>${moveHtml}</span></td>
    <td class="td-team">
     <div class="team-cell">
      <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
@@ -650,77 +363,49 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
 }
 
 function render(matches, teamMap){
-
- const cont = document.getElementById("schedule")
+ const cont=document.getElementById("schedule")
  cont.innerHTML=""
 
- if(matches.length===0){
+ if(!matches.length){
   cont.innerHTML=`<tr><td colspan="5" class="loading">Žádné zápasy.</td></tr>`
   return
  }
 
  matches.forEach(m=>{
-  const home = teamMap[m.home_team]
-  const away = teamMap[m.away_team]
+  const home=teamMap[m.home_team], away=teamMap[m.away_team]
   if(!home||!away) return
 
-  let stats = null
-  try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-
-  let periods = ""
-  let tag = ""
+  let stats=null
+  try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+  let periods="", tag=""
 
   if(stats){
-   const h1=Number(stats[16]||0)
-   const h2=Number(stats[17]||0)
-   const h3=Number(stats[18]||0)
-   const a1=Number(stats[6]||0)
-   const a2=Number(stats[7]||0)
-   const a3=Number(stats[8]||0)
-   periods = `${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
-   const isSN = stats[20]==="1"||stats[20]==="2"
-   const isOT = !isSN&&(stats[9]==="11"||stats[19]==="11")
-   if(isSN) tag="SN"
-   else if(isOT) tag="OT"
+   const h1=Number(stats[16]||0),h2=Number(stats[17]||0),h3=Number(stats[18]||0)
+   const a1=Number(stats[6]||0),a2=Number(stats[7]||0),a3=Number(stats[8]||0)
+   periods=`${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
+   const isSN=stats[20]==="1"||stats[20]==="2"
+   const isOT=!isSN&&(stats[9]==="11"||stats[19]==="11")
+   if(isSN) tag="SN"; else if(isOT) tag="OT"
   }
 
-  const homeScore = m.home_score ?? "-"
-  const awayScore = m.away_score ?? "-"
-  const played    = m.home_score != null
-
-  const tr = document.createElement("tr")
-  tr.className = played ? "played-row" : ""
-  tr.innerHTML = `
+  const played=m.home_score!=null
+  const tr=document.createElement("tr")
+  tr.className=played?"played-row":""
+  tr.innerHTML=`
    <td><span class="round-badge">${m.round}</span></td>
-   <td class="td-left">
-    <div class="match-team-cell">
-     <img class="match-logo" src="./logos/${home.logo}" alt="${home.name}">
-     <span class="match-team-name">${home.name}</span>
-    </div>
-   </td>
-   <td class="td-left">
-    <div class="match-team-cell">
-     <img class="match-logo" src="./logos/${away.logo}" alt="${away.name}">
-     <span class="match-team-name">${away.name}</span>
-    </div>
-   </td>
+   <td class="td-left"><div class="match-team-cell"><img class="match-logo" src="./logos/${home.logo}"><span class="match-team-name">${home.name}</span></div></td>
+   <td class="td-left"><div class="match-team-cell"><img class="match-logo" src="./logos/${away.logo}"><span class="match-team-name">${away.name}</span></div></td>
    <td>
     <div class="score-cell">
-     <span class="score-badge ${played?"":"empty"}">${played ? homeScore+" : "+awayScore : "- : -"}</span>
-     ${tag ? `<span class="result-tag">${tag}</span>` : ""}
-     ${played && periods ? `<span class="periods-small">${periods}</span>` : ""}
+     <span class="score-badge ${played?"":"empty"}">${played?m.home_score+" : "+m.away_score:"- : -"}</span>
+     ${tag?`<span class="result-tag">${tag}</span>`:""}
+     ${played&&periods?`<span class="periods-small">${periods}</span>`:""}
     </div>
    </td>
    <td>
     <div class="btn-wrap">
-     <button class="btn btn-detail"
-      onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">
-      📊 Statistiky
-     </button>
-     <button class="btn btn-bet"
-      onclick="window.location.href='vsad-si.html?id=${m.id}'">
-      🎲 Vsaď si
-     </button>
+     <button class="btn btn-detail" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>
+     <button class="btn btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>
     </div>
    </td>
   `
