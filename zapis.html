@@ -19,6 +19,9 @@ h1{color:#0b2a3c;margin-bottom:4px;}
 .btn-new-season{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#8b5cf6;color:white;}
 .btn-new-season:hover{background:#7c3aed;}
 
+.btn-recalc{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#e67e22;color:white;}
+.btn-recalc:hover{background:#d35400;}
+
 .filterBar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;background:#f7f8fa;padding:14px;border-radius:10px;border:1px solid #e0e0e0;}
 .filterBar label{font-size:13px;font-weight:700;color:#0b2a3c;}
 .filterBar select{padding:8px 12px;border-radius:8px;border:1px solid #ccc;font-size:13px;background:white;cursor:pointer;color:#333;min-width:180px;}
@@ -88,14 +91,11 @@ tr:hover td{background:#edf2f7;}
 .btn-confirm:hover{background:#219a52;}
 .btn-cancel{background:#e0e0e0;color:#333;}
 .btn-cancel:hover{background:#ccc;}
-.btn-confirm-purple{background:#8b5cf6;color:white;}
-.btn-confirm-purple:hover{background:#7c3aed;}
 
 .wizard-steps{display:flex;gap:0;margin-bottom:20px;}
-.wizard-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#aaa;border-bottom:2px solid #e0e0e0;position:relative;}
+.wizard-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#aaa;border-bottom:2px solid #e0e0e0;}
 .wizard-step.active{color:#0b2a3c;border-color:#0b2a3c;}
 .wizard-step.done{color:#27ae60;border-color:#27ae60;}
-
 .wizard-page{display:none;}
 .wizard-page.active{display:block;}
 
@@ -138,6 +138,7 @@ tr:hover td{background:#edf2f7;}
 
 <div class="topBar">
  <h1>Zápisy zápasů</h1>
+ <button class="btn-recalc" onclick="recalcBtn()">🔄 Přepočítat ratingy</button>
  <button class="btn-new-season" onclick="openNewSeasonModal()">🏒 Nová sezóna</button>
 </div>
 <p class="subtitle">Nahraj soubor se statistikami a ulož výsledek zápasu.</p>
@@ -241,7 +242,7 @@ tr:hover td{background:#edf2f7;}
   <div class="wizard-page" id="wp-3">
    <div class="modal-section">
     <div class="modal-section-title">Playoff struktura</div>
-    <div class="structure-options" id="ns-structure">
+    <div class="structure-options">
      <div class="structure-opt" onclick="selectStructure('none')" id="struct-none">
       <input type="radio" name="structure" value="none">
       <span class="structure-opt-icon">📋</span>
@@ -308,7 +309,7 @@ let nsSelectedTeams = new Set()
 let nsSelectedStructure = "qf"
 
 // =====================================================
-// RATING VÝPOČET – SDÍLENÁ LOGIKA
+// RATING PŘEPOČET
 // =====================================================
 
 const R_START = 1000
@@ -318,7 +319,7 @@ const R_K_FORM = 120
 function rGetScore(match, teamId){
  const hg=Number(match.home_score), ag=Number(match.away_score)
  let stats=null
- try{ stats=match.stats?JSON.parse(match.stats):null }catch(e){}
+ try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
  const isHome=match.home_team===teamId
@@ -330,43 +331,30 @@ function rGetScore(match, teamId){
 async function recalculateAllRatings(){
  console.log("Přepočítávám ratingy...")
 
- // Načti sezóny seřazené chronologicky
  const { data: seasons } = await db.from("seasons").select("*").order("created_at",{ascending:true})
  const seasonOrder = {}
  ;(seasons||[]).forEach((s,i)=> seasonOrder[s.id]=i)
 
- // Načti stages Základní části (pro ELO)
  const { data: stages } = await db.from("stages").select("id").eq("name","Základní část")
  const zakladniStageIds = new Set((stages||[]).map(s=>s.id))
 
- // Načti všechny odehrané zápasy
- const { data: matches } = await db
-  .from("matches").select("*")
-  .not("home_score","is",null)
-  .not("away_score","is",null)
+ const { data: matches } = await db.from("matches").select("*")
+  .not("home_score","is",null).not("away_score","is",null)
 
- if(!matches||!matches.length) return
+ if(!matches||!matches.length){ console.log("Žádné zápasy"); return }
 
- // Seřaď: chronologicky podle sezóny, pak podle kola
  matches.sort((a,b)=>{
-  const sA=seasonOrder[a.season_id]??999
-  const sB=seasonOrder[b.season_id]??999
+  const sA=seasonOrder[a.season_id]??999, sB=seasonOrder[b.season_id]??999
   if(sA!==sB) return sA-sB
   return Number(a.round)-Number(b.round)
  })
 
- // Načti všechny týmy
  const { data: teams } = await db.from("teams").select("*")
  if(!teams) return
 
- const eloRatings = {}
- const formRatings = {}
- const formHistory = {}
-
+ const eloRatings = {}, formRatings = {}, formHistory = {}
  teams.forEach(t=>{
-  eloRatings[t.id] = R_START
-  formRatings[t.id] = R_START
-  formHistory[t.id] = []
+  eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[]
  })
 
  // ELO – jen Základní část
@@ -381,7 +369,7 @@ async function recalculateAllRatings(){
   eloRatings[a]=Math.round(rA+R_K_ELO*(sA-eA))
  })
 
- // FORMA – všechny zápasy chronologicky
+ // FORMA – všechny zápasy
  matches.forEach(m=>{
   const h=m.home_team, a=m.away_team
   if(formRatings[h]===undefined||formRatings[a]===undefined) return
@@ -403,12 +391,27 @@ async function recalculateAllRatings(){
  // Ulož do DB
  for(const team of teams){
   await db.from("teams").update({
-   rating_overall: eloRatings[team.id] || R_START,
-   rating_form: formRatings[team.id] || R_START
+   rating_overall: eloRatings[team.id]||R_START,
+   rating_form:    formRatings[team.id]||R_START
   }).eq("id", team.id)
  }
 
  console.log("Ratingy přepočítány ✅")
+}
+
+function recalcBtn(){
+ const btn = document.querySelector(".btn-recalc")
+ btn.textContent = "⏳ Přepočítávám..."
+ btn.disabled = true
+ recalculateAllRatings().then(()=>{
+  btn.textContent = "🔄 Přepočítat ratingy"
+  btn.disabled = false
+  alert("✅ Ratingy přepočítány a uloženy do DB!")
+ }).catch(e=>{
+  btn.textContent = "🔄 Přepočítat ratingy"
+  btn.disabled = false
+  alert("❌ Chyba: "+e.message)
+ })
 }
 
 // =====================================================
@@ -427,7 +430,6 @@ async function init(){
  allStages  = stagesRes.data || []
  allTeams   = teamsRes.data || []
  allCompetitions = compRes.data || []
-
  allTeams.forEach(t=> teamsMap[t.id]=t)
 
  const seasonSel = document.getElementById("seasonFilter")
@@ -474,7 +476,7 @@ function onSeasonFilterChange(){
   stageSel.appendChild(opt)
  })
 
- const zakladni = seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]
+ const zakladni=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]
  if(zakladni){ stageSel.value=zakladni.id; loadMatches() }
 }
 
@@ -501,30 +503,30 @@ function updateTeamFilter(){
  const prev = sel.value
  sel.innerHTML = '<option value="">Všechny týmy</option>'
 
- const sorted = [...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name))
+ const sorted=[...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name))
  sorted.forEach(t=>{
   const opt=document.createElement("option"); opt.value=t.id; opt.textContent=t.name
   sel.appendChild(opt)
  })
 
- sel.value = ([...teamIds].includes(prev))?prev:""
- currentTeamFilter = sel.value
+ sel.value=([...teamIds].includes(prev))?prev:""
+ currentTeamFilter=sel.value
 }
 
 function applyTeamFilter(){
- currentTeamFilter = document.getElementById("teamFilter").value
- let filtered = allMatches
+ currentTeamFilter=document.getElementById("teamFilter").value
+ let filtered=allMatches
  if(currentTeamFilter) filtered=allMatches.filter(m=>m.home_team===currentTeamFilter||m.away_team===currentTeamFilter)
  document.getElementById("matchCount").textContent=`Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
  render(filtered)
 }
 
 // =====================================================
-// RENDER TABLE
+// RENDER
 // =====================================================
 
 function render(matches){
- const cont = document.getElementById("matchesTable")
+ const cont=document.getElementById("matchesTable")
  cont.innerHTML=""
 
  if(!matches.length){
@@ -649,7 +651,7 @@ async function saveAllMatches(){
 
  if(!valid) return
 
- const { error }=await db.from("matches").insert(toInsert)
+ const {error}=await db.from("matches").insert(toInsert)
  if(error){ alert("❌ Chyba: "+error.message); return }
 
  closeModal()
@@ -660,7 +662,7 @@ async function saveAllMatches(){
 }
 
 // =====================================================
-// MODAL NOVÁ SEZÓNA – WIZARD
+// WIZARD NOVÁ SEZÓNA
 // =====================================================
 
 function openNewSeasonModal(){
@@ -695,10 +697,8 @@ function wizardGoTo(step){
 
 function wizardNext(current){
  if(current===1){
-  const comp=document.getElementById("ns-competition").value
-  const name=document.getElementById("ns-name").value.trim()
-  if(!comp){ alert("Vyber soutěž!"); return }
-  if(!name){ alert("Zadej název sezóny!"); return }
+  if(!document.getElementById("ns-competition").value){ alert("Vyber soutěž!"); return }
+  if(!document.getElementById("ns-name").value.trim()){ alert("Zadej název sezóny!"); return }
   wizardGoTo(2)
  } else if(current===2){
   if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
@@ -887,7 +887,6 @@ async function resetMatch(matchId){
   await db.from("bets").update({status:"pending"}).eq("id",bet.id)
  }
  await db.from("matches").delete().eq("id",matchId)
- // Přepočítej ratingy po smazání
  await recalculateAllRatings()
  alert("Zápas smazán 👍")
  loadMatches()
@@ -900,12 +899,10 @@ async function saveMatch(matchId){
  const resultType=getResultType(lines)
  await db.from("matches").update({
   home_score:score.hg, away_score:score.ag,
-  played:true, stats:JSON.stringify(lines),
-  result_type:resultType
+  played:true, stats:JSON.stringify(lines), result_type:resultType
  }).eq("id",matchId)
  const {data:fullMatch}=await db.from("matches").select("*").eq("id",matchId).single()
  await evaluateBets(fullMatch)
- // Přepočítej ratingy po uložení
  await recalculateAllRatings()
  alert("Uloženo 👍")
  loadMatches()
