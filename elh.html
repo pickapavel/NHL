@@ -116,13 +116,25 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .td-rank{
  font-weight:700;color:#0b2a3c;font-size:14px;
- width:50px;
+ width:52px;
  white-space:nowrap;
+ vertical-align:middle;
 }
 
-.move-up{color:#22c55e;font-size:10px;font-weight:800;margin-left:3px;}
-.move-down{color:#ef4444;font-size:10px;font-weight:800;margin-left:3px;}
-.move-new{color:#8b5cf6;font-size:9px;font-weight:800;margin-left:3px;}
+.rank-wrap{
+ display:inline-flex;align-items:center;gap:4px;
+}
+
+.move-badge{
+ display:inline-flex;align-items:center;gap:1px;
+ font-size:10px;font-weight:800;
+ line-height:1;
+}
+
+.move-up .move-arrow{color:#22c55e;}
+.move-up .move-num{color:#22c55e;font-size:9px;}
+.move-down .move-arrow{color:#ef4444;}
+.move-down .move-num{color:#ef4444;font-size:9px;}
 
 .td-team{text-align:left;padding-left:8px;}
 .team-cell{display:flex;align-items:center;gap:10px;}
@@ -158,29 +170,91 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;cursor:pointer;
 }
 
-.match-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.match-table{
+ width:100%;border-collapse:collapse;margin-bottom:8px;
+}
+
 .match-table thead tr{background:#0b2a3c;color:white;}
-.match-table thead th{padding:12px 10px;text-align:center;font-size:12px;letter-spacing:.05em;white-space:nowrap;}
+
+.match-table thead th{
+ padding:12px 10px;text-align:center;
+ font-size:12px;letter-spacing:.05em;white-space:nowrap;
+}
+
 .match-table thead th.th-left{text-align:left;}
-.match-table tbody tr{border-bottom:1px solid #e8e8e8;transition:background .15s;}
+
+.match-table tbody tr{
+ border-bottom:1px solid #e8e8e8;
+ transition:background .15s;
+}
+
 .match-table tbody tr:nth-child(odd) td{background:#f7f8fa;}
 .match-table tbody tr:hover td{background:#edf2f7;}
-.match-table tbody td{padding:10px 10px;text-align:center;vertical-align:middle;font-size:13px;color:#333;}
+
+.match-table tbody td{
+ padding:10px 10px;
+ text-align:center;
+ vertical-align:middle;
+ font-size:13px;
+ color:#333;
+}
+
 .match-table tbody td.td-left{text-align:left;}
 
-.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
-.match-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.round-badge{
+ display:inline-block;
+ background:#e9ecef;color:#0b2a3c;
+ font-weight:700;font-size:12px;
+ padding:3px 10px;border-radius:20px;
+ min-width:36px;text-align:center;
+}
+
+.match-logo{
+ width:28px;height:28px;object-fit:contain;
+ background:white;border-radius:5px;padding:2px;
+ border:1px solid #e0e0e0;flex-shrink:0;
+}
+
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
 
-.score-cell{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
-.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
-.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;}
+.score-cell{
+ display:flex;flex-direction:column;
+ align-items:center;gap:3px;
+}
+
+.score-badge{
+ display:inline-block;
+ background:#0b2a3c;color:white;
+ font-weight:700;font-size:14px;
+ padding:4px 12px;border-radius:6px;
+ min-width:60px;text-align:center;
+}
+
+.score-badge.empty{
+ background:#e0e0e0;color:#999;
+ font-weight:400;font-size:13px;
+}
+
+.result-tag{
+ display:inline-block;
+ font-size:10px;font-weight:700;
+ background:#2f9ec9;color:white;
+ padding:2px 6px;border-radius:4px;
+}
+
 .periods-small{font-size:11px;color:#888;}
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
-.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
+
+.btn{
+ display:inline-flex;align-items:center;gap:5px;
+ border:none;border-radius:8px;cursor:pointer;
+ font-weight:700;font-size:13px;
+ padding:8px 14px;transition:all .15s;
+ white-space:nowrap;
+}
+
 .btn-detail{background:#1a5276;color:white;}
 .btn-detail:hover{background:#0b2a3c;}
 .btn-bet{background:#27ae60;color:white;}
@@ -188,6 +262,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
+
 .loading{text-align:center;padding:30px;color:#888;font-size:14px;}
 </style>
 </head>
@@ -213,7 +288,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  <thead>
   <tr>
    <th style="width:60px" title="Rating celkový / forma">⭐🔥</th>
-   <th style="width:50px">#</th>
+   <th style="width:28px">#</th>
    <th class="th-team">Tým</th>
    <th style="width:60px">Body</th>
    <th>Skóre</th>
@@ -395,6 +470,7 @@ async function initSeasons(){
 }
 
 async function load(){
+
  const { data: seasonTeams } = await supabase
   .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
 
@@ -536,22 +612,26 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   const prev = prevOrder[t.team]
   const curr = i+1
   let moveHtml = ''
-  if(!prev){
-   // Nový tým v tabulce
-   moveHtml = `<span class="move-new">NEW</span>`
-  } else if(prev !== curr){
+  if(prev && prev !== curr){
    const diff = prev - curr
    if(diff > 0){
-    moveHtml = `<span class="move-up">▲${diff}</span>`
+    // Posun nahoru – zelená šipka nahoru + číslo
+    moveHtml = `<span class="move-badge move-up"><span class="move-arrow">▲</span><span class="move-num">${diff}</span></span>`
    } else {
-    moveHtml = `<span class="move-down">▼${Math.abs(diff)}</span>`
+    // Posun dolů – červená šipka dolů + číslo
+    moveHtml = `<span class="move-badge move-down"><span class="move-arrow">▼</span><span class="move-num">${Math.abs(diff)}</span></span>`
    }
   }
 
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rating">⭐ ${elo}<br>🔥 ${form}</td>
-   <td class="td-rank">${i+1}${moveHtml}</td>
+   <td class="td-rank">
+    <span class="rank-wrap">
+     <span>${i+1}</span>
+     ${moveHtml}
+    </span>
+   </td>
    <td class="td-team">
     <div class="team-cell">
      <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
