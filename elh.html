@@ -114,7 +114,16 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  font-weight:600;line-height:1.8;padding:6px 6px;width:60px;
 }
 
-.td-rank{font-weight:700;color:#0b2a3c;font-size:14px;width:28px;}
+.td-rank{
+ font-weight:700;color:#0b2a3c;font-size:14px;
+ width:50px;
+ white-space:nowrap;
+}
+
+.move-up{color:#22c55e;font-size:10px;font-weight:800;margin-left:3px;}
+.move-down{color:#ef4444;font-size:10px;font-weight:800;margin-left:3px;}
+.move-new{color:#8b5cf6;font-size:9px;font-weight:800;margin-left:3px;}
+
 .td-team{text-align:left;padding-left:8px;}
 .team-cell{display:flex;align-items:center;gap:10px;}
 
@@ -149,91 +158,29 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  background:#0b2a3c;color:white;cursor:pointer;
 }
 
-.match-table{
- width:100%;border-collapse:collapse;margin-bottom:8px;
-}
-
+.match-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
 .match-table thead tr{background:#0b2a3c;color:white;}
-
-.match-table thead th{
- padding:12px 10px;text-align:center;
- font-size:12px;letter-spacing:.05em;white-space:nowrap;
-}
-
+.match-table thead th{padding:12px 10px;text-align:center;font-size:12px;letter-spacing:.05em;white-space:nowrap;}
 .match-table thead th.th-left{text-align:left;}
-
-.match-table tbody tr{
- border-bottom:1px solid #e8e8e8;
- transition:background .15s;
-}
-
+.match-table tbody tr{border-bottom:1px solid #e8e8e8;transition:background .15s;}
 .match-table tbody tr:nth-child(odd) td{background:#f7f8fa;}
 .match-table tbody tr:hover td{background:#edf2f7;}
-
-.match-table tbody td{
- padding:10px 10px;
- text-align:center;
- vertical-align:middle;
- font-size:13px;
- color:#333;
-}
-
+.match-table tbody td{padding:10px 10px;text-align:center;vertical-align:middle;font-size:13px;color:#333;}
 .match-table tbody td.td-left{text-align:left;}
 
-.round-badge{
- display:inline-block;
- background:#e9ecef;color:#0b2a3c;
- font-weight:700;font-size:12px;
- padding:3px 10px;border-radius:20px;
- min-width:36px;text-align:center;
-}
-
-.match-logo{
- width:28px;height:28px;object-fit:contain;
- background:white;border-radius:5px;padding:2px;
- border:1px solid #e0e0e0;flex-shrink:0;
-}
-
+.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
+.match-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
 
-.score-cell{
- display:flex;flex-direction:column;
- align-items:center;gap:3px;
-}
-
-.score-badge{
- display:inline-block;
- background:#0b2a3c;color:white;
- font-weight:700;font-size:14px;
- padding:4px 12px;border-radius:6px;
- min-width:60px;text-align:center;
-}
-
-.score-badge.empty{
- background:#e0e0e0;color:#999;
- font-weight:400;font-size:13px;
-}
-
-.result-tag{
- display:inline-block;
- font-size:10px;font-weight:700;
- background:#2f9ec9;color:white;
- padding:2px 6px;border-radius:4px;
-}
-
+.score-cell{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
+.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
+.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;}
 .periods-small{font-size:11px;color:#888;}
 
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
-
-.btn{
- display:inline-flex;align-items:center;gap:5px;
- border:none;border-radius:8px;cursor:pointer;
- font-weight:700;font-size:13px;
- padding:8px 14px;transition:all .15s;
- white-space:nowrap;
-}
-
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
 .btn-detail{background:#1a5276;color:white;}
 .btn-detail:hover{background:#0b2a3c;}
 .btn-bet{background:#27ae60;color:white;}
@@ -241,7 +188,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
-
 .loading{text-align:center;padding:30px;color:#888;font-size:14px;}
 </style>
 </head>
@@ -267,7 +213,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  <thead>
   <tr>
    <th style="width:60px" title="Rating celkový / forma">⭐🔥</th>
-   <th style="width:28px">#</th>
+   <th style="width:50px">#</th>
    <th class="th-team">Tým</th>
    <th style="width:60px">Body</th>
    <th>Skóre</th>
@@ -330,11 +276,10 @@ const K_OVERALL = 80
 const K_FORM = 120
 
 let currentSeasonId = DEFAULT_SEASON_ID
-let currentStageId  = null  // ← ID Základní části aktuální sezóny
+let currentStageId  = null
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
 
-// Mapa season_id → stage_id Základní části (načte se při initu)
 const zakladniStageMap = {}
 
 function getScore(match, teamId){
@@ -408,7 +353,6 @@ document.getElementById("teamFilter").onchange = e=>{
 }
 
 async function initSeasons(){
- // Načti Extraliga sezóny
  const { data: seasons } = await supabase
   .from("seasons")
   .select("*")
@@ -417,7 +361,6 @@ async function initSeasons(){
 
  if(!seasons || seasons.length === 0) return
 
- // Pro každou sezónu načti stage_id Základní části
  const { data: stages } = await supabase
   .from("stages")
   .select("id, season_id, name")
@@ -448,13 +391,10 @@ async function initSeasons(){
   tabsEl.appendChild(btn)
  })
 
- // Nastav výchozí stage
  currentStageId = zakladniStageMap[currentSeasonId] || null
 }
 
 async function load(){
-
- // Načti týmy sezóny
  const { data: seasonTeams } = await supabase
   .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
 
@@ -469,7 +409,6 @@ async function load(){
  const teamMap = {}
  teams.forEach(t=> teamMap[t.id]=t)
 
- // Pro ELO rating – načti jen odehrané zápasy základní části všech sezón
  const { data: allPlayedMatches } = await supabase
   .from("matches")
   .select("*")
@@ -477,7 +416,6 @@ async function load(){
   .not("away_score","is",null)
   .order("round",{ascending:true})
 
- // Filtruj jen zápasy ze Základní části (pomocí zakladniStageMap)
  const zakladniStageIds = new Set(Object.values(zakladniStageMap))
  const allMatchesFiltered = (allPlayedMatches||[]).filter(m=>
   zakladniStageIds.has(m.stage_id)
@@ -485,7 +423,6 @@ async function load(){
 
  const { ratings, formRatings } = calculateRatings(allMatchesFiltered, teams)
 
- // Načti zápasy aktuální sezóny – JEN Základní část
  let seasonMatchesQuery = supabase
   .from("matches")
   .select("*")
@@ -497,7 +434,6 @@ async function load(){
 
  const { data: seasonMatches } = await seasonMatchesQuery
 
- // Obnov team filter
  const tf = document.getElementById("teamFilter")
  if(tf.options.length === 1){
   teams.forEach(t=>{
@@ -519,7 +455,6 @@ async function load(){
  if(currentMatchFilter==="played")   safeMatches=safeMatches.filter(m=>m.played)
  if(currentMatchFilter==="unplayed") safeMatches=safeMatches.filter(m=>!m.played)
 
- // Pro tabulku použij jen odehrané zápasy základní části aktuální sezóny
  const tableMatches = (seasonMatches||[]).filter(m=>
   m.home_score!=null && m.away_score!=null
  )
@@ -569,6 +504,15 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   return (b.gf-b.ga)-(a.gf-a.ga)
  })
 
+ // Načti předchozí pořadí z localStorage
+ const storageKey = `standings_order_${currentSeasonId}`
+ const prevOrder = JSON.parse(localStorage.getItem(storageKey) || '{}')
+
+ // Ulož aktuální pořadí
+ const newOrder = {}
+ arr.forEach((t,i)=> newOrder[t.team] = i+1)
+ localStorage.setItem(storageKey, JSON.stringify(newOrder))
+
  const tbody=document.getElementById("standings")
  tbody.innerHTML=""
 
@@ -588,10 +532,26 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
   const elo  = ratings[t.team]  || START_RATING
   const form = formRatings[t.team] || START_RATING
 
+  // Pohyb v tabulce
+  const prev = prevOrder[t.team]
+  const curr = i+1
+  let moveHtml = ''
+  if(!prev){
+   // Nový tým v tabulce
+   moveHtml = `<span class="move-new">NEW</span>`
+  } else if(prev !== curr){
+   const diff = prev - curr
+   if(diff > 0){
+    moveHtml = `<span class="move-up">▲${diff}</span>`
+   } else {
+    moveHtml = `<span class="move-down">▼${Math.abs(diff)}</span>`
+   }
+  }
+
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rating">⭐ ${elo}<br>🔥 ${form}</td>
-   <td class="td-rank">${i+1}</td>
+   <td class="td-rank">${i+1}${moveHtml}</td>
    <td class="td-team">
     <div class="team-cell">
      <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
