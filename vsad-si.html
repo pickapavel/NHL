@@ -8,164 +8,64 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
-
 .wrapper{max-width:900px;margin:0 auto;padding:20px 16px 40px;}
 
-/* MATCH HEADER */
-.match-header{
- background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);
- border-radius:16px;padding:24px 20px 20px;
- margin-bottom:20px;
- box-shadow:0 4px 16px rgba(11,42,60,.15);
-}
-
-.teams-row{
- display:grid;grid-template-columns:1fr auto 1fr;
- align-items:center;gap:12px;margin-bottom:16px;
-}
-
+.match-header{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);border-radius:16px;padding:24px 20px 20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(11,42,60,.15);}
+.teams-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:16px;}
 .team-info{display:flex;flex-direction:column;align-items:center;gap:8px;}
 .team-logo{width:60px;height:60px;object-fit:contain;background:white;border-radius:10px;padding:4px;border:1px solid rgba(255,255,255,.2);}
 .team-name{font-size:13px;font-weight:700;color:white;text-align:center;line-height:1.3;}
 .team-rating{font-size:12px;color:#ffd166;font-weight:600;}
-
 .score-box{text-align:center;}
 .score-main{font-size:36px;font-weight:800;color:white;line-height:1;}
 .score-periods{font-size:11px;color:#7ab0cc;margin-top:4px;}
 .score-tag{display:inline-block;background:#2f9ec9;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px;}
 
-/* H2H sekce */
-.h2h-section{
- background:rgba(255,255,255,.06);
- border:1px solid rgba(255,255,255,.1);
- border-radius:10px;padding:12px 14px;
-}
-
-.h2h-title{
- font-size:10px;font-weight:700;color:#7ab0cc;
- text-transform:uppercase;letter-spacing:.08em;
- margin-bottom:10px;
-}
-
+.h2h-section{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;}
+.h2h-title{font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
 .h2h-matches{display:flex;flex-direction:column;gap:5px;}
-
-.h2h-match{
- display:flex;align-items:center;gap:8px;
- font-size:12px;color:#cde;
- background:rgba(255,255,255,.04);
- border-radius:6px;padding:5px 8px;
-}
-
-.h2h-score{
- font-weight:800;color:white;
- background:#0b2a3c;padding:2px 8px;
- border-radius:5px;font-size:12px;
- flex-shrink:0;
-}
-
+.h2h-match{display:flex;align-items:center;gap:8px;font-size:12px;color:#cde;background:rgba(255,255,255,.04);border-radius:6px;padding:5px 8px;}
+.h2h-score{font-weight:800;color:white;background:#0b2a3c;padding:2px 8px;border-radius:5px;font-size:12px;flex-shrink:0;}
 .h2h-teams{flex:1;font-size:11px;color:#aac;}
 .h2h-tag{font-size:9px;font-weight:700;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;flex-shrink:0;}
 .h2h-winner{color:#22c55e;font-weight:700;}
 .h2h-loser{color:#f87171;}
 .h2h-empty{color:#7ab0cc;font-size:12px;font-style:italic;text-align:center;padding:6px 0;}
 
-/* BET CARDS */
 .bet-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:600px){.bet-cards{grid-template-columns:1fr;}.teams-row{grid-template-columns:1fr auto 1fr;}.team-name{font-size:11px;}}
 
-@media(max-width:600px){
- .bet-cards{grid-template-columns:1fr;}
- .teams-row{grid-template-columns:1fr auto 1fr;}
- .team-name{font-size:11px;}
-}
-
-.bet-card{
- background:white;border-radius:14px;
- border:1px solid #c8d8e8;
- box-shadow:0 2px 8px rgba(26,58,92,.07);
- overflow:hidden;
-}
-
-.bet-card-header{
- background:#0b2a3c;padding:10px 14px;
- display:flex;justify-content:space-between;align-items:center;
-}
-
+.bet-card{background:white;border-radius:14px;border:1px solid #c8d8e8;box-shadow:0 2px 8px rgba(26,58,92,.07);overflow:hidden;}
+.bet-card-header{background:#0b2a3c;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
 .player-name{font-size:14px;font-weight:800;color:white;}
 .player-credit{font-size:12px;color:#7ab0cc;font-weight:600;}
-
 .bet-card-body{padding:14px;}
 
-.odds-grid{
- display:grid;grid-template-columns:repeat(4,1fr);
- gap:5px;margin-bottom:12px;
-}
-
-.odd-btn{
- background:#f0f4f8;color:#0b2a3c;
- border:2px solid #e0ecf8;border-radius:8px;
- padding:7px 4px;text-align:center;
- cursor:pointer;transition:all .15s;
- font-family:'Inter',sans-serif;
-}
-
+.odds-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:12px;}
+.odd-btn{background:#f0f4f8;color:#0b2a3c;border:2px solid #e0ecf8;border-radius:8px;padding:7px 4px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .odd-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
-
-.odd-btn.active{
- background:#0b2a3c;color:white;
- border-color:#0b2a3c;
-}
-
+.odd-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 .odd-type{font-size:13px;font-weight:800;display:block;}
 .odd-val{font-size:10px;font-weight:600;color:#666;display:block;margin-top:1px;}
 .odd-btn.active .odd-val{color:#7ab0cc;}
 
-.amount-wrap{position:relative;margin-bottom:10px;}
-.amount-input{
- width:100%;padding:9px 12px;
- border:2px solid #e0ecf8;border-radius:8px;
- font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
- color:#0b2a3c;background:#f7f9fc;
- transition:border .15s;
-}
-.amount-input:focus{outline:none;border-color:#2f9ec9;background:white;}
 .amount-label{font-size:11px;color:#aaa;font-weight:600;margin-bottom:4px;}
+.amount-input{width:100%;padding:9px 12px;border:2px solid #e0ecf8;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#0b2a3c;background:#f7f9fc;transition:border .15s;}
+.amount-input:focus{outline:none;border-color:#2f9ec9;background:white;}
 
-.bet-summary{
- display:flex;justify-content:space-between;
- font-size:12px;color:#666;margin-bottom:12px;
- background:#f7f9fc;border-radius:8px;padding:8px 10px;
- min-height:34px;align-items:center;
-}
-
+.bet-summary{display:flex;justify-content:space-between;font-size:12px;color:#666;margin:10px 0 12px;background:#f7f9fc;border-radius:8px;padding:8px 10px;min-height:34px;align-items:center;}
 .bet-summary .win-amount{font-weight:800;color:#16a34a;font-size:13px;}
 .bet-summary .odds-val{font-weight:700;color:#1a5276;}
 
-.bet-btn{
- width:100%;padding:11px;border:none;border-radius:9px;
- background:#27ae60;color:white;
- font-family:'Inter',sans-serif;font-size:14px;font-weight:800;
- cursor:pointer;transition:background .15s;
-}
+.bet-btn{width:100%;padding:11px;border:none;border-radius:9px;background:#27ae60;color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:background .15s;}
 .bet-btn:hover{background:#219a52;}
 .bet-btn:disabled{background:#ccc;cursor:default;}
 
 .bet-result-won{color:#16a34a;font-weight:800;font-size:13px;}
 .bet-result-lost{color:#dc2626;font-weight:700;font-size:12px;}
 
-/* BACK BTN */
-.back-btn{
- width:100%;padding:12px;border:none;border-radius:10px;
- background:#1a5276;color:white;
- font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
- cursor:pointer;transition:background .15s;
-}
+.back-btn{width:100%;padding:12px;border:none;border-radius:10px;background:#1a5276;color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;}
 .back-btn:hover{background:#0b2a3c;}
-
-.section-label{
- font-size:11px;font-weight:700;color:#0b2a3c;
- text-transform:uppercase;letter-spacing:.06em;
- margin-bottom:8px;display:block;
-}
 </style>
 </head>
 <body>
@@ -173,7 +73,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 <div class="wrapper">
 
-<!-- MATCH HEADER -->
 <div class="match-header">
  <div class="teams-row">
   <div class="team-info">
@@ -181,33 +80,24 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="team-name" id="homeName"></div>
    <div class="team-rating" id="homeRating"></div>
   </div>
-
   <div class="score-box">
    <div class="score-main" id="score">– : –</div>
    <div class="score-periods" id="periods"></div>
    <div id="tag"></div>
   </div>
-
   <div class="team-info">
    <img class="team-logo" id="awayLogo">
    <div class="team-name" id="awayName"></div>
    <div class="team-rating" id="awayRating"></div>
   </div>
  </div>
-
- <!-- H2H -->
  <div class="h2h-section">
   <div class="h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
-  <div class="h2h-matches" id="h2hMatches">
-   <div class="h2h-empty">Načítám...</div>
-  </div>
+  <div class="h2h-matches" id="h2hMatches"><div class="h2h-empty">Načítám...</div></div>
  </div>
 </div>
 
-<!-- BET CARDS -->
 <div class="bet-cards">
-
- <!-- KUBELE -->
  <div class="bet-card">
   <div class="bet-card-header">
    <span class="player-name">Kubele</span>
@@ -216,17 +106,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   <div class="bet-card-body">
    <div class="odds-grid" id="odds_kubele"></div>
    <div class="amount-label">Částka (Kč)</div>
-   <div class="amount-wrap">
-    <input class="amount-input" id="amount_kubele" type="number" placeholder="0 Kč">
-   </div>
-   <div class="bet-summary" id="summary_kubele">
-    <span style="color:#aaa;">Vyber tip a částku</span>
-   </div>
+   <input class="amount-input" id="amount_kubele" type="number" placeholder="0 Kč">
+   <div class="bet-summary" id="summary_kubele"><span style="color:#aaa;">Vyber tip a částku</span></div>
    <button class="bet-btn" onclick="placeBet('kubele')">🎲 Vsadit</button>
   </div>
  </div>
-
- <!-- PICI -->
  <div class="bet-card">
   <div class="bet-card-header">
    <span class="player-name">Pici</span>
@@ -235,16 +119,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   <div class="bet-card-body">
    <div class="odds-grid" id="odds_pici"></div>
    <div class="amount-label">Částka (Kč)</div>
-   <div class="amount-wrap">
-    <input class="amount-input" id="amount_pici" type="number" placeholder="0 Kč">
-   </div>
-   <div class="bet-summary" id="summary_pici">
-    <span style="color:#aaa;">Vyber tip a částku</span>
-   </div>
+   <input class="amount-input" id="amount_pici" type="number" placeholder="0 Kč">
+   <div class="bet-summary" id="summary_pici"><span style="color:#aaa;">Vyber tip a částku</span></div>
    <button class="bet-btn" onclick="placeBet('pici')">🎲 Vsadit</button>
   </div>
  </div>
-
 </div>
 
 <button class="back-btn" onclick="history.back()">← Zpět</button>
@@ -260,60 +139,10 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const START_RATING = 1000
-const K = 120
-
 const matchId = new URLSearchParams(window.location.search).get("id")
-
 let players = {}
 let oddsGlobal = {}
-let state = {
- kubele:{ selected:[] },
- pici:{ selected:[] }
-}
-
-function getEloChange(teamRating, oppRating, score){
- const expected = 1/(1+Math.pow(10,(oppRating-teamRating)/400))
- return K*(score-expected)
-}
-
-function getScore(match, teamId){
- const hg=Number(match.home_score), ag=Number(match.away_score)
- let stats=null
- try{ stats=match.stats?JSON.parse(match.stats):null }catch(e){}
- const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
- const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
- const isHome=match.home_team===teamId
- const tg=isHome?hg:ag, og=isHome?ag:hg
- if(tg>og) return (isSN||isOT)?0.75:1
- return (isSN||isOT)?0.25:0
-}
-
-function calculateFormRatings(matches, teams){
- const ratings={}, formHistory={}, formRatings={}
- teams.forEach(t=>{ ratings[t.id]=START_RATING; formHistory[t.id]=[]; formRatings[t.id]=START_RATING })
-
- matches.forEach(m=>{
-  const h=m.home_team, a=m.away_team
-  const sH=getScore(m,h), sA=getScore(m,a)
-
-  function updateForm(teamId, opponentId, score){
-   const cur=formRatings[teamId], opp=formRatings[opponentId]
-   const ch=getEloChange(cur,opp,score)
-   formHistory[teamId].push(ch)
-   if(formHistory[teamId].length>5) formHistory[teamId].shift()
-   formRatings[teamId]=Math.round(START_RATING+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
-  }
-
-  updateForm(h,a,sH); updateForm(a,h,sA)
-
-  const rH=ratings[h], rA=ratings[a]
-  ratings[h]=Math.round(rH+getEloChange(rH,rA,sH))
-  ratings[a]=Math.round(rA+getEloChange(rA,rH,sA))
- })
-
- return formRatings
-}
+let state = { kubele:{selected:[]}, pici:{selected:[]} }
 
 function calculateOdds(homeRating, awayRating){
  const HOME_ADV=80, homeAdj=homeRating+HOME_ADV
@@ -334,11 +163,11 @@ function calculateOdds(homeRating, awayRating){
 }
 
 function renderH2H(allMatches, homeId, awayId, teamMap){
- const h2h = allMatches
+ const h2h=allMatches
   .filter(m=>(m.home_team===homeId&&m.away_team===awayId)||(m.home_team===awayId&&m.away_team===homeId))
   .slice(-5).reverse()
 
- const cont = document.getElementById("h2hMatches")
+ const cont=document.getElementById("h2hMatches")
  cont.innerHTML=""
 
  if(!h2h.length){
@@ -351,23 +180,19 @@ function renderH2H(allMatches, homeId, awayId, teamMap){
   if(!home||!away) return
   const hg=Number(m.home_score), ag=Number(m.away_score)
   const homeWin=hg>ag
-
   let stats=null
-  try{ stats=m.stats?JSON.parse(m.stats):null }catch(e){}
+  try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
   const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
   const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
   const tag=isSN?"SN":isOT?"OT":""
-
-  const homeClass = homeWin?"h2h-winner":"h2h-loser"
-  const awayClass = homeWin?"h2h-loser":"h2h-winner"
 
   const div=document.createElement("div")
   div.className="h2h-match"
   div.innerHTML=`
    <span class="h2h-teams">
-    <span class="${homeClass}">${home.name.replace(/\(.\)$/,'').trim()}</span>
+    <span class="${homeWin?"h2h-winner":"h2h-loser"}">${home.name.replace(/\(.\)$/,'').trim()}</span>
     vs
-    <span class="${awayClass}">${away.name.replace(/\(.\)$/,'').trim()}</span>
+    <span class="${homeWin?"h2h-loser":"h2h-winner"}">${away.name.replace(/\(.\)$/,'').trim()}</span>
    </span>
    <span class="h2h-score">${hg} : ${ag}</span>
    ${tag?`<span class="h2h-tag">${tag}</span>`:''}
@@ -377,23 +202,25 @@ function renderH2H(allMatches, homeId, awayId, teamMap){
 }
 
 async function load(){
- const {data:match} = await supabase.from("matches").select("*").eq("id",matchId).single()
- const {data:teams} = await supabase.from("teams").select("*")
- const {data:allMatches} = await supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null).order("round",{ascending:true})
+ const {data:match}=await supabase.from("matches").select("*").eq("id",matchId).single()
+ const {data:teams}=await supabase.from("teams").select("*")
+ const {data:allMatches}=await supabase.from("matches").select("*")
+  .not("home_score","is",null).not("away_score","is",null)
 
- const formRatings=calculateFormRatings(allMatches||[], teams||[])
-
- const home=teams.find(t=>t.id===match.home_team)
- const away=teams.find(t=>t.id===match.away_team)
  const teamMap={}
  ;(teams||[]).forEach(t=>teamMap[t.id]=t)
+
+ const home=teamMap[match.home_team]
+ const away=teamMap[match.away_team]
 
  document.getElementById("homeName").innerText=home.name
  document.getElementById("awayName").innerText=away.name
  document.getElementById("homeLogo").src="./logos/"+home.logo
  document.getElementById("awayLogo").src="./logos/"+away.logo
- document.getElementById("homeRating").innerText="⭐ "+formRatings[home.id]
- document.getElementById("awayRating").innerText="⭐ "+formRatings[away.id]
+
+ // Rating přímo z DB
+ document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
+ document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
 
  if(match.played){
   document.getElementById("score").innerText=`${match.home_score} : ${match.away_score}`
@@ -408,7 +235,8 @@ async function load(){
 
  renderH2H(allMatches||[], home.id, away.id, teamMap)
 
- oddsGlobal=calculateOdds(formRatings[home.id], formRatings[away.id])
+ // Kurzy počítáme z form ratingu
+ oddsGlobal=calculateOdds(home.rating_form||1000, away.rating_form||1000)
  renderOdds("kubele")
  renderOdds("pici")
  await loadPlayers()
@@ -428,8 +256,7 @@ function renderOdds(playerKey){
  cont.innerHTML=""
  Object.entries(oddsGlobal).forEach(([type,o])=>{
   const div=document.createElement("div")
-  div.className="odd-btn"
-  div.dataset.type=type
+  div.className="odd-btn"; div.dataset.type=type
   div.innerHTML=`<span class="odd-type">${type}</span><span class="odd-val">${o.toFixed(2)}</span>`
   div.onclick=()=>{
    const selected=state[playerKey].selected
@@ -438,8 +265,7 @@ function renderOdds(playerKey){
     div.classList.remove("active")
    } else {
     if(selected.length>=2) return
-    selected.push(type)
-    div.classList.add("active")
+    selected.push(type); div.classList.add("active")
    }
    updateSummary(playerKey)
   }
@@ -451,15 +277,9 @@ function updateSummary(playerKey){
  const amount=Number(document.getElementById("amount_"+playerKey).value)
  const selected=state[playerKey].selected
  const summaryEl=document.getElementById("summary_"+playerKey)
-
- if(!selected.length){
-  summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>'
-  return
- }
-
+ if(!selected.length){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>'; return }
  let combinedOdds=1
  selected.forEach(t=>combinedOdds*=oddsGlobal[t])
-
  if(amount){
   summaryEl.innerHTML=`<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*combinedOdds)} Kč</span>`
  } else {
@@ -479,10 +299,7 @@ async function loadExistingBets(match){
 
   const cont=document.getElementById("odds_"+playerKey)
   cont.querySelectorAll(".odd-btn").forEach(btn=>{
-   if(tips.includes(btn.dataset.type)){
-    btn.classList.add("active")
-    btn.style.pointerEvents="none"
-   }
+   if(tips.includes(btn.dataset.type)){ btn.classList.add("active"); btn.style.pointerEvents="none" }
   })
 
   document.getElementById("amount_"+playerKey).value=bet.amount
@@ -506,26 +323,20 @@ window.placeBet=async function(playerKey){
  const amount=Number(document.getElementById("amount_"+playerKey).value)
  const selected=state[playerKey].selected
  const player=players[playerKey]
-
  if(!amount||!selected.length){ alert("Vyber tip a zadej částku"); return }
  if(player.credit<amount){ alert("Nedostatek kreditu"); return }
-
  let combinedOdds=1
  selected.forEach(t=>combinedOdds*=oddsGlobal[t])
-
  await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
  await supabase.from("bets").insert({
   match_id:matchId, player_id:player.id,
   tip:selected.join(","), amount,
-  odds:combinedOdds, potential_win:amount*combinedOdds,
-  status:"pending"
+  odds:combinedOdds, potential_win:amount*combinedOdds, status:"pending"
  })
-
  location.reload()
 }
 
 load()
-
 </script>
 </body>
 </html>
