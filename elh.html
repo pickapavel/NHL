@@ -76,20 +76,17 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 .match-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
 .match-team-cell{display:flex;align-items:center;gap:8px;}
 .match-team-name{font-weight:600;font-size:13px;}
-
 .score-cell{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
 .score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
 .result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;}
 .periods-small{font-size:11px;color:#888;}
-
 .btn-wrap{display:flex;gap:6px;justify-content:center;}
 .btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
 .btn-detail{background:#1a5276;color:white;}
 .btn-detail:hover{background:#0b2a3c;}
 .btn-bet{background:#27ae60;color:white;}
 .btn-bet:hover{background:#219a52;}
-
 .played-row td{background:#f0fdf4 !important;}
 .played-row:hover td{background:#e0f7e9 !important;}
 .loading{text-align:center;padding:30px;color:#888;font-size:14px;}
@@ -111,7 +108,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 <div class="season-tabs" id="seasonTabs"></div>
 
 <div class="sectionTitle">Tabulka</div>
-
 <div class="table-scroll">
 <table class="standings-table">
  <thead>
@@ -121,7 +117,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
    <th class="th-team">Tým</th>
    <th style="width:60px">Body</th>
    <th>Skóre</th>
-   <th title="Vstřelené minus obdržené">+/-</th>
+   <th title="+/-">+/-</th>
    <th title="Zápasy">Z</th>
    <th title="Výhry">V</th>
    <th title="Prohry">P</th>
@@ -136,9 +132,7 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 </div>
 
 <div class="filterBar">
- <select id="teamFilter">
-  <option value="all">Všechny týmy</option>
- </select>
+ <select id="teamFilter"><option value="all">Všechny týmy</option></select>
  <select id="matchFilter">
   <option value="all">Všechny zápasy</option>
   <option value="played">Jen odehrané</option>
@@ -147,7 +141,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 </div>
 
 <div class="sectionTitle">Rozpis zápasů</div>
-
 <table class="match-table">
  <thead>
   <tr>
@@ -160,11 +153,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  </thead>
  <tbody id="schedule"></tbody>
 </table>
-
 </div>
 
 <script type="module">
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
@@ -185,115 +176,80 @@ document.getElementById("matchFilter").onchange = e=>{ currentMatchFilter=e.targ
 document.getElementById("teamFilter").onchange  = e=>{ currentTeamFilter=e.target.value; load() }
 
 async function initSeasons(){
- const { data: seasons } = await supabase
-  .from("seasons").select("*")
-  .eq("competition_id", EXTRALIGA_COMPETITION_ID)
-  .order("created_at", { ascending: true })
-
+ const {data:seasons}=await supabase.from("seasons").select("*").eq("competition_id",EXTRALIGA_COMPETITION_ID).order("created_at",{ascending:true})
  if(!seasons||!seasons.length) return
 
- const { data: stages } = await supabase
-  .from("stages").select("id, season_id, name")
-  .in("season_id", seasons.map(s=>s.id))
-  .eq("name", "Základní část")
+ const {data:stages}=await supabase.from("stages").select("id,season_id,name").in("season_id",seasons.map(s=>s.id)).eq("name","Základní část")
+ ;(stages||[]).forEach(s=>zakladniStageMap[s.season_id]=s.id)
 
- ;(stages||[]).forEach(s=> zakladniStageMap[s.season_id]=s.id)
-
- const tabsEl = document.getElementById("seasonTabs")
- tabsEl.innerHTML = ""
-
+ const tabsEl=document.getElementById("seasonTabs")
+ tabsEl.innerHTML=""
  seasons.forEach(s=>{
-  const btn = document.createElement("button")
-  btn.className = "season-tab"+(s.id===currentSeasonId?" active":"")
-  btn.textContent = s.name
-  btn.onclick = ()=>{
-   currentSeasonId=s.id
-   currentStageId=zakladniStageMap[s.id]||null
+  const btn=document.createElement("button")
+  btn.className="season-tab"+(s.id===currentSeasonId?" active":"")
+  btn.textContent=s.name
+  btn.onclick=()=>{
+   currentSeasonId=s.id; currentStageId=zakladniStageMap[s.id]||null
    currentTeamFilter="all"; currentMatchFilter="all"
    document.getElementById("matchFilter").value="all"
-   const tf=document.getElementById("teamFilter")
-   tf.innerHTML='<option value="all">Všechny týmy</option>'
+   const tf=document.getElementById("teamFilter"); tf.innerHTML='<option value="all">Všechny týmy</option>'
    tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
-   btn.classList.add("active")
-   load()
+   btn.classList.add("active"); load()
   }
   tabsEl.appendChild(btn)
  })
-
- currentStageId = zakladniStageMap[currentSeasonId]||null
+ currentStageId=zakladniStageMap[currentSeasonId]||null
 }
 
 async function load(){
- // Načti týmy sezóny s jejich ratingy přímo z DB
- const { data: seasonTeams } = await supabase
-  .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
+ const {data:seasonTeams}=await supabase.from("season_teams").select("team_id").eq("season_id",currentSeasonId)
+ const teamIds=(seasonTeams||[]).map(t=>t.team_id)
 
- const teamIds = (seasonTeams||[]).map(t=>t.team_id)
-
- let teams = []
+ let teams=[]
  if(teamIds.length>0){
-  const res = await supabase.from("teams").select("*").in("id", teamIds)
-  teams = res.data || []
+  const res=await supabase.from("teams").select("*").in("id",teamIds)
+  teams=res.data||[]
  }
+ const teamMap={}
+ teams.forEach(t=>teamMap[t.id]=t)
 
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id]=t)
+ let query=supabase.from("matches").select("*").eq("season_id",currentSeasonId)
+ if(currentStageId) query=query.eq("stage_id",currentStageId)
+ const {data:seasonMatches}=await query
 
- // Načti zápasy Základní části aktuální sezóny
- let query = supabase.from("matches").select("*").eq("season_id", currentSeasonId)
- if(currentStageId) query = query.eq("stage_id", currentStageId)
- const { data: seasonMatches } = await query
-
- // Obnov team filter
- const tf = document.getElementById("teamFilter")
+ const tf=document.getElementById("teamFilter")
  if(tf.options.length===1){
-  teams.forEach(t=>{
-   const opt=document.createElement("option"); opt.value=t.id; opt.textContent=t.name
-   tf.appendChild(opt)
-  })
+  teams.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; tf.appendChild(o) })
  }
 
- let safeMatches = (seasonMatches||[])
+ let safeMatches=(seasonMatches||[])
  safeMatches.sort((a,b)=>Number(a.round)-Number(b.round))
-
  if(currentTeamFilter!=="all") safeMatches=safeMatches.filter(m=>m.home_team===currentTeamFilter||m.away_team===currentTeamFilter)
- if(currentMatchFilter==="played")   safeMatches=safeMatches.filter(m=>m.played)
+ if(currentMatchFilter==="played") safeMatches=safeMatches.filter(m=>m.played)
  if(currentMatchFilter==="unplayed") safeMatches=safeMatches.filter(m=>!m.played)
 
  const tableMatches=(seasonMatches||[]).filter(m=>m.home_score!=null&&m.away_score!=null)
-
- renderTable(tableMatches, teamMap, teams)
- render(safeMatches, teamMap)
+ renderTable(tableMatches,teamMap,teams)
+ render(safeMatches,teamMap)
 }
 
 function renderTable(matches, teamMap, teams){
- let table = {}
- teams.forEach(t=>{
-  table[t.id]={team:t.id,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0}
- })
+ let table={}
+ teams.forEach(t=>{ table[t.id]={team:t.id,b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0} })
 
  matches.forEach(m=>{
   const h=table[m.home_team], a=table[m.away_team]
   if(!h||!a) return
   const hg=Number(m.home_score), ag=Number(m.away_score)
-  h.z++;a.z++
-  h.gf+=hg;h.ga+=ag
-  a.gf+=ag;a.ga+=hg
-
+  h.z++;a.z++; h.gf+=hg;h.ga+=ag; a.gf+=ag;a.ga+=hg
   let stats=null
   try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
   const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
   const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
-
-  if(isSN){
-   if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1}
-   else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
-  }else if(isOT){
-   if(hg>ag){h.vp++;h.b+=2;a.pp++;a.b+=1}
-   else{a.vp++;a.b+=2;h.pp++;h.b+=1}
+  if(isSN||isOT){
+   if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1} else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
   }else{
-   if(hg>ag){h.v++;h.b+=3;a.p++}
-   else{a.v++;a.b+=3;h.p++}
+   if(hg>ag){h.v++;h.b+=3;a.p++} else{a.v++;a.b+=3;h.p++}
   }
  })
 
@@ -302,36 +258,24 @@ function renderTable(matches, teamMap, teams){
   return (b.gf-b.ga)-(a.gf-a.ga)
  })
 
- // Pohyb v tabulce
- const storageKey=`standings_order_${currentSeasonId}`
- const prevOrder=JSON.parse(localStorage.getItem(storageKey)||'{}')
- const newOrder={}
- arr.forEach((t,i)=>newOrder[t.team]=i+1)
- localStorage.setItem(storageKey, JSON.stringify(newOrder))
-
  const tbody=document.getElementById("standings")
  tbody.innerHTML=""
-
- if(!arr.length){
-  tbody.innerHTML=`<tr><td colspan="13" class="loading">Žádná data pro tuto sezónu.</td></tr>`
-  return
- }
+ if(!arr.length){ tbody.innerHTML=`<tr><td colspan="13" class="loading">Žádná data.</td></tr>`; return }
 
  arr.forEach((t,i)=>{
   const team=teamMap[t.team]
   if(!team) return
-
   const pm=t.gf-t.ga
   const pmStr=pm>0?`+${pm}`:String(pm)
   const pmClass=pm>0?"pos":pm<0?"neg":"neu"
+  const elo=team.rating_overall||1000
+  const form=team.rating_form||1000
 
-  // Rating přímo z DB
-  const elo  = team.rating_overall || 1000
-  const form = team.rating_form    || 1000
-
-  const prev=prevOrder[t.team], curr=i+1
+  // Šipky z DB – porovnej uloženou pozici s aktuální
+  const prev=team.table_position||0
+  const curr=i+1
   let moveHtml=''
-  if(prev&&prev!==curr){
+  if(prev>0 && prev!==curr){
    const diff=prev-curr
    if(diff>0) moveHtml=`<span class="move-badge move-up"><span class="move-arrow">▲</span><span class="move-num">${diff}</span></span>`
    else       moveHtml=`<span class="move-badge move-down"><span class="move-arrow">▼</span><span class="move-num">${Math.abs(diff)}</span></span>`
@@ -340,13 +284,8 @@ function renderTable(matches, teamMap, teams){
   const tr=document.createElement("tr")
   tr.innerHTML=`
    <td class="td-rating">⭐ ${elo}<br>🔥 ${form}</td>
-   <td class="td-rank"><span class="rank-wrap"><span>${i+1}</span>${moveHtml}</span></td>
-   <td class="td-team">
-    <div class="team-cell">
-     <img class="team-logo" src="./logos/${team.logo}" alt="${team.name}">
-     <div class="team-name">${team.name}</div>
-    </div>
-   </td>
+   <td class="td-rank"><span class="rank-wrap"><span>${curr}</span>${moveHtml}</span></td>
+   <td class="td-team"><div class="team-cell"><img class="team-logo" src="./logos/${team.logo}" alt="${team.name}"><div class="team-name">${team.name}</div></div></td>
    <td><span class="points-pill">${t.b}</span></td>
    <td class="td-score">${t.gf}:${t.ga}</td>
    <td class="td-pm ${pmClass}">${pmStr}</td>
@@ -365,20 +304,14 @@ function renderTable(matches, teamMap, teams){
 function render(matches, teamMap){
  const cont=document.getElementById("schedule")
  cont.innerHTML=""
-
- if(!matches.length){
-  cont.innerHTML=`<tr><td colspan="5" class="loading">Žádné zápasy.</td></tr>`
-  return
- }
+ if(!matches.length){ cont.innerHTML=`<tr><td colspan="5" class="loading">Žádné zápasy.</td></tr>`; return }
 
  matches.forEach(m=>{
   const home=teamMap[m.home_team], away=teamMap[m.away_team]
   if(!home||!away) return
-
   let stats=null
   try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
-  let periods="", tag=""
-
+  let periods="",tag=""
   if(stats){
    const h1=Number(stats[16]||0),h2=Number(stats[17]||0),h3=Number(stats[18]||0)
    const a1=Number(stats[6]||0),a2=Number(stats[7]||0),a3=Number(stats[8]||0)
@@ -387,7 +320,6 @@ function render(matches, teamMap){
    const isOT=!isSN&&(stats[9]==="11"||stats[19]==="11")
    if(isSN) tag="SN"; else if(isOT) tag="OT"
   }
-
   const played=m.home_score!=null
   const tr=document.createElement("tr")
   tr.className=played?"played-row":""
@@ -395,19 +327,15 @@ function render(matches, teamMap){
    <td><span class="round-badge">${m.round}</span></td>
    <td class="td-left"><div class="match-team-cell"><img class="match-logo" src="./logos/${home.logo}"><span class="match-team-name">${home.name}</span></div></td>
    <td class="td-left"><div class="match-team-cell"><img class="match-logo" src="./logos/${away.logo}"><span class="match-team-name">${away.name}</span></div></td>
-   <td>
-    <div class="score-cell">
-     <span class="score-badge ${played?"":"empty"}">${played?m.home_score+" : "+m.away_score:"- : -"}</span>
-     ${tag?`<span class="result-tag">${tag}</span>`:""}
-     ${played&&periods?`<span class="periods-small">${periods}</span>`:""}
-    </div>
-   </td>
-   <td>
-    <div class="btn-wrap">
-     <button class="btn btn-detail" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>
-     <button class="btn btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>
-    </div>
-   </td>
+   <td><div class="score-cell">
+    <span class="score-badge ${played?"":"empty"}">${played?m.home_score+" : "+m.away_score:"- : -"}</span>
+    ${tag?`<span class="result-tag">${tag}</span>`:""}
+    ${played&&periods?`<span class="periods-small">${periods}</span>`:""}
+   </div></td>
+   <td><div class="btn-wrap">
+    <button class="btn btn-detail" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>
+    <button class="btn btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>
+   </div></td>
   `
   cont.appendChild(tr)
  })
@@ -415,7 +343,6 @@ function render(matches, teamMap){
 
 await initSeasons()
 load()
-
 </script>
 </body>
 </html>
