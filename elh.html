@@ -49,7 +49,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  white-space:nowrap;
 }
 
-/* SEASON TABS */
 .season-tabs{
  display:flex;gap:8px;flex-wrap:wrap;
  margin-bottom:20px;
@@ -65,14 +64,8 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  transition:all .15s;
 }
 
-.season-tab:hover{
- background:#dce8f5;border-color:#2f9ec9;
-}
-
-.season-tab.active{
- background:#0b2a3c;color:white;
- border-color:#0b2a3c;
-}
+.season-tab:hover{background:#dce8f5;border-color:#2f9ec9;}
+.season-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
 .sectionTitle{
  font-size:17px;font-weight:700;
@@ -265,7 +258,6 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
  <div class="headerBadge">⚡ Live tabulka</div>
 </div>
 
-<!-- SEASON TABS -->
 <div class="season-tabs" id="seasonTabs"></div>
 
 <div class="sectionTitle">Tabulka</div>
@@ -330,7 +322,6 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// ID aktuální (nejnovější) sezóny – zobrazí se jako výchozí
 const DEFAULT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 
@@ -339,9 +330,12 @@ const K_OVERALL = 80
 const K_FORM = 120
 
 let currentSeasonId = DEFAULT_SEASON_ID
+let currentStageId  = null  // ← ID Základní části aktuální sezóny
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
-let allTeams = []
+
+// Mapa season_id → stage_id Základní části (načte se při initu)
+const zakladniStageMap = {}
 
 function getScore(match, teamId){
  const hg = Number(match.home_score)
@@ -414,7 +408,7 @@ document.getElementById("teamFilter").onchange = e=>{
 }
 
 async function initSeasons(){
- // Načti jen Extraliga sezóny
+ // Načti Extraliga sezóny
  const { data: seasons } = await supabase
   .from("seasons")
   .select("*")
@@ -422,6 +416,15 @@ async function initSeasons(){
   .order("created_at", { ascending: true })
 
  if(!seasons || seasons.length === 0) return
+
+ // Pro každou sezónu načti stage_id Základní části
+ const { data: stages } = await supabase
+  .from("stages")
+  .select("id, season_id, name")
+  .in("season_id", seasons.map(s=>s.id))
+  .eq("name", "Základní část")
+
+ ;(stages||[]).forEach(s=> zakladniStageMap[s.season_id] = s.id)
 
  const tabsEl = document.getElementById("seasonTabs")
  tabsEl.innerHTML = ""
@@ -432,24 +435,26 @@ async function initSeasons(){
   btn.textContent = s.name
   btn.onclick = ()=>{
    currentSeasonId = s.id
-   // Reset filtrů
+   currentStageId  = zakladniStageMap[s.id] || null
    currentTeamFilter = "all"
    currentMatchFilter = "all"
    document.getElementById("matchFilter").value = "all"
-   // Reset team filter options
    const tf = document.getElementById("teamFilter")
    tf.innerHTML = '<option value="all">Všechny týmy</option>'
-   // Zvýraznit aktivní tab
    tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
    btn.classList.add("active")
    load()
   }
   tabsEl.appendChild(btn)
  })
+
+ // Nastav výchozí stage
+ currentStageId = zakladniStageMap[currentSeasonId] || null
 }
 
 async function load(){
 
+ // Načti týmy sezóny
  const { data: seasonTeams } = await supabase
   .from("season_teams").select("team_id").eq("season_id", currentSeasonId)
 
@@ -461,22 +466,38 @@ async function load(){
   teams = res.data || []
  }
 
- const { data: allMatches } = await supabase
+ const teamMap = {}
+ teams.forEach(t=> teamMap[t.id]=t)
+
+ // Pro ELO rating – načti jen odehrané zápasy základní části všech sezón
+ const { data: allPlayedMatches } = await supabase
   .from("matches")
   .select("*")
   .not("home_score","is",null)
   .not("away_score","is",null)
   .order("round",{ascending:true})
 
- const { data: seasonMatches } = await supabase
-  .from("matches").select("*").eq("season_id", currentSeasonId)
+ // Filtruj jen zápasy ze Základní části (pomocí zakladniStageMap)
+ const zakladniStageIds = new Set(Object.values(zakladniStageMap))
+ const allMatchesFiltered = (allPlayedMatches||[]).filter(m=>
+  zakladniStageIds.has(m.stage_id)
+ )
 
- const teamMap = {}
- teams.forEach(t=> teamMap[t.id]=t)
+ const { ratings, formRatings } = calculateRatings(allMatchesFiltered, teams)
 
- const { ratings, formRatings } = calculateRatings(allMatches||[], teams)
+ // Načti zápasy aktuální sezóny – JEN Základní část
+ let seasonMatchesQuery = supabase
+  .from("matches")
+  .select("*")
+  .eq("season_id", currentSeasonId)
 
- // Obnov team filter jen pokud se změnila sezóna
+ if(currentStageId){
+  seasonMatchesQuery = seasonMatchesQuery.eq("stage_id", currentStageId)
+ }
+
+ const { data: seasonMatches } = await seasonMatchesQuery
+
+ // Obnov team filter
  const tf = document.getElementById("teamFilter")
  if(tf.options.length === 1){
   teams.forEach(t=>{
@@ -487,7 +508,7 @@ async function load(){
   })
  }
 
- let safeMatches = seasonMatches || []
+ let safeMatches = (seasonMatches||[])
  safeMatches.sort((a,b)=>Number(a.round)-Number(b.round))
 
  if(currentTeamFilter!=="all"){
@@ -498,7 +519,12 @@ async function load(){
  if(currentMatchFilter==="played")   safeMatches=safeMatches.filter(m=>m.played)
  if(currentMatchFilter==="unplayed") safeMatches=safeMatches.filter(m=>!m.played)
 
- renderTable(seasonMatches||[], teamMap, teams, ratings, formRatings)
+ // Pro tabulku použij jen odehrané zápasy základní části aktuální sezóny
+ const tableMatches = (seasonMatches||[]).filter(m=>
+  m.home_score!=null && m.away_score!=null
+ )
+
+ renderTable(tableMatches, teamMap, teams, ratings, formRatings)
  render(safeMatches, teamMap)
 }
 
@@ -510,7 +536,6 @@ function renderTable(matches, teamMap, teams, ratings, formRatings){
  })
 
  matches.forEach(m=>{
-  if(m.home_score==null||m.away_score==null) return
   const h=table[m.home_team]
   const a=table[m.away_team]
   if(!h||!a) return
@@ -667,7 +692,6 @@ function render(matches, teamMap){
  })
 }
 
-// Spustit
 await initSeasons()
 load()
 
