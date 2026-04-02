@@ -1,10 +1,11 @@
 const MENU_ITEMS = [
- { label: '⚡ Extraliga', href: 'elh.html' },
- { label: '🏆 Extraliga - Play off', href: 'playoff.html' },
- { label: '⭐ Rating týmů',   href: 'rating.html' },
+ { label: '⚡ ELH',      href: 'elh.html' },
+ { label: '🏆 Play off', href: 'playoff.html' },
+ { label: '⭐ Rating',   href: 'rating.html' },
  { label: '🎲 Vsaď si',  href: 'vsad-si.html' },
- { label: '📊 Sázky - přehled',    href: 'prehled-sazek.html' },
+ { label: '📊 Sázky',    href: 'prehled-sazek.html' },
  { label: '✏️ Zápisy',   href: 'zapis.html' },
+ { label: '⚙️ Admin',    href: 'admin.html' },
 ]
 
 ;(function(){
@@ -16,6 +17,7 @@ const MENU_ITEMS = [
   padding:0 20px;
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:4px;
   flex-wrap:wrap;
   position:sticky;
@@ -46,8 +48,12 @@ const MENU_ITEMS = [
    transition:all .15s;
    white-space:nowrap;
   `
-  a.onmouseover = ()=>{ if(!isActive) a.style.background='rgba(255,255,255,.06)'; a.style.color='white' }
-  a.onmouseout  = ()=>{ if(!isActive) a.style.background='transparent'; a.style.color=isActive?'white':'#7ab0cc' }
+  a.onmouseover = ()=>{
+   if(!isActive){ a.style.background='rgba(255,255,255,.06)'; a.style.color='white' }
+  }
+  a.onmouseout = ()=>{
+   if(!isActive){ a.style.background='transparent'; a.style.color='#7ab0cc' }
+  }
   nav.appendChild(a)
  })
 
