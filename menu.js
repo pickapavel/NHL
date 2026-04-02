@@ -2,10 +2,8 @@ const MENU_ITEMS = [
  { label: '⚡ ELH',      href: 'elh.html' },
  { label: '🏆 Play off', href: 'playoff.html' },
  { label: '⭐ Rating',   href: 'rating.html' },
- { label: '🎲 Vsaď si',  href: 'vsad-si.html' },
- { label: '📊 Sázky',    href: 'prehled-sazek.html' },
+ { label: '📊 Sázky',    href: 'sazky.html' },
  { label: '✏️ Zápisy',   href: 'zapis.html' },
- { label: '⚙️ Admin',    href: 'admin.html' },
 ]
 
 ;(function(){
