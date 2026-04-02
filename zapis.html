@@ -47,10 +47,12 @@ tr:hover td{background:#edf2f7;}
 .file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
 .file-label input{display:none;}
 .file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
-.btn-wrap{display:flex;gap:6px;justify-content:center;}
-.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 14px;transition:all .15s;white-space:nowrap;}
+.btn-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;transition:all .15s;white-space:nowrap;}
 .btn-save{background:#27ae60;color:white;}
 .btn-save:hover{background:#219a52;}
+.btn-clear{background:#f39c12;color:white;}
+.btn-clear:hover{background:#d68910;}
 .btn-reset{background:#e74c3c;color:white;}
 .btn-reset:hover{background:#c0392b;}
 .round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
@@ -352,7 +354,7 @@ async function recalculateAllRatings(){
  const { data: teams } = await db.from("teams").select("*")
  if(!teams) return
 
- const eloRatings = {}, formRatings = {}, formHistory = {}
+ const eloRatings={}, formRatings={}, formHistory={}
  teams.forEach(t=>{
   eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[]
  })
@@ -388,7 +390,6 @@ async function recalculateAllRatings(){
   updateForm(a,h,sA)
  })
 
- // Ulož do DB
  for(const team of teams){
   await db.from("teams").update({
    rating_overall: eloRatings[team.id]||R_START,
@@ -400,16 +401,16 @@ async function recalculateAllRatings(){
 }
 
 function recalcBtn(){
- const btn = document.querySelector(".btn-recalc")
- btn.textContent = "⏳ Přepočítávám..."
- btn.disabled = true
+ const btn=document.querySelector(".btn-recalc")
+ btn.textContent="⏳ Přepočítávám..."
+ btn.disabled=true
  recalculateAllRatings().then(()=>{
-  btn.textContent = "🔄 Přepočítat ratingy"
-  btn.disabled = false
-  alert("✅ Ratingy přepočítány a uloženy do DB!")
+  btn.textContent="🔄 Přepočítat ratingy"
+  btn.disabled=false
+  alert("✅ Ratingy přepočítány a uloženy!")
  }).catch(e=>{
-  btn.textContent = "🔄 Přepočítat ratingy"
-  btn.disabled = false
+  btn.textContent="🔄 Přepočítat ratingy"
+  btn.disabled=false
   alert("❌ Chyba: "+e.message)
  })
 }
@@ -426,35 +427,35 @@ async function init(){
   db.from("competitions").select("*").order("name"),
  ])
 
- allSeasons = seasonsRes.data || []
- allStages  = stagesRes.data || []
- allTeams   = teamsRes.data || []
- allCompetitions = compRes.data || []
- allTeams.forEach(t=> teamsMap[t.id]=t)
+ allSeasons=seasonsRes.data||[]
+ allStages=stagesRes.data||[]
+ allTeams=teamsRes.data||[]
+ allCompetitions=compRes.data||[]
+ allTeams.forEach(t=>teamsMap[t.id]=t)
 
- const seasonSel = document.getElementById("seasonFilter")
- seasonSel.innerHTML = '<option value="">-- Vyber sezónu --</option>'
+ const seasonSel=document.getElementById("seasonFilter")
+ seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
  allSeasons.forEach(s=>{
   const opt=document.createElement("option"); opt.value=s.id; opt.textContent=s.name
   seasonSel.appendChild(opt)
  })
 
- const mSeason = document.getElementById("m-season")
- mSeason.innerHTML = '<option value="">-- Vyber sezónu --</option>'
+ const mSeason=document.getElementById("m-season")
+ mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
  allSeasons.forEach(s=>{
   const opt=document.createElement("option"); opt.value=s.id; opt.textContent=s.name
   mSeason.appendChild(opt)
  })
 
- const nsComp = document.getElementById("ns-competition")
- nsComp.innerHTML = '<option value="">-- Vyber soutěž --</option>'
+ const nsComp=document.getElementById("ns-competition")
+ nsComp.innerHTML='<option value="">-- Vyber soutěž --</option>'
  allCompetitions.forEach(c=>{
   const opt=document.createElement("option"); opt.value=c.id; opt.textContent=c.name
   nsComp.appendChild(opt)
  })
 
- const found = allSeasons.find(s=>s.id===CURRENT_SEASON_ID)
- seasonSel.value = found ? CURRENT_SEASON_ID : (allSeasons[0]?.id||"")
+ const found=allSeasons.find(s=>s.id===CURRENT_SEASON_ID)
+ seasonSel.value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
  onSeasonFilterChange()
 }
 
@@ -463,13 +464,13 @@ async function init(){
 // =====================================================
 
 function onSeasonFilterChange(){
- currentSeasonId = document.getElementById("seasonFilter").value
+ currentSeasonId=document.getElementById("seasonFilter").value
  if(!currentSeasonId) return
 
- const stageSel = document.getElementById("stageFilter")
- stageSel.innerHTML = '<option value="">-- Vyber stage --</option>'
+ const stageSel=document.getElementById("stageFilter")
+ stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
 
- const seasonStages = allStages.filter(s=>s.season_id===currentSeasonId)
+ const seasonStages=allStages.filter(s=>s.season_id===currentSeasonId)
  seasonStages.forEach(s=>{
   const opt=document.createElement("option"); opt.value=s.id
   opt.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name
@@ -481,27 +482,27 @@ function onSeasonFilterChange(){
 }
 
 async function loadMatches(){
- currentStageId = document.getElementById("stageFilter").value
+ currentStageId=document.getElementById("stageFilter").value
  if(!currentStageId||!currentSeasonId) return
 
- const { data: matches } = await db
+ const {data:matches}=await db
   .from("matches").select("*")
   .eq("season_id",currentSeasonId)
   .eq("stage_id",currentStageId)
   .order("round",{ascending:true})
 
- allMatches = matches || []
+ allMatches=matches||[]
  updateTeamFilter()
  applyTeamFilter()
 }
 
 function updateTeamFilter(){
- const teamIds = new Set()
+ const teamIds=new Set()
  allMatches.forEach(m=>{ teamIds.add(m.home_team); teamIds.add(m.away_team) })
 
- const sel = document.getElementById("teamFilter")
- const prev = sel.value
- sel.innerHTML = '<option value="">Všechny týmy</option>'
+ const sel=document.getElementById("teamFilter")
+ const prev=sel.value
+ sel.innerHTML='<option value="">Všechny týmy</option>'
 
  const sorted=[...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name))
  sorted.forEach(t=>{
@@ -556,7 +557,8 @@ function render(matches){
    <td>
     <div class="btn-wrap">
      <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit</button>
-     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">🗑 Smazat</button>
+     ${played ? `<button class="btn btn-clear" onclick="clearResult('${m.id}')">🗑 Smazat výsledek</button>` : ''}
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">❌ Smazat zápas</button>
     </div>
    </td>
   </tr>`
@@ -818,7 +820,7 @@ async function createSeason(){
 }
 
 // =====================================================
-// FILE + SAVE + DELETE
+// FILE + SAVE + CLEAR + DELETE
 // =====================================================
 
 function handleFile(e, matchId){
@@ -876,8 +878,7 @@ async function evaluateBets(match){
  }
 }
 
-async function resetMatch(matchId){
- if(!confirm("Opravdu smazat celý zápas?")) return
+async function revertBets(matchId){
  const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
  for(const bet of bets||[]){
   if(bet.status==="won"){
@@ -886,6 +887,25 @@ async function resetMatch(matchId){
   }
   await db.from("bets").update({status:"pending"}).eq("id",bet.id)
  }
+}
+
+// Smaže jen výsledek, zápas zůstane
+async function clearResult(matchId){
+ if(!confirm("Smazat výsledek zápasu? Zápas zůstane v rozpisu, ale výsledek se smaže.")) return
+ await revertBets(matchId)
+ await db.from("matches").update({
+  home_score:null, away_score:null,
+  played:false, stats:null, result_type:null
+ }).eq("id",matchId)
+ await recalculateAllRatings()
+ alert("Výsledek smazán 👍")
+ loadMatches()
+}
+
+// Smaže celý zápas
+async function resetMatch(matchId){
+ if(!confirm("Opravdu smazat celý zápas včetně sázek? Tato akce je nevratná.")) return
+ await revertBets(matchId)
  await db.from("matches").delete().eq("id",matchId)
  await recalculateAllRatings()
  alert("Zápas smazán 👍")
