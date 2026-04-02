@@ -16,6 +16,17 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 .wrapper{max-width:1300px;margin:0 auto;padding:0 20px 40px;}
 
+/* SEASON TABS */
+.season-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.season-tab{
+ padding:7px 16px;border-radius:20px;
+ border:2px solid #c8d8e8;background:white;
+ font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+ cursor:pointer;color:#1a3a5c;transition:all .15s;
+}
+.season-tab:hover{background:#dce8f5;border-color:#2f9ec9;}
+.season-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+
 .section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
@@ -66,56 +77,22 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
 
 .result-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.result-card-header{background:#0b2a3c;padding:8px 14px;font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.05);}
 
-/* Hlavička výsledkové karty – stejná barva jako pavouk */
-.result-card-header{
- background:#0b2a3c;
- padding:8px 14px;
- font-size:11px;font-weight:700;
- color:#7ab0cc;
- letter-spacing:.1em;text-transform:uppercase;
- border-bottom:1px solid rgba(255,255,255,.05);
-}
-
-/* MINI CARD */
 .result-mini-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;}
 .result-mini-card:last-child{border-bottom:none;}
 .result-mini-card.unplayed{background:#fafafa;}
 
 .rm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .rm-num{font-size:11px;font-weight:800;color:#0b2a3c;letter-spacing:.04em;}
-
 .rm-teams{display:flex;flex-direction:column;gap:3px;}
-
 .rm-team-row{display:flex;align-items:center;gap:8px;padding:3px 0;}
 .rm-loser .rm-team-name{opacity:.45;}
-
 .rm-team-name{flex:1;font-size:12px;font-weight:700;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-/* Skóre kontejner – pevná šířka aby bylo zarovnané */
-.rm-score-wrap{
- display:flex;align-items:center;gap:4px;
- flex-shrink:0;
- justify-content:flex-end;
-}
-
-/* Tag s pevnou šířkou */
-.result-tag{
- font-size:9px;font-weight:800;
- background:#2f9ec9;color:white;
- padding:2px 5px;border-radius:4px;
- flex-shrink:0;white-space:nowrap;
- width:28px;text-align:center;
-}
+.rm-score-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;justify-content:flex-end;}
+.result-tag{font-size:9px;font-weight:800;background:#2f9ec9;color:white;padding:2px 5px;border-radius:4px;flex-shrink:0;white-space:nowrap;width:28px;text-align:center;}
 .result-tag-empty{width:28px;flex-shrink:0;}
-
-/* Skóre ve výsledcích – stejná barva jako čísla v pavouku (tmavá) */
-.rm-score{
- font-size:20px;font-weight:800;
- width:26px;text-align:center;
- color:#1a2a3c;
- flex-shrink:0;
-}
+.rm-score{font-size:20px;font-weight:800;width:26px;text-align:center;color:#1a2a3c;flex-shrink:0;}
 .rm-score.empty{color:#ccc;font-size:14px;font-weight:400;}
 
 .btn-sm{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:6px 10px;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif;}
@@ -127,6 +104,16 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .empty-msg{padding:16px;text-align:center;color:#aaa;font-size:13px;}
 .loading-msg{padding:30px;text-align:center;color:#7ab0cc;font-size:13px;}
 .phase-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+
+/* Skrytí fází pokud chybí stage */
+.bracket-phase{margin-bottom:0;}
+.bracket-phase.hidden{display:none;}
+
+.no-playoff-msg{
+ background:white;border-radius:14px;border:1px solid #c8d8e8;
+ padding:40px;text-align:center;color:#aaa;font-size:14px;
+ margin-bottom:20px;
+}
 
 @media(max-width:1100px){.bracket-row-qf{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){
@@ -142,63 +129,80 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  <img class="header-logo" src="./logos/lokomotiva.png" alt="logo">
  <div>
   <div class="header-title">Extraliga U dvou Blbounů</div>
-  <div class="header-sub">Play off · 2. sezóna</div>
+  <div class="header-sub" id="header-sub">Play off</div>
  </div>
 </div>
 
 <div class="wrapper">
+
+<!-- SEASON TABS -->
+<div class="season-tabs" id="seasonTabs"></div>
+
 <div class="section-title">Pavouk</div>
 
-<div class="phase-label">Čtvrtfinále</div>
-<div class="bracket-row bracket-row-qf">
- <div class="series-card" id="card-qf1">
-  <div class="series-header"><span>ČF 1</span><span class="series-state neutral" id="state-qf1">Stav série</span></div>
-  <div class="team-row tbd" id="qf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-  <div class="team-row tbd" id="qf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
- </div>
- <div class="series-card" id="card-qf2">
-  <div class="series-header"><span>ČF 2</span><span class="series-state neutral" id="state-qf2">Stav série</span></div>
-  <div class="team-row tbd" id="qf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-  <div class="team-row tbd" id="qf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
- </div>
- <div class="series-card" id="card-qf3">
-  <div class="series-header"><span>ČF 3</span><span class="series-state neutral" id="state-qf3">Stav série</span></div>
-  <div class="team-row tbd" id="qf3-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-  <div class="team-row tbd" id="qf3-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
- </div>
- <div class="series-card" id="card-qf4">
-  <div class="series-header"><span>ČF 4</span><span class="series-state neutral" id="state-qf4">Stav série</span></div>
-  <div class="team-row tbd" id="qf4-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-  <div class="team-row tbd" id="qf4-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
- </div>
-</div>
-
-<div class="phase-label" style="margin-top:20px;">Semifinále</div>
-<div class="bracket-row bracket-row-sf">
- <div class="series-card" id="card-sf1">
-  <div class="series-header"><span>Semifinále 1</span><span class="series-state neutral" id="state-sf1">Stav série</span></div>
-  <div class="team-row tbd" id="sf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF1</div></div>
-  <div class="team-row tbd" id="sf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF2</div></div>
- </div>
- <div class="series-card" id="card-sf2">
-  <div class="series-header"><span>Semifinále 2</span><span class="series-state neutral" id="state-sf2">Stav série</span></div>
-  <div class="team-row tbd" id="sf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF3</div></div>
-  <div class="team-row tbd" id="sf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF4</div></div>
+<!-- ČF -->
+<div class="bracket-phase" id="phase-qf">
+ <div class="phase-label">Čtvrtfinále</div>
+ <div class="bracket-row bracket-row-qf">
+  <div class="series-card" id="card-qf1">
+   <div class="series-header"><span>ČF 1</span><span class="series-state neutral" id="state-qf1">Stav série</span></div>
+   <div class="team-row tbd" id="qf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <div class="team-row tbd" id="qf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+  </div>
+  <div class="series-card" id="card-qf2">
+   <div class="series-header"><span>ČF 2</span><span class="series-state neutral" id="state-qf2">Stav série</span></div>
+   <div class="team-row tbd" id="qf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <div class="team-row tbd" id="qf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+  </div>
+  <div class="series-card" id="card-qf3">
+   <div class="series-header"><span>ČF 3</span><span class="series-state neutral" id="state-qf3">Stav série</span></div>
+   <div class="team-row tbd" id="qf3-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <div class="team-row tbd" id="qf3-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+  </div>
+  <div class="series-card" id="card-qf4">
+   <div class="series-header"><span>ČF 4</span><span class="series-state neutral" id="state-qf4">Stav série</span></div>
+   <div class="team-row tbd" id="qf4-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <div class="team-row tbd" id="qf4-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+  </div>
  </div>
 </div>
 
-<div class="phase-label" style="margin-top:20px;">Finálová fáze</div>
-<div class="bracket-row bracket-row-f">
- <div class="series-card is-third" id="card-third">
-  <div class="series-header is-third"><span>🥉 O 3. místo</span><span class="series-state neutral" id="state-third">Stav série</span></div>
-  <div class="team-row tbd" id="third-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF1</div></div>
-  <div class="team-row tbd" id="third-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF2</div></div>
+<!-- SF -->
+<div class="bracket-phase" id="phase-sf">
+ <div class="phase-label" style="margin-top:20px;">Semifinále</div>
+ <div class="bracket-row bracket-row-sf">
+  <div class="series-card" id="card-sf1">
+   <div class="series-header"><span>Semifinále 1</span><span class="series-state neutral" id="state-sf1">Stav série</span></div>
+   <div class="team-row tbd" id="sf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF1</div></div>
+   <div class="team-row tbd" id="sf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF2</div></div>
+  </div>
+  <div class="series-card" id="card-sf2">
+   <div class="series-header"><span>Semifinále 2</span><span class="series-state neutral" id="state-sf2">Stav série</span></div>
+   <div class="team-row tbd" id="sf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF3</div></div>
+   <div class="team-row tbd" id="sf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF4</div></div>
+  </div>
  </div>
- <div class="series-card is-final" id="card-f">
-  <div class="series-header is-final"><span>🏆 Finále</span><span class="series-state" id="state-f">Stav série</span></div>
-  <div class="team-row tbd" id="f-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF1</div></div>
-  <div class="team-row tbd" id="f-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF2</div></div>
+</div>
+
+<!-- FINÁLE -->
+<div class="bracket-phase" id="phase-f">
+ <div class="phase-label" style="margin-top:20px;">Finálová fáze</div>
+ <div class="bracket-row bracket-row-f">
+  <div class="series-card is-third" id="card-third">
+   <div class="series-header is-third"><span>🥉 O 3. místo</span><span class="series-state neutral" id="state-third">Stav série</span></div>
+   <div class="team-row tbd" id="third-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF1</div></div>
+   <div class="team-row tbd" id="third-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF2</div></div>
+  </div>
+  <div class="series-card is-final" id="card-f">
+   <div class="series-header is-final"><span>🏆 Finále</span><span class="series-state" id="state-f">Stav série</span></div>
+   <div class="team-row tbd" id="f-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF1</div></div>
+   <div class="team-row tbd" id="f-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF2</div></div>
+  </div>
  </div>
+</div>
+
+<div id="no-playoff-msg" class="no-playoff-msg" style="display:none;">
+ Tato sezóna nemá playoff fázi.
 </div>
 
 <div style="max-width:400px;margin:20px auto 0;">
@@ -215,37 +219,18 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   <div class="loading-msg">Načítám...</div>
  </div>
 </div>
+
 </div>
 
 <script>
 const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-
-const STAGE_IDS = {
- qf1:   '13ae3494-6b7c-4b2e-bc5b-259478274b00',
- qf2:   'f5544a65-f97a-4c15-b544-8e39c1ca533d',
- qf3:   '70f62ac1-41bc-4a59-8f91-f4c3e27cc24d',
- qf4:   'da97b17e-02ed-4cd7-8721-bbe7ec1e325d',
- sf1:   '0619829c-acf5-4d81-9833-7f00923c4e24',
- sf2:   'a132f953-b297-4bc7-958d-928de8128b0d',
- third: 'cb18c2a9-b630-440e-a2e0-cfea1350b6b0',
- f:     '4f644dca-d281-41ed-97e5-6ff38e860660',
-}
-
-const SEASON_ID = '4b05b50e-cfde-4473-aebe-33495c85a989'
+const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 const LOGOS = './logos/'
-let teamsMap = {}
 
-const SERIES = {
- qf1:   { label:'ČF 1',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- qf2:   { label:'ČF 2',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- qf3:   { label:'ČF 3',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- qf4:   { label:'ČF 4',         t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- sf1:   { label:'Semifinále 1',  t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- sf2:   { label:'Semifinále 2',  t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
- third: { label:'O 3. místo',    t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:1 },
- f:     { label:'Finále',        t1:null, t2:null, t1id:null, t2id:null, games:[], allMatches:[], winsNeeded:4 },
-}
+let teamsMap = {}
+let currentSeasonId = null
+let allSeasons = []
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -253,31 +238,163 @@ const SERIES = {
 const { createClient } = supabase
 const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-async function loadData(){
+// =====================================================
+// INIT – načti sezóny a vyber nejnovější
+// =====================================================
+
+async function init(){
  const { data: teams } = await db.from("teams").select("*")
  ;(teams||[]).forEach(t=> teamsMap[t.id] = t)
 
- const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
+ // Načti jen Extraliga sezóny seřazené od nejnovější
+ const { data: seasons } = await db
+  .from("seasons")
+  .select("*")
+  .eq("competition_id", EXTRALIGA_COMPETITION_ID)
+  .order("created_at", { ascending: false })
 
+ allSeasons = seasons || []
+ if(!allSeasons.length) return
+
+ // Vygeneruj taby
+ const tabsEl = document.getElementById("seasonTabs")
+ allSeasons.forEach((s, i)=>{
+  const btn = document.createElement("button")
+  btn.className = "season-tab" + (i===0 ? " active" : "")
+  btn.textContent = s.name
+  btn.onclick = ()=>{
+   tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
+   btn.classList.add("active")
+   loadSeason(s.id, s.name)
+  }
+  tabsEl.appendChild(btn)
+ })
+
+ // Načti nejnovější sezónu
+ loadSeason(allSeasons[0].id, allSeasons[0].name)
+}
+
+// =====================================================
+// LOAD SEASON – načti stages a zápasy
+// =====================================================
+
+async function loadSeason(seasonId, seasonName){
+ currentSeasonId = seasonId
+ document.getElementById("header-sub").textContent = `Play off · ${seasonName}`
+ document.getElementById("results-grid").innerHTML = '<div class="loading-msg">Načítám...</div>'
+ document.getElementById("champion-label").textContent = "—"
+
+ // Resetuj série
+ resetSeries()
+
+ // Načti stages pro tuto sezónu
+ const { data: stages } = await db
+  .from("stages")
+  .select("*")
+  .eq("season_id", seasonId)
+  .order("order", { ascending: true })
+
+ if(!stages||!stages.length){
+  showNoPlayoff()
+  return
+ }
+
+ // Mapuj stages na klíče podle jména
+ // Podporuje různé struktury (jen finále, SF+F, ČF+SF+F)
+ const STAGE_IDS = {}
+ const stageMap = {}
+ stages.forEach(s=> stageMap[s.name] = s.id)
+
+ const nameMap = {
+  'Čtvrtfinále 1': 'qf1', 'Čtvrtfinále 2': 'qf2',
+  'Čtvrtfinále 3': 'qf3', 'Čtvrtfinále 4': 'qf4',
+  'Semifinále 1':  'sf1', 'Semifinále 2':  'sf2',
+  'Semifinále':    'sf1', // fallback pro jednu SF stage
+  'O 3. místo':    'third',
+  'Finále':        'f',
+ }
+
+ stages.forEach(s=>{
+  const key = nameMap[s.name]
+  if(key) STAGE_IDS[key] = s.id
+ })
+
+ // Zjisti strukturu playoff
+ const hasQF = !!(STAGE_IDS.qf1 || STAGE_IDS.qf2)
+ const hasSF = !!(STAGE_IDS.sf1)
+ const hasF  = !!(STAGE_IDS.f)
+ const hasPlayoff = hasQF || hasSF || hasF
+
+ // Ukaž/skryj fáze
+ document.getElementById("phase-qf").classList.toggle("hidden", !hasQF)
+ document.getElementById("phase-sf").classList.toggle("hidden", !hasSF)
+ document.getElementById("phase-f").classList.toggle("hidden", !hasF)
+ document.getElementById("no-playoff-msg").style.display = hasPlayoff ? "none" : "block"
+
+ if(!hasPlayoff){
+  document.getElementById("results-grid").innerHTML = '<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'
+  return
+ }
+
+ // Uprav placeholder texty v SF podle toho zda je ČF
+ if(hasSF){
+  if(hasQF){
+   document.getElementById("sf1-t1").querySelector(".team-name").textContent = "Vítěz ČF1"
+   document.getElementById("sf1-t2").querySelector(".team-name").textContent = "Vítěz ČF2"
+   document.getElementById("sf2-t1").querySelector(".team-name").textContent = "Vítěz ČF3"
+   document.getElementById("sf2-t2").querySelector(".team-name").textContent = "Vítěz ČF4"
+  } else {
+   document.getElementById("sf1-t1").querySelector(".team-name").textContent = "Tým 1"
+   document.getElementById("sf1-t2").querySelector(".team-name").textContent = "Tým 2"
+   document.getElementById("sf2-t1").querySelector(".team-name").textContent = "Tým 3"
+   document.getElementById("sf2-t2").querySelector(".team-name").textContent = "Tým 4"
+  }
+ }
+
+ // Načti zápasy
+ const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
  const { data: matches } = await db
-  .from("matches").select("*")
-  .eq("season_id", SEASON_ID)
+  .from("matches")
+  .select("*")
+  .eq("season_id", seasonId)
   .in("stage_id", uniqueStageIds)
   .order("round", { ascending: true })
 
- if(!matches) return
+ // Sestav SERIES objekt dynamicky
+ const SERIES = {}
+ const seriesKeys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ const seriesLabels = {
+  qf1:'ČF 1', qf2:'ČF 2', qf3:'ČF 3', qf4:'ČF 4',
+  sf1:'Semifinále 1', sf2:'Semifinále 2',
+  third:'O 3. místo', f:'Finále'
+ }
+ const winsNeededMap = { third:1 }
 
+ seriesKeys.forEach(k=>{
+  if(STAGE_IDS[k]){
+   SERIES[k] = {
+    label: seriesLabels[k],
+    t1:null, t2:null, t1id:null, t2id:null,
+    games:[], allMatches:[],
+    winsNeeded: winsNeededMap[k] || 4,
+    stageId: STAGE_IDS[k]
+   }
+  }
+ })
+
+ // Roztřiď zápasy
  const stageMatches = {}
- matches.forEach(m=>{
+ ;(matches||[]).forEach(m=>{
   if(!stageMatches[m.stage_id]) stageMatches[m.stage_id] = []
   stageMatches[m.stage_id].push(m)
  })
 
  Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
-  const ms = stageMatches[stageId] || []
-  if(ms.length === 0) return
-
   const s = SERIES[key]
+  if(!s) return
+  const ms = stageMatches[stageId] || []
+  if(!ms.length) return
+
   const first = ms[0]
   s.t1id = first.home_team
   s.t2id = first.away_team
@@ -292,7 +409,7 @@ async function loadData(){
     ga: isT1Home ? m.away_score : m.home_score,
     t1score: isT1Home ? m.home_score : m.away_score,
     t2score: isT1Home ? m.away_score : m.home_score,
-    type: m.result_type === 'REG' ? '' : (m.result_type || ''),
+    type: m.result_type==='REG' ? '' : (m.result_type||''),
     matchId: m.id,
     home_team_id: m.home_team,
     away_team_id: m.away_team,
@@ -302,15 +419,57 @@ async function loadData(){
   })
  })
 
- propagate()
- Object.keys(SERIES).forEach(k=> renderSeries(k))
- renderResults()
- renderChampion()
+ // Propagace vítězů
+ if(SERIES.sf1){
+  SERIES.sf1.t1 = SERIES.sf1.t1 || getWinner(SERIES.qf1)
+  SERIES.sf1.t2 = SERIES.sf1.t2 || getWinner(SERIES.qf2)
+ }
+ if(SERIES.sf2){
+  SERIES.sf2.t1 = SERIES.sf2.t1 || getWinner(SERIES.qf3)
+  SERIES.sf2.t2 = SERIES.sf2.t2 || getWinner(SERIES.qf4)
+ }
+ if(SERIES.third){
+  SERIES.third.t1 = SERIES.third.t1 || getLoser(SERIES.sf1)
+  SERIES.third.t2 = SERIES.third.t2 || getLoser(SERIES.sf2)
+ }
+ if(SERIES.f){
+  SERIES.f.t1 = SERIES.f.t1 || getWinner(SERIES.sf1)
+  SERIES.f.t2 = SERIES.f.t2 || getWinner(SERIES.sf2)
+ }
+
+ // Render
+ Object.keys(SERIES).forEach(k=> renderSeries(k, SERIES[k]))
+ renderResults(SERIES)
+ renderChampion(SERIES)
+}
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function resetSeries(){
+ const keys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ keys.forEach(k=>{
+  const t1 = document.getElementById(`${k}-t1`)
+  const t2 = document.getElementById(`${k}-t2`)
+  if(t1){ t1.className="team-row tbd"; t1.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
+  if(t2){ t2.className="team-row tbd"; t2.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
+  const state = document.getElementById(`state-${k}`)
+  if(state){ state.textContent="Stav série"; state.className="series-state neutral" }
+ })
+}
+
+function showNoPlayoff(){
+ document.getElementById("phase-qf").classList.add("hidden")
+ document.getElementById("phase-sf").classList.add("hidden")
+ document.getElementById("phase-f").classList.add("hidden")
+ document.getElementById("no-playoff-msg").style.display = "block"
+ document.getElementById("results-grid").innerHTML = '<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'
 }
 
 function logoHtml(teamName, size=22){
  const team = Object.values(teamsMap).find(t=> t.name === teamName)
- if(!team || !team.logo) return `<div class="team-logo-placeholder" style="width:${size}px;height:${size}px">?</div>`
+ if(!team||!team.logo) return `<div class="team-logo-placeholder" style="width:${size}px;height:${size}px">?</div>`
  return `<img class="team-logo" style="width:${size}px;height:${size}px" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
@@ -331,125 +490,107 @@ function gameScoresHtml(games, perspective){
 }
 
 function getWins(series, t){
+ if(!series) return 0
  return series.games.filter(g => t===1 ? g.gh > g.ga : g.ga > g.gh).length
 }
 
 function getLoser(series){
- const w1 = getWins(series,1), w2 = getWins(series,2)
- if(w1 >= series.winsNeeded) return series.t2
- if(w2 >= series.winsNeeded) return series.t1
+ if(!series) return null
+ const w1=getWins(series,1), w2=getWins(series,2)
+ if(w1>=series.winsNeeded) return series.t2
+ if(w2>=series.winsNeeded) return series.t1
  return null
 }
 
 function getWinner(series){
- const w1 = getWins(series,1), w2 = getWins(series,2)
- if(w1 >= series.winsNeeded) return series.t1
- if(w2 >= series.winsNeeded) return series.t2
+ if(!series) return null
+ const w1=getWins(series,1), w2=getWins(series,2)
+ if(w1>=series.winsNeeded) return series.t1
+ if(w2>=series.winsNeeded) return series.t2
  return null
 }
 
-function propagate(){
- SERIES.sf1.t1 = SERIES.sf1.t1 || getWinner(SERIES.qf1)
- SERIES.sf1.t2 = SERIES.sf1.t2 || getWinner(SERIES.qf2)
- SERIES.sf2.t1 = SERIES.sf2.t1 || getWinner(SERIES.qf3)
- SERIES.sf2.t2 = SERIES.sf2.t2 || getWinner(SERIES.qf4)
- SERIES.third.t1 = SERIES.third.t1 || getLoser(SERIES.sf1)
- SERIES.third.t2 = SERIES.third.t2 || getLoser(SERIES.sf2)
- SERIES.f.t1 = SERIES.f.t1 || getWinner(SERIES.sf1)
- SERIES.f.t2 = SERIES.f.t2 || getWinner(SERIES.sf2)
-}
+function renderSeries(key, s){
+ if(!s) return
+ const w1=getWins(s,1), w2=getWins(s,2)
+ const winner=getWinner(s)
 
-function renderSeries(key){
- const s = SERIES[key]
- const w1 = getWins(s,1), w2 = getWins(s,2)
- const winner = getWinner(s)
-
- const stateEl = document.getElementById(`state-${key}`)
+ const stateEl=document.getElementById(`state-${key}`)
  if(stateEl){
-  const hasGames = s.games.length > 0
-  stateEl.textContent = hasGames ? `${w1} : ${w2}` : 'Stav série'
-  stateEl.className = 'series-state' + (hasGames ? '' : ' neutral')
+  const hasGames=s.games.length>0
+  stateEl.textContent=hasGames?`${w1} : ${w2}`:'Stav série'
+  stateEl.className='series-state'+(hasGames?'':' neutral')
  }
 
  function renderTeamRow(rowId, team, wins, isWinner, isLoser, perspective){
-  const el = document.getElementById(rowId)
+  const el=document.getElementById(rowId)
   if(!el) return
-  const cls = isWinner ? 'winner' : isLoser ? 'loser' : team ? '' : 'tbd'
-  el.className = `team-row ${cls}`
-  el.innerHTML = `
+  const cls=isWinner?'winner':isLoser?'loser':team?'':'tbd'
+  el.className=`team-row ${cls}`
+  el.innerHTML=`
    ${logoHtml(team)}
-   <div class="team-name ${team?'':'tbd'}">${team || '?'}</div>
+   <div class="team-name ${team?'':'tbd'}">${team||'?'}</div>
    ${gameScoresHtml(s.games, perspective)}
    <div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>
   `
  }
 
- renderTeamRow(`${key}-t1`, s.t1, w1, winner===s.t1, winner && winner!==s.t1, 1)
- renderTeamRow(`${key}-t2`, s.t2, w2, winner===s.t2, winner && winner!==s.t2, 2)
+ renderTeamRow(`${key}-t1`,s.t1,w1,winner===s.t1,winner&&winner!==s.t1,1)
+ renderTeamRow(`${key}-t2`,s.t2,w2,winner===s.t2,winner&&winner!==s.t2,2)
 }
 
-function renderResults(){
- const grid = document.getElementById('results-grid')
- grid.innerHTML = ''
+function renderResults(SERIES){
+ const grid=document.getElementById('results-grid')
+ grid.innerHTML=''
 
- const order = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
- const labels = {
-  qf1:'ČF 1', qf2:'ČF 2', qf3:'ČF 3', qf4:'ČF 4',
-  sf1:'Semifinále 1', sf2:'Semifinále 2',
-  third:'🥉 O 3. místo', f:'🏆 Finále'
+ const order=['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ const labels={
+  qf1:'ČF 1',qf2:'ČF 2',qf3:'ČF 3',qf4:'ČF 4',
+  sf1:'Semifinále 1',sf2:'Semifinále 2',
+  third:'🥉 O 3. místo',f:'🏆 Finále'
  }
 
  order.forEach(key=>{
-  const s = SERIES[key]
-  const card = document.createElement('div')
-  card.className = 'result-card'
+  const s=SERIES[key]
+  if(!s) return
 
-  let matchesHtml = ''
+  const card=document.createElement('div')
+  card.className='result-card'
 
-  if(s.allMatches.length === 0){
-   matchesHtml = `<div class="empty-msg">Zatím žádné zápasy</div>`
+  let matchesHtml=''
+  if(!s.allMatches.length){
+   matchesHtml=`<div class="empty-msg">Zatím žádné zápasy</div>`
   } else {
-   s.allMatches.forEach((m, i)=>{
-    const homeTeam = teamsMap[m.home_team]?.name || '?'
-    const awayTeam = teamsMap[m.away_team]?.name || '?'
-    const played = m.played && m.home_score != null
-    const type = m.result_type === 'REG' ? '' : (m.result_type || '')
-    const homeWin = played && m.home_score > m.away_score
-    const awayWin = played && m.away_score > m.home_score
+   s.allMatches.forEach((m,i)=>{
+    const homeTeam=teamsMap[m.home_team]?.name||'?'
+    const awayTeam=teamsMap[m.away_team]?.name||'?'
+    const played=m.played&&m.home_score!=null
+    const type=m.result_type==='REG'?'':(m.result_type||'')
+    const homeWin=played&&m.home_score>m.away_score
+    const awayWin=played&&m.away_score>m.home_score
 
-    const homeTagHtml = (played && homeWin && type)
-     ? `<span class="result-tag">${type}</span>`
-     : `<span class="result-tag-empty"></span>`
+    const homeTagHtml=(played&&homeWin&&type)?`<span class="result-tag">${type}</span>`:`<span class="result-tag-empty"></span>`
+    const awayTagHtml=(played&&awayWin&&type)?`<span class="result-tag">${type}</span>`:`<span class="result-tag-empty"></span>`
 
-    const awayTagHtml = (played && awayWin && type)
-     ? `<span class="result-tag">${type}</span>`
-     : `<span class="result-tag-empty"></span>`
-
-    matchesHtml += `
+    matchesHtml+=`
      <div class="result-mini-card ${played?'':'unplayed'}">
       <div class="rm-header">
        <span class="rm-num">${i+1}. zápas</span>
        ${played
-        ? `<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
-        : `<button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
+        ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
+        :`<button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
        }
       </div>
       <div class="rm-teams">
        <div class="rm-team-row ${played&&!homeWin?'rm-loser':''}">
-        ${logoHtml(homeTeam, 22)}
+        ${logoHtml(homeTeam,22)}
         <span class="rm-team-name">${homeTeam}</span>
-        <div class="rm-score-wrap">
-         ${homeTagHtml}
-         <span class="rm-score ${played?'':'empty'}">${played ? m.home_score : '–'}</span>
-        </div>
+        <div class="rm-score-wrap">${homeTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.home_score:'–'}</span></div>
        </div>
        <div class="rm-team-row ${played&&!awayWin?'rm-loser':''}">
-        ${logoHtml(awayTeam, 22)}
+        ${logoHtml(awayTeam,22)}
         <span class="rm-team-name">${awayTeam}</span>
-        <div class="rm-score-wrap">
-         ${awayTagHtml}
-         <span class="rm-score ${played?'':'empty'}">${played ? m.away_score : '–'}</span>
-        </div>
+        <div class="rm-score-wrap">${awayTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.away_score:'–'}</span></div>
        </div>
       </div>
      </div>
@@ -457,20 +598,17 @@ function renderResults(){
    })
   }
 
-  card.innerHTML = `
-   <div class="result-card-header">${labels[key]}</div>
-   ${matchesHtml}
-  `
+  card.innerHTML=`<div class="result-card-header">${labels[key]}</div>${matchesHtml}`
   grid.appendChild(card)
  })
 }
 
-function renderChampion(){
- const champion = getWinner(SERIES.f)
- document.getElementById('champion-label').textContent = champion || '—'
+function renderChampion(SERIES){
+ const champion=getWinner(SERIES.f)
+ document.getElementById('champion-label').textContent=champion||'—'
 }
 
-loadData()
+init()
 </script>
 </body>
 </html>
