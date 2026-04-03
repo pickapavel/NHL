@@ -45,11 +45,15 @@ tr:hover td{background:#edf2f7;}
 .file-label{display:inline-flex;align-items:center;gap:6px;background:#f0f0f0;border:1px solid #ccc;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:#555;transition:background .15s;white-space:nowrap;}
 .file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
 .file-label input{display:none;}
+.file-label.csv-label{background:#e8f4fd;border-color:#2f9ec9;color:#1a5276;}
+.file-label.csv-label:hover{background:#d0eafb;}
 .file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
 .btn-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
 .btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;transition:all .15s;white-space:nowrap;}
 .btn-save{background:#27ae60;color:white;}
 .btn-save:hover{background:#219a52;}
+.btn-save-csv{background:#2f9ec9;color:white;}
+.btn-save-csv:hover{background:#1a7aa0;}
 .btn-clear{background:#f39c12;color:white;}
 .btn-clear:hover{background:#d68910;}
 .btn-reset{background:#e74c3c;color:white;}
@@ -121,6 +125,14 @@ tr:hover td{background:#edf2f7;}
 .btn-create{background:#8b5cf6;color:white;}
 .btn-create:hover{background:#7c3aed;}
 .info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
+
+/* CSV modal */
+.toa-input{width:100%;padding:8px 10px;border-radius:8px;border:2px solid #2f9ec9;font-size:14px;font-weight:700;text-align:center;color:#0b2a3c;}
+.csv-preview{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px;font-size:12px;color:#333;margin-bottom:12px;}
+.csv-preview-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;}
+.csv-preview-row:last-child{border-bottom:none;}
+.csv-preview-label{color:#888;font-weight:600;}
+.csv-preview-val{font-weight:700;color:#0b2a3c;}
 </style>
 </head>
 
@@ -149,10 +161,10 @@ tr:hover td{background:#edf2f7;}
 
 <table>
 <thead>
- <tr><th>Kolo</th><th>Domácí</th><th>Hosté</th><th>Skóre</th><th>Soubor</th><th>Akce</th></tr>
+ <tr><th>Kolo</th><th>Domácí</th><th>Hosté</th><th>Skóre</th><th>Textový soubor</th><th>CSV soubor</th><th>Akce</th></tr>
 </thead>
 <tbody id="matchesTable">
- <tr><td colspan="6" class="empty-msg">Vyberte sezónu a stage.</td></tr>
+ <tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>
 </tbody>
 </table>
 </div>
@@ -173,6 +185,32 @@ tr:hover td{background:#edf2f7;}
   <div class="modal-btns">
    <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
    <button class="btn-confirm" onclick="saveAllMatches()">✅ Uložit vše</button>
+  </div>
+ </div>
+</div>
+
+<!-- MODAL CSV – Time on Attack -->
+<div class="modal-overlay" id="csvModal">
+ <div class="modal">
+  <h2>📊 Uložit výsledek z CSV</h2>
+  <p class="modal-sub">Zkontroluj přečtené statistiky a doplň Time on Attack.</p>
+  <div class="csv-preview" id="csvPreview"></div>
+  <div class="modal-section">
+   <div class="modal-section-title">Time on Attack (ruční zadání)</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div>
+     <div class="entry-label" id="toaHomeLabel">Domácí (mm:ss)</div>
+     <input class="toa-input" id="toaHome" type="text" placeholder="např. 6:21">
+    </div>
+    <div>
+     <div class="entry-label" id="toaAwayLabel">Hosté (mm:ss)</div>
+     <input class="toa-input" id="toaAway" type="text" placeholder="např. 7:59">
+    </div>
+   </div>
+  </div>
+  <div class="modal-btns">
+   <button class="btn-cancel" onclick="closeCsvModal()">Zrušit</button>
+   <button class="btn-confirm" id="csvSaveBtn">✅ Uložit výsledek</button>
   </div>
  </div>
 </div>
@@ -251,9 +289,10 @@ const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 const { createClient } = supabase
 const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-let teamsMap={}, filesMap={}, allTeams=[], allStages=[], allSeasons=[], allCompetitions=[], allMatches=[]
+let teamsMap={}, filesMap={}, csvDataMap={}, allTeams=[], allStages=[], allSeasons=[], allCompetitions=[], allMatches=[]
 let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
 let nsSelectedTeams=new Set(), nsSelectedStructure="qf"
+let currentCsvMatchId=null, currentCsvData=null
 
 const R_START=1000, R_K_ELO=80, R_K_FORM=120
 
@@ -381,6 +420,176 @@ function recalcBtn(){
  })
 }
 
+// =====================================================
+// PARSOVÁNÍ CSV ze GameplayCenter
+// =====================================================
+
+function parseCsv(text){
+ const lines = text.trim().split(/\r?\n/)
+ const headers = lines[0].split(",").map(h=>h.replace(/"/g,"").trim())
+ const rows = []
+ for(let i=1;i<lines.length;i++){
+  const vals = lines[i].split(",").map(v=>v.replace(/"/g,"").trim())
+  const obj = {}
+  headers.forEach((h,j)=>obj[h]=vals[j]||"")
+  rows.push(obj)
+ }
+ return rows
+}
+
+function csvToLines(csvRows, toaHome, toaAway){
+ // Najdi home a away řádky
+ const home = csvRows.find(r=>r[""]===undefined||r[""]===null ? false : r[""].toLowerCase()==="home") || csvRows[0]
+ const away = csvRows.find(r=>r[""]===undefined||r[""]===null ? false : r[""].toLowerCase()==="away") || csvRows[1]
+
+ // GP1,GP2,GP3 = góly po třetinách, GOT = OT gól
+ // PP = přesilovky (formát "1/4")
+ // Oslabení domácí = PP hostů, oslabení hostů = PP domácích
+
+ // Nájezdy: pokud GOT home=0 a GOT away=0 ale celkové skóre se liší o 1
+ // určíme vítěze nájezdů z Goal vs součtu gólů
+ const homeGoals = Number(home.Goal||0)
+ const awayGoals = Number(away.Goal||0)
+ const homeGP = Number(home.GP1||0)+Number(home.GP2||0)+Number(home.GP3||0)+Number(home.GOT||0)
+ const awayGP = Number(away.GP1||0)+Number(away.GP2||0)+Number(away.GP3||0)+Number(away.GOT||0)
+
+ let snVal = "0"
+ if(homeGoals !== homeGP || awayGoals !== awayGP){
+  // rozdíl = nájezdy
+  if(homeGoals > awayGoals) snVal = "1"
+  else snVal = "2"
+ }
+
+ // OT: pokud GOT > 0 pro někoho
+ const homeOT = Number(home.GOT||0) > 0 ? "11" : (home.GOT==="0"&&away.GOT==="0"&&snVal==="0") ? "0" : "1"
+ const awayOT = Number(away.GOT||0) > 0 ? "11" : (home.GOT==="0"&&away.GOT==="0"&&snVal==="0") ? "0" : "1"
+
+ // Sestavení pole 21 hodnot (stejná struktura jako textový soubor)
+ const lines = [
+  away.Shot||"0",           // 0: střely hosté
+  away.Hits||"0",           // 1: hity hosté
+  away.Faceoff||"0",        // 2: vhazování hosté
+  toaAway||"0:00",          // 3: čas v útoku hosté
+  away.PP||"0/0",           // 4: přesilovky hosté (= oslabení domácích)
+  home.PP||"0/0",           // 5: oslabení hosté = PP domácích
+  away.GP1||"0",            // 6: góly hosté 1. třetina
+  away.GP2||"0",            // 7: góly hosté 2. třetina
+  away.GP3||"0",            // 8: góly hosté 3. třetina
+  awayOT,                   // 9: OT hosté
+  home.Shot||"0",           // 10: střely domácí
+  home.Hits||"0",           // 11: hity domácí
+  home.Faceoff||"0",        // 12: vhazování domácí
+  toaHome||"0:00",          // 13: čas v útoku domácí
+  home.PP||"0/0",           // 14: přesilovky domácí
+  away.PP||"0/0",           // 15: oslabení domácí = PP hostů
+  home.GP1||"0",            // 16: góly domácí 1. třetina
+  home.GP2||"0",            // 17: góly domácí 2. třetina
+  home.GP3||"0",            // 18: góly domácí 3. třetina
+  homeOT,                   // 19: OT domácí
+  snVal,                    // 20: nájezdy
+ ]
+ return lines
+}
+
+function handleCsvFile(e, matchId){
+ const file = e.target.files[0]
+ if(!file) return
+ const reader = new FileReader()
+ reader.onload = ev => {
+  try{
+   const rows = parseCsv(ev.target.result)
+   if(!rows.length){ alert("CSV soubor je prázdný nebo špatný formát."); return }
+   csvDataMap[matchId] = rows
+   const fname = document.getElementById(`csvfname-${matchId}`)
+   if(fname) fname.textContent = file.name
+   const lbl = document.getElementById(`csvlabel-${matchId}`)
+   if(lbl) lbl.style.borderColor = "#27ae60"
+  }catch(err){
+   alert("Chyba při čtení CSV: "+err.message)
+  }
+ }
+ reader.readAsText(file)
+}
+
+function openCsvModal(matchId){
+ const rows = csvDataMap[matchId]
+ if(!rows){ alert("Nejprve nahraj CSV soubor."); return }
+
+ const home = rows.find(r=>r[""].toLowerCase()==="home") || rows[0]
+ const away = rows.find(r=>r[""].toLowerCase()==="away") || rows[1]
+ const match = allMatches.find(m=>m.id===matchId)
+ const homeTeam = match ? (teamsMap[match.home_team]?.name||"Domácí") : "Domácí"
+ const awayTeam = match ? (teamsMap[match.away_team]?.name||"Hosté") : "Hosté"
+
+ currentCsvMatchId = matchId
+ currentCsvData = rows
+
+ document.getElementById("toaHomeLabel").textContent = `${homeTeam} (mm:ss)`
+ document.getElementById("toaAwayLabel").textContent = `${awayTeam} (mm:ss)`
+ document.getElementById("toaHome").value = ""
+ document.getElementById("toaAway").value = ""
+
+ // Preview
+ const homeGoals = Number(home.Goal||0)
+ const awayGoals = Number(away.Goal||0)
+ const homeGP = Number(home.GP1||0)+Number(home.GP2||0)+Number(home.GP3||0)+Number(home.GOT||0)
+ const awayGP = Number(away.GP1||0)+Number(away.GP2||0)+Number(away.GP3||0)+Number(away.GOT||0)
+ let snText = "Ne"
+ if(homeGoals !== homeGP || awayGoals !== awayGP){
+  snText = homeGoals > awayGoals ? `Ano (${homeTeam})` : `Ano (${awayTeam})`
+ }
+ const otText = (Number(home.GOT||0)>0||Number(away.GOT||0)>0) ? "Ano" : "Ne"
+
+ document.getElementById("csvPreview").innerHTML = `
+  <div class="csv-preview-row"><span class="csv-preview-label">Skóre</span><span class="csv-preview-val">${homeTeam} ${home.Goal} : ${away.Goal} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Góly po třetinách (dom.)</span><span class="csv-preview-val">${home.GP1} – ${home.GP2} – ${home.GP3}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Góly po třetinách (hosté)</span><span class="csv-preview-val">${away.GP1} – ${away.GP2} – ${away.GP3}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">OT</span><span class="csv-preview-val">${otText}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Nájezdy</span><span class="csv-preview-val">${snText}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Střely</span><span class="csv-preview-val">${homeTeam} ${home.Shot} : ${away.Shot} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Hity</span><span class="csv-preview-val">${homeTeam} ${home.Hits} : ${away.Hits} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Vhazování</span><span class="csv-preview-val">${homeTeam} ${home.Faceoff} : ${away.Faceoff} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Přesilovky</span><span class="csv-preview-val">${homeTeam} ${home.PP} : ${away.PP} ${awayTeam}</span></div>
+ `
+
+ document.getElementById("csvSaveBtn").onclick = () => saveCsvMatch()
+ document.getElementById("csvModal").classList.add("open")
+}
+
+function closeCsvModal(){
+ document.getElementById("csvModal").classList.remove("open")
+ currentCsvMatchId = null
+ currentCsvData = null
+}
+
+async function saveCsvMatch(){
+ const toaHome = document.getElementById("toaHome").value.trim()
+ const toaAway = document.getElementById("toaAway").value.trim()
+ if(!toaHome||!toaAway){ alert("Zadej Time on Attack pro oba týmy."); return }
+
+ const lines = csvToLines(currentCsvData, toaHome, toaAway)
+ const score = calculateScore(lines)
+ const resultType = getResultType(lines)
+
+ await db.from("matches").update({
+  home_score: score.hg,
+  away_score: score.ag,
+  played: true,
+  stats: JSON.stringify(lines),
+  result_type: resultType,
+ }).eq("id", currentCsvMatchId)
+
+ const {data:fullMatch} = await db.from("matches").select("*").eq("id", currentCsvMatchId).single()
+ await evaluateBets(fullMatch)
+ await recalculateAllRatings()
+
+ closeCsvModal()
+ alert("Uloženo 👍")
+ loadMatches()
+}
+
+// =====================================================
+
 async function init(){
  const [seasonsRes,stagesRes,teamsRes,compRes]=await Promise.all([
   db.from("seasons").select("*").order("created_at",{ascending:false}),
@@ -451,7 +660,7 @@ function applyTeamFilter(){
 function render(matches){
  const cont=document.getElementById("matchesTable")
  cont.innerHTML=""
- if(!matches.length){ cont.innerHTML=`<tr><td colspan="6" class="empty-msg">Žádné zápasy.</td></tr>`; return }
+ if(!matches.length){ cont.innerHTML=`<tr><td colspan="7" class="empty-msg">Žádné zápasy.</td></tr>`; return }
  matches.forEach(m=>{
   const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
   if(!home||!away) return
@@ -467,12 +676,17 @@ function render(matches){
    <td><div class="team-cell"><img class="team-logo" src="./logos/${away.logo}"><span class="team-name">${away.name}</span></div></td>
    <td>${scoreHtml}</td>
    <td>
-    <label class="file-label" id="label-${m.id}">📂 Vybrat soubor<input type="file" onchange="handleFile(event,'${m.id}')"></label>
+    <label class="file-label" id="label-${m.id}">📂 Textový soubor<input type="file" onchange="handleFile(event,'${m.id}')"></label>
     <div class="file-name" id="fname-${m.id}"></div>
    </td>
    <td>
+    <label class="file-label csv-label" id="csvlabel-${m.id}">📊 CSV soubor<input type="file" accept=".csv" onchange="handleCsvFile(event,'${m.id}')"></label>
+    <div class="file-name" id="csvfname-${m.id}"></div>
+   </td>
+   <td>
     <div class="btn-wrap">
-     <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit</button>
+     <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit (txt)</button>
+     <button class="btn btn-save-csv" onclick="openCsvModal('${m.id}')">📊 Uložit (CSV)</button>
      ${played?`<button class="btn btn-clear" onclick="clearResult('${m.id}')">🗑 Smazat výsledek</button>`:''}
      <button class="btn btn-reset" onclick="resetMatch('${m.id}')">❌ Smazat zápas</button>
     </div>
