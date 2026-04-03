@@ -364,23 +364,23 @@ async function recalculateAllRatings(){
   }
  }
 
- // Ulož do DB – před uložením nového pořadí zkopíruj staré do _prev
+ // Ulož do DB
+ // OPRAVA: table_position_prev se vždy nastaví na starou table_position PŘED přepočtem,
+ // aby šipky v tabulce správně ukazovaly pohyb oproti předchozímu stavu.
  for(const team of teams){
-  const newPos=positionMap[team.id]||0
-  const oldPos=team.table_position||0
+  const newPos = positionMap[team.id] || 0
+  const oldPos = team.table_position || 0
 
-  const updateData={
-   rating_overall: eloRatings[team.id]||R_START,
-   rating_form:    formRatings[team.id]||R_START,
+  const updateData = {
+   rating_overall: eloRatings[team.id] || R_START,
+   rating_form:    formRatings[team.id] || R_START,
    table_position: newPos,
+   // Vždy ulož předchozí pozici do _prev (pokud jsou obě > 0),
+   // takže šipky vždy ukazují pohyb oproti stavu PŘED tímto přepočtem.
+   table_position_prev: (oldPos > 0 && newPos > 0) ? oldPos : (team.table_position_prev || 0),
   }
 
-  // Kopíruj staré pořadí do _prev jen pokud se skutečně změnilo
-  if(oldPos>0 && oldPos!==newPos){
-   updateData.table_position_prev=oldPos
-  }
-
-  await db.from("teams").update(updateData).eq("id",team.id)
+  await db.from("teams").update(updateData).eq("id", team.id)
  }
 
  console.log("Hotovo ✅")
