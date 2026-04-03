@@ -271,8 +271,8 @@ function renderTable(matches, teamMap, teams){
   const elo=team.rating_overall||1000
   const form=team.rating_form||1000
 
-  // Šipky z DB – porovnej uloženou pozici s aktuální
-  const prev=team.table_position||0
+  // Šipky – porovnej table_position_prev s aktuálním pořadím
+  const prev=team.table_position_prev||0
   const curr=i+1
   let moveHtml=''
   if(prev>0 && prev!==curr){
