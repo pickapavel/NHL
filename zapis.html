@@ -255,10 +255,6 @@ let teamsMap={}, filesMap={}, allTeams=[], allStages=[], allSeasons=[], allCompe
 let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
 let nsSelectedTeams=new Set(), nsSelectedStructure="qf"
 
-// =====================================================
-// RATING + POZICE PŘEPOČET
-// =====================================================
-
 const R_START=1000, R_K_ELO=80, R_K_FORM=120
 
 function rGetScore(match, teamId){
@@ -328,7 +324,6 @@ async function recalculateAllRatings(){
 
  // POZICE – spočítej z nejnovější Extraliga sezóny základní části
  const positionMap={}
-
  const extraSeasons=(seasons||[]).filter(s=>s.competition_id===EXTRALIGA_COMPETITION_ID)
  const lastExtraSeason=extraSeasons[extraSeasons.length-1]
 
@@ -369,13 +364,23 @@ async function recalculateAllRatings(){
   }
  }
 
- // Ulož do DB – rating + pozice
+ // Ulož do DB – před uložením nového pořadí zkopíruj staré do _prev
  for(const team of teams){
-  await db.from("teams").update({
+  const newPos=positionMap[team.id]||0
+  const oldPos=team.table_position||0
+
+  const updateData={
    rating_overall: eloRatings[team.id]||R_START,
    rating_form:    formRatings[team.id]||R_START,
-   table_position: positionMap[team.id]||0
-  }).eq("id",team.id)
+   table_position: newPos,
+  }
+
+  // Kopíruj staré pořadí do _prev jen pokud se skutečně změnilo
+  if(oldPos>0 && oldPos!==newPos){
+   updateData.table_position_prev=oldPos
+  }
+
+  await db.from("teams").update(updateData).eq("id",team.id)
  }
 
  console.log("Hotovo ✅")
@@ -395,10 +400,6 @@ function recalcBtn(){
   alert("❌ Chyba: "+e.message)
  })
 }
-
-// =====================================================
-// INIT
-// =====================================================
 
 async function init(){
  const [seasonsRes,stagesRes,teamsRes,compRes]=await Promise.all([
@@ -427,10 +428,6 @@ async function init(){
  seasonSel.value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
  onSeasonFilterChange()
 }
-
-// =====================================================
-// FILTER
-// =====================================================
 
 function onSeasonFilterChange(){
  currentSeasonId=document.getElementById("seasonFilter").value
@@ -471,10 +468,6 @@ function applyTeamFilter(){
  render(filtered)
 }
 
-// =====================================================
-// RENDER
-// =====================================================
-
 function render(matches){
  const cont=document.getElementById("matchesTable")
  cont.innerHTML=""
@@ -508,10 +501,6 @@ function render(matches){
  })
 }
 
-// =====================================================
-// MODALY
-// =====================================================
-
 function openModal(){
  entryCount=0; document.getElementById("matchEntries").innerHTML=""
  document.getElementById("m-season").value=currentSeasonId||""
@@ -528,7 +517,7 @@ function onModalSeasonChange(){
  const seasonStages=allStages.filter(s=>s.season_id===seasonId)
  seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
  if(currentStageId){ const f=seasonStages.find(s=>s.id===currentStageId); if(f) stageSel.value=currentStageId }
- else { const z=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]; if(z) stageSel.value=z.id }
+ else{ const z=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]; if(z) stageSel.value=z.id }
 }
 
 function addEntry(){
@@ -567,23 +556,19 @@ async function saveAllMatches(){
   const homeId=document.getElementById(`e-home-${id}`)?.value
   const awayId=document.getElementById(`e-away-${id}`)?.value
   const round=Number(document.getElementById(`e-round-${id}`)?.value)
-  if(homeId===awayId){ alert(`Zápas ${id}: Domácí a hosté nemohou být stejný tým!`); valid=false; return }
-  if(!round||round<1){ alert(`Zápas ${id}: Zadej platné číslo kola!`); valid=false; return }
+  if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
+  if(!round||round<1){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
   toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
  })
  if(!valid) return
  const {error}=await db.from("matches").insert(toInsert)
- if(error){ alert("❌ Chyba: "+error.message); return }
+ if(error){ alert("❌ "+error.message); return }
  closeModal()
  document.getElementById("seasonFilter").value=seasonId
  onSeasonFilterChange()
  setTimeout(()=>{ document.getElementById("stageFilter").value=stageId; loadMatches() },100)
  alert(`✅ Přidáno ${toInsert.length} zápas${toInsert.length===1?'':'ů'}!`)
 }
-
-// =====================================================
-// WIZARD NOVÁ SEZÓNA
-// =====================================================
 
 function openNewSeasonModal(){
  nsSelectedTeams=new Set(); nsSelectedStructure="qf"; wizardGoTo(1)
@@ -677,10 +662,6 @@ async function createSeason(){
  closeNewSeasonModal(); seasonSel.value=seasonId; onSeasonFilterChange()
  alert(`✅ Sezóna "${name}" vytvořena!`)
 }
-
-// =====================================================
-// FILE + SAVE + CLEAR + DELETE
-// =====================================================
 
 function handleFile(e, matchId){
  const file=e.target.files[0]; if(!file) return
