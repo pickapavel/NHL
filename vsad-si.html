@@ -41,7 +41,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .player-credit{font-size:12px;color:#7ab0cc;font-weight:600;}
 .bet-card-body{padding:14px;}
 
-.odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px;}
+.odds-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:12px;}
 .odd-btn{background:#f0f4f8;color:#0b2a3c;border:2px solid #e0ecf8;border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .odd-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
 .odd-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
@@ -139,7 +139,6 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-// Mapa zkrácených názvů týmů pro tlačítka
 const SHORT_NAMES = {
  "Česká Republika (K)":   "ČR (K)",
  "Česká Republika (P)":   "ČR (P)",
@@ -173,23 +172,22 @@ let players = {}
 let oddsGlobal = {}
 let state = { kubele:{selected:[]}, pici:{selected:[]} }
 
-// 6 nových tipů – label se generuje dynamicky podle týmů
-// Staré tipy 10, 02 se už nenabízejí ale zůstávají v DB pro historii
+// 8 tipů v daném pořadí
 function getNewTips(homeName, awayName){
  const h = getShortName(homeName)
  const a = getShortName(awayName)
  return [
-  { type:"1",        label: h },
-  { type:"2",        label: a },
-  { type:"0",        label: "Remíza/OT/SN" },
+  { type:"1",        label: `Výhra ${h}` },
+  { type:"0",        label: "Remíza" },
+  { type:"2",        label: `Výhra ${a}` },
   { type:"11",       label: `Neprohra ${h}` },
-  { type:"22",       label: `Neprohra ${a}` },
   { type:"no_draw",  label: "Nebude remíza" },
+  { type:"22",       label: `Neprohra ${a}` },
+  { type:"vdr_home", label: `Výhra do rozh. ${h}` },
+  { type:"vdr_away", label: `Výhra do rozh. ${a}` },
  ]
 }
 
-// Výpočet kurzu pro no_draw = výhra jednoho z týmů v REG
-// P(no_draw) = P(home_REG_win) + P(away_REG_win) = probHome + probAway
 function calculateOdds(homeRating, awayRating){
  const HOME_ADV=80, homeAdj=homeRating+HOME_ADV
  const diff=Math.abs(homeAdj-awayRating)
@@ -201,23 +199,33 @@ function calculateOdds(homeRating, awayRating){
  const probAway=probAwayRaw*(1-drawProb)
  const probHomeOT=drawProb*probHomeRaw
  const probAwayOT=drawProb*probAwayRaw
- const probNoD=probHome+probAway  // žádná remíza/OT/SN
+ const probDraw=drawProb
+ const probNoD=probHome+probAway
+
+ // Neprohra = nevyhraje soupeř v REG = 1 - P(soupeř vyhraje v REG)
+ const probNonLossHome = 1 - probAway   // soupeř (away) nesmí vyhrát v REG
+ const probNonLossAway = 1 - probHome   // domácí nesmí vyhrát v REG
+
+ // Výhra do rozhodnutí = jakákoliv výhra (REG+OT+SN)
+ const probVdrHome = probHome + probHomeOT  // domácí vyhrají jakkoli
+ const probVdrAway = probAway + probAwayOT  // hosté vyhrají jakkoli
 
  return {
-  // Nové tipy
   "1":        1/probHome,
+  "0":        1/probDraw,
   "2":        1/probAway,
-  "0":        1/drawProb,
-  "11":       1/(probHome+probHomeOT),
-  "22":       1/(probAway+probAwayOT),
+  "11":       1/probNonLossHome,
   "no_draw":  1/probNoD,
-  // Staré tipy – zachováno pro historii, nebudou zobrazeny
-  "10":       1/probHomeOT,
-  "02":       1/probAwayOT,
+  "22":       1/probNonLossAway,
+  "vdr_home": 1/probVdrHome,
+  "vdr_away": 1/probVdrAway,
+  // staré tipy zachovány pro historii
+  "10":       1/(probHomeOT),
+  "02":       1/(probAwayOT),
  }
 }
 
-// Logika vyhodnocení tipu
+// Vyhodnocení tipu
 function checkSingleTip(match, tip){
  const type=match.result_type
  const hg=Number(match.home_score), ag=Number(match.away_score)
@@ -225,13 +233,16 @@ function checkSingleTip(match, tip){
  const isOTorSN=(type==="OT"||type==="SN")
  switch(tip){
   case "1":        return hw && type==="REG"
-  case "2":        return aw && type==="REG"
   case "0":        return isOTorSN
+  case "2":        return aw && type==="REG"
+  case "11":       return !(aw && type==="REG")   // soupeř nesmí vyhrát v REG
+  case "no_draw":  return type==="REG"
+  case "22":       return !(hw && type==="REG")   // domácí nesmí vyhrát v REG
+  case "vdr_home": return hw                       // domácí vyhrají jakkoli
+  case "vdr_away": return aw                       // hosté vyhrají jakkoli
+  // staré tipy pro historii
   case "10":       return hw && isOTorSN
   case "02":       return aw && isOTorSN
-  case "11":       return hw
-  case "22":       return aw
-  case "no_draw":  return type==="REG"  // rozhodnutí v základní hrací době
  }
  return false
 }
@@ -379,7 +390,6 @@ async function loadExistingBets(match){
   const tips=bet.tip.split(",")
   state[playerKey].selected=tips
 
-  // Označ aktivní tlačítka – funguje pro nové i staré tipy
   const cont=document.getElementById("odds_"+playerKey)
   cont.querySelectorAll(".odd-btn").forEach(btn=>{
    if(tips.includes(btn.dataset.type)){
@@ -393,7 +403,6 @@ async function loadExistingBets(match){
 
   const summaryEl=document.getElementById("summary_"+playerKey)
   if(match.played){
-   // Vyhodnoť výsledek
    const won=tips.every(t=>checkSingleTip(match,t))
    summaryEl.innerHTML=won
     ?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč!</span>`
