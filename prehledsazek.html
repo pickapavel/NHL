@@ -38,12 +38,7 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
 .badge-won{background:#d1e7dd;color:#155724;}
 .badge-lost{background:#f8d7da;color:#721c24;}
 
-/* Odlišení zdrojů sázek */
-.source-badge{
- display:inline-block;padding:2px 7px;border-radius:10px;
- font-size:10px;font-weight:700;margin-left:4px;
- vertical-align:middle;
-}
+.source-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;}
 .source-match{background:#e8f4fd;color:#1a5276;}
 .source-special{background:#f0e6ff;color:#6c3483;}
 
@@ -81,13 +76,14 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
  <select id="filterType" onchange="applyFilters()">
   <option value="">Všechny typy</option>
   <optgroup label="Výsledky zápasů">
-   <option value="1">Domácí vítěz (řádný čas)</option>
-   <option value="2">Hosté vítěz (řádný čas)</option>
-   <option value="0">Prodloužení / nájezdy</option>
-   <option value="10">Domácí vítěz (OT/SN)</option>
-   <option value="02">Hosté vítěz (OT/SN)</option>
-   <option value="11">Domácí vítěz (jakkoliv)</option>
-   <option value="22">Hosté vítěz (jakkoliv)</option>
+   <option value="1">Výhra domácí (REG)</option>
+   <option value="0">Remíza / OT / SN</option>
+   <option value="2">Výhra hostí (REG)</option>
+   <option value="11">Neprohra domácí</option>
+   <option value="no_draw">Nebude remíza</option>
+   <option value="22">Neprohra hostí</option>
+   <option value="vdr_home">Výhra do rozhodnutí domácí</option>
+   <option value="vdr_away">Výhra do rozhodnutí hosté</option>
   </optgroup>
   <optgroup label="Speciální sázky">
    <option value="winner_regular_season">Vítěz základní části</option>
@@ -144,18 +140,19 @@ let teams   = {}
 let matches = {}
 let activePlayer = ""
 
-// Popis tipu ze zapasu
 function tipLabel(tip){
  const map = {
-  "1":  "Domácí (řádný čas)",
-  "2":  "Hosté (řádný čas)",
-  "0":  "Prodloužení/nájezdy",
-  "10": "Domácí (OT/SN)",
-  "02": "Hosté (OT/SN)",
-  "11": "Domácí (jakkoliv)",
-  "22": "Hosté (jakkoliv)",
+  "1":        "Výhra domácí (REG)",
+  "0":        "Remíza / OT / SN",
+  "2":        "Výhra hostí (REG)",
+  "11":       "Neprohra domácí",
+  "no_draw":  "Nebude remíza",
+  "22":       "Neprohra hostí",
+  "vdr_home": "Výhra do rozhodnutí domácí",
+  "vdr_away": "Výhra do rozhodnutí hosté",
+  "10":       "Domácí vítěz (OT/SN)",
+  "02":       "Hosté vítěz (OT/SN)",
  }
- // kombinovaný tip
  if(tip.includes(",")){
   return tip.split(",").map(t=>map[t]||t).join(" + ")
  }
@@ -186,7 +183,6 @@ function formatDate(str){
 }
 
 async function load(){
-
  const { data: p } = await supabase.from("players").select("*")
  p.forEach(pl => players[pl.id] = pl)
 
@@ -196,18 +192,12 @@ async function load(){
  const { data: m } = await supabase.from("matches").select("*")
  m.forEach(mx => matches[mx.id] = mx)
 
- // Načti obě tabulky sázek
  const { data: betsSpecial } = await supabase
-  .from("bets_special")
-  .select("*")
-  .order("created_at",{ascending:false})
+  .from("bets_special").select("*").order("created_at",{ascending:false})
 
  const { data: betsMatch } = await supabase
-  .from("bets")
-  .select("*")
-  .order("created_at",{ascending:false})
+  .from("bets").select("*").order("created_at",{ascending:false})
 
- // Normalizuj na jednotný formát
  const normalizedSpecial = (betsSpecial||[]).map(b=>({
   ...b,
   _source: "special",
@@ -224,11 +214,10 @@ async function load(){
    _source: "match",
    _typeLabel: tipLabel(b.tip),
    _target: match ? `${home} vs ${away}` : "—",
-   type: b.tip, // pro filtrování podle typu
+   type: b.tip,
   }
  })
 
- // Sloučit a seřadit podle data
  allBets = [...normalizedSpecial, ...normalizedMatch]
   .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
 
@@ -240,13 +229,11 @@ async function load(){
 function buildPlayerTabs(){
  const tabsEl = document.getElementById("playerTabs")
  tabsEl.innerHTML = ""
-
  const all = document.createElement("button")
  all.className = "tab active"
  all.textContent = "Všichni hráči"
  all.onclick = () => setPlayer("")
  tabsEl.appendChild(all)
-
  Object.values(players).forEach(pl=>{
   const btn = document.createElement("button")
   btn.className = "tab"
@@ -303,7 +290,6 @@ function renderStats(bets){
  const won      = bets.filter(b=>b.status==="won").length
  const lost     = bets.filter(b=>b.status==="lost").length
  const potPend  = bets.filter(b=>b.status==="pending").reduce((s,b)=>s+Number(b.potential_win),0)
-
  document.getElementById("stats").innerHTML=`
   <div class="stat"><div class="stat-label">Celkem sázek</div><div class="stat-value">${total}</div></div>
   <div class="stat"><div class="stat-label">Celkem vsazeno</div><div class="stat-value">${Math.round(totalBet).toLocaleString("cs-CZ")} Kč</div></div>
@@ -319,16 +305,13 @@ function renderTable(bets){
  const tbody = document.getElementById("tbody")
  const empty = document.getElementById("empty")
  const count = document.getElementById("count")
-
  count.textContent = `Zobrazeno ${bets.length} sázek`
-
  if(bets.length===0){
   tbody.innerHTML=""
   empty.style.display="block"
   return
  }
  empty.style.display="none"
-
  tbody.innerHTML = bets.map(b=>{
   const player = players[b.player_id]?.name || "—"
   const date   = formatDate(b.created_at)
@@ -339,7 +322,6 @@ function renderTable(bets){
   const srcBadge = b._source==="match"
    ? `<span class="source-badge source-match">Zápas</span>`
    : `<span class="source-badge source-special">Speciální</span>`
-
   return `
    <tr>
     <td><b>${player}</b></td>
