@@ -270,8 +270,6 @@ function rGetScore(match, teamId){
 }
 
 async function recalculateAllRatings(){
- console.log("Přepočítávám ratingy a pozice...")
-
  const {data:seasons}=await db.from("seasons").select("*").order("created_at",{ascending:true})
  const seasonOrder={}
  ;(seasons||[]).forEach((s,i)=>seasonOrder[s.id]=i)
@@ -294,7 +292,6 @@ async function recalculateAllRatings(){
  const eloRatings={}, formRatings={}, formHistory={}
  teams.forEach(t=>{ eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[] })
 
- // ELO – jen Základní část
  matches.filter(m=>zakladniStageIds.has(m.stage_id)).forEach(m=>{
   const h=m.home_team, a=m.away_team
   if(eloRatings[h]===undefined||eloRatings[a]===undefined) return
@@ -306,7 +303,6 @@ async function recalculateAllRatings(){
   eloRatings[a]=Math.round(rA+R_K_ELO*(sA-eA))
  })
 
- // FORMA – všechny zápasy
  matches.forEach(m=>{
   const h=m.home_team, a=m.away_team
   if(formRatings[h]===undefined||formRatings[a]===undefined) return
@@ -322,7 +318,6 @@ async function recalculateAllRatings(){
   updateForm(h,a,sH); updateForm(a,h,sA)
  })
 
- // POZICE – vypočítej nové pořadí z výsledků
  const extraSeasons=(seasons||[]).filter(s=>s.competition_id===EXTRALIGA_COMPETITION_ID)
  const lastExtraSeason=extraSeasons[extraSeasons.length-1]
  const newPositionMap={}
@@ -330,13 +325,9 @@ async function recalculateAllRatings(){
  if(lastExtraSeason){
   const {data:lastStage}=await db.from("stages").select("id")
    .eq("season_id",lastExtraSeason.id).eq("name","Základní část").single()
-
   if(lastStage){
    const {data:lastMatches}=await db.from("matches").select("*")
-    .eq("season_id",lastExtraSeason.id)
-    .eq("stage_id",lastStage.id)
-    .not("home_score","is",null)
-
+    .eq("season_id",lastExtraSeason.id).eq("stage_id",lastStage.id).not("home_score","is",null)
    const points={}, gd={}
    ;(lastMatches||[]).forEach(m=>{
     if(!points[m.home_team]){points[m.home_team]=0;gd[m.home_team]=0}
@@ -355,7 +346,6 @@ async function recalculateAllRatings(){
      else points[m.away_team]+=3
     }
    })
-
    const sorted=Object.keys(points).sort((a,b)=>{
     if(points[b]!==points[a]) return points[b]-points[a]
     return gd[b]-gd[a]
@@ -364,23 +354,16 @@ async function recalculateAllRatings(){
   }
  }
 
- // KLÍČOVÁ OPRAVA ŠIPEK:
- // Uložíme aktuální table_position jako _prev (kde tým BYL),
- // a nové vypočítané pořadí jako table_position (kde tým JE).
- // Šipky pak v elh.html správně ukazují rozdíl.
  for(const team of teams){
-  const newPos = newPositionMap[team.id] || 0
-  const oldPos = team.table_position || 0
-
+  const newPos=newPositionMap[team.id]||0
+  const oldPos=team.table_position||0
   await db.from("teams").update({
-   rating_overall:       eloRatings[team.id]  || R_START,
-   rating_form:          formRatings[team.id] || R_START,
-   table_position:       newPos,
-   table_position_prev:  oldPos,   // vždy ulož staré pořadí, i kdyby bylo 0
-  }).eq("id", team.id)
+   rating_overall:      eloRatings[team.id]||R_START,
+   rating_form:         formRatings[team.id]||R_START,
+   table_position:      newPos,
+   table_position_prev: oldPos,
+  }).eq("id",team.id)
  }
-
- console.log("Hotovo ✅")
 }
 
 function recalcBtn(){
@@ -682,14 +665,21 @@ function getResultType(lines){
  const isOT=!isSN&&(lines[9]==="11"||lines[19]==="11")
  return isSN?"SN":isOT?"OT":"REG"
 }
-function checkSingleTip(match,tip){
+function checkSingleTip(match, tip){
  const type=match.result_type, hg=Number(match.home_score), ag=Number(match.away_score)
  const hw=hg>ag, aw=ag>hg
+ const isOTorSN=(type==="OT"||type==="SN")
  switch(tip){
-  case "1": return hw&&type==="REG"; case "2": return aw&&type==="REG"
-  case "0": return type!=="REG"; case "10": return hw&&(type==="OT"||type==="SN")
-  case "02": return aw&&(type==="OT"||type==="SN"); case "11": return hw; case "22": return aw
-  case "no_draw": return type==="REG"
+  case "1":        return hw && type==="REG"
+  case "0":        return isOTorSN
+  case "2":        return aw && type==="REG"
+  case "11":       return !(aw && type==="REG")
+  case "no_draw":  return type==="REG"
+  case "22":       return !(hw && type==="REG")
+  case "vdr_home": return hw
+  case "vdr_away": return aw
+  case "10":       return hw && isOTorSN
+  case "02":       return aw && isOTorSN
  }
  return false
 }
