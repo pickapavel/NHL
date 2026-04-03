@@ -322,10 +322,10 @@ async function recalculateAllRatings(){
   updateForm(h,a,sH); updateForm(a,h,sA)
  })
 
- // POZICE – spočítej z nejnovější Extraliga sezóny základní části
- const positionMap={}
+ // POZICE – vypočítej nové pořadí z výsledků
  const extraSeasons=(seasons||[]).filter(s=>s.competition_id===EXTRALIGA_COMPETITION_ID)
  const lastExtraSeason=extraSeasons[extraSeasons.length-1]
+ const newPositionMap={}
 
  if(lastExtraSeason){
   const {data:lastStage}=await db.from("stages").select("id")
@@ -360,27 +360,24 @@ async function recalculateAllRatings(){
     if(points[b]!==points[a]) return points[b]-points[a]
     return gd[b]-gd[a]
    })
-   sorted.forEach((teamId,i)=>positionMap[teamId]=i+1)
+   sorted.forEach((teamId,i)=>newPositionMap[teamId]=i+1)
   }
  }
 
- // Ulož do DB
- // OPRAVA: table_position_prev se vždy nastaví na starou table_position PŘED přepočtem,
- // aby šipky v tabulce správně ukazovaly pohyb oproti předchozímu stavu.
+ // KLÍČOVÁ OPRAVA ŠIPEK:
+ // Uložíme aktuální table_position jako _prev (kde tým BYL),
+ // a nové vypočítané pořadí jako table_position (kde tým JE).
+ // Šipky pak v elh.html správně ukazují rozdíl.
  for(const team of teams){
-  const newPos = positionMap[team.id] || 0
+  const newPos = newPositionMap[team.id] || 0
   const oldPos = team.table_position || 0
 
-  const updateData = {
-   rating_overall: eloRatings[team.id] || R_START,
-   rating_form:    formRatings[team.id] || R_START,
-   table_position: newPos,
-   // Vždy ulož předchozí pozici do _prev (pokud jsou obě > 0),
-   // takže šipky vždy ukazují pohyb oproti stavu PŘED tímto přepočtem.
-   table_position_prev: (oldPos > 0 && newPos > 0) ? oldPos : (team.table_position_prev || 0),
-  }
-
-  await db.from("teams").update(updateData).eq("id", team.id)
+  await db.from("teams").update({
+   rating_overall:       eloRatings[team.id]  || R_START,
+   rating_form:          formRatings[team.id] || R_START,
+   table_position:       newPos,
+   table_position_prev:  oldPos,   // vždy ulož staré pořadí, i kdyby bylo 0
+  }).eq("id", team.id)
  }
 
  console.log("Hotovo ✅")
