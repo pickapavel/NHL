@@ -65,7 +65,6 @@ style.textContent = `
 }
 .ticker-btn:hover { background: rgba(255,255,255,.12); color: white; }
 .ticker-btn:disabled { opacity: .25; cursor: default; }
-
 .t-box {
   display: flex;
   align-items: center;
@@ -89,7 +88,6 @@ style.textContent = `
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 .t-box.t-played { min-width: 175px; }
-
 .t-logo {
   width: 28px;
   height: 28px;
@@ -147,7 +145,6 @@ style.textContent = `
   text-align: center;
   margin-top: 1px;
 }
-
 .t-box.t-upcoming {
   min-width: 210px;
   flex-direction: column;
@@ -194,7 +191,6 @@ style.textContent = `
   text-align: center;
   font-family: Arial, sans-serif;
 }
-
 .t-separator {
   display: flex;
   flex-direction: column;
@@ -279,165 +275,177 @@ if(document.readyState === 'loading'){
   insertTicker()
 }
 
-const track = document.getElementById('ticker-track')
-const btnPrev = document.getElementById('ticker-prev')
-const btnNext = document.getElementById('ticker-next')
-
-let offset = 0
-const SCROLL_STEP = 2
-let boxWidth = 175
-
-function getVisibleCount(){
-  const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-  return Math.floor(wrapW / boxWidth)
+function waitForSupabase(cb){
+  if(window.supabase && window.supabase.createClient){
+    cb()
+  } else {
+    const existing = document.querySelector('script[src*="supabase"]')
+    if(!existing){
+      const s = document.createElement('script')
+      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+      s.onload = cb
+      document.head.appendChild(s)
+    } else {
+      let attempts = 0
+      const interval = setInterval(() => {
+        attempts++
+        if(window.supabase && window.supabase.createClient){
+          clearInterval(interval)
+          cb()
+        }
+        if(attempts > 50) clearInterval(interval)
+      }, 100)
+    }
+  }
 }
 
-function getTotalBoxes(){
-  return track.children.length
-}
+function buildTicker(sb){
+  const track = document.getElementById('ticker-track')
+  const btnPrev = document.getElementById('ticker-prev')
+  const btnNext = document.getElementById('ticker-next')
 
-function updateButtons(){
-  btnPrev.disabled = offset <= 0
-  btnNext.disabled = offset >= getTotalBoxes() - getVisibleCount()
-}
+  let offset = 0
+  const SCROLL_STEP = 2
+  let boxWidth = 175
 
-function scrollTo(newOffset){
-  const max = Math.max(0, getTotalBoxes() - getVisibleCount())
-  offset = Math.max(0, Math.min(newOffset, max))
-  track.style.transform = `translateX(-${offset * boxWidth}px)`
-  updateButtons()
-}
+  function getVisibleCount(){
+    const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
+    return Math.floor(wrapW / boxWidth)
+  }
+  function getTotalBoxes(){ return track.children.length }
+  function updateButtons(){
+    btnPrev.disabled = offset <= 0
+    btnNext.disabled = offset >= getTotalBoxes() - getVisibleCount()
+  }
+  function scrollTo(newOffset){
+    const max = Math.max(0, getTotalBoxes() - getVisibleCount())
+    offset = Math.max(0, Math.min(newOffset, max))
+    track.style.transform = `translateX(-${offset * boxWidth}px)`
+    updateButtons()
+  }
+  btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
+  btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
 
-btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
-btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
-
-async function loadTicker(){
-  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm')
-  const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
-
-  const [teamsRes, seasonsRes, matchesRes, compsRes] = await Promise.all([
+  Promise.all([
     sb.from('teams').select('*'),
     sb.from('seasons').select('*'),
     sb.from('matches').select('id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
     sb.from('competitions').select('*'),
-  ])
+  ]).then(([teamsRes, seasonsRes, matchesRes, compsRes]) => {
 
-  const teamMap = {}
-  ;(teamsRes.data||[]).forEach(t => teamMap[t.id] = t)
+    const teamMap = {}
+    ;(teamsRes.data||[]).forEach(t => teamMap[t.id] = t)
+    const seasonMap = {}
+    ;(seasonsRes.data||[]).forEach(s => seasonMap[s.id] = s)
+    const compMap = {}
+    ;(compsRes.data||[]).forEach(c => compMap[c.id] = c)
+    const allMatches = matchesRes.data || []
 
-  const seasonMap = {}
-  ;(seasonsRes.data||[]).forEach(s => seasonMap[s.id] = s)
+    const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
+    const activeSeasons = (seasonsRes.data||[]).filter(s => activeSeasonsIds.has(s.id))
 
-  const compMap = {}
-  ;(compsRes.data||[]).forEach(c => compMap[c.id] = c)
+    const played = allMatches
+      .filter(m => m.played && m.home_score != null)
+      .sort((a,b) => {
+        if(!a.played_at && !b.played_at) return 0
+        if(!a.played_at) return 1
+        if(!b.played_at) return -1
+        return new Date(b.played_at) - new Date(a.played_at)
+      })
+      .slice(0, 100)
 
-  const allMatches = matchesRes.data || []
-
-  const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
-  const activeSeasons = (seasonsRes.data||[]).filter(s => activeSeasonsIds.has(s.id))
-
-  const played = allMatches
-    .filter(m => m.played && m.home_score != null)
-    .sort((a,b) => {
-      if(!a.played_at && !b.played_at) return 0
-      if(!a.played_at) return 1
-      if(!b.played_at) return -1
-      return new Date(b.played_at) - new Date(a.played_at)
+    const upcomingBySeason = {}
+    activeSeasons.forEach(season => {
+      const unplayed = allMatches
+        .filter(m => !m.played && m.season_id === season.id)
+        .sort((a,b) => Number(a.round) - Number(b.round))
+        .slice(0, 2)
+      if(unplayed.length > 0) upcomingBySeason[season.id] = unplayed
     })
-    .slice(0, 100)
 
-  const upcomingBySeason = {}
-  activeSeasons.forEach(season => {
-    const unplayed = allMatches
-      .filter(m => !m.played && m.season_id === season.id)
-      .sort((a,b) => Number(a.round) - Number(b.round))
-      .slice(0, 2)
-    if(unplayed.length > 0) upcomingBySeason[season.id] = unplayed
-  })
+    track.innerHTML = ''
 
-  track.innerHTML = ''
-
-  // Odehrané zápasy
-  played.forEach(m => {
-    const home = teamMap[m.home_team]
-    const away = teamMap[m.away_team]
-    if(!home || !away) return
-    const tag = m.result_type === 'SN' ? 'SN' : m.result_type === 'OT' ? 'OT' : ''
-    const box = document.createElement('div')
-    box.className = 't-box t-played'
-    box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
-    box.innerHTML = `
-      <div class="t-teams">
-        <div class="t-team-row">
-          <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${getShortName(home)}</span>
-        </div>
-        <div class="t-team-row">
-          <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${getShortName(away)}</span>
-        </div>
-      </div>
-      <div class="t-score-col">
-        <span class="t-score">${m.home_score}</span>
-        <span class="t-score">${m.away_score}</span>
-        ${tag ? `<span class="t-tag">${tag}</span>` : ''}
-      </div>
-    `
-    track.appendChild(box)
-  })
-
-  // Nadcházející zápasy se separátorem
-  Object.entries(upcomingBySeason).forEach(([seasonId, matches]) => {
-    const season = seasonMap[seasonId]
-    const comp = season ? compMap[season.competition_id] : null
-    const compName = comp ? comp.name : (season ? season.name : '?')
-
-    const sep = document.createElement('div')
-    sep.className = 't-separator'
-    sep.innerHTML = `
-      <span class="t-sep-name">${compName}</span>
-      <span class="t-sep-arrow">&#8250;</span>
-    `
-    track.appendChild(sep)
-
-    matches.forEach(m => {
+    played.forEach(m => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
       if(!home || !away) return
-      const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
+      const tag = m.result_type === 'SN' ? 'SN' : m.result_type === 'OT' ? 'OT' : ''
       const box = document.createElement('div')
-      box.className = 't-box t-upcoming'
-      box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
+      box.className = 't-box t-played'
+      box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
-        <div class="t-upcoming-teams">
-          <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-upcoming-name">${getShortName(home)}</span>
-          <span class="t-vs">vs</span>
-          <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-upcoming-name">${getShortName(away)}</span>
+        <div class="t-teams">
+          <div class="t-team-row">
+            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <span class="t-team-name">${getShortName(home)}</span>
+          </div>
+          <div class="t-team-row">
+            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <span class="t-team-name">${getShortName(away)}</span>
+          </div>
         </div>
-        <div class="t-odds">
-          <span class="t-odd">${odds.home}</span>
-          <span class="t-odd">${odds.draw}</span>
-          <span class="t-odd">${odds.away}</span>
+        <div class="t-score-col">
+          <span class="t-score">${m.home_score}</span>
+          <span class="t-score">${m.away_score}</span>
+          ${tag ? `<span class="t-tag">${tag}</span>` : ''}
         </div>
       `
       track.appendChild(box)
     })
+
+    Object.entries(upcomingBySeason).forEach(([seasonId, matches]) => {
+      const season = seasonMap[seasonId]
+      const comp = season ? compMap[season.competition_id] : null
+      const compName = comp ? comp.name : (season ? season.name : '?')
+
+      const sep = document.createElement('div')
+      sep.className = 't-separator'
+      sep.innerHTML = `
+        <span class="t-sep-name">${compName}</span>
+        <span class="t-sep-arrow">&#8250;</span>
+      `
+      track.appendChild(sep)
+
+      matches.forEach(m => {
+        const home = teamMap[m.home_team]
+        const away = teamMap[m.away_team]
+        if(!home || !away) return
+        const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
+        const box = document.createElement('div')
+        box.className = 't-box t-upcoming'
+        box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
+        box.innerHTML = `
+          <div class="t-upcoming-teams">
+            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <span class="t-upcoming-name">${getShortName(home)}</span>
+            <span class="t-vs">vs</span>
+            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <span class="t-upcoming-name">${getShortName(away)}</span>
+          </div>
+          <div class="t-odds">
+            <span class="t-odd">${odds.home}</span>
+            <span class="t-odd">${odds.draw}</span>
+            <span class="t-odd">${odds.away}</span>
+          </div>
+        `
+        track.appendChild(box)
+      })
+    })
+
+    const firstBox = track.querySelector('.t-box')
+    if(firstBox){
+      boxWidth = firstBox.offsetWidth
+      const total = track.children.length
+      const visible = getVisibleCount()
+      scrollTo(Math.max(0, total - visible))
+    }
+    updateButtons()
   })
-
-  // Změř šířku a scrolluj na konec
-  const firstBox = track.querySelector('.t-box')
-  if(firstBox){
-    boxWidth = firstBox.offsetWidth
-    const total = track.children.length
-    const visible = getVisibleCount()
-    scrollTo(Math.max(0, total - visible))
-  }
-
-  updateButtons()
 }
 
-loadTicker()
+waitForSupabase(() => {
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  buildTicker(sb)
+})
 
 })()
