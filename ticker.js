@@ -278,25 +278,13 @@ if(document.readyState === 'loading'){
 function waitForSupabase(cb){
   if(window.supabase && window.supabase.createClient){
     cb()
-  } else {
-    const existing = document.querySelector('script[src*="supabase"]')
-    if(!existing){
-      const s = document.createElement('script')
-      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
-      s.onload = cb
-      document.head.appendChild(s)
-    } else {
-      let attempts = 0
-      const interval = setInterval(() => {
-        attempts++
-        if(window.supabase && window.supabase.createClient){
-          clearInterval(interval)
-          cb()
-        }
-        if(attempts > 50) clearInterval(interval)
-      }, 100)
-    }
+    return
   }
+  const s = document.createElement('script')
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  s.onload = () => cb()
+  s.onerror = () => console.error('Ticker: Supabase se nepodařilo načíst')
+  document.head.appendChild(s)
 }
 
 function buildTicker(sb){
