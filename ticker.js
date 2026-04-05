@@ -39,7 +39,7 @@ style.textContent = `
   background: #0a2233;
   display: flex;
   align-items: center;
-  height: 100px;
+  height: 110px;
   overflow: hidden;
   user-select: none;
   border-bottom: 3px solid #163a52;
@@ -54,18 +54,14 @@ style.textContent = `
   position: relative;
   cursor: grab;
 }
-#ticker-track-wrap.dragging {
-  cursor: grabbing;
-}
+#ticker-track-wrap.dragging { cursor: grabbing; }
 #ticker-track {
   display: flex;
   height: 100%;
   transition: transform .25s ease;
   align-items: center;
 }
-#ticker-track.no-transition {
-  transition: none;
-}
+#ticker-track.no-transition { transition: none; }
 .ticker-btn {
   background: rgba(255,255,255,.06);
   border: none;
@@ -86,51 +82,38 @@ style.textContent = `
 
 .t-box {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   height: 100%;
-  padding: 0 14px;
+  padding: 8px 14px;
   cursor: pointer;
   flex-shrink: 0;
-  gap: 10px;
+  gap: 4px;
   transition: background .15s;
   box-sizing: border-box;
+  min-width: 190px;
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 
-.t-box.t-upcoming {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
-  padding: 8px 14px;
-  min-width: 185px;
-}
-
 .t-divider {
   width: 2px;
-  height: 64px;
-  background: rgba(255,255,255,.3);
+  height: 68px;
+  background: rgba(255,255,255,.28);
   flex-shrink: 0;
   align-self: center;
   border-radius: 1px;
 }
 
 .t-logo {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   background: white;
-  border-radius: 6px;
+  border-radius: 5px;
   padding: 2px;
   flex-shrink: 0;
 }
-.t-teams {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-}
+
 .t-team-row {
   display: flex;
   align-items: center;
@@ -143,62 +126,36 @@ style.textContent = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90px;
+  flex: 1;
+  min-width: 0;
   font-family: Arial, sans-serif;
 }
-.t-score-col {
+.t-score-badge {
+  background: #0d2f44;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 4px;
+  min-width: 26px;
+  height: 22px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
   align-items: center;
-  flex-shrink: 0;
-}
-.t-score {
+  justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  color: #e0eef8;
-  width: 20px;
-  text-align: center;
-  line-height: 1;
+  color: white;
+  flex-shrink: 0;
+  padding: 0 5px;
   font-family: Arial, sans-serif;
 }
-.t-tag {
-  font-size: 9px;
-  font-weight: 700;
-  background: #2f9ec9;
-  color: white;
-  padding: 1px 5px;
-  border-radius: 3px;
-  text-align: center;
+.t-score-badge.empty {
+  color: #4a7a99;
+  font-size: 14px;
+  font-weight: 400;
 }
 
-.t-upcoming-teams {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 100%;
-  margin-bottom: 7px;
-}
-.t-upcoming-team-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.t-upcoming-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #c8e0f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 110px;
-  font-family: Arial, sans-serif;
-}
-.t-odds-row {
+.t-bottom {
   display: flex;
   gap: 4px;
-  align-items: center;
-  width: 100%;
+  margin-top: 5px;
 }
 .t-odd {
   background: #1a5276;
@@ -210,6 +167,18 @@ style.textContent = `
   flex: 1;
   text-align: center;
   font-family: Arial, sans-serif;
+}
+.t-stats-btn {
+  background: #1a5276;
+  color: #a8d4ee;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  letter-spacing: .03em;
 }
 
 .t-separator {
@@ -224,8 +193,8 @@ style.textContent = `
   min-width: 100px;
   cursor: default;
   background: rgba(47,158,201,.07);
-  border-left: 1px solid rgba(47,158,201,.35);
-  border-right: 1px solid rgba(47,158,201,.35);
+  border-left: 1px solid rgba(47,158,201,.3);
+  border-right: 1px solid rgba(47,158,201,.3);
 }
 .t-sep-name {
   font-size: 10px;
@@ -310,11 +279,9 @@ async function loadTicker(){
 
     let currentPx = 0
     const SCROLL_STEP = 2
-    let boxWidth = 185
+    let boxWidth = 192
 
-    function getMaxPx(){
-      return Math.max(0, track.scrollWidth - trackWrap.offsetWidth)
-    }
+    function getMaxPx(){ return Math.max(0, track.scrollWidth - trackWrap.offsetWidth) }
     function updateButtons(){
       btnPrev.disabled = currentPx <= 0
       btnNext.disabled = currentPx >= getMaxPx()
@@ -329,34 +296,24 @@ async function loadTicker(){
     btnPrev.onclick = () => scrollToPx(currentPx - SCROLL_STEP * boxWidth, true)
     btnNext.onclick = () => scrollToPx(currentPx + SCROLL_STEP * boxWidth, true)
 
-    // Touch / drag podpora
-    let dragStartX = 0
-    let dragStartPx = 0
-    let isDragging = false
-
+    // Touch / drag
+    let dragStartX = 0, dragStartPx = 0, isDragging = false
     trackWrap.addEventListener('mousedown', e => {
-      isDragging = true
-      dragStartX = e.clientX
-      dragStartPx = currentPx
+      isDragging = true; dragStartX = e.clientX; dragStartPx = currentPx
       trackWrap.classList.add('dragging')
     })
     window.addEventListener('mousemove', e => {
       if(!isDragging) return
-      const dx = dragStartX - e.clientX
-      scrollToPx(dragStartPx + dx, false)
+      scrollToPx(dragStartPx + (dragStartX - e.clientX), false)
     })
     window.addEventListener('mouseup', () => {
-      isDragging = false
-      trackWrap.classList.remove('dragging')
+      isDragging = false; trackWrap.classList.remove('dragging')
     })
-
     trackWrap.addEventListener('touchstart', e => {
-      dragStartX = e.touches[0].clientX
-      dragStartPx = currentPx
+      dragStartX = e.touches[0].clientX; dragStartPx = currentPx
     }, { passive: true })
     trackWrap.addEventListener('touchmove', e => {
-      const dx = dragStartX - e.touches[0].clientX
-      scrollToPx(dragStartPx + dx, false)
+      scrollToPx(dragStartPx + (dragStartX - e.touches[0].clientX), false)
     }, { passive: true })
 
     const teamMap = {}
@@ -400,35 +357,34 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
+    // Odehrané zápasy
     played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
       if(!home || !away) return
-      const tag = m.result_type === 'SN' ? 'SN' : m.result_type === 'OT' ? 'OT' : ''
       const box = document.createElement('div')
       box.className = 't-box'
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
-        <div class="t-teams">
-          <div class="t-team-row">
-            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-            <span class="t-team-name">${getShortName(home)}</span>
-          </div>
-          <div class="t-team-row">
-            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-            <span class="t-team-name">${getShortName(away)}</span>
-          </div>
+        <div class="t-team-row">
+          <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <span class="t-team-name">${getShortName(home)}</span>
+          <span class="t-score-badge">${m.home_score}</span>
         </div>
-        <div class="t-score-col">
-          <span class="t-score">${m.home_score}</span>
-          <span class="t-score">${m.away_score}</span>
-          ${tag ? `<span class="t-tag">${tag}</span>` : ''}
+        <div class="t-team-row">
+          <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <span class="t-team-name">${getShortName(away)}</span>
+          <span class="t-score-badge">${m.away_score}</span>
+        </div>
+        <div class="t-bottom">
+          <span class="t-stats-btn">📊 Statistiky</span>
         </div>
       `
       track.appendChild(box)
       addDivider(track)
     })
 
+    // Nadcházející zápasy
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
@@ -447,20 +403,20 @@ async function loadTicker(){
         if(!home || !away) return
         const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
         const box = document.createElement('div')
-        box.className = 't-box t-upcoming'
+        box.className = 't-box'
         box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
         box.innerHTML = `
-          <div class="t-upcoming-teams">
-            <div class="t-upcoming-team-row">
-              <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-              <span class="t-upcoming-name">${getShortName(home)}</span>
-            </div>
-            <div class="t-upcoming-team-row">
-              <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-              <span class="t-upcoming-name">${getShortName(away)}</span>
-            </div>
+          <div class="t-team-row">
+            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <span class="t-team-name">${getShortName(home)}</span>
+            <span class="t-score-badge empty">–</span>
           </div>
-          <div class="t-odds-row">
+          <div class="t-team-row">
+            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <span class="t-team-name">${getShortName(away)}</span>
+            <span class="t-score-badge empty">–</span>
+          </div>
+          <div class="t-bottom">
             <span class="t-odd">${odds.home}</span>
             <span class="t-odd">${odds.draw}</span>
             <span class="t-odd">${odds.away}</span>
