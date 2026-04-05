@@ -571,12 +571,13 @@ async function saveCsvMatch(){
  const score = calculateScore(lines)
  const resultType = getResultType(lines)
 
- await db.from("matches").update({
+await db.from("matches").update({
   home_score: score.hg,
   away_score: score.ag,
   played: true,
   stats: JSON.stringify(lines),
   result_type: resultType,
+  played_at: new Date().toISOString(),
  }).eq("id", currentCsvMatchId)
 
  const {data:fullMatch} = await db.from("matches").select("*").eq("id", currentCsvMatchId).single()
@@ -939,7 +940,7 @@ async function saveMatch(matchId){
  const lines=filesMap[matchId]
  if(!lines){ alert("Nahraj soubor"); return }
  const score=calculateScore(lines), resultType=getResultType(lines)
- await db.from("matches").update({home_score:score.hg,away_score:score.ag,played:true,stats:JSON.stringify(lines),result_type:resultType}).eq("id",matchId)
+await db.from("matches").update({home_score:score.hg,away_score:score.ag,played:true,stats:JSON.stringify(lines),result_type:resultType,played_at:new Date().toISOString()}).eq("id",matchId)
  const {data:fullMatch}=await db.from("matches").select("*").eq("id",matchId).single()
  await evaluateBets(fullMatch)
  await recalculateAllRatings()
