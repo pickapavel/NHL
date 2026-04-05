@@ -86,10 +86,16 @@ style.textContent = `
   transition: background .15s;
   box-sizing: border-box;
   position: relative;
-  border-right: 2px solid rgba(255,255,255,.12);
 }
-.t-box:last-child { border-right: none; }
 .t-box:hover { background: rgba(255,255,255,.05); }
+
+.t-divider {
+  width: 1px;
+  height: 48px;
+  background: rgba(255,255,255,.2);
+  flex-shrink: 0;
+  align-self: center;
+}
 
 .t-logo {
   width: 30px;
@@ -171,8 +177,8 @@ style.textContent = `
   min-width: 110px;
   cursor: default;
   background: #0d3347;
-  border-right: 3px solid #2f9ec9;
   border-left: 3px solid #2f9ec9;
+  border-right: 3px solid #2f9ec9;
 }
 .t-sep-name {
   font-size: 10px;
@@ -235,6 +241,12 @@ if(document.readyState === 'loading'){
   insertTicker()
 }
 
+function addDivider(track){
+  const d = document.createElement('div')
+  d.className = 't-divider'
+  track.appendChild(d)
+}
+
 async function loadTicker(){
   try {
     const [teams, seasons, matches, competitions] = await Promise.all([
@@ -256,18 +268,26 @@ async function loadTicker(){
       const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
       return Math.floor(wrapW / boxWidth)
     }
-    function getTotalBoxes(){ return track.children.length }
+    function getTotalBoxes(){
+      // počítej jen t-box elementy, ne dividers
+      return track.querySelectorAll('.t-box, .t-separator').length
+    }
     function updateButtons(){
+      const total = track.children.length
+      const visible = getVisibleCount()
       btnPrev.disabled = offset <= 0
-      btnNext.disabled = offset >= getTotalBoxes() - getVisibleCount()
+      btnNext.disabled = offset * boxWidth >= (total * boxWidth) - document.getElementById('ticker-track-wrap').offsetWidth
     }
     function scrollTo(newOffset){
-      const max = Math.max(0, getTotalBoxes() - getVisibleCount())
-      offset = Math.max(0, Math.min(newOffset, max))
-      track.style.transform = `translateX(-${offset * boxWidth}px)`
+      const trackWidth = track.scrollWidth
+      const wrapWidth = document.getElementById('ticker-track-wrap').offsetWidth
+      const maxOffset = Math.max(0, trackWidth - wrapWidth)
+      const pixelOffset = newOffset * boxWidth
+      offset = newOffset
+      track.style.transform = `translateX(-${Math.min(pixelOffset, maxOffset)}px)`
       updateButtons()
     }
-    btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
+    btnPrev.onclick = () => scrollTo(Math.max(0, offset - SCROLL_STEP))
     btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
 
     const teamMap = {}
@@ -293,7 +313,7 @@ async function loadTicker(){
 
     // Odehrané – max 100 nejnovějších
     const played = allMatches
-      .filter(m => m.played && m.home_score != null && activeSeasonIds.has(m.season_id))
+      .filter(m => m.played === true && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
         if(!a.played_at && !b.played_at) return 0
         if(!a.played_at) return 1
@@ -303,10 +323,15 @@ async function loadTicker(){
       .slice(0, 100)
 
     // Nadcházející – 2 nejbližší z každé aktivní sezóny
+    // Filtr: played = false A home_score = null
     const upcomingBySeason = {}
     activeSeasons.forEach(season => {
       const unplayed = allMatches
-        .filter(m => !m.played && m.season_id === season.id)
+        .filter(m =>
+          m.played === false &&
+          m.home_score === null &&
+          m.season_id === season.id
+        )
         .sort((a,b) => Number(a.round) - Number(b.round))
         .slice(0, 2)
       if(unplayed.length > 0) upcomingBySeason[season.id] = { season, matches: unplayed }
@@ -314,8 +339,8 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    // Odehrané zápasy
-    played.forEach(m => {
+    // Odehrané zápasy s oddělovači mezi nimi
+    played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
       if(!home || !away) return
@@ -341,6 +366,7 @@ async function loadTicker(){
         </div>
       `
       track.appendChild(box)
+      addDivider(track)
     })
 
     // Nadcházející zápasy
@@ -356,7 +382,7 @@ async function loadTicker(){
       `
       track.appendChild(sep)
 
-      matches.forEach(m => {
+      matches.forEach((m, i) => {
         const home = teamMap[m.home_team]
         const away = teamMap[m.away_team]
         if(!home || !away) return
@@ -381,15 +407,18 @@ async function loadTicker(){
           </div>
         `
         track.appendChild(box)
+        if(i < matches.length - 1) addDivider(track)
       })
     })
 
+    // Změř šířku boxu a scrolluj na konec
     const firstBox = track.querySelector('.t-box')
     if(firstBox){
-      boxWidth = firstBox.offsetWidth
-      const total = track.children.length
-      const visible = getVisibleCount()
-      scrollTo(Math.max(0, total - visible))
+      boxWidth = firstBox.offsetWidth + 1 // +1 pro divider
+      const trackWidth = track.scrollWidth
+      const wrapWidth = document.getElementById('ticker-track-wrap').offsetWidth
+      const maxOffset = Math.floor((trackWidth - wrapWidth) / boxWidth)
+      scrollTo(Math.max(0, maxOffset))
     }
     updateButtons()
 
