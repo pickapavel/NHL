@@ -39,10 +39,10 @@ style.textContent = `
   background: #0a2233;
   display: flex;
   align-items: center;
-  height: 64px;
+  height: 80px;
   overflow: hidden;
   user-select: none;
-  border-bottom: 2px solid #0b2a3c;
+  border-bottom: 3px solid #163a52;
   position: relative;
   z-index: 1000;
 }
@@ -61,10 +61,10 @@ style.textContent = `
   background: rgba(255,255,255,.06);
   border: none;
   color: #7ab0cc;
-  width: 28px;
+  width: 30px;
   height: 100%;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -72,52 +72,45 @@ style.textContent = `
   transition: background .15s;
   z-index: 2;
 }
-.ticker-btn:hover { background: rgba(255,255,255,.12); color: white; }
-.ticker-btn:disabled { opacity: .25; cursor: default; }
+.ticker-btn:hover { background: rgba(255,255,255,.14); color: white; }
+.ticker-btn:disabled { opacity: .2; cursor: default; }
+
 .t-box {
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 0 12px;
+  padding: 0 14px;
   cursor: pointer;
   flex-shrink: 0;
-  gap: 8px;
+  gap: 10px;
   transition: background .15s;
   box-sizing: border-box;
   position: relative;
+  border-right: 2px solid rgba(255,255,255,.12);
 }
-.t-box::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: rgba(255,255,255,.25);
-  border-radius: 1px;
-}
+.t-box:last-child { border-right: none; }
 .t-box:hover { background: rgba(255,255,255,.05); }
-.t-box.t-played { min-width: 175px; }
+
 .t-logo {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   background: white;
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 2px;
   flex-shrink: 0;
 }
 .t-teams {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 .t-team-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 .t-team-name {
   font-size: 12px;
@@ -132,18 +125,29 @@ style.textContent = `
 .t-score-col {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   align-items: center;
   flex-shrink: 0;
 }
 .t-score {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: white;
   width: 22px;
   text-align: center;
   line-height: 1;
   font-family: Arial, sans-serif;
+}
+.t-score.upcoming {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffd166;
+  background: #1a5276;
+  border-radius: 4px;
+  padding: 2px 6px;
+  width: auto;
+  min-width: 34px;
+  text-align: center;
 }
 .t-tag {
   font-size: 9px;
@@ -153,97 +157,42 @@ style.textContent = `
   padding: 1px 5px;
   border-radius: 3px;
   text-align: center;
-  margin-top: 1px;
 }
-.t-box.t-upcoming {
-  min-width: 210px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 5px;
-  padding: 6px 14px;
-}
-.t-upcoming-teams {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-}
-.t-upcoming-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 72px;
-  font-family: Arial, sans-serif;
-}
-.t-vs {
-  font-size: 10px;
-  color: #7ab0cc;
-  flex-shrink: 0;
-  font-family: Arial, sans-serif;
-}
-.t-odds {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.t-odd {
-  background: #1a5276;
-  color: #ffd166;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  min-width: 36px;
-  text-align: center;
-  font-family: Arial, sans-serif;
-}
+
 .t-separator {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 0 12px;
+  padding: 0 14px;
   flex-shrink: 0;
-  gap: 5px;
-  min-width: 100px;
+  gap: 6px;
+  min-width: 110px;
   cursor: default;
-  background: rgba(47,158,201,.1);
-  position: relative;
-}
-.t-separator::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: rgba(47,158,201,.6);
-  border-radius: 1px;
+  background: #0d3347;
+  border-right: 3px solid #2f9ec9;
+  border-left: 3px solid #2f9ec9;
 }
 .t-sep-name {
   font-size: 10px;
   font-weight: 800;
   color: white;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .07em;
   text-align: center;
   line-height: 1.3;
   font-family: Arial, sans-serif;
 }
 .t-sep-arrow {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: #2f9ec9;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   color: white;
 }
 `
@@ -301,7 +250,7 @@ async function loadTicker(){
 
     let offset = 0
     const SCROLL_STEP = 2
-    let boxWidth = 175
+    let boxWidth = 180
 
     function getVisibleCount(){
       const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
@@ -328,27 +277,21 @@ async function loadTicker(){
     const allMatches = matches || []
     const allSeasons = seasons || []
 
-    // Pro každou competition vezmi NEJNOVĚJŠÍ sezónu která má zápasy
+    // Nejnovější sezóna pro každou competition která má zápasy
     const seasonsByComp = {}
     allSeasons.forEach(s => {
       if(!seasonsByComp[s.competition_id]) seasonsByComp[s.competition_id] = []
       seasonsByComp[s.competition_id].push(s)
     })
-
-    // Aktivní sezóny = nejnovější sezóna každé competition která má alespoň 1 zápas
     const seasonsWithMatches = new Set(allMatches.map(m => m.season_id))
     const activeSeasons = []
-    Object.values(seasonsByComp).forEach(seasonList => {
-      // Seřaď od nejnovější (jsou seřazeny asc, takže poslední = nejnovější)
-      const withMatches = seasonList.filter(s => seasonsWithMatches.has(s.id))
-      if(withMatches.length > 0){
-        activeSeasons.push(withMatches[withMatches.length - 1])
-      }
+    Object.values(seasonsByComp).forEach(list => {
+      const withMatches = list.filter(s => seasonsWithMatches.has(s.id))
+      if(withMatches.length > 0) activeSeasons.push(withMatches[withMatches.length - 1])
     })
-
     const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
 
-    // Odehrané – max 100 nejnovějších ze všech aktivních sezón
+    // Odehrané – max 100 nejnovějších
     const played = allMatches
       .filter(m => m.played && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
@@ -378,7 +321,7 @@ async function loadTicker(){
       if(!home || !away) return
       const tag = m.result_type === 'SN' ? 'SN' : m.result_type === 'OT' ? 'OT' : ''
       const box = document.createElement('div')
-      box.className = 't-box t-played'
+      box.className = 't-box'
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
         <div class="t-teams">
@@ -400,7 +343,7 @@ async function loadTicker(){
       track.appendChild(box)
     })
 
-    // Nadcházející zápasy se separátorem
+    // Nadcházející zápasy
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
@@ -419,20 +362,22 @@ async function loadTicker(){
         if(!home || !away) return
         const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
         const box = document.createElement('div')
-        box.className = 't-box t-upcoming'
+        box.className = 't-box'
         box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
         box.innerHTML = `
-          <div class="t-upcoming-teams">
-            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-            <span class="t-upcoming-name">${getShortName(home)}</span>
-            <span class="t-vs">vs</span>
-            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-            <span class="t-upcoming-name">${getShortName(away)}</span>
+          <div class="t-teams">
+            <div class="t-team-row">
+              <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+              <span class="t-team-name">${getShortName(home)}</span>
+            </div>
+            <div class="t-team-row">
+              <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+              <span class="t-team-name">${getShortName(away)}</span>
+            </div>
           </div>
-          <div class="t-odds">
-            <span class="t-odd">${odds.home}</span>
-            <span class="t-odd">${odds.draw}</span>
-            <span class="t-odd">${odds.away}</span>
+          <div class="t-score-col">
+            <span class="t-score upcoming">${odds.home}</span>
+            <span class="t-score upcoming">${odds.away}</span>
           </div>
         `
         track.appendChild(box)
