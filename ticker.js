@@ -24,6 +24,14 @@ function getShortName(team){
   return team.short_name || team.name
 }
 
+async function sbFetch(table, select){
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+  )
+  return res.json()
+}
+
 const style = document.createElement('style')
 style.textContent = `
 #ticker-bar {
@@ -275,62 +283,51 @@ if(document.readyState === 'loading'){
   insertTicker()
 }
 
-function waitForSupabase(cb){
-  if(window.supabase && window.supabase.createClient){
-    cb()
-    return
-  }
-  const s = document.createElement('script')
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
-  s.onload = () => cb()
-  s.onerror = () => console.error('Ticker: Supabase se nepodařilo načíst')
-  document.head.appendChild(s)
-}
+async function loadTicker(){
+  try {
+    const [teams, seasons, matches, competitions] = await Promise.all([
+      sbFetch('teams', '*'),
+      sbFetch('seasons', '*'),
+      sbFetch('matches', 'id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
+      sbFetch('competitions', '*'),
+    ])
 
-function buildTicker(sb){
-  const track = document.getElementById('ticker-track')
-  const btnPrev = document.getElementById('ticker-prev')
-  const btnNext = document.getElementById('ticker-next')
+    const track = document.getElementById('ticker-track')
+    const btnPrev = document.getElementById('ticker-prev')
+    const btnNext = document.getElementById('ticker-next')
 
-  let offset = 0
-  const SCROLL_STEP = 2
-  let boxWidth = 175
+    let offset = 0
+    const SCROLL_STEP = 2
+    let boxWidth = 175
 
-  function getVisibleCount(){
-    const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-    return Math.floor(wrapW / boxWidth)
-  }
-  function getTotalBoxes(){ return track.children.length }
-  function updateButtons(){
-    btnPrev.disabled = offset <= 0
-    btnNext.disabled = offset >= getTotalBoxes() - getVisibleCount()
-  }
-  function scrollTo(newOffset){
-    const max = Math.max(0, getTotalBoxes() - getVisibleCount())
-    offset = Math.max(0, Math.min(newOffset, max))
-    track.style.transform = `translateX(-${offset * boxWidth}px)`
-    updateButtons()
-  }
-  btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
-  btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
-
-  Promise.all([
-    sb.from('teams').select('*'),
-    sb.from('seasons').select('*'),
-    sb.from('matches').select('id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
-    sb.from('competitions').select('*'),
-  ]).then(([teamsRes, seasonsRes, matchesRes, compsRes]) => {
+    function getVisibleCount(){
+      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
+      return Math.floor(wrapW / boxWidth)
+    }
+    function getTotalBoxes(){ return track.children.length }
+    function updateButtons(){
+      btnPrev.disabled = offset <= 0
+      btnNext.disabled = offset >= getTotalBoxes() - getVisibleCount()
+    }
+    function scrollTo(newOffset){
+      const max = Math.max(0, getTotalBoxes() - getVisibleCount())
+      offset = Math.max(0, Math.min(newOffset, max))
+      track.style.transform = `translateX(-${offset * boxWidth}px)`
+      updateButtons()
+    }
+    btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
+    btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
 
     const teamMap = {}
-    ;(teamsRes.data||[]).forEach(t => teamMap[t.id] = t)
+    ;(teams||[]).forEach(t => teamMap[t.id] = t)
     const seasonMap = {}
-    ;(seasonsRes.data||[]).forEach(s => seasonMap[s.id] = s)
+    ;(seasons||[]).forEach(s => seasonMap[s.id] = s)
     const compMap = {}
-    ;(compsRes.data||[]).forEach(c => compMap[c.id] = c)
-    const allMatches = matchesRes.data || []
+    ;(competitions||[]).forEach(c => compMap[c.id] = c)
+    const allMatches = matches || []
 
     const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
-    const activeSeasons = (seasonsRes.data||[]).filter(s => activeSeasonsIds.has(s.id))
+    const activeSeasons = (seasons||[]).filter(s => activeSeasonsIds.has(s.id))
 
     const played = allMatches
       .filter(m => m.played && m.home_score != null)
@@ -428,12 +425,12 @@ function buildTicker(sb){
       scrollTo(Math.max(0, total - visible))
     }
     updateButtons()
-  })
+
+  } catch(err) {
+    console.error('Ticker error:', err)
+  }
 }
 
-waitForSupabase(() => {
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-  buildTicker(sb)
-})
+loadTicker()
 
 })()
