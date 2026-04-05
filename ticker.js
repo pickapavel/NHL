@@ -24,11 +24,12 @@ function getShortName(team){
   return team.short_name || team.name
 }
 
-async function sbFetch(table, select){
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-  )
+async function sbFetch(table, select, params){
+  let url = `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}`
+  if(params) url += '&' + params
+  const res = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  })
   return res.json()
 }
 
@@ -89,10 +90,11 @@ style.textContent = `
   content: '';
   position: absolute;
   right: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 1px;
-  background: rgba(255,255,255,.18);
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(255,255,255,.25);
+  border-radius: 1px;
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 .t-box.t-played { min-width: 175px; }
@@ -210,17 +212,18 @@ style.textContent = `
   gap: 5px;
   min-width: 100px;
   cursor: default;
-  background: rgba(47,158,201,.08);
+  background: rgba(47,158,201,.1);
   position: relative;
 }
 .t-separator::after {
   content: '';
   position: absolute;
   right: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 1px;
-  background: rgba(47,158,201,.5);
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(47,158,201,.6);
+  border-radius: 1px;
 }
 .t-sep-name {
   font-size: 10px;
@@ -287,7 +290,7 @@ async function loadTicker(){
   try {
     const [teams, seasons, matches, competitions] = await Promise.all([
       sbFetch('teams', '*'),
-      sbFetch('seasons', '*'),
+      sbFetch('seasons', '*', 'order=created_at.asc'),
       sbFetch('matches', 'id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
       sbFetch('competitions', '*'),
     ])
@@ -320,17 +323,34 @@ async function loadTicker(){
 
     const teamMap = {}
     ;(teams||[]).forEach(t => teamMap[t.id] = t)
-    const seasonMap = {}
-    ;(seasons||[]).forEach(s => seasonMap[s.id] = s)
     const compMap = {}
     ;(competitions||[]).forEach(c => compMap[c.id] = c)
     const allMatches = matches || []
+    const allSeasons = seasons || []
 
-    const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
-    const activeSeasons = (seasons||[]).filter(s => activeSeasonsIds.has(s.id))
+    // Pro každou competition vezmi NEJNOVĚJŠÍ sezónu která má zápasy
+    const seasonsByComp = {}
+    allSeasons.forEach(s => {
+      if(!seasonsByComp[s.competition_id]) seasonsByComp[s.competition_id] = []
+      seasonsByComp[s.competition_id].push(s)
+    })
 
+    // Aktivní sezóny = nejnovější sezóna každé competition která má alespoň 1 zápas
+    const seasonsWithMatches = new Set(allMatches.map(m => m.season_id))
+    const activeSeasons = []
+    Object.values(seasonsByComp).forEach(seasonList => {
+      // Seřaď od nejnovější (jsou seřazeny asc, takže poslední = nejnovější)
+      const withMatches = seasonList.filter(s => seasonsWithMatches.has(s.id))
+      if(withMatches.length > 0){
+        activeSeasons.push(withMatches[withMatches.length - 1])
+      }
+    })
+
+    const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
+
+    // Odehrané – max 100 nejnovějších ze všech aktivních sezón
     const played = allMatches
-      .filter(m => m.played && m.home_score != null)
+      .filter(m => m.played && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
         if(!a.played_at && !b.played_at) return 0
         if(!a.played_at) return 1
@@ -339,17 +359,19 @@ async function loadTicker(){
       })
       .slice(0, 100)
 
+    // Nadcházející – 2 nejbližší z každé aktivní sezóny
     const upcomingBySeason = {}
     activeSeasons.forEach(season => {
       const unplayed = allMatches
         .filter(m => !m.played && m.season_id === season.id)
         .sort((a,b) => Number(a.round) - Number(b.round))
         .slice(0, 2)
-      if(unplayed.length > 0) upcomingBySeason[season.id] = unplayed
+      if(unplayed.length > 0) upcomingBySeason[season.id] = { season, matches: unplayed }
     })
 
     track.innerHTML = ''
 
+    // Odehrané zápasy
     played.forEach(m => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
@@ -378,10 +400,10 @@ async function loadTicker(){
       track.appendChild(box)
     })
 
-    Object.entries(upcomingBySeason).forEach(([seasonId, matches]) => {
-      const season = seasonMap[seasonId]
-      const comp = season ? compMap[season.competition_id] : null
-      const compName = comp ? comp.name : (season ? season.name : '?')
+    // Nadcházející zápasy se separátorem
+    Object.values(upcomingBySeason).forEach(({ season, matches }) => {
+      const comp = compMap[season.competition_id]
+      const compName = comp ? comp.name : season.name
 
       const sep = document.createElement('div')
       sep.className = 't-separator'
