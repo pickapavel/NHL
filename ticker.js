@@ -39,7 +39,7 @@ style.textContent = `
   background: #0a2233;
   display: flex;
   align-items: center;
-  height: 80px;
+  height: 90px;
   overflow: hidden;
   user-select: none;
   border-bottom: 3px solid #163a52;
@@ -56,6 +56,7 @@ style.textContent = `
   display: flex;
   height: 100%;
   transition: transform .25s ease;
+  align-items: center;
 }
 .ticker-btn {
   background: rgba(255,255,255,.06);
@@ -85,21 +86,29 @@ style.textContent = `
   gap: 10px;
   transition: background .15s;
   box-sizing: border-box;
-  position: relative;
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 
+.t-box.t-upcoming {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 14px;
+  min-width: 180px;
+}
+
 .t-divider {
   width: 1px;
-  height: 48px;
+  height: 56px;
   background: rgba(255,255,255,.2);
   flex-shrink: 0;
   align-self: center;
 }
 
 .t-logo {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   background: white;
   border-radius: 6px;
@@ -109,7 +118,7 @@ style.textContent = `
 .t-teams {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
   min-width: 0;
 }
@@ -131,7 +140,7 @@ style.textContent = `
 .t-score-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   flex-shrink: 0;
 }
@@ -144,17 +153,6 @@ style.textContent = `
   line-height: 1;
   font-family: Arial, sans-serif;
 }
-.t-score.upcoming {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffd166;
-  background: #1a5276;
-  border-radius: 4px;
-  padding: 2px 6px;
-  width: auto;
-  min-width: 34px;
-  text-align: center;
-}
 .t-tag {
   font-size: 9px;
   font-weight: 700;
@@ -163,6 +161,46 @@ style.textContent = `
   padding: 1px 5px;
   border-radius: 3px;
   text-align: center;
+}
+
+.t-upcoming-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.t-upcoming-team-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.t-upcoming-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c8e0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  font-family: Arial, sans-serif;
+}
+.t-odds-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+}
+.t-odd {
+  background: #1a5276;
+  color: #ffd166;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  flex: 1;
+  text-align: center;
+  font-family: Arial, sans-serif;
 }
 
 .t-separator {
@@ -268,23 +306,19 @@ async function loadTicker(){
       const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
       return Math.floor(wrapW / boxWidth)
     }
-    function getTotalBoxes(){
-      // počítej jen t-box elementy, ne dividers
-      return track.querySelectorAll('.t-box, .t-separator').length
-    }
     function updateButtons(){
-      const total = track.children.length
-      const visible = getVisibleCount()
+      const trackW = track.scrollWidth
+      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
       btnPrev.disabled = offset <= 0
-      btnNext.disabled = offset * boxWidth >= (total * boxWidth) - document.getElementById('ticker-track-wrap').offsetWidth
+      btnNext.disabled = (offset * boxWidth) >= (trackW - wrapW)
     }
     function scrollTo(newOffset){
-      const trackWidth = track.scrollWidth
-      const wrapWidth = document.getElementById('ticker-track-wrap').offsetWidth
-      const maxOffset = Math.max(0, trackWidth - wrapWidth)
-      const pixelOffset = newOffset * boxWidth
+      const trackW = track.scrollWidth
+      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
+      const maxPx = Math.max(0, trackW - wrapW)
+      const px = Math.min(newOffset * boxWidth, maxPx)
       offset = newOffset
-      track.style.transform = `translateX(-${Math.min(pixelOffset, maxOffset)}px)`
+      track.style.transform = `translateX(-${px}px)`
       updateButtons()
     }
     btnPrev.onclick = () => scrollTo(Math.max(0, offset - SCROLL_STEP))
@@ -297,7 +331,6 @@ async function loadTicker(){
     const allMatches = matches || []
     const allSeasons = seasons || []
 
-    // Nejnovější sezóna pro každou competition která má zápasy
     const seasonsByComp = {}
     allSeasons.forEach(s => {
       if(!seasonsByComp[s.competition_id]) seasonsByComp[s.competition_id] = []
@@ -311,7 +344,6 @@ async function loadTicker(){
     })
     const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
 
-    // Odehrané – max 100 nejnovějších
     const played = allMatches
       .filter(m => m.played === true && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
@@ -322,16 +354,10 @@ async function loadTicker(){
       })
       .slice(0, 100)
 
-    // Nadcházející – 2 nejbližší z každé aktivní sezóny
-    // Filtr: played = false A home_score = null
     const upcomingBySeason = {}
     activeSeasons.forEach(season => {
       const unplayed = allMatches
-        .filter(m =>
-          m.played === false &&
-          m.home_score === null &&
-          m.season_id === season.id
-        )
+        .filter(m => m.played === false && m.home_score === null && m.season_id === season.id)
         .sort((a,b) => Number(a.round) - Number(b.round))
         .slice(0, 2)
       if(unplayed.length > 0) upcomingBySeason[season.id] = { season, matches: unplayed }
@@ -339,7 +365,7 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    // Odehrané zápasy s oddělovači mezi nimi
+    // Odehrané zápasy
     played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
@@ -388,22 +414,23 @@ async function loadTicker(){
         if(!home || !away) return
         const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
         const box = document.createElement('div')
-        box.className = 't-box'
+        box.className = 't-box t-upcoming'
         box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
         box.innerHTML = `
-          <div class="t-teams">
-            <div class="t-team-row">
+          <div class="t-upcoming-teams">
+            <div class="t-upcoming-team-row">
               <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-              <span class="t-team-name">${getShortName(home)}</span>
+              <span class="t-upcoming-name">${getShortName(home)}</span>
             </div>
-            <div class="t-team-row">
+            <div class="t-upcoming-team-row">
               <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-              <span class="t-team-name">${getShortName(away)}</span>
+              <span class="t-upcoming-name">${getShortName(away)}</span>
             </div>
           </div>
-          <div class="t-score-col">
-            <span class="t-score upcoming">${odds.home}</span>
-            <span class="t-score upcoming">${odds.away}</span>
+          <div class="t-odds-row">
+            <span class="t-odd">${odds.home}</span>
+            <span class="t-odd">${odds.draw}</span>
+            <span class="t-odd">${odds.away}</span>
           </div>
         `
         track.appendChild(box)
@@ -411,13 +438,12 @@ async function loadTicker(){
       })
     })
 
-    // Změř šířku boxu a scrolluj na konec
     const firstBox = track.querySelector('.t-box')
     if(firstBox){
-      boxWidth = firstBox.offsetWidth + 1 // +1 pro divider
-      const trackWidth = track.scrollWidth
-      const wrapWidth = document.getElementById('ticker-track-wrap').offsetWidth
-      const maxOffset = Math.floor((trackWidth - wrapWidth) / boxWidth)
+      boxWidth = firstBox.offsetWidth + 1
+      const trackW = track.scrollWidth
+      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
+      const maxOffset = Math.floor((trackW - wrapW) / boxWidth)
       scrollTo(Math.max(0, maxOffset))
     }
     updateButtons()
