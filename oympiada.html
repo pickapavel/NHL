@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olympiáda – Admin</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial;background:#f2f2f2;margin:0;}
+.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
+
+h1{color:#0b2a3c;margin-bottom:4px;}
+.subtitle{color:#888;font-size:13px;margin-bottom:20px;}
+.topBar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.topBar h1{margin:0;flex:1;}
+.btn-new-season{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#8b5cf6;color:white;}
+.btn-new-season:hover{background:#7c3aed;}
+.btn-recalc{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#e67e22;color:white;}
+.btn-recalc:hover{background:#d35400;}
+
+.filterBar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;background:#f7f8fa;padding:14px;border-radius:10px;border:1px solid #e0e0e0;}
+.filterBar label{font-size:13px;font-weight:700;color:#0b2a3c;}
+.filterBar select{padding:8px 12px;border-radius:8px;border:1px solid #ccc;font-size:13px;background:white;cursor:pointer;color:#333;min-width:180px;}
+.btn-add{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#0b2a3c;color:white;margin-left:auto;}
+.btn-add:hover{background:#1a3a5c;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th{background:#0b2a3c;color:white;padding:12px 10px;text-align:center;font-size:12px;letter-spacing:.05em;white-space:nowrap;}
+th:nth-child(2),th:nth-child(3){text-align:left;}
+td{padding:10px 10px;border-bottom:1px solid #e8e8e8;text-align:center;vertical-align:middle;font-size:13px;color:#333;}
+td:nth-child(2),td:nth-child(3){text-align:left;}
+tr:nth-child(odd) td{background:#f7f8fa;}
+tr:hover td{background:#edf2f7;}
+
+.team-cell{display:flex;align-items:center;gap:8px;}
+.team-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.team-name{font-weight:600;font-size:13px;}
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
+.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
+.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;}
+.file-label{display:inline-flex;align-items:center;gap:6px;background:#f0f0f0;border:1px solid #ccc;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:#555;transition:background .15s;white-space:nowrap;}
+.file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
+.file-label input{display:none;}
+.file-label.csv-label{background:#e8f4fd;border-color:#2f9ec9;color:#1a5276;}
+.file-label.csv-label:hover{background:#d0eafb;}
+.file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
+.btn-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;transition:all .15s;white-space:nowrap;}
+.btn-save{background:#27ae60;color:white;}
+.btn-save:hover{background:#219a52;}
+.btn-save-csv{background:#2f9ec9;color:white;}
+.btn-save-csv:hover{background:#1a7aa0;}
+.btn-clear{background:#f39c12;color:white;}
+.btn-clear:hover{background:#d68910;}
+.btn-reset{background:#e74c3c;color:white;}
+.btn-reset:hover{background:#c0392b;}
+.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
+.played-row td{background:#f0fdf4 !important;}
+.played-row:hover td{background:#e0f7e9 !important;}
+.empty-msg{text-align:center;padding:40px;color:#999;font-size:14px;}
+.match-count{font-size:12px;color:#888;margin-bottom:8px;}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:680px;box-shadow:0 8px 32px rgba(0,0,0,.2);margin-bottom:40px;}
+.modal h2{color:#0b2a3c;margin-bottom:4px;font-size:18px;}
+.modal-sub{color:#888;font-size:12px;margin-bottom:20px;}
+.modal-section{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:16px;}
+.modal-section-title{font-size:12px;font-weight:700;color:#0b2a3c;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
+.modal-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.modal-row:last-child{margin-bottom:0;}
+.modal-row label{font-size:12px;font-weight:700;color:#666;min-width:70px;}
+.modal-row select,.modal-row input[type=text],.modal-row input[type=number]{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;}
+.match-entries{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.match-entry{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px;position:relative;}
+.match-entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.match-entry-num{font-size:12px;font-weight:700;color:#0b2a3c;}
+.btn-remove-entry{background:#fee2e2;color:#991b1b;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;}
+.btn-remove-entry:hover{background:#fca5a5;}
+.entry-fields{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;align-items:end;}
+.entry-fields select,.entry-fields input{padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;width:100%;}
+.entry-label{font-size:11px;color:#888;margin-bottom:3px;font-weight:600;}
+.btn-add-entry{display:inline-flex;align-items:center;gap:6px;background:#e8f4fd;color:#0b2a3c;border:2px dashed #b8d8f0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:700;font-size:13px;width:100%;justify-content:center;transition:all .15s;}
+.btn-add-entry:hover{background:#d0eafb;border-color:#2f9ec9;}
+.modal-btns{display:flex;gap:8px;margin-top:16px;}
+.modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
+.btn-confirm{background:#27ae60;color:white;}
+.btn-confirm:hover{background:#219a52;}
+.btn-cancel{background:#e0e0e0;color:#333;}
+.btn-cancel:hover{background:#ccc;}
+
+.wizard-steps{display:flex;gap:0;margin-bottom:20px;}
+.wizard-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#aaa;border-bottom:2px solid #e0e0e0;}
+.wizard-step.active{color:#0b2a3c;border-color:#0b2a3c;}
+.wizard-step.done{color:#27ae60;border-color:#27ae60;}
+.wizard-page{display:none;}
+.wizard-page.active{display:block;}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:300px;overflow-y:auto;padding:4px;}
+.team-check{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;}
+.team-check:hover{border-color:#2f9ec9;background:#f0f8ff;}
+.team-check.selected{border-color:#0b2a3c;background:#e8f0f8;}
+.team-check input{display:none;}
+.team-check-logo{width:24px;height:24px;object-fit:contain;border-radius:4px;}
+.team-check-name{font-size:12px;font-weight:700;color:#1a2a3c;flex:1;}
+.team-check-box{width:18px;height:18px;border-radius:4px;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;}
+.team-check.selected .team-check-box{background:#0b2a3c;border-color:#0b2a3c;}
+.wizard-nav{display:flex;gap:8px;margin-top:20px;}
+.wizard-nav button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:13px;}
+.btn-next{background:#0b2a3c;color:white;}
+.btn-next:hover{background:#1a3a5c;}
+.btn-prev{background:#e0e0e0;color:#333;}
+.btn-prev:hover{background:#ccc;}
+.btn-create{background:#8b5cf6;color:white;}
+.btn-create:hover{background:#7c3aed;}
+.info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
+.stages-list{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;}
+.stage-item{background:white;border:1px solid #e0e0e0;border-radius:6px;padding:6px 10px;font-size:12px;color:#0b2a3c;font-weight:600;}
+.stage-item.sub{margin-left:12px;color:#555;font-weight:400;border-color:#eee;}
+
+.toa-input{width:100%;padding:8px 10px;border-radius:8px;border:2px solid #2f9ec9;font-size:14px;font-weight:700;text-align:center;color:#0b2a3c;}
+.csv-preview{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px;font-size:12px;color:#333;margin-bottom:12px;}
+.csv-preview-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;}
+.csv-preview-row:last-child{border-bottom:none;}
+.csv-preview-label{color:#888;font-weight:600;}
+.csv-preview-val{font-weight:700;color:#0b2a3c;}
+</style>
+</head>
+
+<body>
+<script src="./menu.js"></script>
+
+<div class="wrapper">
+<div class="topBar">
+ <h1>🏅 Olympiáda – Admin</h1>
+ <button class="btn-recalc" onclick="recalcBtn()">🔄 Přepočítat ratingy</button>
+ <button class="btn-new-season" onclick="openNewSeasonModal()">🏅 Nová sezóna olympiády</button>
+</div>
+<p class="subtitle">Správa zápasů olympiády – zápis výsledků a tvorba sezón.</p>
+
+<div class="filterBar">
+ <label>Sezóna:</label>
+ <select id="seasonFilter" onchange="onSeasonFilterChange()"><option value="">-- Načítám... --</option></select>
+ <label>Stage:</label>
+ <select id="stageFilter" onchange="loadMatches()"><option value="">-- Vyber stage --</option></select>
+ <label>Tým:</label>
+ <select id="teamFilter" onchange="applyTeamFilter()"><option value="">Všechny týmy</option></select>
+ <button class="btn-add" onclick="openModal()">➕ Přidat zápasy</button>
+</div>
+
+<div class="match-count" id="matchCount"></div>
+
+<table>
+<thead>
+ <tr><th>Kolo</th><th>Domácí</th><th>Hosté</th><th>Skóre</th><th>Textový soubor</th><th>CSV soubor</th><th>Akce</th></tr>
+</thead>
+<tbody id="matchesTable">
+ <tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- MODAL PŘIDAT ZÁPASY -->
+<div class="modal-overlay" id="modalOverlay">
+ <div class="modal">
+  <h2>➕ Přidat zápasy</h2>
+  <p class="modal-sub">Nastav sezónu, stage a přidej jeden nebo více zápasů najednou.</p>
+  <div class="modal-section">
+   <div class="modal-section-title">Kam zápasy přidat</div>
+   <div class="modal-row"><label>Sezóna:</label><select id="m-season" onchange="onModalSeasonChange()"><option value="">-- Vyber sezónu --</option></select></div>
+   <div class="modal-row"><label>Stage:</label><select id="m-stage"><option value="">-- Vyber stage --</option></select></div>
+  </div>
+  <div class="modal-section-title" style="font-size:12px;font-weight:700;color:#0b2a3c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Zápasy</div>
+  <div class="match-entries" id="matchEntries"></div>
+  <button class="btn-add-entry" onclick="addEntry()">➕ Přidat další zápas</button>
+  <div class="modal-btns">
+   <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
+   <button class="btn-confirm" onclick="saveAllMatches()">✅ Uložit vše</button>
+  </div>
+ </div>
+</div>
+
+<!-- MODAL CSV -->
+<div class="modal-overlay" id="csvModal">
+ <div class="modal">
+  <h2>📊 Uložit výsledek z CSV</h2>
+  <p class="modal-sub">Zkontroluj přečtené statistiky a doplň Time on Attack.</p>
+  <div class="csv-preview" id="csvPreview"></div>
+  <div class="modal-section">
+   <div class="modal-section-title">Time on Attack (ruční zadání)</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div>
+     <div class="entry-label" id="toaHomeLabel">Domácí (mm:ss)</div>
+     <input class="toa-input" id="toaHome" type="text" placeholder="např. 6:21">
+    </div>
+    <div>
+     <div class="entry-label" id="toaAwayLabel">Hosté (mm:ss)</div>
+     <input class="toa-input" id="toaAway" type="text" placeholder="např. 7:59">
+    </div>
+   </div>
+  </div>
+  <div class="modal-btns">
+   <button class="btn-cancel" onclick="closeCsvModal()">Zrušit</button>
+   <button class="btn-confirm" id="csvSaveBtn">✅ Uložit výsledek</button>
+  </div>
+ </div>
+</div>
+
+<!-- MODAL NOVÁ SEZÓNA -->
+<div class="modal-overlay" id="newSeasonOverlay">
+ <div class="modal">
+  <h2>🏅 Nová sezóna olympiády</h2>
+  <p class="modal-sub">Průvodce vytvořením nové sezóny olympiády.</p>
+  <div class="wizard-steps">
+   <div class="wizard-step active" id="ws-1">1. Název</div>
+   <div class="wizard-step" id="ws-2">2. Týmy</div>
+   <div class="wizard-step" id="ws-3">3. Souhrn</div>
+  </div>
+
+  <div class="wizard-page active" id="wp-1">
+   <div class="modal-section">
+    <div class="modal-section-title">Název sezóny</div>
+    <div class="modal-row"><label>Název:</label><input type="text" id="ns-name" placeholder="např. Olympiáda 2026"></div>
+   </div>
+   <div class="modal-section">
+    <div class="modal-section-title">Stage které se vytvoří</div>
+    <div class="stages-list">
+     <div class="stage-item">Kvalifikace nasazených – č. 1</div>
+     <div class="stage-item sub">Kvalifikace nasazených – č. 2</div>
+     <div class="stage-item sub">Kvalifikace nasazených – č. 3</div>
+     <div class="stage-item sub">Kvalifikace nasazených – č. 4</div>
+     <div class="stage-item">Skupina o čtvrtfinále</div>
+     <div class="stage-item">Kvalifikace – č. 1</div>
+     <div class="stage-item sub">Kvalifikace – č. 2</div>
+     <div class="stage-item sub">Kvalifikace – č. 3</div>
+     <div class="stage-item sub">Kvalifikace – č. 4</div>
+     <div class="stage-item sub">Kvalifikace – č. 5</div>
+     <div class="stage-item sub">Kvalifikace – č. 6</div>
+     <div class="stage-item">Osmifinále – č. 1</div>
+     <div class="stage-item sub">Osmifinále – č. 2</div>
+     <div class="stage-item sub">Osmifinále – č. 3</div>
+     <div class="stage-item sub">Osmifinále – č. 4</div>
+     <div class="stage-item sub">Osmifinále – č. 5</div>
+     <div class="stage-item sub">Osmifinále – č. 6</div>
+     <div class="stage-item">Čtvrtfinále – č. 1</div>
+     <div class="stage-item sub">Čtvrtfinále – č. 2</div>
+     <div class="stage-item sub">Čtvrtfinále – č. 3</div>
+     <div class="stage-item sub">Čtvrtfinále – č. 4</div>
+     <div class="stage-item">Semifinále – č. 1</div>
+     <div class="stage-item sub">Semifinále – č. 2</div>
+     <div class="stage-item">O 3. místo</div>
+     <div class="stage-item">Finále</div>
+    </div>
+   </div>
+   <div class="wizard-nav">
+    <button class="btn-cancel" onclick="closeNewSeasonModal()">Zrušit</button>
+    <button class="btn-next" onclick="wizardNext(1)">Další →</button>
+   </div>
+  </div>
+
+  <div class="wizard-page" id="wp-2">
+   <div class="modal-section">
+    <div class="modal-section-title">Vyber týmy do sezóny</div>
+    <div class="info-box">Klikni na tým pro výběr/zrušení výběru.</div>
+    <div class="teams-grid" id="ns-teams-grid"></div>
+   </div>
+   <div id="ns-teams-count" style="font-size:12px;color:#888;margin-top:8px;"></div>
+   <div class="wizard-nav">
+    <button class="btn-prev" onclick="wizardPrev(2)">← Zpět</button>
+    <button class="btn-next" onclick="wizardNext(2)">Další →</button>
+   </div>
+  </div>
+
+  <div class="wizard-page" id="wp-3">
+   <div class="modal-section">
+    <div class="modal-section-title">Souhrn – co se vytvoří</div>
+    <div id="ns-summary"></div>
+   </div>
+   <div class="wizard-nav">
+    <button class="btn-prev" onclick="wizardPrev(3)">← Zpět</button>
+    <button class="btn-create" onclick="createSeason()">🏅 Vytvořit sezónu</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+const OLYMPIADA_COMPETITION_ID = "c85830b0-612f-4390-88de-0b8775430460"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let teamsMap={}, filesMap={}, csvDataMap={}, allTeams=[], allStages=[], allSeasons=[], allMatches=[]
+let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
+let nsSelectedTeams=new Set()
+let currentCsvMatchId=null, currentCsvData=null
+
+const R_START=1000, R_K_ELO=80, R_K_FORM=120
+
+const OLYMPIADA_STAGES = [
+ {name:"Kvalifikace nasazených – č. 1", order:1},
+ {name:"Kvalifikace nasazených – č. 2", order:2},
+ {name:"Kvalifikace nasazených – č. 3", order:3},
+ {name:"Kvalifikace nasazených – č. 4", order:4},
+ {name:"Skupina o čtvrtfinále",         order:5},
+ {name:"Kvalifikace – č. 1",            order:6},
+ {name:"Kvalifikace – č. 2",            order:7},
+ {name:"Kvalifikace – č. 3",            order:8},
+ {name:"Kvalifikace – č. 4",            order:9},
+ {name:"Kvalifikace – č. 5",            order:10},
+ {name:"Kvalifikace – č. 6",            order:11},
+ {name:"Osmifinále – č. 1",             order:12},
+ {name:"Osmifinále – č. 2",             order:13},
+ {name:"Osmifinále – č. 3",             order:14},
+ {name:"Osmifinále – č. 4",             order:15},
+ {name:"Osmifinále – č. 5",             order:16},
+ {name:"Osmifinále – č. 6",             order:17},
+ {name:"Čtvrtfinále – č. 1",            order:18},
+ {name:"Čtvrtfinále – č. 2",            order:19},
+ {name:"Čtvrtfinále – č. 3",            order:20},
+ {name:"Čtvrtfinále – č. 4",            order:21},
+ {name:"Semifinále – č. 1",             order:22},
+ {name:"Semifinále – č. 2",             order:23},
+ {name:"O 3. místo",                    order:24},
+ {name:"Finále",                        order:25},
+]
+
+function rGetScore(match, teamId){
+ const hg=Number(match.home_score), ag=Number(match.away_score)
+ let stats=null
+ try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
+ const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+ const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+ const isHome=match.home_team===teamId
+ const tg=isHome?hg:ag, og=isHome?ag:hg
+ if(tg>og) return (isSN||isOT)?0.75:1
+ return (isSN||isOT)?0.25:0
+}
+
+async function recalculateAllRatings(){
+ const {data:seasons}=await db.from("seasons").select("*").order("created_at",{ascending:true})
+ const seasonOrder={}
+ ;(seasons||[]).forEach((s,i)=>seasonOrder[s.id]=i)
+ const {data:matches}=await db.from("matches").select("*").not("home_score","is",null).not("away_score","is",null)
+ if(!matches||!matches.length) return
+ matches.sort((a,b)=>{
+  const sA=seasonOrder[a.season_id]??999, sB=seasonOrder[b.season_id]??999
+  if(sA!==sB) return sA-sB
+  return Number(a.round)-Number(b.round)
+ })
+ const {data:teams}=await db.from("teams").select("*")
+ if(!teams) return
+ const eloRatings={}, formRatings={}, formHistory={}
+ teams.forEach(t=>{ eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[] })
+ matches.forEach(m=>{
+  const h=m.home_team, a=m.away_team
+  if(formRatings[h]===undefined||formRatings[a]===undefined) return
+  const sH=rGetScore(m,h), sA=rGetScore(m,a)
+  function updateForm(teamId, opponentId, score){
+   const cur=formRatings[teamId], opp=formRatings[opponentId]
+   const exp=1/(1+Math.pow(10,(opp-cur)/400))
+   const ch=R_K_FORM*(score-exp)
+   formHistory[teamId].push(ch)
+   if(formHistory[teamId].length>5) formHistory[teamId].shift()
+   formRatings[teamId]=Math.round(R_START+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
+  }
+  updateForm(h,a,sH); updateForm(a,h,sA)
+  const rH=eloRatings[h], rA=eloRatings[a]
+  const eH=1/(1+Math.pow(10,(rA-rH)/400))
+  const eA=1/(1+Math.pow(10,(rH-rA)/400))
+  eloRatings[h]=Math.round(rH+R_K_ELO*(sH-eH))
+  eloRatings[a]=Math.round(rA+R_K_ELO*(sA-eA))
+ })
+ for(const team of teams){
+  await db.from("teams").update({
+   rating_overall: eloRatings[team.id]||R_START,
+   rating_form:    formRatings[team.id]||R_START,
+  }).eq("id",team.id)
+ }
+}
+
+function recalcBtn(){
+ const btn=document.querySelector(".btn-recalc")
+ btn.textContent="⏳ Přepočítávám..."
+ btn.disabled=true
+ recalculateAllRatings().then(()=>{
+  btn.textContent="🔄 Přepočítat ratingy"
+  btn.disabled=false
+  alert("✅ Ratingy přepočítány!")
+ }).catch(e=>{
+  btn.textContent="🔄 Přepočítat ratingy"
+  btn.disabled=false
+  alert("❌ Chyba: "+e.message)
+ })
+}
+
+function parseCsv(text){
+ const lines=text.trim().split(/\r?\n/)
+ const headers=lines[0].split(",").map(h=>h.replace(/"/g,"").trim())
+ const rows=[]
+ for(let i=1;i<lines.length;i++){
+  const vals=lines[i].split(",").map(v=>v.replace(/"/g,"").trim())
+  const obj={}
+  headers.forEach((h,j)=>obj[h]=vals[j]||"")
+  rows.push(obj)
+ }
+ return rows
+}
+
+function csvToLines(csvRows, toaHome, toaAway){
+ const home=csvRows.find(r=>(r[""]||"").toLowerCase()==="home")||csvRows[0]
+ const away=csvRows.find(r=>(r[""]||"").toLowerCase()==="away")||csvRows[1]
+ const homeGoals=Number(home.Goal||0)
+ const awayGoals=Number(away.Goal||0)
+ const homeGP=Number(home.GP1||0)+Number(home.GP2||0)+Number(home.GP3||0)+Number(home.GOT||0)
+ const awayGP=Number(away.GP1||0)+Number(away.GP2||0)+Number(away.GP3||0)+Number(away.GOT||0)
+ let snVal="0"
+ if(homeGoals!==homeGP||awayGoals!==awayGP){
+  snVal=homeGoals>awayGoals?"1":"2"
+ }
+ const homeOT=Number(home.GOT||0)>0?"11":(snVal!=="0"?"1":"0")
+ const awayOT=Number(away.GOT||0)>0?"11":(snVal!=="0"?"1":"0")
+ return [
+  away.Shot||"0", away.Hits||"0", away.Faceoff||"0", toaAway||"0:00",
+  away.PP||"0/0", home.PP||"0/0",
+  away.GP1||"0", away.GP2||"0", away.GP3||"0", awayOT,
+  home.Shot||"0", home.Hits||"0", home.Faceoff||"0", toaHome||"0:00",
+  home.PP||"0/0", away.PP||"0/0",
+  home.GP1||"0", home.GP2||"0", home.GP3||"0", homeOT,
+  snVal,
+ ]
+}
+
+function handleCsvFile(e, matchId){
+ const file=e.target.files[0]; if(!file) return
+ const reader=new FileReader()
+ reader.onload=ev=>{
+  try{
+   const rows=parseCsv(ev.target.result)
+   if(!rows.length){ alert("CSV je prázdné."); return }
+   csvDataMap[matchId]=rows
+   const fname=document.getElementById(`csvfname-${matchId}`); if(fname) fname.textContent=file.name
+   const lbl=document.getElementById(`csvlabel-${matchId}`); if(lbl) lbl.style.borderColor="#27ae60"
+  }catch(err){ alert("Chyba při čtení CSV: "+err.message) }
+ }
+ reader.readAsText(file)
+}
+
+function openCsvModal(matchId){
+ const rows=csvDataMap[matchId]
+ if(!rows){ alert("Nejprve nahraj CSV soubor."); return }
+ const home=rows.find(r=>(r[""]||"").toLowerCase()==="home")||rows[0]
+ const away=rows.find(r=>(r[""]||"").toLowerCase()==="away")||rows[1]
+ const match=allMatches.find(m=>m.id===matchId)
+ const homeTeam=match?(teamsMap[match.home_team]?.name||"Domácí"):"Domácí"
+ const awayTeam=match?(teamsMap[match.away_team]?.name||"Hosté"):"Hosté"
+ currentCsvMatchId=matchId; currentCsvData=rows
+ document.getElementById("toaHomeLabel").textContent=`${homeTeam} (mm:ss)`
+ document.getElementById("toaAwayLabel").textContent=`${awayTeam} (mm:ss)`
+ document.getElementById("toaHome").value=""
+ document.getElementById("toaAway").value=""
+ const homeGoals=Number(home.Goal||0), awayGoals=Number(away.Goal||0)
+ const homeGP=Number(home.GP1||0)+Number(home.GP2||0)+Number(home.GP3||0)+Number(home.GOT||0)
+ const awayGP=Number(away.GP1||0)+Number(away.GP2||0)+Number(away.GP3||0)+Number(away.GOT||0)
+ let snText="Ne"
+ if(homeGoals!==homeGP||awayGoals!==awayGP) snText=homeGoals>awayGoals?`Ano (${homeTeam})`:`Ano (${awayTeam})`
+ const otText=(Number(home.GOT||0)>0||Number(away.GOT||0)>0)?"Ano":"Ne"
+ document.getElementById("csvPreview").innerHTML=`
+  <div class="csv-preview-row"><span class="csv-preview-label">Skóre</span><span class="csv-preview-val">${homeTeam} ${home.Goal} : ${away.Goal} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Góly po třetinách (dom.)</span><span class="csv-preview-val">${home.GP1} – ${home.GP2} – ${home.GP3}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Góly po třetinách (hosté)</span><span class="csv-preview-val">${away.GP1} – ${away.GP2} – ${away.GP3}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">OT</span><span class="csv-preview-val">${otText}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Nájezdy</span><span class="csv-preview-val">${snText}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Střely</span><span class="csv-preview-val">${homeTeam} ${home.Shot} : ${away.Shot} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Hity</span><span class="csv-preview-val">${homeTeam} ${home.Hits} : ${away.Hits} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Vhazování</span><span class="csv-preview-val">${homeTeam} ${home.Faceoff} : ${away.Faceoff} ${awayTeam}</span></div>
+  <div class="csv-preview-row"><span class="csv-preview-label">Přesilovky</span><span class="csv-preview-val">${homeTeam} ${home.PP} : ${away.PP} ${awayTeam}</span></div>
+ `
+ document.getElementById("csvSaveBtn").onclick=()=>saveCsvMatch()
+ document.getElementById("csvModal").classList.add("open")
+}
+
+function closeCsvModal(){
+ document.getElementById("csvModal").classList.remove("open")
+ currentCsvMatchId=null; currentCsvData=null
+}
+
+async function saveCsvMatch(){
+ const toaHome=document.getElementById("toaHome").value.trim()
+ const toaAway=document.getElementById("toaAway").value.trim()
+ if(!toaHome||!toaAway){ alert("Zadej Time on Attack pro oba týmy."); return }
+ const lines=csvToLines(currentCsvData,toaHome,toaAway)
+ const score=calculateScore(lines), resultType=getResultType(lines)
+ await db.from("matches").update({home_score:score.hg,away_score:score.ag,played:true,stats:JSON.stringify(lines),result_type:resultType}).eq("id",currentCsvMatchId)
+ const {data:fullMatch}=await db.from("matches").select("*").eq("id",currentCsvMatchId).single()
+ await evaluateBets(fullMatch)
+ await recalculateAllRatings()
+ closeCsvModal()
+ alert("Uloženo 👍"); loadMatches()
+}
+
+async function init(){
+ const [seasonsRes,stagesRes,teamsRes]=await Promise.all([
+  db.from("seasons").select("*").eq("competition_id",OLYMPIADA_COMPETITION_ID).order("created_at",{ascending:false}),
+  db.from("stages").select("*").order("order",{ascending:true}),
+  db.from("teams").select("*").order("name"),
+ ])
+ allSeasons=seasonsRes.data||[]
+ allStages=stagesRes.data||[]
+ allTeams=teamsRes.data||[]
+ allTeams.forEach(t=>teamsMap[t.id]=t)
+
+ const seasonSel=document.getElementById("seasonFilter")
+ seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
+ allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
+
+ const mSeason=document.getElementById("m-season")
+ mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
+ allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
+
+ if(allSeasons.length>0){ seasonSel.value=allSeasons[0].id; onSeasonFilterChange() }
+}
+
+function onSeasonFilterChange(){
+ currentSeasonId=document.getElementById("seasonFilter").value
+ if(!currentSeasonId) return
+ const stageSel=document.getElementById("stageFilter")
+ stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
+ const seasonStages=allStages.filter(s=>s.season_id===currentSeasonId).sort((a,b)=>a.order-b.order)
+ seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; stageSel.appendChild(o) })
+ if(seasonStages.length>0){ stageSel.value=seasonStages[0].id; loadMatches() }
+}
+
+async function loadMatches(){
+ currentStageId=document.getElementById("stageFilter").value
+ if(!currentStageId||!currentSeasonId) return
+ const {data:matches}=await db.from("matches").select("*").eq("season_id",currentSeasonId).eq("stage_id",currentStageId).order("round",{ascending:true})
+ allMatches=matches||[]
+ updateTeamFilter(); applyTeamFilter()
+}
+
+function updateTeamFilter(){
+ const teamIds=new Set()
+ allMatches.forEach(m=>{ teamIds.add(m.home_team); teamIds.add(m.away_team) })
+ const sel=document.getElementById("teamFilter")
+ const prev=sel.value
+ sel.innerHTML='<option value="">Všechny týmy</option>'
+ const sorted=[...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name))
+ sorted.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o) })
+ sel.value=([...teamIds].includes(prev))?prev:""
+}
+
+function applyTeamFilter(){
+ currentTeamFilter=document.getElementById("teamFilter").value
+ let filtered=allMatches
+ if(currentTeamFilter) filtered=allMatches.filter(m=>m.home_team===currentTeamFilter||m.away_team===currentTeamFilter)
+ document.getElementById("matchCount").textContent=`Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
+ render(filtered)
+}
+
+function render(matches){
+ const cont=document.getElementById("matchesTable")
+ cont.innerHTML=""
+ if(!matches.length){ cont.innerHTML=`<tr><td colspan="7" class="empty-msg">Žádné zápasy.</td></tr>`; return }
+ matches.forEach(m=>{
+  const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
+  if(!home||!away) return
+  const played=m.home_score!=null
+  let suffix=m.result_type==="SN"?"SN":m.result_type==="OT"?"OT":""
+  const scoreHtml=played
+   ?`<span class="score-badge">${m.home_score} : ${m.away_score}</span>${suffix?`<span class="result-tag">${suffix}</span>`:""}`
+   :`<span class="score-badge empty">- : -</span>`
+  cont.innerHTML+=`
+  <tr class="${played?"played-row":""}">
+   <td><span class="round-badge">${m.round}</span></td>
+   <td><div class="team-cell"><img class="team-logo" src="./logos/${home.logo}"><span class="team-name">${home.name}</span></div></td>
+   <td><div class="team-cell"><img class="team-logo" src="./logos/${away.logo}"><span class="team-name">${away.name}</span></div></td>
+   <td>${scoreHtml}</td>
+   <td>
+    <label class="file-label" id="label-${m.id}">📂 Textový soubor<input type="file" onchange="handleFile(event,'${m.id}')"></label>
+    <div class="file-name" id="fname-${m.id}"></div>
+   </td>
+   <td>
+    <label class="file-label csv-label" id="csvlabel-${m.id}">📊 CSV soubor<input type="file" accept=".csv" onchange="handleCsvFile(event,'${m.id}')"></label>
+    <div class="file-name" id="csvfname-${m.id}"></div>
+   </td>
+   <td>
+    <div class="btn-wrap">
+     <button class="btn btn-save" onclick="saveMatch('${m.id}')">✅ Uložit (txt)</button>
+     <button class="btn btn-save-csv" onclick="openCsvModal('${m.id}')">📊 Uložit (CSV)</button>
+     ${played?`<button class="btn btn-clear" onclick="clearResult('${m.id}')">🗑 Smazat výsledek</button>`:''}
+     <button class="btn btn-reset" onclick="resetMatch('${m.id}')">❌ Smazat zápas</button>
+    </div>
+   </td>
+  </tr>`
+ })
+}
+
+function openModal(){
+ entryCount=0; document.getElementById("matchEntries").innerHTML=""
+ document.getElementById("m-season").value=currentSeasonId||""
+ onModalSeasonChange(); addEntry()
+ document.getElementById("modalOverlay").classList.add("open")
+}
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("open") }
+
+function onModalSeasonChange(){
+ const seasonId=document.getElementById("m-season").value
+ const stageSel=document.getElementById("m-stage")
+ stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
+ if(!seasonId) return
+ const seasonStages=allStages.filter(s=>s.season_id===seasonId).sort((a,b)=>a.order-b.order)
+ seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; stageSel.appendChild(o) })
+ if(currentStageId){ const f=seasonStages.find(s=>s.id===currentStageId); if(f) stageSel.value=currentStageId }
+ else if(seasonStages.length>0) stageSel.value=seasonStages[0].id
+}
+
+function addEntry(){
+ entryCount++
+ const id=entryCount
+ const cont=document.getElementById("matchEntries")
+ const nextRound=allMatches.length+cont.querySelectorAll(".match-entry").length+1
+ let teamOptions=allTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+ const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
+ div.innerHTML=`
+  <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
+  <div class="entry-fields">
+   <div><div class="entry-label">Domácí tým</div><select id="e-home-${id}">${teamOptions}</select></div>
+   <div><div class="entry-label">Hosté tým</div><select id="e-away-${id}">${teamOptions}</select></div>
+   <div><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
+  </div>`
+ cont.appendChild(div)
+ if(allTeams.length>=2) document.getElementById(`e-away-${id}`).value=allTeams[1].id
+}
+
+function removeEntry(id){
+ const cont=document.getElementById("matchEntries")
+ if(cont.querySelectorAll(".match-entry").length<=1){ alert("Musí zůstat alespoň jeden zápas!"); return }
+ document.getElementById(`entry-${id}`)?.remove()
+}
+
+async function saveAllMatches(){
+ const seasonId=document.getElementById("m-season").value
+ const stageId=document.getElementById("m-stage").value
+ if(!seasonId){ alert("Vyber sezónu!"); return }
+ if(!stageId){ alert("Vyber stage!"); return }
+ const entries=document.querySelectorAll(".match-entry")
+ const toInsert=[]; let valid=true
+ entries.forEach(entry=>{
+  const id=entry.id.replace("entry-","")
+  const homeId=document.getElementById(`e-home-${id}`)?.value
+  const awayId=document.getElementById(`e-away-${id}`)?.value
+  const round=Number(document.getElementById(`e-round-${id}`)?.value)
+  if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
+  if(!round||round<1){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
+  toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
+ })
+ if(!valid) return
+ const {error}=await db.from("matches").insert(toInsert)
+ if(error){ alert("❌ "+error.message); return }
+ closeModal()
+ document.getElementById("seasonFilter").value=seasonId
+ onSeasonFilterChange()
+ setTimeout(()=>{ document.getElementById("stageFilter").value=stageId; loadMatches() },100)
+ alert(`✅ Přidáno ${toInsert.length} zápas${toInsert.length===1?'':'ů'}!`)
+}
+
+function openNewSeasonModal(){
+ nsSelectedTeams=new Set(); wizardGoTo(1)
+ const grid=document.getElementById("ns-teams-grid"); grid.innerHTML=""
+ allTeams.forEach(t=>{
+  const div=document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
+  div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
+  grid.appendChild(div)
+ })
+ updateTeamsCount()
+ document.getElementById("ns-name").value=""
+ document.getElementById("newSeasonOverlay").classList.add("open")
+}
+function closeNewSeasonModal(){ document.getElementById("newSeasonOverlay").classList.remove("open") }
+
+function wizardGoTo(step){
+ for(let i=1;i<=3;i++){
+  document.getElementById(`wp-${i}`).classList.toggle("active",i===step)
+  const ws=document.getElementById(`ws-${i}`); ws.classList.remove("active","done")
+  if(i===step) ws.classList.add("active"); else if(i<step) ws.classList.add("done")
+ }
+}
+function wizardNext(current){
+ if(current===1){
+  if(!document.getElementById("ns-name").value.trim()){ alert("Zadej název!"); return }
+  wizardGoTo(2)
+ } else if(current===2){
+  if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
+  buildSummary(); wizardGoTo(3)
+ }
+}
+function wizardPrev(current){ wizardGoTo(current-1) }
+
+function toggleTeam(teamId){
+ const div=document.getElementById(`tc-${teamId}`), box=document.getElementById(`tcb-${teamId}`)
+ if(nsSelectedTeams.has(teamId)){ nsSelectedTeams.delete(teamId); div.classList.remove("selected"); box.textContent="" }
+ else{ nsSelectedTeams.add(teamId); div.classList.add("selected"); box.textContent="✓" }
+ updateTeamsCount()
+}
+function updateTeamsCount(){ document.getElementById("ns-teams-count").textContent=`Vybráno ${nsSelectedTeams.size} týmů` }
+
+function buildSummary(){
+ const name=document.getElementById("ns-name").value.trim()
+ const teams=[...nsSelectedTeams].map(id=>teamsMap[id]?.name).filter(Boolean)
+ document.getElementById("ns-summary").innerHTML=`
+  <table style="width:100%;font-size:13px;border-collapse:collapse;">
+   <tr><td style="padding:6px 0;color:#666;width:120px;">Název:</td><td style="font-weight:700;">${name}</td></tr>
+   <tr><td style="padding:6px 0;color:#666;">Počet stage:</td><td style="font-weight:700;">${OLYMPIADA_STAGES.length}</td></tr>
+   <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Týmy (${teams.length}):</td><td style="font-weight:700;">${teams.join(", ")}</td></tr>
+  </table>`
+}
+
+async function createSeason(){
+ const name=document.getElementById("ns-name").value.trim()
+ const {data:season,error:e1}=await db.from("seasons").insert({name,competition_id:OLYMPIADA_COMPETITION_ID}).select().single()
+ if(e1){ alert("❌ "+e1.message); return }
+ const seasonId=season.id
+ for(const s of OLYMPIADA_STAGES){
+  const {error:e2}=await db.from("stages").insert({name:s.name,order:s.order,season_id:seasonId,parent_stage_id:null})
+  if(e2){ alert("❌ "+e2.message); return }
+ }
+ const teamInserts=[...nsSelectedTeams].map(teamId=>({season_id:seasonId,team_id:teamId}))
+ if(teamInserts.length>0){
+  const {error:e3}=await db.from("season_teams").insert(teamInserts)
+  if(e3){ alert("❌ "+e3.message); return }
+ }
+ const {data:newSeasons}=await db.from("seasons").select("*").eq("competition_id",OLYMPIADA_COMPETITION_ID).order("created_at",{ascending:false})
+ allSeasons=newSeasons||[]
+ const {data:newStages}=await db.from("stages").select("*").order("order",{ascending:true})
+ allStages=newStages||[]
+ const seasonSel=document.getElementById("seasonFilter")
+ seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
+ allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
+ const mSeason=document.getElementById("m-season")
+ mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
+ allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
+ closeNewSeasonModal()
+ seasonSel.value=seasonId
+ onSeasonFilterChange()
+ alert(`✅ Sezóna "${name}" vytvořena s ${OLYMPIADA_STAGES.length} stage!`)
+}
+
+function handleFile(e, matchId){
+ const file=e.target.files[0]; if(!file) return
+ const reader=new FileReader()
+ reader.onload=ev=>{
+  filesMap[matchId]=ev.target.result.split(/\r?\n/)
+  const fname=document.getElementById(`fname-${matchId}`); if(fname) fname.textContent=file.name
+  const lbl=document.getElementById(`label-${matchId}`); if(lbl) lbl.style.borderColor="#27ae60"
+ }
+ reader.readAsText(file)
+}
+function calculateScore(lines){
+ let ag=Number(lines[6]||0)+Number(lines[7]||0)+Number(lines[8]||0)
+ let hg=Number(lines[16]||0)+Number(lines[17]||0)+Number(lines[18]||0)
+ if(lines[9]==="11") hg++; if(lines[19]==="11") ag++
+ if(lines[20]==="1") hg++; if(lines[20]==="2") ag++
+ return {hg,ag}
+}
+function getResultType(lines){
+ const isSN=lines[20]==="1"||lines[20]==="2"
+ const isOT=!isSN&&(lines[9]==="11"||lines[19]==="11")
+ return isSN?"SN":isOT?"OT":"REG"
+}
+function checkSingleTip(match, tip){
+ const type=match.result_type, hg=Number(match.home_score), ag=Number(match.away_score)
+ const hw=hg>ag, aw=ag>hg
+ const isOTorSN=(type==="OT"||type==="SN")
+ switch(tip){
+  case "1":        return hw && type==="REG"
+  case "0":        return isOTorSN
+  case "2":        return aw && type==="REG"
+  case "11":       return !(aw && type==="REG")
+  case "no_draw":  return type==="REG"
+  case "22":       return !(hw && type==="REG")
+  case "vdr_home": return hw
+  case "vdr_away": return aw
+  case "10":       return hw && isOTorSN
+  case "02":       return aw && isOTorSN
+ }
+ return false
+}
+function isWinningBet(match,tip){ return tip.includes(",")?tip.split(",").every(t=>checkSingleTip(match,t)):checkSingleTip(match,tip) }
+
+async function evaluateBets(match){
+ const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
+ if(!bets) return
+ for(const bet of bets){
+  const win=isWinningBet(match,bet.tip)
+  await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
+  if(win){
+   const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+   if(player) await db.from("players").update({credit:Number(player.credit)+Number(bet.potential_win)}).eq("id",player.id)
+  }
+ }
+}
+async function revertBets(matchId){
+ const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
+ for(const bet of bets||[]){
+  if(bet.status==="won"){
+   const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+   if(player) await db.from("players").update({credit:Number(player.credit)-Number(bet.potential_win)}).eq("id",player.id)
+  }
+  await db.from("bets").update({status:"pending"}).eq("id",bet.id)
+ }
+}
+async function clearResult(matchId){
+ if(!confirm("Smazat výsledek? Zápas zůstane v rozpisu.")) return
+ await revertBets(matchId)
+ await db.from("matches").update({home_score:null,away_score:null,played:false,stats:null,result_type:null}).eq("id",matchId)
+ await recalculateAllRatings()
+ alert("Výsledek smazán 👍"); loadMatches()
+}
+async function resetMatch(matchId){
+ if(!confirm("Opravdu smazat celý zápas včetně sázek?")) return
+ await revertBets(matchId)
+ await db.from("matches").delete().eq("id",matchId)
+ await recalculateAllRatings()
+ alert("Zápas smazán 👍"); loadMatches()
+}
+async function saveMatch(matchId){
+ const lines=filesMap[matchId]
+ if(!lines){ alert("Nahraj soubor"); return }
+ const score=calculateScore(lines), resultType=getResultType(lines)
+ await db.from("matches").update({home_score:score.hg,away_score:score.ag,played:true,stats:JSON.stringify(lines),result_type:resultType}).eq("id",matchId)
+ const {data:fullMatch}=await db.from("matches").select("*").eq("id",matchId).single()
+ await evaluateBets(fullMatch)
+ await recalculateAllRatings()
+ alert("Uloženo 👍"); loadMatches()
+}
+
+init()
+</script>
+</body>
+</html>
