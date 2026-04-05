@@ -20,21 +20,10 @@ function calculateOdds(homeRating, awayRating){
   }
 }
 
-// Zkrácení názvu týmu – vezme část za "HC/HK" a před závorkou + zachová závorku
-function shortName(name){
-  // Odstraň HC/HK na začátku
-  let n = name.replace(/^(HC|HK)\s+/i, '')
-  // Zachyť závorku na konci např. "(P)" nebo "(K)"
-  const bracketMatch = n.match(/\(([^)]+)\)\s*$/)
-  const bracket = bracketMatch ? ` (${bracketMatch[1]})` : ''
-  // Odstraň závorku z názvu
-  n = n.replace(/\s*\([^)]+\)\s*$/, '').trim()
-  // Vezmi první slovo
-  const firstWord = n.split(' ')[0]
-  return firstWord + bracket
+function getShortName(team){
+  return team.short_name || team.name
 }
 
-// Styly
 const style = document.createElement('style')
 style.textContent = `
 #ticker-bar {
@@ -93,13 +82,12 @@ style.textContent = `
   content: '';
   position: absolute;
   right: 0;
-  top: 12px;
-  bottom: 12px;
+  top: 10px;
+  bottom: 10px;
   width: 1px;
-  background: rgba(255,255,255,.15);
+  background: rgba(255,255,255,.18);
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
-
 .t-box.t-played { min-width: 175px; }
 
 .t-logo {
@@ -225,10 +213,10 @@ style.textContent = `
   content: '';
   position: absolute;
   right: 0;
-  top: 12px;
-  bottom: 12px;
+  top: 10px;
+  bottom: 10px;
   width: 1px;
-  background: rgba(47,158,201,.4);
+  background: rgba(47,158,201,.5);
 }
 .t-sep-name {
   font-size: 10px;
@@ -250,12 +238,10 @@ style.textContent = `
   justify-content: center;
   font-size: 11px;
   color: white;
-  flex-shrink: 0;
 }
 `
 document.head.appendChild(style)
 
-// Vytvoř bar
 const bar = document.createElement('div')
 bar.id = 'ticker-bar'
 bar.innerHTML = `
@@ -266,17 +252,27 @@ bar.innerHTML = `
   <button class="ticker-btn" id="ticker-next">&#8250;</button>
 `
 
-// Vlož PŘED nav (menu) pokud existuje, jinak na začátek body
 function insertTicker(){
   const nav = document.querySelector('nav')
   if(nav){
     document.body.insertBefore(bar, nav)
   } else {
-    document.body.insertBefore(bar, document.body.firstChild)
+    const observer = new MutationObserver(() => {
+      const nav = document.querySelector('nav')
+      if(nav){
+        observer.disconnect()
+        document.body.insertBefore(bar, nav)
+      }
+    })
+    observer.observe(document.body, { childList: true })
+    setTimeout(() => {
+      if(!bar.parentElement){
+        document.body.insertBefore(bar, document.body.firstChild)
+      }
+    }, 500)
   }
 }
 
-// Pokud DOM ještě není ready, počkej
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', insertTicker)
 } else {
@@ -337,11 +333,9 @@ async function loadTicker(){
 
   const allMatches = matchesRes.data || []
 
-  // Aktivní sezóny = mají alespoň 1 zápas
   const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
   const activeSeasons = (seasonsRes.data||[]).filter(s => activeSeasonsIds.has(s.id))
 
-  // Odehrané – max 100 nejnovějších
   const played = allMatches
     .filter(m => m.played && m.home_score != null)
     .sort((a,b) => {
@@ -352,7 +346,6 @@ async function loadTicker(){
     })
     .slice(0, 100)
 
-  // Nadcházející – 2 nejbližší z každé aktivní sezóny
   const upcomingBySeason = {}
   activeSeasons.forEach(season => {
     const unplayed = allMatches
@@ -377,11 +370,11 @@ async function loadTicker(){
       <div class="t-teams">
         <div class="t-team-row">
           <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${shortName(home.name)}</span>
+          <span class="t-team-name">${getShortName(home)}</span>
         </div>
         <div class="t-team-row">
           <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${shortName(away.name)}</span>
+          <span class="t-team-name">${getShortName(away)}</span>
         </div>
       </div>
       <div class="t-score-col">
@@ -393,7 +386,7 @@ async function loadTicker(){
     track.appendChild(box)
   })
 
-  // Nadcházející zápasy se separátorem soutěže
+  // Nadcházející zápasy se separátorem
   Object.entries(upcomingBySeason).forEach(([seasonId, matches]) => {
     const season = seasonMap[seasonId]
     const comp = season ? compMap[season.competition_id] : null
@@ -418,10 +411,10 @@ async function loadTicker(){
       box.innerHTML = `
         <div class="t-upcoming-teams">
           <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-upcoming-name">${shortName(home.name)}</span>
+          <span class="t-upcoming-name">${getShortName(home)}</span>
           <span class="t-vs">vs</span>
           <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-upcoming-name">${shortName(away.name)}</span>
+          <span class="t-upcoming-name">${getShortName(away)}</span>
         </div>
         <div class="t-odds">
           <span class="t-odd">${odds.home}</span>
@@ -433,7 +426,7 @@ async function loadTicker(){
     })
   })
 
-  // Změř šířku boxu a scrolluj na konec
+  // Změř šířku a scrolluj na konec
   const firstBox = track.querySelector('.t-box')
   if(firstBox){
     boxWidth = firstBox.offsetWidth
