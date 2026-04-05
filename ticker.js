@@ -2,7 +2,6 @@
 
 const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-
 const HOME_ADV = 80
 
 function calculateOdds(homeRating, awayRating){
@@ -21,18 +20,33 @@ function calculateOdds(homeRating, awayRating){
   }
 }
 
-// Injektuj styly
+// Zkrácení názvu týmu – vezme část za "HC/HK" a před závorkou + zachová závorku
+function shortName(name){
+  // Odstraň HC/HK na začátku
+  let n = name.replace(/^(HC|HK)\s+/i, '')
+  // Zachyť závorku na konci např. "(P)" nebo "(K)"
+  const bracketMatch = n.match(/\(([^)]+)\)\s*$/)
+  const bracket = bracketMatch ? ` (${bracketMatch[1]})` : ''
+  // Odstraň závorku z názvu
+  n = n.replace(/\s*\([^)]+\)\s*$/, '').trim()
+  // Vezmi první slovo
+  const firstWord = n.split(' ')[0]
+  return firstWord + bracket
+}
+
+// Styly
 const style = document.createElement('style')
 style.textContent = `
 #ticker-bar {
-  background: #0b2a3c;
+  background: #0a2233;
   display: flex;
   align-items: center;
-  position: relative;
   height: 64px;
   overflow: hidden;
   user-select: none;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 2px solid #0b2a3c;
+  position: relative;
+  z-index: 1000;
 }
 #ticker-track-wrap {
   flex: 1;
@@ -46,13 +60,13 @@ style.textContent = `
   transition: transform .25s ease;
 }
 .ticker-btn {
-  background: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.06);
   border: none;
-  color: white;
-  width: 32px;
+  color: #7ab0cc;
+  width: 28px;
   height: 100%;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -60,142 +74,121 @@ style.textContent = `
   transition: background .15s;
   z-index: 2;
 }
-.ticker-btn:hover { background: rgba(255,255,255,.16); }
-.ticker-btn:disabled { opacity: .3; cursor: default; }
+.ticker-btn:hover { background: rgba(255,255,255,.12); color: white; }
+.ticker-btn:disabled { opacity: .25; cursor: default; }
 
-/* Box obecný */
 .t-box {
   display: flex;
   align-items: center;
   height: 100%;
   padding: 0 12px;
-  border-right: 1px solid rgba(255,255,255,.07);
   cursor: pointer;
   flex-shrink: 0;
-  min-width: 160px;
   gap: 8px;
   transition: background .15s;
   box-sizing: border-box;
+  position: relative;
+}
+.t-box::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: rgba(255,255,255,.15);
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 
-/* Soutěž box (nadcházející bez zápasu) */
-.t-box.t-league {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
-  min-width: 130px;
-  cursor: default;
-}
-.t-league-name {
-  font-size: 11px;
-  font-weight: 800;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  line-height: 1.2;
-}
-.t-league-arrow {
-  width: 20px;
-  height: 20px;
-  background: #2f9ec9;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: white;
-  flex-shrink: 0;
-}
+.t-box.t-played { min-width: 175px; }
 
-/* Odehraný zápas */
-.t-box.t-played {
-  min-width: 170px;
-  gap: 6px;
-}
 .t-logo {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   background: white;
-  border-radius: 4px;
+  border-radius: 5px;
   padding: 2px;
   flex-shrink: 0;
 }
 .t-teams {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
 }
 .t-team-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 .t-team-name {
-  font-size: 11px;
-  color: #a8d4ee;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c8e0f0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 80px;
+  max-width: 90px;
+  font-family: Arial, sans-serif;
 }
 .t-score-col {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   align-items: center;
   flex-shrink: 0;
 }
 .t-score {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: white;
-  width: 20px;
+  width: 22px;
   text-align: center;
   line-height: 1;
+  font-family: Arial, sans-serif;
 }
 .t-tag {
   font-size: 9px;
   font-weight: 700;
   background: #2f9ec9;
   color: white;
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
   text-align: center;
+  margin-top: 1px;
 }
 
-/* Nadcházející zápas */
 .t-box.t-upcoming {
-  min-width: 200px;
+  min-width: 210px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 3px;
-  padding: 4px 12px;
+  gap: 5px;
+  padding: 6px 14px;
 }
 .t-upcoming-teams {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
 }
 .t-upcoming-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70px;
+  max-width: 72px;
+  font-family: Arial, sans-serif;
 }
 .t-vs {
   font-size: 10px;
   color: #7ab0cc;
   flex-shrink: 0;
+  font-family: Arial, sans-serif;
 }
 .t-odds {
   display: flex;
@@ -204,40 +197,48 @@ style.textContent = `
 }
 .t-odd {
   background: #1a5276;
-  color: white;
+  color: #ffd166;
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
-  min-width: 34px;
+  min-width: 36px;
   text-align: center;
-}
-.t-odd.t-odd-mid {
-  background: #1a4a3c;
+  font-family: Arial, sans-serif;
 }
 
-/* Separátor soutěže */
 .t-separator {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 0 10px;
-  border-right: 1px solid rgba(255,255,255,.07);
+  padding: 0 12px;
   flex-shrink: 0;
-  gap: 4px;
-  min-width: 110px;
+  gap: 5px;
+  min-width: 100px;
   cursor: default;
+  background: rgba(47,158,201,.08);
+  position: relative;
+}
+.t-separator::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: rgba(47,158,201,.4);
 }
 .t-sep-name {
   font-size: 10px;
   font-weight: 800;
   color: white;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .06em;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.3;
+  font-family: Arial, sans-serif;
 }
 .t-sep-arrow {
   width: 18px;
@@ -247,14 +248,14 @@ style.textContent = `
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   color: white;
   flex-shrink: 0;
 }
 `
 document.head.appendChild(style)
 
-// Vytvoř HTML strukturu
+// Vytvoř bar
 const bar = document.createElement('div')
 bar.id = 'ticker-bar'
 bar.innerHTML = `
@@ -264,15 +265,31 @@ bar.innerHTML = `
   </div>
   <button class="ticker-btn" id="ticker-next">&#8250;</button>
 `
-document.body.insertBefore(bar, document.body.firstChild)
+
+// Vlož PŘED nav (menu) pokud existuje, jinak na začátek body
+function insertTicker(){
+  const nav = document.querySelector('nav')
+  if(nav){
+    document.body.insertBefore(bar, nav)
+  } else {
+    document.body.insertBefore(bar, document.body.firstChild)
+  }
+}
+
+// Pokud DOM ještě není ready, počkej
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', insertTicker)
+} else {
+  insertTicker()
+}
 
 const track = document.getElementById('ticker-track')
 const btnPrev = document.getElementById('ticker-prev')
 const btnNext = document.getElementById('ticker-next')
 
 let offset = 0
-const SCROLL_STEP = 2 // počet boxů na jedno kliknutí
-let boxWidth = 170
+const SCROLL_STEP = 2
+let boxWidth = 175
 
 function getVisibleCount(){
   const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
@@ -298,45 +315,33 @@ function scrollTo(newOffset){
 btnPrev.onclick = () => scrollTo(offset - SCROLL_STEP)
 btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
 
-// Zkrácení názvu týmu
-function shortName(name){
-  return name
-    .replace(/^HC\s+/i, '')
-    .replace(/^HK\s+/i, '')
-    .split(' ')[0]
-}
-
-// Načti data
 async function loadTicker(){
   const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm')
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-  // Načti týmy
-  const { data: teams } = await sb.from('teams').select('*')
+  const [teamsRes, seasonsRes, matchesRes, compsRes] = await Promise.all([
+    sb.from('teams').select('*'),
+    sb.from('seasons').select('*'),
+    sb.from('matches').select('id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
+    sb.from('competitions').select('*'),
+  ])
+
   const teamMap = {}
-  ;(teams||[]).forEach(t => teamMap[t.id] = t)
-
-  // Načti sezóny + jejich zápasy – zjisti aktivní sezóny
-  const { data: seasons } = await sb.from('seasons').select('*')
-  const { data: allMatches } = await sb.from('matches').select('id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type,stage_id')
-
-  if(!allMatches || !allMatches.length) return
-
-  // Zjisti aktivní sezóny = sezóny které mají alespoň 1 zápas
-  const activeSeasonsIds = new Set()
-  allMatches.forEach(m => activeSeasonsIds.add(m.season_id))
-
-  const activeSeasons = (seasons||[]).filter(s => activeSeasonsIds.has(s.id))
-
-  // Název soutěže – potřebujeme competition
-  const { data: competitions } = await sb.from('competitions').select('*')
-  const compMap = {}
-  ;(competitions||[]).forEach(c => compMap[c.id] = c)
+  ;(teamsRes.data||[]).forEach(t => teamMap[t.id] = t)
 
   const seasonMap = {}
-  ;(seasons||[]).forEach(s => seasonMap[s.id] = s)
+  ;(seasonsRes.data||[]).forEach(s => seasonMap[s.id] = s)
 
-  // Odehrané zápasy – max 100 nejnovějších podle played_at
+  const compMap = {}
+  ;(compsRes.data||[]).forEach(c => compMap[c.id] = c)
+
+  const allMatches = matchesRes.data || []
+
+  // Aktivní sezóny = mají alespoň 1 zápas
+  const activeSeasonsIds = new Set(allMatches.map(m => m.season_id))
+  const activeSeasons = (seasonsRes.data||[]).filter(s => activeSeasonsIds.has(s.id))
+
+  // Odehrané – max 100 nejnovějších
   const played = allMatches
     .filter(m => m.played && m.home_score != null)
     .sort((a,b) => {
@@ -347,39 +352,26 @@ async function loadTicker(){
     })
     .slice(0, 100)
 
-  // Nadcházející zápasy – 2 nejbližší z každé aktivní sezóny
-  const upcoming = []
+  // Nadcházející – 2 nejbližší z každé aktivní sezóny
+  const upcomingBySeason = {}
   activeSeasons.forEach(season => {
-    const seasonUnplayed = allMatches
+    const unplayed = allMatches
       .filter(m => !m.played && m.season_id === season.id)
       .sort((a,b) => Number(a.round) - Number(b.round))
       .slice(0, 2)
-    seasonUnplayed.forEach(m => upcoming.push({ ...m, _season: season }))
+    if(unplayed.length > 0) upcomingBySeason[season.id] = unplayed
   })
 
-  // Vykresli track
   track.innerHTML = ''
-
-  // Nejdřív nadcházející (vpravo – přidáme je na konec)
-  // Skupinuj upcoming podle sezóny
-  const upcomingBySeason = {}
-  upcoming.forEach(m => {
-    const sid = m.season_id
-    if(!upcomingBySeason[sid]) upcomingBySeason[sid] = []
-    upcomingBySeason[sid].push(m)
-  })
 
   // Odehrané zápasy
   played.forEach(m => {
     const home = teamMap[m.home_team]
     const away = teamMap[m.away_team]
     if(!home || !away) return
-
     const tag = m.result_type === 'SN' ? 'SN' : m.result_type === 'OT' ? 'OT' : ''
-
     const box = document.createElement('div')
     box.className = 't-box t-played'
-    box.title = `${home.name} vs ${away.name}`
     box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
     box.innerHTML = `
       <div class="t-teams">
@@ -401,13 +393,12 @@ async function loadTicker(){
     track.appendChild(box)
   })
 
-  // Nadcházející zápasy (na konci, skupinované se separátorem soutěže)
+  // Nadcházející zápasy se separátorem soutěže
   Object.entries(upcomingBySeason).forEach(([seasonId, matches]) => {
     const season = seasonMap[seasonId]
     const comp = season ? compMap[season.competition_id] : null
     const compName = comp ? comp.name : (season ? season.name : '?')
 
-    // Separátor soutěže
     const sep = document.createElement('div')
     sep.className = 't-separator'
     sep.innerHTML = `
@@ -416,14 +407,11 @@ async function loadTicker(){
     `
     track.appendChild(sep)
 
-    // Zápasy
     matches.forEach(m => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
       if(!home || !away) return
-
       const odds = calculateOdds(home.rating_form || 1000, away.rating_form || 1000)
-
       const box = document.createElement('div')
       box.className = 't-box t-upcoming'
       box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
@@ -437,7 +425,7 @@ async function loadTicker(){
         </div>
         <div class="t-odds">
           <span class="t-odd">${odds.home}</span>
-          <span class="t-odd t-odd-mid">${odds.draw}</span>
+          <span class="t-odd">${odds.draw}</span>
           <span class="t-odd">${odds.away}</span>
         </div>
       `
@@ -445,14 +433,14 @@ async function loadTicker(){
     })
   })
 
-  // Změř skutečnou šířku boxu
+  // Změř šířku boxu a scrolluj na konec
   const firstBox = track.querySelector('.t-box')
-  if(firstBox) boxWidth = firstBox.offsetWidth
-
-  // Scrolluj na konec (nadcházející jsou vpravo)
-  const total = track.children.length
-  const visible = getVisibleCount()
-  scrollTo(Math.max(0, total - visible))
+  if(firstBox){
+    boxWidth = firstBox.offsetWidth
+    const total = track.children.length
+    const visible = getVisibleCount()
+    scrollTo(Math.max(0, total - visible))
+  }
 
   updateButtons()
 }
