@@ -39,24 +39,32 @@ style.textContent = `
   background: #0a2233;
   display: flex;
   align-items: center;
-  height: 90px;
+  height: 100px;
   overflow: hidden;
   user-select: none;
   border-bottom: 3px solid #163a52;
   position: relative;
   z-index: 1000;
+  touch-action: pan-x;
 }
 #ticker-track-wrap {
   flex: 1;
   overflow: hidden;
   height: 100%;
   position: relative;
+  cursor: grab;
+}
+#ticker-track-wrap.dragging {
+  cursor: grabbing;
 }
 #ticker-track {
   display: flex;
   height: 100%;
   transition: transform .25s ease;
   align-items: center;
+}
+#ticker-track.no-transition {
+  transition: none;
 }
 .ticker-btn {
   background: rgba(255,255,255,.06);
@@ -95,15 +103,16 @@ style.textContent = `
   justify-content: center;
   gap: 0;
   padding: 8px 14px;
-  min-width: 180px;
+  min-width: 185px;
 }
 
 .t-divider {
-  width: 1px;
-  height: 56px;
-  background: rgba(255,255,255,.2);
+  width: 2px;
+  height: 64px;
+  background: rgba(255,255,255,.3);
   flex-shrink: 0;
   align-self: center;
+  border-radius: 1px;
 }
 
 .t-logo {
@@ -118,7 +127,7 @@ style.textContent = `
 .t-teams {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
@@ -140,15 +149,15 @@ style.textContent = `
 .t-score-col {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   align-items: center;
   flex-shrink: 0;
 }
 .t-score {
-  font-size: 16px;
-  font-weight: 800;
-  color: white;
-  width: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e0eef8;
+  width: 20px;
   text-align: center;
   line-height: 1;
   font-family: Arial, sans-serif;
@@ -166,9 +175,9 @@ style.textContent = `
 .t-upcoming-teams {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   width: 100%;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 .t-upcoming-team-row {
   display: flex;
@@ -182,7 +191,7 @@ style.textContent = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
+  max-width: 110px;
   font-family: Arial, sans-serif;
 }
 .t-odds-row {
@@ -196,7 +205,7 @@ style.textContent = `
   color: #ffd166;
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 2px 4px;
   border-radius: 4px;
   flex: 1;
   text-align: center;
@@ -212,11 +221,11 @@ style.textContent = `
   padding: 0 14px;
   flex-shrink: 0;
   gap: 6px;
-  min-width: 110px;
+  min-width: 100px;
   cursor: default;
-  background: #0d3347;
-  border-left: 3px solid #2f9ec9;
-  border-right: 3px solid #2f9ec9;
+  background: rgba(47,158,201,.07);
+  border-left: 1px solid rgba(47,158,201,.35);
+  border-right: 1px solid rgba(47,158,201,.35);
 }
 .t-sep-name {
   font-size: 10px;
@@ -229,14 +238,14 @@ style.textContent = `
   font-family: Arial, sans-serif;
 }
 .t-sep-arrow {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background: #2f9ec9;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   color: white;
 }
 `
@@ -295,34 +304,60 @@ async function loadTicker(){
     ])
 
     const track = document.getElementById('ticker-track')
+    const trackWrap = document.getElementById('ticker-track-wrap')
     const btnPrev = document.getElementById('ticker-prev')
     const btnNext = document.getElementById('ticker-next')
 
-    let offset = 0
+    let currentPx = 0
     const SCROLL_STEP = 2
-    let boxWidth = 180
+    let boxWidth = 185
 
-    function getVisibleCount(){
-      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-      return Math.floor(wrapW / boxWidth)
+    function getMaxPx(){
+      return Math.max(0, track.scrollWidth - trackWrap.offsetWidth)
     }
     function updateButtons(){
-      const trackW = track.scrollWidth
-      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-      btnPrev.disabled = offset <= 0
-      btnNext.disabled = (offset * boxWidth) >= (trackW - wrapW)
+      btnPrev.disabled = currentPx <= 0
+      btnNext.disabled = currentPx >= getMaxPx()
     }
-    function scrollTo(newOffset){
-      const trackW = track.scrollWidth
-      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-      const maxPx = Math.max(0, trackW - wrapW)
-      const px = Math.min(newOffset * boxWidth, maxPx)
-      offset = newOffset
-      track.style.transform = `translateX(-${px}px)`
+    function scrollToPx(px, animated){
+      if(!animated) track.classList.add('no-transition')
+      currentPx = Math.max(0, Math.min(px, getMaxPx()))
+      track.style.transform = `translateX(-${currentPx}px)`
+      if(!animated) requestAnimationFrame(() => track.classList.remove('no-transition'))
       updateButtons()
     }
-    btnPrev.onclick = () => scrollTo(Math.max(0, offset - SCROLL_STEP))
-    btnNext.onclick = () => scrollTo(offset + SCROLL_STEP)
+    btnPrev.onclick = () => scrollToPx(currentPx - SCROLL_STEP * boxWidth, true)
+    btnNext.onclick = () => scrollToPx(currentPx + SCROLL_STEP * boxWidth, true)
+
+    // Touch / drag podpora
+    let dragStartX = 0
+    let dragStartPx = 0
+    let isDragging = false
+
+    trackWrap.addEventListener('mousedown', e => {
+      isDragging = true
+      dragStartX = e.clientX
+      dragStartPx = currentPx
+      trackWrap.classList.add('dragging')
+    })
+    window.addEventListener('mousemove', e => {
+      if(!isDragging) return
+      const dx = dragStartX - e.clientX
+      scrollToPx(dragStartPx + dx, false)
+    })
+    window.addEventListener('mouseup', () => {
+      isDragging = false
+      trackWrap.classList.remove('dragging')
+    })
+
+    trackWrap.addEventListener('touchstart', e => {
+      dragStartX = e.touches[0].clientX
+      dragStartPx = currentPx
+    }, { passive: true })
+    trackWrap.addEventListener('touchmove', e => {
+      const dx = dragStartX - e.touches[0].clientX
+      scrollToPx(dragStartPx + dx, false)
+    }, { passive: true })
 
     const teamMap = {}
     ;(teams||[]).forEach(t => teamMap[t.id] = t)
@@ -365,7 +400,6 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    // Odehrané zápasy
     played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
@@ -395,7 +429,6 @@ async function loadTicker(){
       addDivider(track)
     })
 
-    // Nadcházející zápasy
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
@@ -439,13 +472,8 @@ async function loadTicker(){
     })
 
     const firstBox = track.querySelector('.t-box')
-    if(firstBox){
-      boxWidth = firstBox.offsetWidth + 1
-      const trackW = track.scrollWidth
-      const wrapW = document.getElementById('ticker-track-wrap').offsetWidth
-      const maxOffset = Math.floor((trackW - wrapW) / boxWidth)
-      scrollTo(Math.max(0, maxOffset))
-    }
+    if(firstBox) boxWidth = firstBox.offsetWidth + 2
+    scrollToPx(getMaxPx(), true)
     updateButtons()
 
   } catch(err) {
