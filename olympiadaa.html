@@ -67,6 +67,8 @@ body{
 .btn-recalc:hover{background:#d35400;}
 .btn-new-season{background:var(--gold);color:#1a1a00;}
 .btn-new-season:hover{background:#e0a800;}
+.btn-delete-season{background:#c0392b;color:#fff;}
+.btn-delete-season:hover{background:#a93226;}
 
 /* ── WRAPPER ── */
 .wrapper{max-width:1400px;margin:0 auto;padding:28px 20px 60px;}
@@ -372,6 +374,7 @@ body{
   <img class="pageHeader-logo" src="./logos/lokomotiva.png" alt="">
   <div class="pageHeader-title">Olympiáda <span>– Admin</span></div>
   <button class="header-btn btn-recalc" onclick="recalcBtn()">🔄 Přepočítat ratingy</button>
+  <button class="header-btn btn-delete-season" onclick="deleteCurrentSeason()" id="btnDeleteSeason" style="display:none">🗑 Smazat sezónu</button>
   <button class="header-btn btn-new-season" onclick="openNewSeasonModal()">🏅 Nová sezóna olympiády</button>
 </div>
 
@@ -786,6 +789,26 @@ async function recalculateAllRatings(){
   }
 }
 
+async function deleteCurrentSeason(){
+  if(!currentSeasonId){ alert("Žádná sezóna není vybrána."); return }
+  const seasonName=allSeasons.find(s=>s.id===currentSeasonId)?.name||"?"
+  if(!confirm(`⚠️ Opravdu smazat celou sezónu "${seasonName}"?\n\nSmaže se vše: zápasy, stage, sázky, týmy sezóny.\nTato akce je nevratná!`)) return
+  if(!confirm(`Potvrzení: SMAZAT sezónu "${seasonName}"?`)) return
+  try{
+    const {data:seasonMatches}=await db.from("matches").select("id").eq("season_id",currentSeasonId)
+    const matchIds=(seasonMatches||[]).map(m=>m.id)
+    if(matchIds.length>0) await db.from("bets").delete().in("match_id",matchIds)
+    await db.from("matches").delete().eq("season_id",currentSeasonId)
+    await db.from("stages").delete().eq("season_id",currentSeasonId)
+    await db.from("season_teams").delete().eq("season_id",currentSeasonId)
+    await db.from("seasons").delete().eq("id",currentSeasonId)
+    alert("✅ Sezóna smazána.")
+    currentSeasonId=""
+    document.getElementById("btnDeleteSeason").style.display="none"
+    await init()
+  }catch(e){ alert("❌ Chyba při mazání: "+e.message) }
+}
+
 function recalcBtn(){
   const btn=document.querySelector(".btn-recalc")
   btn.textContent="⏳ Přepočítávám..."
@@ -919,6 +942,7 @@ async function init(){
 
 function onSeasonFilterChange(){
   currentSeasonId=document.getElementById("seasonFilter").value
+  document.getElementById("btnDeleteSeason").style.display=currentSeasonId?"inline-flex":"none"
   if(!currentSeasonId) return
   const stageSel=document.getElementById("stageFilter")
   stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
