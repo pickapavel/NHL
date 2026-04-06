@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Správa týmů – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:#1a2a3c;}
+
+.pageHeader{
+  background:linear-gradient(135deg,#071e2b 0%,#0b2a3c 50%,#163a52 100%);
+  padding:0 30px;display:flex;align-items:center;gap:20px;height:72px;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 16px rgba(0,0,0,.35);
+  border-bottom:2px solid rgba(240,192,64,.25);
+}
+.pageHeader-title{
+  font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;
+  color:white;letter-spacing:.3px;flex:1;
+}
+.pageHeader-title span{color:#f0c040;}
+.header-btn{
+  display:inline-flex;align-items:center;gap:7px;border:none;border-radius:9px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  padding:9px 18px;transition:all .15s;
+}
+.btn-add-team{background:#f0c040;color:#1a1a00;}
+.btn-add-team:hover{background:#e0a800;}
+
+.wrapper{max-width:1100px;margin:0 auto;padding:28px 20px 60px;}
+
+.section-title{
+  font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;color:#0b2a3c;
+  margin:0 0 16px;display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#f0c040,transparent);border-radius:2px;}
+
+.teams-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;margin-bottom:32px;
+}
+
+.team-card{
+  background:#fff;border-radius:14px;border:1px solid #dde6ef;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;
+  transition:box-shadow .15s;
+}
+.team-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.team-card-header{
+  background:#0b2a3c;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.team-card-logo{
+  width:36px;height:36px;object-fit:contain;background:white;
+  border-radius:7px;padding:3px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;
+}
+.team-card-logo-ph{
+  width:36px;height:36px;border-radius:7px;background:#1a3a5c;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#7ab0cc;font-weight:700;
+}
+.team-card-name{font-size:14px;font-weight:700;color:white;flex:1;}
+.team-card-body{padding:14px;}
+.team-info-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;}
+.team-info-row:last-child{margin-bottom:0;}
+.team-info-label{color:#6b7a8d;font-weight:600;}
+.team-info-val{font-weight:700;color:#1a2a3c;}
+.comp-badge{
+  display:inline-block;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:700;margin:2px;
+}
+.comp-extraliga{background:#e8f0fa;color:#1a5276;border:1px solid #b8d0e8;}
+.comp-reprezentace{background:#fde8f0;color:#7c1a3a;border:1px solid #f0b8d0;}
+.comp-olympiada{background:#fdf8e8;color:#7a5200;border:1px solid #f0d890;}
+
+.team-card-footer{
+  padding:10px 14px;border-top:1px solid #f0f0f0;
+  display:flex;gap:6px;justify-content:flex-end;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;
+  padding:7px 12px;transition:all .15s;
+}
+.btn-edit{background:#1a5276;color:white;}
+.btn-edit:hover{background:#0b2a3c;}
+.btn-delete{background:#fee2e2;color:#991b1b;}
+.btn-delete:hover{background:#fca5a5;}
+
+.empty-msg{
+  background:white;border-radius:12px;border:1px solid #dde6ef;
+  padding:40px;text-align:center;color:#6b7a8d;font-size:14px;
+  grid-column:1/-1;
+}
+.loading{padding:40px;text-align:center;color:#7ab0cc;font-size:14px;}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;align-items:flex-start;justify-content:center;
+  padding:40px 20px;overflow-y:auto;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:white;border-radius:16px;padding:28px;width:100%;max-width:520px;
+  box-shadow:0 16px 48px rgba(0,0,0,.25);margin-bottom:40px;
+}
+.modal h2{
+  font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;
+  color:#0b2a3c;margin-bottom:4px;
+}
+.modal-sub{color:#6b7a8d;font-size:13px;margin-bottom:22px;}
+
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:700;color:#6b7a8d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block;}
+.form-input{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccd8e4;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:#1a2a3c;
+  transition:border .15s;
+}
+.form-input:focus{outline:none;border-color:#2f9ec9;}
+
+.comp-checkboxes{display:flex;flex-wrap:wrap;gap:8px;}
+.comp-check{
+  display:flex;align-items:center;gap:6px;padding:7px 12px;
+  border-radius:8px;border:2px solid #dde6ef;background:white;
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.comp-check:hover{border-color:#2f9ec9;}
+.comp-check.selected{border-color:#0b2a3c;background:#e8f0f8;}
+.comp-check input{display:none;}
+.comp-check-label{font-size:13px;font-weight:700;color:#1a2a3c;}
+
+.logo-preview-wrap{display:flex;align-items:center;gap:12px;margin-top:8px;}
+.logo-preview{
+  width:52px;height:52px;object-fit:contain;background:#f7f9fb;
+  border-radius:8px;padding:4px;border:1px solid #dde6ef;
+}
+.logo-preview-ph{
+  width:52px;height:52px;border-radius:8px;background:#f0f4f8;
+  border:1px dashed #b8d0e8;display:flex;align-items:center;
+  justify-content:center;font-size:10px;color:#7ab0cc;text-align:center;
+  line-height:1.3;
+}
+.logo-hint{font-size:11px;color:#6b7a8d;line-height:1.5;}
+.logo-hint b{color:#1a2a3c;}
+
+.modal-btns{display:flex;gap:10px;margin-top:22px;}
+.modal-btns button{
+  flex:1;padding:11px;border-radius:9px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;transition:all .15s;
+}
+.btn-confirm{background:#27ae60;color:white;}
+.btn-confirm:hover{background:#219a52;}
+.btn-cancel{background:#e0e0e0;color:#333;}
+.btn-cancel:hover{background:#ccc;}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;background:#1a2a3c;color:white;
+  padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<script src="./menu.js"></script>
+
+<div class="pageHeader">
+  <div class="pageHeader-title">Správa týmů <span>– Admin</span></div>
+  <button class="header-btn btn-add-team" onclick="openModal()">➕ Přidat tým</button>
+</div>
+
+<div class="wrapper">
+  <div class="section-title">Všechny týmy</div>
+  <div class="teams-grid" id="teamsGrid">
+    <div class="loading">Načítám...</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">➕ Přidat tým</h2>
+    <p class="modal-sub" id="modalSub">Vyplň údaje o týmu a ulož do databáze.</p>
+
+    <div class="form-group">
+      <label class="form-label">Název týmu *</label>
+      <input class="form-input" id="f-name" type="text" placeholder="např. HC Sparta Praha (K)">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Zkrácený název</label>
+      <input class="form-input" id="f-short" type="text" placeholder="např. Sparta (K)">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Název souboru loga</label>
+      <input class="form-input" id="f-logo" type="text" placeholder="např. sparta.png" oninput="previewLogo()">
+      <div class="logo-preview-wrap">
+        <div class="logo-preview-ph" id="logoPreviewPh">náhled</div>
+        <img class="logo-preview" id="logoPreview" style="display:none" onerror="logoError()">
+        <div class="logo-hint">
+          Soubor musí být nahraný v <b>/logos/</b> na serveru.<br>
+          Zadej jen název souboru, např. <b>sparta.png</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Soutěže *</label>
+      <div class="comp-checkboxes">
+        <div class="comp-check" id="cc-extraliga" onclick="toggleComp('extraliga')">
+          <input type="checkbox" value="extraliga">
+          <span class="comp-check-label">🏒 Extraliga</span>
+        </div>
+        <div class="comp-check" id="cc-reprezentace" onclick="toggleComp('reprezentace')">
+          <input type="checkbox" value="reprezentace">
+          <span class="comp-check-label">🌍 Reprezentace</span>
+        </div>
+        <div class="comp-check" id="cc-olympiada" onclick="toggleComp('olympiada')">
+          <input type="checkbox" value="olympiada">
+          <span class="comp-check-label">🏅 Olympiáda</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
+      <button class="btn-confirm" id="btnConfirm" onclick="saveTeam()">✅ Uložit tým</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL="https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY="sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const {createClient}=supabase
+const db=createClient(SUPABASE_URL,SUPABASE_KEY)
+
+const LOGOS="./logos/"
+let allTeams=[]
+let editingId=null
+let selectedComps=new Set()
+
+// ── LOAD ──────────────────────────────────────────
+
+async function load(){
+  const {data,error}=await db.from("teams").select("*").order("name")
+  if(error){ showToast("❌ Chyba načítání: "+error.message); return }
+  allTeams=data||[]
+  render()
+}
+
+function render(){
+  const grid=document.getElementById("teamsGrid")
+  grid.innerHTML=""
+  if(!allTeams.length){
+    grid.innerHTML=`<div class="empty-msg">Žádné týmy v databázi.</div>`
+    return
+  }
+
+  // Seskup podle competition
+  const groups={"extraliga":[],"reprezentace":[],"olympiada":[],"ostatní":[]}
+  allTeams.forEach(t=>{
+    const c=(t.competition||"").toLowerCase()
+    if(groups[c]) groups[c].push(t)
+    else groups["ostatní"].push(t)
+  })
+
+  const groupLabels={
+    "extraliga":"🏒 Extraliga",
+    "reprezentace":"🌍 Reprezentace",
+    "olympiada":"🏅 Olympiáda",
+    "ostatní":"📁 Ostatní"
+  }
+
+  Object.entries(groups).forEach(([key,teams])=>{
+    if(!teams.length) return
+    const titleEl=document.createElement("div")
+    titleEl.className="section-title"
+    titleEl.style.gridColumn="1/-1"
+    titleEl.style.marginTop="8px"
+    titleEl.innerHTML=groupLabels[key]
+    grid.appendChild(titleEl)
+
+    teams.forEach(t=>{
+      const card=document.createElement("div")
+      card.className="team-card"
+      const logoHtml=t.logo
+        ?`<img class="team-card-logo" src="${LOGOS}${t.logo}" onerror="this.outerHTML='<div class=team-card-logo-ph>?</div>'">`
+        :`<div class="team-card-logo-ph">?</div>`
+
+      const compBadge=t.competition
+        ?`<span class="comp-badge comp-${t.competition.toLowerCase()}">${t.competition}</span>`
+        :""
+
+      card.innerHTML=`
+        <div class="team-card-header">
+          ${logoHtml}
+          <div class="team-card-name">${t.name}</div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-info-row">
+            <span class="team-info-label">Zkrácený název</span>
+            <span class="team-info-val">${t.short_name||"—"}</span>
+          </div>
+          <div class="team-info-row">
+            <span class="team-info-label">Logo soubor</span>
+            <span class="team-info-val">${t.logo||"—"}</span>
+          </div>
+          <div class="team-info-row">
+            <span class="team-info-label">Soutěž</span>
+            <span class="team-info-val">${compBadge||"—"}</span>
+          </div>
+          <div class="team-info-row">
+            <span class="team-info-label">ELO / Forma</span>
+            <span class="team-info-val">⭐ ${t.rating_overall||1000} / 🔥 ${t.rating_form||1000}</span>
+          </div>
+        </div>
+        <div class="team-card-footer">
+          <button class="btn btn-edit" onclick="openEdit('${t.id}')">✏️ Upravit</button>
+          <button class="btn btn-delete" onclick="deleteTeam('${t.id}','${t.name.replace(/'/g,"\\'")}')">🗑 Smazat</button>
+        </div>`
+      grid.appendChild(card)
+    })
+  })
+}
+
+// ── MODAL ─────────────────────────────────────────
+
+function openModal(){
+  editingId=null
+  selectedComps=new Set()
+  document.getElementById("modalTitle").textContent="➕ Přidat tým"
+  document.getElementById("modalSub").textContent="Vyplň údaje o týmu a ulož do databáze."
+  document.getElementById("btnConfirm").textContent="✅ Uložit tým"
+  document.getElementById("f-name").value=""
+  document.getElementById("f-short").value=""
+  document.getElementById("f-logo").value=""
+  resetLogoPreview()
+  ;["extraliga","reprezentace","olympiada"].forEach(c=>{
+    document.getElementById("cc-"+c).classList.remove("selected")
+  })
+  document.getElementById("modalOverlay").classList.add("open")
+}
+
+function openEdit(teamId){
+  const t=allTeams.find(t=>t.id===teamId); if(!t) return
+  editingId=teamId
+  selectedComps=new Set(t.competition?[t.competition.toLowerCase()]:[])
+  document.getElementById("modalTitle").textContent="✏️ Upravit tým"
+  document.getElementById("modalSub").textContent="Uprav údaje týmu."
+  document.getElementById("btnConfirm").textContent="✅ Uložit změny"
+  document.getElementById("f-name").value=t.name||""
+  document.getElementById("f-short").value=t.short_name||""
+  document.getElementById("f-logo").value=t.logo||""
+  previewLogo()
+  ;["extraliga","reprezentace","olympiada"].forEach(c=>{
+    document.getElementById("cc-"+c).classList.toggle("selected", selectedComps.has(c))
+  })
+  document.getElementById("modalOverlay").classList.add("open")
+}
+
+function closeModal(){
+  document.getElementById("modalOverlay").classList.remove("open")
+  editingId=null
+}
+
+function toggleComp(c){
+  // Jen jedna soutěž najednou (competition je jeden string v DB)
+  if(selectedComps.has(c)){
+    selectedComps.delete(c)
+    document.getElementById("cc-"+c).classList.remove("selected")
+  } else {
+    // Odeber ostatní
+    ;["extraliga","reprezentace","olympiada"].forEach(x=>{
+      selectedComps.delete(x)
+      document.getElementById("cc-"+x).classList.remove("selected")
+    })
+    selectedComps.add(c)
+    document.getElementById("cc-"+c).classList.add("selected")
+  }
+}
+
+function previewLogo(){
+  const val=document.getElementById("f-logo").value.trim()
+  const img=document.getElementById("logoPreview")
+  const ph=document.getElementById("logoPreviewPh")
+  if(!val){ img.style.display="none"; ph.style.display="flex"; return }
+  img.src=LOGOS+val
+  img.style.display="block"
+  ph.style.display="none"
+}
+
+function logoError(){
+  document.getElementById("logoPreview").style.display="none"
+  document.getElementById("logoPreviewPh").style.display="flex"
+  document.getElementById("logoPreviewPh").textContent="soubor nenalezen"
+}
+
+function resetLogoPreview(){
+  document.getElementById("logoPreview").style.display="none"
+  document.getElementById("logoPreviewPh").style.display="flex"
+  document.getElementById("logoPreviewPh").textContent="náhled"
+}
+
+async function saveTeam(){
+  const name=document.getElementById("f-name").value.trim()
+  const short=document.getElementById("f-short").value.trim()
+  const logo=document.getElementById("f-logo").value.trim()
+  const comp=[...selectedComps][0]||""
+
+  if(!name){ alert("Zadej název týmu!"); return }
+  if(!comp){ alert("Vyber alespoň jednu soutěž!"); return }
+
+  const payload={
+    name,
+    short_name: short||null,
+    logo: logo||null,
+    competition: comp,
+    rating_overall: 1000,
+    rating_form: 1000,
+  }
+
+  if(editingId){
+    // Při editaci nereset rating
+    delete payload.rating_overall
+    delete payload.rating_form
+    const {error}=await db.from("teams").update(payload).eq("id",editingId)
+    if(error){ alert("❌ "+error.message); return }
+    showToast("✅ Tým upraven!")
+  } else {
+    const {error}=await db.from("teams").insert(payload)
+    if(error){ alert("❌ "+error.message); return }
+    showToast("✅ Tým přidán!")
+  }
+
+  closeModal()
+  load()
+}
+
+async function deleteTeam(id, name){
+  if(!confirm(`Smazat tým "${name}"?\n\nSmaže se jen záznam týmu, NE jeho zápasy.`)) return
+  const {error}=await db.from("teams").delete().eq("id",id)
+  if(error){ alert("❌ "+error.message); return }
+  showToast("🗑 Tým smazán.")
+  load()
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast")
+  t.textContent=msg
+  t.classList.add("show")
+  setTimeout(()=>t.classList.remove("show"),2500)
+}
+
+load()
+</script>
+</body>
+</html>
