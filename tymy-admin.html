@@ -63,13 +63,14 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 }
 .team-card-name{font-size:14px;font-weight:700;color:white;flex:1;}
 .team-card-body{padding:14px;}
-.team-info-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;}
+.team-info-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:7px;}
 .team-info-row:last-child{margin-bottom:0;}
 .team-info-label{color:#6b7a8d;font-weight:600;}
-.team-info-val{font-weight:700;color:#1a2a3c;}
+.team-info-val{font-weight:700;color:#1a2a3c;text-align:right;}
+.comp-badges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;}
 .comp-badge{
   display:inline-block;padding:2px 8px;border-radius:20px;
-  font-size:11px;font-weight:700;margin:2px;
+  font-size:11px;font-weight:700;
 }
 .comp-extraliga{background:#e8f0fa;color:#1a5276;border:1px solid #b8d0e8;}
 .comp-reprezentace{background:#fde8f0;color:#7c1a3a;border:1px solid #f0b8d0;}
@@ -94,7 +95,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
   padding:40px;text-align:center;color:#6b7a8d;font-size:14px;
   grid-column:1/-1;
 }
-.loading{padding:40px;text-align:center;color:#7ab0cc;font-size:14px;}
+.loading{padding:40px;text-align:center;color:#7ab0cc;font-size:14px;grid-column:1/-1;}
 
 /* MODAL */
 .modal-overlay{
@@ -132,6 +133,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 .comp-check.selected{border-color:#0b2a3c;background:#e8f0f8;}
 .comp-check input{display:none;}
 .comp-check-label{font-size:13px;font-weight:700;color:#1a2a3c;}
+.comp-check.selected .comp-check-label{color:#0b2a3c;}
 
 .logo-preview-wrap{display:flex;align-items:center;gap:12px;margin-top:8px;}
 .logo-preview{
@@ -164,6 +166,13 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
   box-shadow:0 4px 16px rgba(0,0,0,.2);
 }
 .toast.show{opacity:1;}
+
+.section-group-title{
+  grid-column:1/-1;
+  font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:#0b2a3c;
+  margin:12px 0 4px;display:flex;align-items:center;gap:10px;
+}
+.section-group-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#f0c040,transparent);border-radius:2px;}
 </style>
 </head>
 <body>
@@ -212,18 +221,15 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
     </div>
 
     <div class="form-group">
-      <label class="form-label">Soutěže *</label>
+      <label class="form-label">Soutěže * (lze vybrat více)</label>
       <div class="comp-checkboxes">
         <div class="comp-check" id="cc-extraliga" onclick="toggleComp('extraliga')">
-          <input type="checkbox" value="extraliga">
           <span class="comp-check-label">🏒 Extraliga</span>
         </div>
         <div class="comp-check" id="cc-reprezentace" onclick="toggleComp('reprezentace')">
-          <input type="checkbox" value="reprezentace">
           <span class="comp-check-label">🌍 Reprezentace</span>
         </div>
         <div class="comp-check" id="cc-olympiada" onclick="toggleComp('olympiada')">
-          <input type="checkbox" value="olympiada">
           <span class="comp-check-label">🏅 Olympiáda</span>
         </div>
       </div>
@@ -241,69 +247,75 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 <script>
 const SUPABASE_URL="https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY="sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+const LOGOS="./logos/"
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const {createClient}=supabase
 const db=createClient(SUPABASE_URL,SUPABASE_KEY)
 
-const LOGOS="./logos/"
 let allTeams=[]
 let editingId=null
 let selectedComps=new Set()
 
-// ── LOAD ──────────────────────────────────────────
-
 async function load(){
   const {data,error}=await db.from("teams").select("*").order("name")
-  if(error){ showToast("❌ Chyba načítání: "+error.message); return }
+  if(error){ showToast("❌ Chyba: "+error.message); return }
   allTeams=data||[]
   render()
+}
+
+function getTeamComps(t){
+  const comps=[]
+  if(t.in_extraliga)   comps.push("extraliga")
+  if(t.in_reprezentace) comps.push("reprezentace")
+  if(t.in_olympiada)   comps.push("olympiada")
+  return comps
 }
 
 function render(){
   const grid=document.getElementById("teamsGrid")
   grid.innerHTML=""
+
   if(!allTeams.length){
     grid.innerHTML=`<div class="empty-msg">Žádné týmy v databázi.</div>`
     return
   }
 
-  // Seskup podle competition
-  const groups={"extraliga":[],"reprezentace":[],"olympiada":[],"ostatní":[]}
-  allTeams.forEach(t=>{
-    const c=(t.competition||"").toLowerCase()
-    if(groups[c]) groups[c].push(t)
-    else groups["ostatní"].push(t)
-  })
-
-  const groupLabels={
-    "extraliga":"🏒 Extraliga",
-    "reprezentace":"🌍 Reprezentace",
-    "olympiada":"🏅 Olympiáda",
-    "ostatní":"📁 Ostatní"
+  const groups={
+    "extraliga":  {label:"🏒 Extraliga",    teams:[]},
+    "reprezentace":{label:"🌍 Reprezentace", teams:[]},
+    "olympiada":  {label:"🏅 Olympiáda",    teams:[]},
+    "ostatni":    {label:"📁 Ostatní",       teams:[]},
   }
 
-  Object.entries(groups).forEach(([key,teams])=>{
-    if(!teams.length) return
+  allTeams.forEach(t=>{
+    const comps=getTeamComps(t)
+    if(!comps.length){ groups.ostatni.teams.push(t); return }
+    // Tým se zobrazí v každé sekci kde je zapsán
+    comps.forEach(c=>{ if(groups[c]) groups[c].teams.push(t) })
+  })
+
+  Object.entries(groups).forEach(([key,group])=>{
+    if(!group.teams.length) return
+
     const titleEl=document.createElement("div")
-    titleEl.className="section-title"
-    titleEl.style.gridColumn="1/-1"
-    titleEl.style.marginTop="8px"
-    titleEl.innerHTML=groupLabels[key]
+    titleEl.className="section-group-title"
+    titleEl.innerHTML=group.label
     grid.appendChild(titleEl)
 
-    teams.forEach(t=>{
-      const card=document.createElement("div")
-      card.className="team-card"
+    group.teams.forEach(t=>{
+      const comps=getTeamComps(t)
       const logoHtml=t.logo
         ?`<img class="team-card-logo" src="${LOGOS}${t.logo}" onerror="this.outerHTML='<div class=team-card-logo-ph>?</div>'">`
         :`<div class="team-card-logo-ph">?</div>`
 
-      const compBadge=t.competition
-        ?`<span class="comp-badge comp-${t.competition.toLowerCase()}">${t.competition}</span>`
-        :""
+      const badgesHtml=comps.map(c=>
+        `<span class="comp-badge comp-${c}">${c}</span>`
+      ).join("")||"—"
 
+      const card=document.createElement("div")
+      card.className="team-card"
       card.innerHTML=`
         <div class="team-card-header">
           ${logoHtml}
@@ -315,12 +327,12 @@ function render(){
             <span class="team-info-val">${t.short_name||"—"}</span>
           </div>
           <div class="team-info-row">
-            <span class="team-info-label">Logo soubor</span>
+            <span class="team-info-label">Logo</span>
             <span class="team-info-val">${t.logo||"—"}</span>
           </div>
           <div class="team-info-row">
-            <span class="team-info-label">Soutěž</span>
-            <span class="team-info-val">${compBadge||"—"}</span>
+            <span class="team-info-label">Soutěže</span>
+            <div class="comp-badges">${badgesHtml}</div>
           </div>
           <div class="team-info-row">
             <span class="team-info-label">ELO / Forma</span>
@@ -336,8 +348,6 @@ function render(){
   })
 }
 
-// ── MODAL ─────────────────────────────────────────
-
 function openModal(){
   editingId=null
   selectedComps=new Set()
@@ -348,16 +358,16 @@ function openModal(){
   document.getElementById("f-short").value=""
   document.getElementById("f-logo").value=""
   resetLogoPreview()
-  ;["extraliga","reprezentace","olympiada"].forEach(c=>{
+  ;["extraliga","reprezentace","olympiada"].forEach(c=>
     document.getElementById("cc-"+c).classList.remove("selected")
-  })
+  )
   document.getElementById("modalOverlay").classList.add("open")
 }
 
 function openEdit(teamId){
   const t=allTeams.find(t=>t.id===teamId); if(!t) return
   editingId=teamId
-  selectedComps=new Set(t.competition?[t.competition.toLowerCase()]:[])
+  selectedComps=new Set(getTeamComps(t))
   document.getElementById("modalTitle").textContent="✏️ Upravit tým"
   document.getElementById("modalSub").textContent="Uprav údaje týmu."
   document.getElementById("btnConfirm").textContent="✅ Uložit změny"
@@ -365,6 +375,10 @@ function openEdit(teamId){
   document.getElementById("f-short").value=t.short_name||""
   document.getElementById("f-logo").value=t.logo||""
   previewLogo()
+  ;["extraliga","reprezent ace","olympiada"].forEach(c=>{
+    document.getElementById("cc-"+c)?.classList.toggle("selected", selectedComps.has(c))
+  })
+  // oprava překlep výše
   ;["extraliga","reprezentace","olympiada"].forEach(c=>{
     document.getElementById("cc-"+c).classList.toggle("selected", selectedComps.has(c))
   })
@@ -377,16 +391,10 @@ function closeModal(){
 }
 
 function toggleComp(c){
-  // Jen jedna soutěž najednou (competition je jeden string v DB)
   if(selectedComps.has(c)){
     selectedComps.delete(c)
     document.getElementById("cc-"+c).classList.remove("selected")
   } else {
-    // Odeber ostatní
-    ;["extraliga","reprezentace","olympiada"].forEach(x=>{
-      selectedComps.delete(x)
-      document.getElementById("cc-"+x).classList.remove("selected")
-    })
     selectedComps.add(c)
     document.getElementById("cc-"+c).classList.add("selected")
   }
@@ -404,42 +412,44 @@ function previewLogo(){
 
 function logoError(){
   document.getElementById("logoPreview").style.display="none"
-  document.getElementById("logoPreviewPh").style.display="flex"
-  document.getElementById("logoPreviewPh").textContent="soubor nenalezen"
+  const ph=document.getElementById("logoPreviewPh")
+  ph.style.display="flex"
+  ph.textContent="soubor nenalezen"
 }
 
 function resetLogoPreview(){
   document.getElementById("logoPreview").style.display="none"
-  document.getElementById("logoPreviewPh").style.display="flex"
-  document.getElementById("logoPreviewPh").textContent="náhled"
+  const ph=document.getElementById("logoPreviewPh")
+  ph.style.display="flex"
+  ph.textContent="náhled"
 }
 
 async function saveTeam(){
   const name=document.getElementById("f-name").value.trim()
   const short=document.getElementById("f-short").value.trim()
   const logo=document.getElementById("f-logo").value.trim()
-  const comp=[...selectedComps][0]||""
 
   if(!name){ alert("Zadej název týmu!"); return }
-  if(!comp){ alert("Vyber alespoň jednu soutěž!"); return }
+  if(!selectedComps.size){ alert("Vyber alespoň jednu soutěž!"); return }
 
   const payload={
     name,
     short_name: short||null,
     logo: logo||null,
-    competition: comp,
-    rating_overall: 1000,
-    rating_form: 1000,
+    in_extraliga:    selectedComps.has("extraliga"),
+    in_reprezentace: selectedComps.has("reprezentace"),
+    in_olympiada:    selectedComps.has("olympiada"),
+    // zachovej competition pro zpětnou kompatibilitu (první vybraná)
+    competition: [...selectedComps][0]||null,
   }
 
   if(editingId){
-    // Při editaci nereset rating
-    delete payload.rating_overall
-    delete payload.rating_form
     const {error}=await db.from("teams").update(payload).eq("id",editingId)
     if(error){ alert("❌ "+error.message); return }
     showToast("✅ Tým upraven!")
   } else {
+    payload.rating_overall=1000
+    payload.rating_form=1000
     const {error}=await db.from("teams").insert(payload)
     if(error){ alert("❌ "+error.message); return }
     showToast("✅ Tým přidán!")
