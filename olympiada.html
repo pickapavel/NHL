@@ -3,365 +3,847 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Olympiáda – Pavouk</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Olympiáda</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#0d1b2a;color:#e0eaf4;min-height:100vh;padding:30px 20px 60px;}
-
-h1{
-  font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;
-  color:#f0c040;text-align:center;margin-bottom:6px;letter-spacing:.5px;
+:root{
+  --gold:#f0c040;
+  --navy:#0b2a3c;
+  --navy2:#1a5276;
+  --bg:#eef2f7;
+  --white:#fff;
+  --green:#27ae60;
+  --red:#e74c3c;
+  --muted:#6b7a8d;
+  --text:#1a2a3c;
+  --kv-nas:#2a6496;
+  --skupina:#0b2a3c;
+  --kval:#7d3c98;
+  --osm:#ca6f1e;
+  --ctv:#1e8449;
+  --sf:#1a5276;
+  --finale-col:#7a5200;
 }
-.subtitle{text-align:center;font-size:12px;color:#7ab0cc;margin-bottom:32px;text-transform:uppercase;letter-spacing:.1em;}
 
-/* PHASE BLOCK */
-.phase{margin-bottom:28px;}
-.phase-title{
-  font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;
-  color:#7ab0cc;text-transform:uppercase;letter-spacing:.12em;
-  margin-bottom:10px;padding-left:4px;
-  display:flex;align-items:center;gap:8px;
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);}
+
+/* ── OLYMPIC HEADER ── */
+.olympic-header{
+  background:linear-gradient(160deg,#071e2b 0%,#0b2a3c 60%,#122d42 100%);
+  padding:28px 30px 22px;position:relative;overflow:hidden;
+  border-bottom:3px solid rgba(240,192,64,.3);
 }
-.phase-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
-
-.phase-grid{display:flex;gap:8px;flex-wrap:wrap;}
-
-/* SERIES CARD */
-.scard{
-  background:#13253a;border:1px solid #1e3a55;border-radius:10px;
-  overflow:hidden;min-width:160px;flex:1;max-width:220px;
-  position:relative;
+.olympic-header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 50%,rgba(240,192,64,.07) 0%,transparent 70%);
+  pointer-events:none;
 }
-.scard-label{
-  padding:5px 10px;font-size:10px;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;
+.olympic-header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:20px;position:relative;z-index:1;}
+.olympic-rings{display:flex;gap:4px;align-items:center;flex-shrink:0;}
+.ring{width:28px;height:28px;border-radius:50%;border:4px solid transparent;flex-shrink:0;}
+.ring-b{border-color:#0085C7;}
+.ring-k{border-color:#F4C300;margin-left:-10px;}
+.ring-c{border-color:#009F6B;margin-left:-10px;}
+.ring-r{border-color:#DF0024;margin-left:-10px;}
+.ring-y{border-color:#F4C300;margin-left:-10px;}
+.olympic-title-wrap{flex:1;}
+.olympic-title{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1.1;}
+.olympic-title span{color:var(--gold);}
+.olympic-sub{font-size:13px;color:#7ab0cc;margin-top:4px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;}
+.season-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.season-tab{
+  padding:7px 16px;border-radius:20px;
+  border:2px solid rgba(200,216,232,.35);background:rgba(255,255,255,.06);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;color:#7ab0cc;transition:all .15s;
+}
+.season-tab:hover{background:rgba(255,255,255,.12);color:#fff;}
+.season-tab.active{background:var(--gold);color:#1a1a00;border-color:var(--gold);}
+
+/* ── WRAPPER ── */
+.wrapper{max-width:1300px;margin:0 auto;padding:28px 20px 60px;}
+
+/* ── SECTION TITLE ── */
+.section-title{
+  font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;color:var(--navy);
+  margin:0 0 16px;display:flex;align-items:center;gap:12px;letter-spacing:.3px;
+}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;}
+.section-title .stl-icon{font-size:18px;}
+
+/* ── PHASE NAVIGATION ── */
+.phase-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px;}
+.phase-btn{
+  padding:7px 14px;border-radius:8px;border:2px solid #dde6ef;background:#fff;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap;
+}
+.phase-btn:hover{border-color:#2f9ec9;color:var(--navy);}
+.phase-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.phase-btn.pb-kv-nas.active{background:var(--kv-nas);border-color:var(--kv-nas);}
+.phase-btn.pb-skupina.active{background:var(--skupina);border-color:var(--skupina);}
+.phase-btn.pb-kval.active{background:var(--kval);border-color:var(--kval);}
+.phase-btn.pb-osm.active{background:var(--osm);border-color:var(--osm);}
+.phase-btn.pb-ctv.active{background:var(--ctv);border-color:var(--ctv);}
+.phase-btn.pb-finale{border-color:var(--gold);color:var(--finale-col);}
+.phase-btn.pb-finale.active{background:var(--gold);color:#1a1a00;border-color:var(--gold);}
+
+/* ── PHASE CONTENT ── */
+.phase-content{display:none;}
+.phase-content.active{display:block;}
+
+/* ── INFO BOX ── */
+.info-box-phase{border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;}
+.ib-kv-nas{background:#e8f0fa;border:1px solid #b8d0e8;color:#2a6496;}
+.ib-skupina{background:#e8f4fd;border:1px solid #b8d8f0;color:#1a5276;}
+.ib-kval{background:#f3e8fd;border:1px solid #d8b8f0;color:#6c3483;}
+.ib-osm{background:#fdeee8;border:1px solid #f0c8b8;color:#a04000;}
+.ib-ctv{background:#e8fde8;border:1px solid #b8e8b8;color:#1e8449;}
+.ib-sf{background:#e8f4fd;border:1px solid #b8d8f0;color:#1a5276;}
+
+/* ── FLOW ROW (legenda postupu) ── */
+.flow-row{
+  display:flex;flex-wrap:wrap;gap:12px;
+  margin:10px 0 20px;padding:10px 14px;
+  background:#fff;border-radius:8px;
+  border:1px solid #dde6ef;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.flow-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);}
+.dot-green{width:9px;height:9px;border-radius:50%;background:#22c55e;flex-shrink:0;}
+.dot-red{width:9px;height:9px;border-radius:50%;background:#f87171;flex-shrink:0;}
+.dot-orange{width:9px;height:9px;border-radius:50%;background:#fb923c;flex-shrink:0;}
+
+/* ── SERIES GRID ── */
+.series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:14px;}
+
+.series-card{background:#fff;border-radius:14px;border:1px solid #dde6ef;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;}
+.series-card-header{
+  padding:10px 14px;font-size:11px;font-weight:700;
+  color:#fff;letter-spacing:.08em;text-transform:uppercase;
   display:flex;justify-content:space-between;align-items:center;
 }
-.scard-format{font-size:9px;opacity:.7;font-weight:600;}
+.sch-kv-nas{background:linear-gradient(90deg,#1a4a72,#2a6496);}
+.sch-kval{background:linear-gradient(90deg,#5b2c8a,#7d3c98);}
+.sch-osm{background:linear-gradient(90deg,#a04000,#ca6f1e);}
+.sch-ctv{background:linear-gradient(90deg,#145a32,#1e8449);}
+.sch-sf{background:linear-gradient(90deg,#0b2a3c,#1a5276);}
+.sch-f3{background:linear-gradient(90deg,#5a3a00,#9a6a00);}
+.sch-finale{background:linear-gradient(135deg,#5a3a00,#f0c040,#5a3a00);}
+.sch-skupina{background:linear-gradient(90deg,#0b2a3c,#1a5276);}
 
-.scard.kv-nas .scard-label{background:#1a3a5c;color:#7ab0cc;}
-.scard.skupina .scard-label{background:#1a3a4a;color:#7ab0cc;}
-.scard.kval .scard-label{background:#2d1a4a;color:#c4a0f0;}
-.scard.osm .scard-label{background:#3a1f0a;color:#f0a060;}
-.scard.ctv .scard-label{background:#0a2e1a;color:#60d090;}
-.scard.sf .scard-label{background:#1a2a4a;color:#7ab0cc;}
-.scard.f3 .scard-label{background:#2a1f0a;color:#c8a060;}
-.scard.finale .scard-label{background:linear-gradient(90deg,#3a2800,#5a3c00);color:#f0c040;}
+.series-state{font-size:11px;font-weight:800;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:20px;letter-spacing:.04em;white-space:nowrap;}
 
-.scard-team{
-  display:flex;align-items:center;gap:6px;
-  padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);
-  font-size:12px;font-weight:600;color:#c8daea;
+.series-team{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #f0f0f0;}
+.series-team:last-of-type{border-bottom:none;}
+.series-team.winner{background:#f0fdf4;}
+.series-team.loser{opacity:.45;}
+.st-logo{width:26px;height:26px;object-fit:contain;background:#fff;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.st-logo-ph{width:26px;height:26px;border-radius:5px;background:#dce8f5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#7ab0cc;font-weight:700;border:1px solid #c8d8e8;}
+.st-name{flex:1;font-size:13px;font-weight:700;color:var(--text);}
+.st-name.tbd{color:#b0c8d8;font-style:italic;font-weight:400;}
+.series-team.winner .st-name{color:#166534;}
+.st-wins{font-size:15px;font-weight:800;color:var(--text);}
+.st-wins.w{color:#16a34a;}
+.st-wins.l{color:#ddd;}
+
+/* game dots */
+.game-dots{display:flex;gap:3px;align-items:center;margin-right:6px;}
+.gdot{width:10px;height:10px;border-radius:50%;}
+.gdot-w{background:#22c55e;}
+.gdot-l{background:#f87171;}
+.gdot-e{background:#e2eaf0;}
+
+/* ── SKUPINA TABULKA ── */
+.standings-table{width:100%;border-collapse:collapse;font-size:13px;}
+.standings-table thead tr{background:var(--navy);}
+.standings-table thead th{padding:10px 8px;text-align:center;color:#fff;font-size:11px;font-weight:700;letter-spacing:.05em;white-space:nowrap;}
+.standings-table thead th.th-l{text-align:left;padding-left:10px;}
+.standings-table tbody tr{border-bottom:1px solid #eef0f3;transition:background .15s;}
+.standings-table tbody tr:hover{background:#f0f6fc;}
+.standings-table tbody tr:nth-child(odd){background:#f8f9fb;}
+.standings-table tbody tr:nth-child(odd):hover{background:#edf4fb;}
+.standings-table tbody td{padding:8px 8px;text-align:center;color:var(--text);vertical-align:middle;}
+.standings-table tbody td.td-l{text-align:left;padding-left:10px;}
+.team-cell-s{display:flex;align-items:center;gap:8px;}
+.tc-logo{width:24px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.tc-name{font-weight:700;font-size:13px;}
+.pts-pill{background:var(--navy);border-radius:6px;padding:3px 9px;display:inline-block;min-width:30px;text-align:center;color:#fff;font-weight:800;font-size:13px;}
+.td-w{color:#22a05a;font-weight:700;}
+.td-l2{color:var(--red);font-weight:700;}
+.td-pm{font-weight:700;}
+.td-pm.pos{color:#22a05a;}
+.td-pm.neg{color:var(--red);}
+.td-pm.neu{color:#aaa;}
+.postup-badge{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+.pb-direct{background:#22c55e;}
+.pb-osm-badge{background:#fb923c;}
+
+/* ── MATCH LIST ── */
+.match-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+.match-row{
+  background:#fff;border-radius:10px;border:1px solid #dde6ef;
+  padding:10px 14px;display:grid;
+  grid-template-columns:50px 1fr auto 1fr 160px;
+  gap:10px;align-items:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);transition:background .15s;
 }
-.scard-team:last-of-type{border-bottom:none;}
-.scard-team.tbd{color:#3a5a7a;font-style:italic;font-weight:400;}
-.scard-team.winner{color:#4ade80;background:rgba(74,222,128,.06);}
-.scard-team.loser{color:#3a5a7a;}
-.team-dot{width:6px;height:6px;border-radius:50%;background:#3a5a7a;flex-shrink:0;}
-.team-dot.green{background:#4ade80;}
-.team-dot.red{background:#f87171;}
+.match-row:hover{background:#f5faff;}
+.match-row.played{background:#f0fdf4 !important;border-color:#bbf7d0;}
+.match-row.played:hover{background:#e0f9ec !important;}
+.mr-round{text-align:center;font-size:11px;font-weight:800;color:#fff;background:var(--navy);border-radius:20px;padding:3px 0;}
+.mr-team{display:flex;align-items:center;gap:8px;}
+.mr-team.away{flex-direction:row-reverse;text-align:right;}
+.mr-logo{width:26px;height:26px;object-fit:contain;background:#fff;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
+.mr-name{font-weight:700;font-size:13px;color:var(--text);}
+.mr-name.winner{color:#16a34a;}
+.mr-name.loser{color:#aaa;}
+.mr-score{text-align:center;}
+.score-badge{display:inline-block;background:var(--navy);color:#fff;font-weight:800;font-size:15px;padding:5px 14px;border-radius:7px;min-width:68px;text-align:center;}
+.score-badge.empty{background:#e9ecef;color:#aaa;font-weight:400;font-size:13px;}
+.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:#fff;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;}
+.mr-btns{display:flex;gap:6px;justify-content:flex-end;}
+.mr-btn{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;padding:6px 10px;transition:all .15s;white-space:nowrap;text-decoration:none;}
+.btn-stats{background:#1a5276;color:#fff;}
+.btn-stats:hover{background:var(--navy);}
+.btn-bet{background:var(--green);color:#fff;}
+.btn-bet:hover{background:#219a52;}
 
-/* SKUPINA TABULKA */
-.skupina-table{width:100%;border-collapse:collapse;font-size:11px;}
-.skupina-table th{
-  padding:5px 8px;background:#0d1e30;color:#7ab0cc;
-  font-weight:700;text-align:center;border-bottom:1px solid #1e3a55;
+/* ── PAVOUK SEKCE ── */
+.bracket-phase-label{
+  font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;margin-top:20px;
 }
-.skupina-table th:first-child{text-align:left;}
-.skupina-table td{
-  padding:5px 8px;text-align:center;color:#c8daea;
-  border-bottom:1px solid rgba(255,255,255,.04);
-}
-.skupina-table td:first-child{text-align:left;font-weight:600;}
-.skupina-table tr:last-child td{border-bottom:none;}
+.bracket-phase-label:first-child{margin-top:0;}
+.bracket-row{display:grid;gap:10px;margin-bottom:6px;}
+.br-4{grid-template-columns:repeat(4,1fr);}
+.br-2{grid-template-columns:1fr 1fr;}
+.br-2f{grid-template-columns:1fr 1fr;}
+.br-6{grid-template-columns:repeat(6,1fr);}
+.br-skupina{grid-template-columns:1fr;}
 
-/* ARROWS / LEGEND */
-.flow-row{
+.trophy-wrap{background:#fff;border-radius:14px;border:2px solid var(--gold);padding:20px;text-align:center;max-width:300px;margin:24px auto 0;box-shadow:0 4px 16px rgba(240,192,64,.15);}
+.trophy-icon{font-size:42px;margin-bottom:6px;}
+.trophy-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.trophy-name{font-size:16px;font-weight:800;color:var(--navy);margin-top:4px;}
+
+.no-data{background:#fff;border-radius:12px;border:1px solid #dde6ef;padding:40px;text-align:center;color:var(--muted);font-size:14px;}
+.loading{padding:40px;text-align:center;color:#7ab0cc;font-size:14px;}
+
+/* ── BRACKET FLOW NOTE ── */
+.bracket-flow{
+  font-size:11px;color:var(--muted);
+  padding:6px 10px;background:#f7f9fb;
+  border-radius:6px;margin-bottom:16px;
+  border-left:3px solid #dde6ef;
   display:flex;flex-wrap:wrap;gap:10px;
-  margin:8px 0 16px;padding:8px 12px;
-  background:rgba(255,255,255,.03);border-radius:8px;
-  border-left:3px solid rgba(255,255,255,.08);
 }
-.flow-item{
-  display:flex;align-items:center;gap:6px;
-  font-size:11px;font-weight:600;
+.bracket-flow .fi{display:flex;align-items:center;gap:5px;font-weight:600;}
+
+/* ── SKUPINA SPECIAL CARD ── */
+.skupina-card{background:#fff;border-radius:14px;border:1px solid #dde6ef;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;max-width:600px;}
+.skupina-card-header{padding:10px 14px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+
+@media(max-width:900px){
+  .br-4{grid-template-columns:repeat(2,1fr);}
+  .br-6{grid-template-columns:repeat(3,1fr);}
+  .match-row{grid-template-columns:40px 1fr auto 1fr;}.mr-btns{display:none;}
 }
-.dot-green{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;}
-.dot-red{width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;}
-.dot-orange{width:8px;height:8px;border-radius:50%;background:#fb923c;flex-shrink:0;}
-
-/* FINALE SPECIAL */
-.finale-wrap{display:flex;gap:16px;flex-wrap:wrap;max-width:500px;}
-.scard.finale{border-color:#5a3c00;max-width:240px;}
-.scard.finale .scard-team{color:#f0c040;}
-
-/* TROPHY */
-.trophy{
-  text-align:center;margin-top:32px;
-  background:#13253a;border:1px solid #5a3c00;border-radius:14px;
-  padding:24px;max-width:280px;margin-left:auto;margin-right:auto;
-}
-.trophy-icon{font-size:48px;margin-bottom:8px;}
-.trophy-label{font-size:11px;color:#7ab0cc;text-transform:uppercase;letter-spacing:.1em;}
-.trophy-name{font-size:18px;font-weight:800;color:#f0c040;margin-top:4px;font-family:'Oswald',sans-serif;}
-
-/* SEPARATOR ARROW */
-.phase-arrow{
-  text-align:center;font-size:18px;color:#2a4a6a;
-  margin:4px 0;letter-spacing:4px;
+@media(max-width:600px){
+  .olympic-title{font-size:22px;}
+  .match-row{grid-template-columns:36px 1fr auto;}.mr-team.away,.mr-btns{display:none;}
+  .br-4,.br-2,.br-2f,.br-6{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 <body>
 
-<h1>🏅 Olympijský turnaj – Pavouk</h1>
-<div class="subtitle">Kompletní struktura turnaje</div>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
 
-<!-- ══ 1. KVALIFIKACE NASAZENÝCH ══ -->
-<div class="phase">
-  <div class="phase-title">1. Kvalifikace nasazených — série na 2 vítězné</div>
-  <div class="phase-grid">
-
-    <div class="scard kv-nas">
-      <div class="scard-label">Kval. nas. č. 1 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team"><div class="team-dot"></div>Tým A</div>
-      <div class="scard-team"><div class="team-dot"></div>Tým B</div>
+<!-- OLYMPIC HEADER -->
+<div class="olympic-header">
+  <div class="olympic-header-inner">
+    <div class="olympic-rings">
+      <div class="ring ring-b"></div>
+      <div class="ring ring-k"></div>
+      <div class="ring ring-c"></div>
+      <div class="ring ring-r"></div>
+      <div class="ring ring-y"></div>
     </div>
-
-    <div class="scard kv-nas">
-      <div class="scard-label">Kval. nas. č. 2 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team"><div class="team-dot"></div>Tým C</div>
-      <div class="scard-team"><div class="team-dot"></div>Tým D</div>
+    <div class="olympic-title-wrap">
+      <div class="olympic-title">Olympijský <span>turnaj</span></div>
+      <div class="olympic-sub" id="headerSub">Načítám...</div>
+      <div class="season-tabs" id="seasonTabs"></div>
     </div>
-
-    <div class="scard kv-nas">
-      <div class="scard-label">Kval. nas. č. 3 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team"><div class="team-dot"></div>Tým E</div>
-      <div class="scard-team"><div class="team-dot"></div>Tým F</div>
-    </div>
-
-    <div class="scard kv-nas">
-      <div class="scard-label">Kval. nas. č. 4 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team"><div class="team-dot"></div>Tým G</div>
-      <div class="scard-team"><div class="team-dot"></div>Tým H</div>
-    </div>
-
-  </div>
-  <div class="flow-row">
-    <div class="flow-item"><div class="dot-green"></div>Vítěz každé série → Skupina o čtvrtfinále</div>
-    <div class="flow-item"><div class="dot-red"></div>Poražený každé série → Osmifinále</div>
   </div>
 </div>
 
-<div class="phase-arrow">▼ ▼ ▼ ▼</div>
+<div class="wrapper">
 
-<!-- ══ 2. SKUPINA O ČTVRTFINÁLE ══ -->
-<div class="phase">
-  <div class="phase-title">2. Skupina o čtvrtfinále — každý s každým (V=3B, VOT/SN=2B, POT/SN=1B)</div>
+  <!-- PHASE NAV -->
+  <div class="phase-nav" id="phaseNav"></div>
 
-  <div style="max-width:420px;">
-    <div class="scard skupina" style="max-width:100%;">
-      <div class="scard-label">Skupina <span class="scard-format">4 týmy · Round Robin</span></div>
-      <table class="skupina-table">
+  <!-- ══ PAVOUK ══ -->
+  <div class="phase-content" id="phase-bracket">
+    <div class="section-title"><span class="stl-icon">🕸</span> Pavouk turnaje</div>
+
+    <!-- 1. KVAL NAS -->
+    <div class="bracket-phase-label">1. Kvalifikace nasazených — série na 2 vítězné</div>
+    <div class="bracket-row br-4" id="bk-kv-nas"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>Vítěz → Skupina o čtvrtfinále</div>
+      <div class="fi"><div class="dot-red"></div>Poražený → Osmifinále</div>
+    </div>
+
+    <!-- 2. SKUPINA -->
+    <div class="bracket-phase-label">2. Skupina o čtvrtfinále — každý s každým (V=3B, VOT/SN=2B, POT/SN=1B)</div>
+    <div class="bracket-row br-skupina" id="bk-skupina" style="max-width:560px;"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>1. a 2. místo → přímo do Čtvrtfinále</div>
+      <div class="fi"><div class="dot-orange"></div>3. a 4. místo → Osmifinále</div>
+    </div>
+
+    <!-- 3. KVAL -->
+    <div class="bracket-phase-label">3. Kvalifikace č. 1–6 — série na 2 vítězné</div>
+    <div class="bracket-row br-6" id="bk-kval"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>Vítěz (6 týmů) → Osmifinále</div>
+      <div class="fi"><div class="dot-red"></div>Poražený → vyřazen</div>
+    </div>
+
+    <!-- 4. OSM -->
+    <div class="bracket-phase-label">4. Osmifinále č. 1–6 — jeden zápas (4× poražený Kval.nas. + 3.&4. ze skupiny + 6× vítěz Kval.)</div>
+    <div class="bracket-row br-6" id="bk-osm"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>Vítěz (6 týmů) → Čtvrtfinále</div>
+      <div class="fi"><div class="dot-red"></div>Poražený → vyřazen</div>
+    </div>
+
+    <!-- 5. ČF -->
+    <div class="bracket-phase-label">5. Čtvrtfinále č. 1–4 — jeden zápas (2× přímý postup ze skupiny + 6× vítěz OF)</div>
+    <div class="bracket-row br-4" id="bk-ctv"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>Vítěz (4 týmy) → Semifinále</div>
+      <div class="fi"><div class="dot-red"></div>Poražený → vyřazen</div>
+      <span style="color:#aaa;font-size:10px;">⭐ = přímý postup ze skupiny</span>
+    </div>
+
+    <!-- 6. SF -->
+    <div class="bracket-phase-label">6. Semifinále — jeden zápas</div>
+    <div class="bracket-row br-2" id="bk-sf" style="max-width:500px;"></div>
+    <div class="bracket-flow">
+      <div class="fi"><div class="dot-green"></div>Vítěz → Finále</div>
+      <div class="fi"><div class="dot-red"></div>Poražený → O 3. místo</div>
+    </div>
+
+    <!-- 7. FINALE -->
+    <div class="bracket-phase-label">7. Finálová fáze</div>
+    <div class="bracket-row br-2f" id="bk-finale" style="max-width:500px;"></div>
+
+    <div class="trophy-wrap">
+      <div class="trophy-icon">🏆</div>
+      <div class="trophy-label">Olympijský vítěz</div>
+      <div class="trophy-name" id="champion">—</div>
+    </div>
+  </div>
+
+  <!-- ══ KVALIFIKACE NASAZENÝCH ══ -->
+  <div class="phase-content" id="phase-kv-nas">
+    <div class="section-title"><span class="stl-icon">🔵</span> Kvalifikace nasazených</div>
+    <div class="info-box-phase ib-kv-nas">Formát: <b>na 2 vítězné zápasy</b> · 4 dvojice · Vítěz → Skupina o ČF · Poražený → Osmifinále</div>
+    <div class="series-grid" id="sg-kv-nas"></div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>Vítěz každé série → Skupina o čtvrtfinále</div>
+      <div class="flow-item"><div class="dot-red"></div>Poražený každé série → Osmifinále</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy</div>
+    <div class="match-list" id="ml-kv-nas"></div>
+  </div>
+
+  <!-- ══ SKUPINA ══ -->
+  <div class="phase-content" id="phase-skupina">
+    <div class="section-title"><span class="stl-icon">📊</span> Skupina o čtvrtfinále</div>
+    <div class="info-box-phase ib-skupina">Formát: <b>každý s každým</b> · V=3B, výhra OT/SN=2B, prohra OT/SN=1B, prohra=0B · 1. a 2. místo → ČF přímo · 3. a 4. místo → Osmifinále</div>
+    <div style="overflow-x:auto;margin-bottom:14px;">
+      <table class="standings-table" style="max-width:600px;">
         <thead>
-          <tr><th>Tým</th><th>Z</th><th>V</th><th>P</th><th>B</th></tr>
+          <tr>
+            <th style="width:32px">#</th>
+            <th class="th-l">Tým</th>
+            <th>Body</th><th>Skóre</th><th>+/-</th>
+            <th>Z</th><th>V</th><th>P</th><th>VOT</th><th>POT</th>
+          </tr>
         </thead>
-        <tbody>
-          <tr><td>Vítěz Kval.nas. č. 1</td><td>3</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Vítěz Kval.nas. č. 2</td><td>3</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Vítěz Kval.nas. č. 3</td><td>3</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Vítěz Kval.nas. č. 4</td><td>3</td><td>—</td><td>—</td><td>—</td></tr>
-        </tbody>
+        <tbody id="skupinaBody"><tr><td colspan="10" class="loading">Načítám...</td></tr></tbody>
       </table>
     </div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>1. a 2. místo → přímo do Čtvrtfinále</div>
+      <div class="flow-item"><div class="dot-orange"></div>3. a 4. místo → Osmifinále</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy skupiny</div>
+    <div class="match-list" id="ml-skupina"></div>
   </div>
 
-  <div class="flow-row" style="margin-top:10px;">
-    <div class="flow-item"><div class="dot-green"></div>1. a 2. místo → přímo do Čtvrtfinále</div>
-    <div class="flow-item"><div class="dot-orange"></div>3. a 4. místo → Osmifinále</div>
+  <!-- ══ KVALIFIKACE ══ -->
+  <div class="phase-content" id="phase-kval">
+    <div class="section-title"><span class="stl-icon">🟣</span> Kvalifikace</div>
+    <div class="info-box-phase ib-kval">Formát: <b>na 2 vítězné zápasy</b> · 6 dvojic · Vítěz → Osmifinále · Poražený → vyřazen</div>
+    <div class="series-grid" id="sg-kval"></div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>Vítěz každé série (6 týmů) → Osmifinále</div>
+      <div class="flow-item"><div class="dot-red"></div>Poražený každé série → vyřazen</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy</div>
+    <div class="match-list" id="ml-kval"></div>
   </div>
+
+  <!-- ══ OSMIFINÁLE ══ -->
+  <div class="phase-content" id="phase-osm">
+    <div class="section-title"><span class="stl-icon">🟠</span> Osmifinále</div>
+    <div class="info-box-phase ib-osm">Formát: <b>jeden vítězný zápas</b> · 6 duelů · 4× poražený z Kval.nas. + 3.&4. místo ze skupiny + 6× vítěz Kval.</div>
+    <div class="series-grid" id="sg-osm"></div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>Vítěz každého zápasu (6 týmů) → Čtvrtfinále</div>
+      <div class="flow-item"><div class="dot-red"></div>Poražený → vyřazen</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy</div>
+    <div class="match-list" id="ml-osm"></div>
+  </div>
+
+  <!-- ══ ČTVRTFINÁLE ══ -->
+  <div class="phase-content" id="phase-ctv">
+    <div class="section-title"><span class="stl-icon">🟢</span> Čtvrtfinále</div>
+    <div class="info-box-phase ib-ctv">Formát: <b>jeden vítězný zápas</b> · 4 duely · 2× přímý postup ze skupiny (⭐) + 6× vítěz OF = 8 týmů</div>
+    <div class="series-grid" id="sg-ctv" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>Vítěz (4 týmy) → Semifinále</div>
+      <div class="flow-item"><div class="dot-red"></div>Poražený → vyřazen</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy</div>
+    <div class="match-list" id="ml-ctv"></div>
+  </div>
+
+  <!-- ══ FINÁLOVÁ FÁZE ══ -->
+  <div class="phase-content" id="phase-finale">
+    <div class="section-title"><span class="stl-icon">🏆</span> Finálová fáze</div>
+    <div class="series-grid" id="sg-finale" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))"></div>
+    <div class="flow-row">
+      <div class="flow-item"><div class="dot-green"></div>Vítěz SF → Finále</div>
+      <div class="flow-item"><div class="dot-red"></div>Poražený SF → O 3. místo</div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span class="stl-icon">📋</span> Zápasy</div>
+    <div class="match-list" id="ml-finale"></div>
+  </div>
+
 </div>
 
-<div class="phase-arrow">▼ ▼ ▼ ▼ ▼ ▼</div>
+<script>
+const SUPABASE_URL="https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY="sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+const OLYMPIADA_COMPETITION_ID="c85830b0-612f-4390-88de-0b8775430460"
+const LOGOS="./logos/"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const {createClient}=supabase
+const db=createClient(SUPABASE_URL,SUPABASE_KEY)
 
-<!-- ══ 3. KVALIFIKACE č. 1–6 ══ -->
-<div class="phase">
-  <div class="phase-title">3. Kvalifikace č. 1–6 — série na 2 vítězné</div>
-  <div class="phase-grid">
+let teamsMap={}, allSeasons=[], currentSeasonId=null
 
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 1 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+const STAGE_PHASE_MAP={
+  "Kvalifikace nasazených - č. 1":"kv-nas","Kvalifikace nasazených - č. 2":"kv-nas",
+  "Kvalifikace nasazených - č. 3":"kv-nas","Kvalifikace nasazených - č. 4":"kv-nas",
+  "Skupina o čtvrtfinále":"skupina",
+  "Kvalifikace - č. 1":"kval","Kvalifikace - č. 2":"kval","Kvalifikace - č. 3":"kval",
+  "Kvalifikace - č. 4":"kval","Kvalifikace - č. 5":"kval","Kvalifikace - č. 6":"kval",
+  "Osmifinále - č. 1":"osm","Osmifinále - č. 2":"osm","Osmifinále - č. 3":"osm",
+  "Osmifinále - č. 4":"osm","Osmifinále - č. 5":"osm","Osmifinále - č. 6":"osm",
+  "Čtvrtfinále - č. 1":"ctv","Čtvrtfinále - č. 2":"ctv","Čtvrtfinále - č. 3":"ctv","Čtvrtfinále - č. 4":"ctv",
+  "Semifinále - č. 1":"finale","Semifinále - č. 2":"finale",
+  "O 3. místo":"finale","Finále":"finale",
+}
+
+const PHASE_CONFIG=[
+  {id:"bracket",  label:"🕸 Pavouk",             cls:""},
+  {id:"kv-nas",   label:"🔵 Kval. nasazených",   cls:"pb-kv-nas"},
+  {id:"skupina",  label:"📊 Skupina o ČF",       cls:"pb-skupina"},
+  {id:"kval",     label:"🟣 Kvalifikace",         cls:"pb-kval"},
+  {id:"osm",      label:"🟠 Osmifinále",          cls:"pb-osm"},
+  {id:"ctv",      label:"🟢 Čtvrtfinále",         cls:"pb-ctv"},
+  {id:"finale",   label:"🏆 Finálová fáze",       cls:"pb-finale"},
+]
+
+let activePhase="bracket"
+
+function logoHtml(teamId,size=26){
+  const t=teamsMap[teamId]
+  if(!t||!t.logo) return `<div class="st-logo-ph" style="width:${size}px;height:${size}px">?</div>`
+  return `<img class="st-logo" style="width:${size}px;height:${size}px" src="${LOGOS}${t.logo}" onerror="this.outerHTML='<div class=st-logo-ph>?</div>'">`
+}
+function teamName(id){return teamsMap[id]?.name||"?"}
+function isPlayed(m){return m.home_score!=null&&m.played}
+function getWinner(m){if(!isPlayed(m))return null;return m.home_score>m.away_score?m.home_team:m.away_team}
+function getResultType(m){
+  let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
+  const isSN=s&&(s[20]==="1"||s[20]==="2")
+  const isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11")
+  return isSN?"SN":isOT?"OT":"REG"
+}
+
+function buildPhaseNav(){
+  const nav=document.getElementById("phaseNav")
+  nav.innerHTML=""
+  PHASE_CONFIG.forEach(p=>{
+    const btn=document.createElement("button")
+    btn.className="phase-btn "+p.cls+(activePhase===p.id?" active":"")
+    btn.textContent=p.label
+    btn.onclick=()=>setPhase(p.id)
+    nav.appendChild(btn)
+  })
+}
+
+function setPhase(id){
+  activePhase=id
+  document.querySelectorAll(".phase-content").forEach(el=>el.classList.remove("active"))
+  document.getElementById("phase-"+id)?.classList.add("active")
+  buildPhaseNav()
+}
+
+// SERIES CARD (Bo2)
+function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
+  const played=matches.filter(m=>isPlayed(m))
+  const t1id=matches[0]?.home_team, t2id=matches[0]?.away_team
+  let w1=0,w2=0
+  played.forEach(m=>{
+    const isT1Home=m.home_team===t1id
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    if(isT1Home){if(hg>ag)w1++;else w2++}
+    else{if(ag>hg)w1++;else w2++}
+  })
+  const winner=w1>=winsNeeded?t1id:w2>=winsNeeded?t2id:null
+  function dots(wins,losses,needed){
+    let h=""
+    for(let i=0;i<wins;i++) h+=`<div class="gdot gdot-w"></div>`
+    for(let i=0;i<losses;i++) h+=`<div class="gdot gdot-l"></div>`
+    const rem=Math.max(0,needed-wins-losses)
+    for(let i=0;i<rem;i++) h+=`<div class="gdot gdot-e"></div>`
+    return h
+  }
+  const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
+  const stateText=played.length?`${w1} : ${w2}`:"—"
+  return `
+  <div class="series-card">
+    <div class="series-card-header ${schClass}">
+      <span>${stageName}</span>
+      <span class="series-state">${stateText}</span>
     </div>
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 2 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+    <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
+      ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t1id?" tbd":""}">${t1}</span>
+      <div class="game-dots">${dots(w1,w2,winsNeeded)}</div>
+      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 3 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+    <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
+      ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t2id?" tbd":""}">${t2}</span>
+      <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
+      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 4 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+  </div>`
+}
+
+// SINGLE MATCH CARD
+function buildSingleMatchCard(stageName, match, schClass, note){
+  const played=match&&isPlayed(match)
+  const t1id=match?.home_team, t2id=match?.away_team
+  const hg=played?Number(match.home_score):null
+  const ag=played?Number(match.away_score):null
+  const winner=played?(hg>ag?t1id:t2id):null
+  const rt=played?getResultType(match):""
+  return `
+  <div class="series-card">
+    <div class="series-card-header ${schClass}">
+      <span>${stageName}</span>
+      <span class="series-state">${played?`${hg} : ${ag}`:"—"}</span>
     </div>
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 5 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+    <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
+      ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t1id?" tbd":""}">${t1id?teamName(t1id):"?"}</span>
+      ${played?`<span class="st-wins${hg>ag?" w":" l"}">${hg}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
     </div>
-    <div class="scard kval">
-      <div class="scard-label">Kval. č. 6 <span class="scard-format">Bo2</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Tým</div>
+    <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
+      ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t2id?" tbd":""}">${t2id?teamName(t2id):"?"}</span>
+      ${played?`<span class="st-wins${ag>hg?" w":" l"}">${ag}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
     </div>
+    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+  </div>`
+}
 
-  </div>
-  <div class="flow-row">
-    <div class="flow-item"><div class="dot-green"></div>Vítěz každé série (6 týmů) → Osmifinále</div>
-    <div class="flow-item"><div class="dot-red"></div>Poražený každé série → vyřazen</div>
-  </div>
-</div>
-
-<div class="phase-arrow">▼ ▼ ▼ ▼ ▼ ▼</div>
-
-<!-- ══ 4. OSMIFINÁLE ══ -->
-<div class="phase">
-  <div class="phase-title">4. Osmifinále č. 1–6 — jeden zápas · (4× poražený z Kval.nas. + 3.&4. ze skupiny + 6× vítěz Kval.)</div>
-  <div class="phase-grid">
-
-    <div class="scard osm">
-      <div class="scard-label">OF č. 1 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Poražený Kval.nas.</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+// MATCH ROW
+function buildMatchRow(m){
+  const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
+  if(!home||!away) return ""
+  const played=isPlayed(m)
+  const hg=played?m.home_score:null, ag=played?m.away_score:null
+  const homeWin=played&&Number(hg)>Number(ag)
+  const awayWin=played&&Number(ag)>Number(hg)
+  const rt=played?getResultType(m):""
+  const tag=rt&&rt!=="REG"?`<span class="result-tag">${rt}</span>`:""
+  return `
+  <div class="match-row${played?" played":""}">
+    <div class="mr-round">${m.round}</div>
+    <div class="mr-team">
+      <img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'">
+      <span class="mr-name${played?(homeWin?" winner":" loser"):""}">${home.name}</span>
     </div>
-    <div class="scard osm">
-      <div class="scard-label">OF č. 2 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Poražený Kval.nas.</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+    <div class="mr-score">
+      <span class="score-badge${played?"":" empty"}">${played?`${hg} : ${ag}`:"– : –"}</span>${tag}
     </div>
-    <div class="scard osm">
-      <div class="scard-label">OF č. 3 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Poražený Kval.nas.</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+    <div class="mr-team away">
+      <span class="mr-name${played?(awayWin?" winner":" loser"):""}">${away.name}</span>
+      <img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
     </div>
-    <div class="scard osm">
-      <div class="scard-label">OF č. 4 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>3. místo skupiny</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+    <div class="mr-btns">
+      ${played
+        ?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`
+        :`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`
+      }
     </div>
-    <div class="scard osm">
-      <div class="scard-label">OF č. 5 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>4. místo skupiny</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+  </div>`
+}
+
+// SKUPINA TABULKA
+function buildSkupinaTabulka(matches){
+  const tbody=document.getElementById("skupinaBody")
+  const teamIds=new Set()
+  matches.forEach(m=>{teamIds.add(m.home_team);teamIds.add(m.away_team)})
+  const table={}
+  ;[...teamIds].forEach(id=>{table[id]={b:0,z:0,v:0,p:0,vot:0,pot:0,gf:0,ga:0}})
+  matches.filter(m=>isPlayed(m)).forEach(m=>{
+    const h=table[m.home_team], a=table[m.away_team]
+    if(!h||!a) return
+    const hg=Number(m.home_score), ag=Number(m.away_score)
+    h.z++;a.z++;h.gf+=hg;h.ga+=ag;a.gf+=ag;a.ga+=hg
+    let stats=null;try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const isOTorSN=isSN||isOT
+    if(hg>ag){if(isOTorSN){h.vot++;h.b+=2;a.pot++;a.b+=1}else{h.v++;h.b+=3;a.p++}}
+    else{if(isOTorSN){a.vot++;a.b+=2;h.pot++;h.b+=1}else{a.v++;a.b+=3;h.p++}}
+  })
+  const arr=Object.entries(table).sort((a,b)=>{
+    if(b[1].b!==a[1].b) return b[1].b-a[1].b
+    return (b[1].gf-b[1].ga)-(a[1].gf-a[1].ga)
+  })
+  tbody.innerHTML=""
+  arr.forEach(([tid,t],i)=>{
+    const team=teamsMap[tid]; if(!team) return
+    const pm=t.gf-t.ga
+    const pmStr=pm>0?`+${pm}`:String(pm)
+    const pmCls=pm>0?"pos":pm<0?"neg":"neu"
+    const badge=i<2?`<span class="postup-badge pb-direct" title="Postup přímo do ČF"></span>`
+      :(i<4?`<span class="postup-badge pb-osm-badge" title="→ Osmifinále"></span>`:"")
+    tbody.innerHTML+=`
+    <tr>
+      <td>${i+1}</td>
+      <td class="td-l"><div class="team-cell-s">${badge}<img class="tc-logo" src="${LOGOS}${team.logo}" onerror="this.style.display='none'"><span class="tc-name">${team.name}</span></div></td>
+      <td><span class="pts-pill">${t.b}</span></td>
+      <td>${t.gf}:${t.ga}</td>
+      <td class="td-pm ${pmCls}">${pmStr}</td>
+      <td>${t.z}</td>
+      <td class="td-w">${t.v}</td>
+      <td class="td-l2">${t.p}</td>
+      <td>${t.vot}</td>
+      <td>${t.pot}</td>
+    </tr>`
+  })
+}
+
+// BRACKET RENDER
+function buildBracket(stageMap, matchesByStage){
+  function getM(name){const sid=stageMap[name];return sid?(matchesByStage[sid]||[])[0]||null:null}
+  function getMs(name){const sid=stageMap[name];return sid?(matchesByStage[sid]||[]):[] }
+
+  // KV-NAS
+  const bkKvNas=document.getElementById("bk-kv-nas")
+  bkKvNas.innerHTML=""
+  ;["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"].forEach((n,i)=>{
+    bkKvNas.innerHTML+=buildSeriesCard(`Kval.nas. č.${i+1}`,getMs(n),"sch-kv-nas",2)
+  })
+
+  // SKUPINA
+  const bkSkupina=document.getElementById("bk-skupina")
+  const skupMatches=(matchesByStage[stageMap["Skupina o čtvrtfinále"]]||[])
+  const skupTeamIds=new Set();skupMatches.forEach(m=>{skupTeamIds.add(m.home_team);skupTeamIds.add(m.away_team)})
+  const table={};[...skupTeamIds].forEach(id=>{table[id]={b:0,z:0,gf:0,ga:0}})
+  skupMatches.filter(m=>isPlayed(m)).forEach(m=>{
+    const h=table[m.home_team],a=table[m.away_team];if(!h||!a)return
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    h.z++;a.z++;h.gf+=hg;h.ga+=ag;a.gf+=ag;a.ga+=hg
+    let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=s&&(s[20]==="1"||s[20]==="2"),isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11"),isOTorSN=isSN||isOT
+    if(hg>ag){if(isOTorSN){h.b+=2;a.b+=1}else{h.b+=3}}
+    else{if(isOTorSN){a.b+=2;h.b+=1}else{a.b+=3}}
+  })
+  const sorted=Object.entries(table).sort((a,b)=>b[1].b-a[1].b||(b[1].gf-b[1].ga)-(a[1].gf-a[1].ga))
+  bkSkupina.innerHTML=`
+  <div class="skupina-card">
+    <div class="series-card-header sch-skupina">
+      <span>Skupina o čtvrtfinále</span>
+      <span class="series-state">${skupMatches.filter(m=>isPlayed(m)).length} / ${skupMatches.length} zápasů</span>
     </div>
-    <div class="scard osm">
-      <div class="scard-label">OF č. 6 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz Kval.</div>
+    <table class="standings-table">
+      <thead><tr><th style="width:28px">#</th><th class="th-l">Tým</th><th>B</th><th>Z</th><th>Skóre</th></tr></thead>
+      <tbody>${sorted.map(([tid,t],i)=>{
+        const team=teamsMap[tid];if(!team)return""
+        const badge=i<2?`<span class="postup-badge pb-direct"></span>`:i<4?`<span class="postup-badge pb-osm-badge"></span>`:""
+        return `<tr><td>${i+1}</td><td class="td-l"><div class="team-cell-s">${badge}${logoHtml(tid,20)}<span class="tc-name">${team.name}</span></div></td><td><span class="pts-pill">${t.b}</span></td><td>${t.z}</td><td>${t.gf}:${t.ga}</td></tr>`
+      }).join("")||`<tr><td colspan="5" style="text-align:center;padding:10px;color:#aaa;font-size:12px;">Zatím žádné zápasy</td></tr>`}</tbody>
+    </table>
+    <div style="font-size:10px;color:#6b7a8d;padding:6px 10px;background:#f7f9fb;border-top:1px solid #eee;">
+      <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;"><span class="postup-badge pb-direct"></span> → ČF přímo</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;"><span class="postup-badge pb-osm-badge"></span> → Osmifinále</span>
     </div>
+  </div>`
 
-  </div>
-  <div class="flow-row">
-    <div class="flow-item"><div class="dot-green"></div>Vítěz každého zápasu (6 týmů) → Čtvrtfinále</div>
-    <div class="flow-item"><div class="dot-red"></div>Poražený → vyřazen</div>
-  </div>
-</div>
+  // KVAL
+  const bkKval=document.getElementById("bk-kval")
+  bkKval.innerHTML=""
+  ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach((n,i)=>{
+    bkKval.innerHTML+=buildSeriesCard(`Kval. č.${i+1}`,getMs(n),"sch-kval",2)
+  })
 
-<div class="phase-arrow">▼ ▼ ▼ ▼</div>
+  // OSM
+  const bkOsm=document.getElementById("bk-osm")
+  bkOsm.innerHTML=""
+  ;["Osmifinále - č. 1","Osmifinále - č. 2","Osmifinále - č. 3","Osmifinále - č. 4","Osmifinále - č. 5","Osmifinále - č. 6"].forEach((n,i)=>{
+    bkOsm.innerHTML+=buildSingleMatchCard(`OF č.${i+1}`,getM(n),"sch-osm")
+  })
 
-<!-- ══ 5. ČTVRTFINÁLE ══ -->
-<div class="phase">
-  <div class="phase-title">5. Čtvrtfinále č. 1–4 — jeden zápas · (2× přímý postup ze skupiny + 6× vítěz OF = 8 týmů)</div>
-  <div class="phase-grid">
+  // ČF
+  const bkCtv=document.getElementById("bk-ctv")
+  bkCtv.innerHTML=""
+  ;["Čtvrtfinále - č. 1","Čtvrtfinále - č. 2","Čtvrtfinále - č. 3","Čtvrtfinále - č. 4"].forEach((n,i)=>{
+    const note=i<2?"⭐ přímý postup ze skupiny":""
+    bkCtv.innerHTML+=buildSingleMatchCard(`ČF č.${i+1}`,getM(n),"sch-ctv",note)
+  })
 
-    <div class="scard ctv">
-      <div class="scard-label">ČF č. 1 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot" style="background:#60d090"></div>1. místo skupiny ⭐</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-    </div>
-    <div class="scard ctv">
-      <div class="scard-label">ČF č. 2 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot" style="background:#60d090"></div>2. místo skupiny ⭐</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-    </div>
-    <div class="scard ctv">
-      <div class="scard-label">ČF č. 3 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-    </div>
-    <div class="scard ctv">
-      <div class="scard-label">ČF č. 4 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz OF</div>
-    </div>
+  // SF
+  const bkSf=document.getElementById("bk-sf")
+  bkSf.innerHTML=""
+  ;["Semifinále - č. 1","Semifinále - č. 2"].forEach((n,i)=>{
+    bkSf.innerHTML+=buildSingleMatchCard(`SF č.${i+1}`,getM(n),"sch-sf")
+  })
 
-  </div>
-  <div class="flow-row">
-    <div class="flow-item"><div class="dot-green"></div>Vítěz (4 týmy) → Semifinále</div>
-    <div class="flow-item"><div class="dot-red"></div>Poražený → vyřazen</div>
-  </div>
-  <div style="font-size:11px;color:#4a6a8a;margin-top:4px;padding-left:4px;">⭐ = přímý postup ze skupiny (1. a 2. místo)</div>
-</div>
+  // FINALE
+  const bkFinale=document.getElementById("bk-finale")
+  bkFinale.innerHTML=""
+  bkFinale.innerHTML+=buildSingleMatchCard("🥉 O 3. místo",getM("O 3. místo"),"sch-f3")
+  bkFinale.innerHTML+=buildSingleMatchCard("🏆 Finále",getM("Finále"),"sch-finale")
 
-<div class="phase-arrow">▼ ▼</div>
+  // CHAMPION
+  const finaleMatch=getM("Finále")
+  const champion=finaleMatch&&isPlayed(finaleMatch)?teamName(getWinner(finaleMatch)):"—"
+  document.getElementById("champion").textContent=champion
+}
 
-<!-- ══ 6. SEMIFINÁLE ══ -->
-<div class="phase">
-  <div class="phase-title">6. Semifinále — jeden zápas</div>
-  <div class="phase-grid" style="max-width:380px;">
+// INIT
+async function init(){
+  const {data:teams}=await db.from("teams").select("*")
+  ;(teams||[]).forEach(t=>teamsMap[t.id]=t)
+  const {data:seasons}=await db.from("seasons").select("*")
+    .eq("competition_id",OLYMPIADA_COMPETITION_ID).order("created_at",{ascending:false})
+  allSeasons=seasons||[]
+  const tabsEl=document.getElementById("seasonTabs")
+  tabsEl.innerHTML=""
+  allSeasons.forEach((s,i)=>{
+    const btn=document.createElement("button")
+    btn.className="season-tab"+(i===0?" active":"")
+    btn.textContent=s.name
+    btn.onclick=()=>{
+      tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
+      btn.classList.add("active")
+      loadSeason(s.id,s.name)
+    }
+    tabsEl.appendChild(btn)
+  })
+  if(allSeasons.length>0) loadSeason(allSeasons[0].id,allSeasons[0].name)
+  else document.getElementById("headerSub").textContent="Žádné sezóny"
+}
 
-    <div class="scard sf">
-      <div class="scard-label">SF č. 1 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz ČF1</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz ČF2</div>
-    </div>
-    <div class="scard sf">
-      <div class="scard-label">SF č. 2 <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz ČF3</div>
-      <div class="scard-team tbd"><div class="team-dot"></div>Vítěz ČF4</div>
-    </div>
+async function loadSeason(seasonId, seasonName){
+  currentSeasonId=seasonId
+  document.getElementById("headerSub").textContent=seasonName
+  const {data:stages}=await db.from("stages").select("*").eq("season_id",seasonId).order("order",{ascending:true})
+  const {data:matches}=await db.from("matches").select("*").eq("season_id",seasonId).order("round",{ascending:true})
+  const stageMap={};(stages||[]).forEach(s=>stageMap[s.name]=s.id)
+  const matchesByStage={};(matches||[]).forEach(m=>{if(!matchesByStage[m.stage_id])matchesByStage[m.stage_id]=[];matchesByStage[m.stage_id].push(m)})
 
-  </div>
-  <div class="flow-row">
-    <div class="flow-item"><div class="dot-green"></div>Vítěz → Finále</div>
-    <div class="flow-item"><div class="dot-red"></div>Poražený → O 3. místo</div>
-  </div>
-</div>
+  const phaseMatches={"kv-nas":[],"skupina":[],"kval":[],"osm":[],"ctv":[],"finale":[]}
+  ;(stages||[]).forEach(s=>{
+    const phase=STAGE_PHASE_MAP[s.name]
+    if(phase)(matchesByStage[s.id]||[]).forEach(m=>phaseMatches[phase].push({...m,_stageName:s.name}))
+  })
 
-<div class="phase-arrow">▼</div>
+  // KV-NAS
+  const sgKvNas=document.getElementById("sg-kv-nas"); sgKvNas.innerHTML=""
+  ;["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
+  })
+  document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
-<!-- ══ 7. FINÁLOVÁ FÁZE ══ -->
-<div class="phase">
-  <div class="phase-title">7. Finálová fáze</div>
-  <div class="finale-wrap">
+  // SKUPINA
+  buildSkupinaTabulka(phaseMatches["skupina"])
+  document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
-    <div class="scard f3" style="max-width:220px;">
-      <div class="scard-label">🥉 O 3. místo <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team tbd"><div class="team-dot" style="background:#c8a060"></div>Poražený SF1</div>
-      <div class="scard-team tbd"><div class="team-dot" style="background:#c8a060"></div>Poražený SF2</div>
-    </div>
+  // KVAL
+  const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
+  ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgKval.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kval",2)
+  })
+  document.getElementById("ml-kval").innerHTML=phaseMatches["kval"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
-    <div class="scard finale" style="max-width:220px;">
-      <div class="scard-label">🏆 Finále <span class="scard-format">1 zápas</span></div>
-      <div class="scard-team"><div class="team-dot" style="background:#f0c040"></div>Vítěz SF1</div>
-      <div class="scard-team"><div class="team-dot" style="background:#f0c040"></div>Vítěz SF2</div>
-    </div>
+  // OSM
+  const sgOsm=document.getElementById("sg-osm"); sgOsm.innerHTML=""
+  ;["Osmifinále - č. 1","Osmifinále - č. 2","Osmifinále - č. 3","Osmifinále - č. 4","Osmifinále - č. 5","Osmifinále - č. 6"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgOsm.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-osm")
+  })
+  document.getElementById("ml-osm").innerHTML=phaseMatches["osm"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
-  </div>
-</div>
+  // ČF
+  const sgCtv=document.getElementById("sg-ctv"); sgCtv.innerHTML=""
+  ;["Čtvrtfinále - č. 1","Čtvrtfinále - č. 2","Čtvrtfinále - č. 3","Čtvrtfinále - č. 4"].forEach((n,i)=>{
+    const sid=stageMap[n]; if(!sid)return
+    const note=i<2?"⭐ přímý postup ze skupiny":""
+    sgCtv.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-ctv",note)
+  })
+  document.getElementById("ml-ctv").innerHTML=phaseMatches["ctv"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
-<!-- TROPHY -->
-<div class="trophy">
-  <div class="trophy-icon">🏆</div>
-  <div class="trophy-label">Olympijský vítěz</div>
-  <div class="trophy-name">—</div>
-</div>
+  // FINALE
+  const sgFinale=document.getElementById("sg-finale"); sgFinale.innerHTML=""
+  ;["Semifinále - č. 1","Semifinále - č. 2","O 3. místo","Finále"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    const cls=n==="Finále"?"sch-finale":n==="O 3. místo"?"sch-f3":"sch-sf"
+    sgFinale.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,cls)
+  })
+  document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
+  // BRACKET
+  buildBracket(stageMap,matchesByStage)
+  buildPhaseNav()
+  setPhase(activePhase)
+}
+
+init()
+</script>
 </body>
 </html>
