@@ -140,43 +140,16 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const SHORT_NAMES = {
- "Česká Republika (K)":   "ČR (K)",
- "Česká Republika (P)":   "ČR (P)",
- "Finsko (P)":            "Finsko",
- "Francie (P)":           "Francie",
- "HC Bílí Tygři Liberec (K)":        "Liberec (K)",
- "HC Chemopetrol Litvínov (P)":      "Litvínov (P)",
- "HC Dynamo Pardubice (K)":          "Pardubice (K)",
- "HC Energie Karlovy Vary (P)":      "Karlovy Vary (P)",
- "HC Motor České Budějovice (K)":    "Motor (K)",
- "HC Oceláři Třinec (K)":            "Třinec (K)",
- "HC Rytíři Kladno (P)":             "Kladno (P)",
- "HC Sparta Praha (P)":              "Sparta (P)",
- "Itálie (K)":            "Itálie",
- "Japonsko (P)":          "Japonsko",
- "Kanada (K)":            "Kanada",
- "Kazachstán (K)":        "Kazachstán",
- "Polsko (P)":            "Polsko",
- "RUSKO (P)":             "Rusko",
- "Švédsko (P)":           "Švédsko",
- "USA (K)":               "USA",
- "Velká Británie (K)":    "Velká Británie",
-}
-
-function getShortName(fullName){
- return SHORT_NAMES[fullName] || fullName
-}
-
 const matchId = new URLSearchParams(window.location.search).get("id")
 let players = {}
 let oddsGlobal = {}
 let state = { kubele:{selected:[]}, pici:{selected:[]} }
+let homeName = ""
+let awayName = ""
+let homeShortName = ""
+let awayShortName = ""
 
-// 8 tipů v daném pořadí
-function getNewTips(homeName, awayName){
- const h = getShortName(homeName)
- const a = getShortName(awayName)
+function getNewTips(h, a){
  return [
   { type:"1",        label: `Výhra ${h}` },
   { type:"0",        label: "Remíza" },
@@ -202,15 +175,10 @@ function calculateOdds(homeRating, awayRating){
  const probAwayOT=drawProb*probAwayRaw
  const probDraw=drawProb
  const probNoD=probHome+probAway
-
- // Neprohra = nevyhraje soupeř v REG = 1 - P(soupeř vyhraje v REG)
- const probNonLossHome = 1 - probAway   // soupeř (away) nesmí vyhrát v REG
- const probNonLossAway = 1 - probHome   // domácí nesmí vyhrát v REG
-
- // Výhra do rozhodnutí = jakákoliv výhra (REG+OT+SN)
- const probVdrHome = probHome + probHomeOT  // domácí vyhrají jakkoli
- const probVdrAway = probAway + probAwayOT  // hosté vyhrají jakkoli
-
+ const probNonLossHome=1-probAway
+ const probNonLossAway=1-probHome
+ const probVdrHome=probHome+probHomeOT
+ const probVdrAway=probAway+probAwayOT
  return {
   "1":        1/probHome,
   "0":        1/probDraw,
@@ -220,13 +188,11 @@ function calculateOdds(homeRating, awayRating){
   "22":       1/probNonLossAway,
   "vdr_home": 1/probVdrHome,
   "vdr_away": 1/probVdrAway,
-  // staré tipy zachovány pro historii
-  "10":       1/(probHomeOT),
-  "02":       1/(probAwayOT),
+  "10":       1/probHomeOT,
+  "02":       1/probAwayOT,
  }
 }
 
-// Vyhodnocení tipu
 function checkSingleTip(match, tip){
  const type=match.result_type
  const hg=Number(match.home_score), ag=Number(match.away_score)
@@ -236,12 +202,11 @@ function checkSingleTip(match, tip){
   case "1":        return hw && type==="REG"
   case "0":        return isOTorSN
   case "2":        return aw && type==="REG"
-  case "11":       return !(aw && type==="REG")   // soupeř nesmí vyhrát v REG
+  case "11":       return !(aw && type==="REG")
   case "no_draw":  return type==="REG"
-  case "22":       return !(hw && type==="REG")   // domácí nesmí vyhrát v REG
-  case "vdr_home": return hw                       // domácí vyhrají jakkoli
-  case "vdr_away": return aw                       // hosté vyhrají jakkoli
-  // staré tipy pro historii
+  case "22":       return !(hw && type==="REG")
+  case "vdr_home": return hw
+  case "vdr_away": return aw
   case "10":       return hw && isOTorSN
   case "02":       return aw && isOTorSN
  }
@@ -287,9 +252,6 @@ function renderH2H(allMatches, homeId, awayId, teamMap){
  })
 }
 
-let homeName = ""
-let awayName = ""
-
 async function load(){
  const {data:match}=await supabase.from("matches").select("*").eq("id",matchId).single()
  const {data:teams}=await supabase.from("teams").select("*")
@@ -302,8 +264,10 @@ async function load(){
  const home=teamMap[match.home_team]
  const away=teamMap[match.away_team]
 
- homeName=home.name
- awayName=away.name
+ homeName = home.name
+ awayName = away.name
+ homeShortName = home.short_name || home.name
+ awayShortName = away.short_name || away.name
 
  document.getElementById("homeName").innerText=home.name
  document.getElementById("awayName").innerText=away.name
@@ -344,7 +308,7 @@ function renderOdds(playerKey){
  const cont=document.getElementById("odds_"+playerKey)
  cont.innerHTML=""
 
- const tips=getNewTips(homeName, awayName)
+ const tips=getNewTips(homeShortName, awayShortName)
 
  tips.forEach(({type, label})=>{
   const o=oddsGlobal[type]
