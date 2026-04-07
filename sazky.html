@@ -38,7 +38,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 .wrapper{max-width:1240px;margin:0 auto;padding:24px 20px 60px}
 
-.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0}
+.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 @media(max-width:800px){.players-grid{grid-template-columns:1fr}}
 
 .player-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}
@@ -78,11 +78,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .goals-team-row:last-child{border-bottom:none}
 .goals-header-row{display:grid;grid-template-columns:180px 1fr 160px 90px;gap:12px;padding:9px 16px;background:#f7fafc;border-bottom:1px solid var(--border)}
 .goals-header-row span{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-
 .goal-btns{display:flex;gap:6px}
 .goal-btn{flex:1;padding:8px 4px;background:#eef2f7;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;font-family:'Inter',sans-serif}
 .goal-btn:hover{background:#e2e8f0;border-color:#b0c4d8}
-.goal-btn.selected{background:var(--navy);border-color:var(--navy);color:#fff}
+.goal-btn.selected{background:var(--navy);border-color:var(--navy)}
 .goal-btn.selected .goal-btn-label{color:#fff}
 .goal-btn.selected .goal-btn-odds{color:rgba(255,255,255,.8)}
 .goal-btn-label{font-size:13px;font-weight:700;color:var(--text)}
@@ -94,29 +93,31 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
-/* PLAY OFF ZÁPAS KARTA */
-.playoff-match-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
-.playoff-match-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
-.playoff-match-title{font-size:14px;font-weight:700;color:#fff;}
-.playoff-match-phase{font-size:11px;color:var(--gold);font-weight:600;background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;}
-.playoff-teams-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:16px 18px;border-bottom:1px solid var(--border);}
+.playoff-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
+.playoff-card-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.playoff-card-title{font-size:14px;font-weight:700;color:#fff;}
+.playoff-card-phase{font-size:11px;color:var(--gold);font-weight:600;background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;}
+.playoff-matchup{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:16px 18px;border-bottom:1px solid var(--border);}
 .playoff-team{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
 .playoff-team-logo{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:8px;padding:3px;border:1px solid var(--border);}
 .playoff-team-name{font-size:13px;font-weight:700;color:var(--text);}
-.playoff-team-pos{font-size:11px;color:var(--muted);font-weight:500;}
-.playoff-vs{font-size:20px;font-weight:800;color:var(--muted);}
-.playoff-odds-row{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-.playoff-odd-cell{padding:14px 18px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--border);}
-.playoff-odd-cell:last-child{border-right:none;}
-.playoff-odd-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.playoff-team-pos{font-size:11px;color:var(--muted);}
+.playoff-vs{font-size:18px;font-weight:800;color:var(--muted);}
+.playoff-odds-strip{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.playoff-odd{padding:12px 18px;border-right:1px solid var(--border);}
+.playoff-odd:last-child{border-right:none;}
+.playoff-odd-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
 .playoff-odd-val{font-size:22px;font-weight:800;color:var(--navy);}
-.playoff-odd-prob{font-size:11px;color:var(--muted);}
-.playoff-bet-row{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border);}
-.playoff-bet-cell{padding:12px 18px;border-right:1px solid var(--border);}
+.playoff-odd-prob{font-size:11px;color:var(--muted);margin-top:1px;}
+.playoff-h2h{font-size:11px;color:var(--muted);padding:7px 18px;background:#f7fafc;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.playoff-bets{display:grid;grid-template-columns:1fr 1fr;}
+.playoff-bet-cell{padding:14px 18px;border-right:1px solid var(--border);}
 .playoff-bet-cell:last-child{border-right:none;}
-.playoff-bet-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.playoff-h2h{font-size:11px;color:var(--muted);padding:8px 18px 12px;background:#f7fafc;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;}
-.playoff-h2h-icon{color:var(--navy2);font-weight:700;}
+.playoff-bet-player{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.playoff-bet-credit{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.playoff-bet-btns{display:flex;flex-direction:column;gap:8px;}
+.playoff-bet-row-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.playoff-bet-team-label{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;}
 
 .no-phase{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
 .coming-soon{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:48px 24px;text-align:center;}
@@ -128,8 +129,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .goals-header-row,.goals-team-row{grid-template-columns:1fr}
   .goals-header-row{display:none}
   .goals-team-row{border:1px solid var(--border);border-radius:var(--radius);margin:8px 16px;padding:12px}
-  .playoff-teams-row{gap:8px;}
-  .playoff-team-name{font-size:11px;}
+  .playoff-bets{grid-template-columns:1fr}
+  .playoff-bet-cell{border-right:none;border-top:1px solid var(--border);}
+  .playoff-bet-cell:first-child{border-top:none;}
 }
 @media(max-width:500px){
   .comp-tabs{padding:0 12px;justify-content:flex-start;}
@@ -170,39 +172,42 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
-const EXTRALIGA_SEASON_ID      = "4b05b50e-cfde-4473-aebe-33495c85a989"
+// Stage IDs základní části (2. sezóna extraligy)
+const ZAKLADNI_STAGE_IDS = [
+  "4a512867-51bf-4a4f-9d5c-41db9c792979",
+  "80920813-10a8-42b1-b5ce-c09cd12e2c0e",
+]
+
+// Stage IDs play off fází (2. sezóna extraligy)
+const PLAYOFF_STAGE_IDS = {
+  ctvrtfinale: [
+    "13ae3494-6b7c-4b2e-bc5b-259478274b00",
+    "f5544a65-f97a-4c15-b544-8e39c1ca533d",
+    "70f62ac1-41bc-4a59-8f91-f4c3e27cc24d",
+    "da97b17e-02ed-4cd7-8721-bbe7ec1e325d",
+  ],
+  semifinale: [
+    "a132f953-b297-4bc7-958d-928de8128b0d",
+    "0619829c-acf5-4d81-9833-7f00923c4e24",
+  ],
+  finale: [
+    "4f644dca-d281-41ed-97e5-6ff38e860660",
+  ],
+}
+
+const PLAYOFF_DB_TYPE = {
+  ctvrtfinale: "winner_playoff_qf",
+  semifinale:  "winner_playoff_sf",
+  finale:      "winner_playoff_final",
+}
+
 const PLAYOFF_MARGIN = 1.10
 const START_RATING = 1000
 const K_FORM = 120
 const MARGIN = 2.2
 
-// Které stage_id patří ke které fázi play off (2. sezóna)
-const PLAYOFF_STAGE_MAP = {
-  ctvrtfinale: [
-    "13ae3494-6b7c-4b2e-bc5b-259478274b00", // Čtvrtfinále 1
-    "f5544a65-f97a-4c15-b544-8e39c1ca533d", // Čtvrtfinále 2
-    "70f62ac1-41bc-4a59-8f91-f4c3e27cc24d", // Čtvrtfinále 3
-    "da97b17e-02ed-4cd7-8721-bbe7ec1e325d", // Čtvrtfinále 4
-  ],
-  semifinale: [
-    "a132f953-b297-4bc7-958d-928de8128b0d", // Semifinále 2
-    "0619829c-acf5-4d81-9833-7f00923c4e24", // Semifinále 1
-  ],
-  finale: [
-    "4f644dca-d281-41ed-97e5-6ff38e860660", // Finále
-  ],
-}
-
-// Základní část stage ID (2. sezóna)
-const ZAKLADNI_CAST_STAGE_IDS = [
-  "4a512867-51bf-4a4f-9d5c-41db9c792979",
-  "80920813-10a8-42b1-b5ce-c09cd12e2c0e",
-]
-
 const COMP_CONFIG = {
   extraliga: {
-    label: "Extraliga",
     phases: [
       { id: "zakladni",    label: "Základní část" },
       { id: "playoff",     label: "Play off" },
@@ -212,19 +217,18 @@ const COMP_CONFIG = {
     ],
     betSections: {
       zakladni: [
-        { id: "winner_regular_season",    title: "Vítěz základní části",        type: "winner",    dbType: "winner_regular_season" },
-        { id: "nonwinner_regular_season", title: "Nevítěz základní části",      type: "nonwinner", dbType: "nonwinner_regular_season" },
-        { id: "last_regular_season",      title: "Poslední tým základní části", type: "last",      dbType: "last_regular_season" },
-        { id: "goals_regular_season",     title: "Počet gólů v základní části", type: "goals",     dbType: "goals" },
+        { title: "Vítěz základní části",        type: "winner",    dbType: "winner_regular_season" },
+        { title: "Nevítěz základní části",      type: "nonwinner", dbType: "nonwinner_regular_season" },
+        { title: "Poslední tým základní části", type: "last",      dbType: "last_regular_season" },
+        { title: "Počet gólů v základní části", type: "goals",     dbType: "goals" },
       ],
-      playoff:     null, // speciální render
-      ctvrtfinale: null,
-      semifinale:  null,
-      finale:      null,
+      playoff:     [],        // zatím prázdné — doplníš later
+      ctvrtfinale: "matches", // render ze zápasů v DB
+      semifinale:  "matches",
+      finale:      "matches",
     }
   },
   olympiada: {
-    label: "Olympiáda",
     phases: [
       { id: "kvalnasaz", label: "Kval. nasazených" },
       { id: "skupina",   label: "Skupina o ČF" },
@@ -235,20 +239,19 @@ const COMP_CONFIG = {
       { id: "finale",    label: "Finále / 3. místo" },
     ],
     betSections: {
-      kvalnasaz: [{ id: "winner_ol_kvalnasaz", title: "Postup z kval. nasazených",       type: "winner", dbType: "winner_ol_kvalnasaz" }],
-      skupina:   [{ id: "winner_ol_skupina",   title: "Postup ze skupiny (1.–2. místo)", type: "winner", dbType: "winner_ol_skupina" }],
-      kval:      [{ id: "winner_ol_kval",      title: "Postup z kvalifikace",            type: "winner", dbType: "winner_ol_kval" }],
-      osm:       [{ id: "winner_ol_osm",       title: "Postup z osmifinále",             type: "winner", dbType: "winner_ol_osm" }],
-      ctv:       [{ id: "winner_ol_ctv",       title: "Postup ze čtvrtfinále",           type: "winner", dbType: "winner_ol_ctv" }],
-      sf:        [{ id: "winner_ol_sf",        title: "Postup ze semifinále",            type: "winner", dbType: "winner_ol_sf" }],
-      finale: [
-        { id: "winner_ol_finale", title: "Olympijský vítěz",  type: "winner", dbType: "winner_ol_finale" },
-        { id: "winner_ol_3rd",    title: "Bronzová medaile",  type: "winner", dbType: "winner_ol_3rd" },
+      kvalnasaz: [{ title: "Postup z kval. nasazených",       type: "winner", dbType: "winner_ol_kvalnasaz" }],
+      skupina:   [{ title: "Postup ze skupiny (1.–2. místo)", type: "winner", dbType: "winner_ol_skupina" }],
+      kval:      [{ title: "Postup z kvalifikace",            type: "winner", dbType: "winner_ol_kval" }],
+      osm:       [{ title: "Postup z osmifinále",             type: "winner", dbType: "winner_ol_osm" }],
+      ctv:       [{ title: "Postup ze čtvrtfinále",           type: "winner", dbType: "winner_ol_ctv" }],
+      sf:        [{ title: "Postup ze semifinále",            type: "winner", dbType: "winner_ol_sf" }],
+      finale:    [
+        { title: "Olympijský vítěz", type: "winner", dbType: "winner_ol_finale" },
+        { title: "Bronzová medaile", type: "winner", dbType: "winner_ol_3rd" },
       ],
     }
   },
   ms: {
-    label: "Mistrovství světa",
     phases: [
       { id: "skupina", label: "Skupinová fáze" },
       { id: "osm",     label: "Osmifinále" },
@@ -257,76 +260,74 @@ const COMP_CONFIG = {
       { id: "finale",  label: "Finále / 3. místo" },
     ],
     betSections: {
-      skupina: [{ id: "winner_ms_skupina", title: "Postup ze skupiny",     type: "winner", dbType: "winner_ms_skupina" }],
-      osm:     [{ id: "winner_ms_osm",     title: "Postup z osmifinále",   type: "winner", dbType: "winner_ms_osm" }],
-      ctv:     [{ id: "winner_ms_ctv",     title: "Postup ze čtvrtfinále", type: "winner", dbType: "winner_ms_ctv" }],
-      sf:      [{ id: "winner_ms_sf",      title: "Postup ze semifinále",  type: "winner", dbType: "winner_ms_sf" }],
-      finale: [
-        { id: "winner_ms_finale", title: "Mistr světa",      type: "winner", dbType: "winner_ms_finale" },
-        { id: "winner_ms_3rd",    title: "Bronzová medaile", type: "winner", dbType: "winner_ms_3rd" },
+      skupina: [{ title: "Postup ze skupiny",     type: "winner", dbType: "winner_ms_skupina" }],
+      osm:     [{ title: "Postup z osmifinále",   type: "winner", dbType: "winner_ms_osm" }],
+      ctv:     [{ title: "Postup ze čtvrtfinále", type: "winner", dbType: "winner_ms_ctv" }],
+      sf:      [{ title: "Postup ze semifinále",  type: "winner", dbType: "winner_ms_sf" }],
+      finale:  [
+        { title: "Mistr světa",      type: "winner", dbType: "winner_ms_finale" },
+        { title: "Bronzová medaile", type: "winner", dbType: "winner_ms_3rd" },
       ],
     }
   },
   blboun: {
-    label: "Blbounský pohár",
     phases: [
       { id: "zakladni", label: "Základní fáze" },
       { id: "finale",   label: "Finále" },
     ],
     betSections: {
-      zakladni: [{ id: "winner_blboun_zak",   title: "Postup ze základní fáze",  type: "winner", dbType: "winner_blboun_zak" }],
-      finale:   [{ id: "winner_blboun_final", title: "Vítěz Blbounského poháru", type: "winner", dbType: "winner_blboun_final" }],
+      zakladni: [{ title: "Postup ze základní fáze",  type: "winner", dbType: "winner_blboun_zak" }],
+      finale:   [{ title: "Vítěz Blbounského poháru", type: "winner", dbType: "winner_blboun_final" }],
     }
   }
 }
 
 function getGoalsOdds(teamName) {
-  const n = (teamName||"").toLowerCase()
-  if(n.includes("sparta"))                           return { "25": 3.20, "30": 5.00, "35": 7.50 }
-  if(n.includes("litvínov")||n.includes("litvinov")) return { "25": 3.40, "30": 5.40, "35": 8.20 }
-  if(n.includes("motor"))                            return { "25": 3.60, "30": 5.80, "35": 9.00 }
-  if(n.includes("kladno"))                           return { "25": 3.90, "30": 6.50, "35": 10.5 }
-  if(n.includes("vary"))                             return { "25": 4.20, "30": 7.20, "35": 12.0 }
-  if(n.includes("liberec"))                          return { "25": 4.60, "30": 8.20, "35": 14.5 }
-  if(n.includes("pardubice"))                        return { "25": 5.20, "30": 9.50, "35": 17.0 }
-  if(n.includes("třinec")||n.includes("trinec"))     return { "25": 6.00, "30": 11.0, "35": 20.0 }
+  const n=(teamName||"").toLowerCase()
+  if(n.includes("sparta"))                           return {"25":3.20,"30":5.00,"35":7.50}
+  if(n.includes("litvínov")||n.includes("litvinov")) return {"25":3.40,"30":5.40,"35":8.20}
+  if(n.includes("motor"))                            return {"25":3.60,"30":5.80,"35":9.00}
+  if(n.includes("kladno"))                           return {"25":3.90,"30":6.50,"35":10.5}
+  if(n.includes("vary"))                             return {"25":4.20,"30":7.20,"35":12.0}
+  if(n.includes("liberec"))                          return {"25":4.60,"30":8.20,"35":14.5}
+  if(n.includes("pardubice"))                        return {"25":5.20,"30":9.50,"35":17.0}
+  if(n.includes("třinec")||n.includes("trinec"))     return {"25":6.00,"30":11.0,"35":20.0}
   return null
 }
 
-let teams = [], players = {}, bets = [], formRatings = {}, locks = {}
-let allMatches = [], standings = [], playoffMatches = {}
-let currentComp = "extraliga"
-let currentPhase = "zakladni"
-const selectedGoal = {}
+let teams=[], players={}, bets=[], formRatings={}, locks={}
+let allPlayedMatches=[], standings=[]
+let playoffMatchesByPhase={}
+let currentComp="extraliga"
+let currentPhase="zakladni"
+const selectedGoal={}
 
-// ── FORM RATING ──
-function getScore(match, teamId) {
-  const hg = Number(match.home_score), ag = Number(match.away_score)
-  let stats = null; try{ stats = match.stats ? JSON.parse(match.stats) : null }catch(e){}
-  const isSN = stats && (stats[20]==="1"||stats[20]==="2")
-  const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
-  const isHome = match.home_team === teamId
-  const teamGoals = isHome ? hg : ag
-  if(teamGoals > (isHome ? ag : hg)) return (isSN||isOT) ? 0.75 : 1
-  return (isSN||isOT) ? 0.25 : 0
+function getScore(match,teamId){
+  const hg=Number(match.home_score),ag=Number(match.away_score)
+  let stats=null;try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
+  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+  const isHome=match.home_team===teamId
+  const tg=isHome?hg:ag
+  if(tg>(isHome?ag:hg)) return(isSN||isOT)?0.75:1
+  return(isSN||isOT)?0.25:0
 }
 
-function calculateFormRatings(matches) {
-  const ratings = {}, formHistory = {}, fr = {}
-  teams.forEach(t=>{ ratings[t.id]=START_RATING; formHistory[t.id]=[]; fr[t.id]=START_RATING })
+function calculateFormRatings(matches){
+  const ratings={},fh={},fr={}
+  teams.forEach(t=>{ratings[t.id]=START_RATING;fh[t.id]=[];fr[t.id]=START_RATING})
   matches.forEach(m=>{
-    const h=m.home_team, a=m.away_team
+    const h=m.home_team,a=m.away_team
     if(!fr[h]||!fr[a]) return
-    const sH=getScore(m,h), sA=getScore(m,a)
-    function upd(tid, oid, score) {
-      const cur=fr[tid], opp=fr[oid]
+    const sH=getScore(m,h),sA=getScore(m,a)
+    function upd(tid,oid,score){
+      const cur=fr[tid],opp=fr[oid]
       const exp=1/(1+Math.pow(10,(opp-cur)/400))
       const ch=K_FORM*(score-exp)
-      formHistory[tid].push(ch)
-      if(formHistory[tid].length>5) formHistory[tid].shift()
-      fr[tid]=Math.round(START_RATING+formHistory[tid].reduce((a,b)=>a+Math.round(b),0))
+      fh[tid].push(ch);if(fh[tid].length>5)fh[tid].shift()
+      fr[tid]=Math.round(START_RATING+fh[tid].reduce((a,b)=>a+Math.round(b),0))
     }
-    upd(h,a,sH); upd(a,h,sA)
+    upd(h,a,sH);upd(a,h,sA)
     const rH=ratings[h],rA=ratings[a]
     ratings[h]=Math.round(rH+K_FORM*(sH-(1/(1+Math.pow(10,(rA-rH)/400)))))
     ratings[a]=Math.round(rA+K_FORM*(sA-(1/(1+Math.pow(10,(rH-rA)/400)))))
@@ -334,85 +335,67 @@ function calculateFormRatings(matches) {
   return fr
 }
 
-// ── TABULKA ZÁKLADNÍ ČÁSTI ──
-function calculateStandings(basicMatches) {
-  const table = {}
-  teams.forEach(t => {
-    table[t.id] = { id:t.id, name:t.name, logo:t.logo, b:0, z:0, gf:0, ga:0 }
+function calculateStandings(basicMatches){
+  const table={}
+  teams.forEach(t=>{table[t.id]={id:t.id,name:t.name,logo:t.logo,b:0,z:0,gf:0,ga:0}})
+  basicMatches.forEach(m=>{
+    const h=table[m.home_team],a=table[m.away_team]
+    if(!h||!a) return
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    let stats=null;try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const ots=isSN||isOT
+    h.z++;a.z++;h.gf+=hg;h.ga+=ag;a.gf+=ag;a.ga+=hg
+    if(hg>ag){if(ots){h.b+=2;a.b+=1}else h.b+=3}
+    else{if(ots){a.b+=2;h.b+=1}else a.b+=3}
   })
-  basicMatches.forEach(m => {
-    const h = table[m.home_team], a = table[m.away_team]
-    if(!h || !a) return
-    const hg = Number(m.home_score), ag = Number(m.away_score)
-    let stats = null; try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
-    const isSN = stats && (stats[20]==="1"||stats[20]==="2")
-    const isOT = stats && !isSN && (stats[9]==="11"||stats[19]==="11")
-    const isOTorSN = isSN || isOT
-    h.z++; a.z++; h.gf+=hg; h.ga+=ag; a.gf+=ag; a.ga+=hg
-    if(hg > ag){
-      if(isOTorSN){ h.b+=2; a.b+=1 } else { h.b+=3 }
-    } else {
-      if(isOTorSN){ a.b+=2; h.b+=1 } else { a.b+=3 }
-    }
-  })
-  return Object.values(table)
-    .filter(t => t.z > 0)
-    .sort((a,b) => b.b !== a.b ? b.b - a.b : (b.gf-b.ga) - (a.gf-a.ga))
+  return Object.values(table).filter(t=>t.z>0)
+    .sort((a,b)=>b.b!==a.b?b.b-a.b:(b.gf-b.ga)-(a.gf-a.ga))
 }
 
-// ── PLAY OFF KURZY ──
-function getLastH2H(homeId, awayId) {
-  const h2h = allMatches.filter(m =>
-    (m.home_team===homeId && m.away_team===awayId) ||
-    (m.home_team===awayId && m.away_team===homeId)
+function getLastH2H(homeId,awayId){
+  const h2h=allPlayedMatches.filter(m=>
+    (m.home_team===homeId&&m.away_team===awayId)||
+    (m.home_team===awayId&&m.away_team===homeId)
   )
-  return h2h.length ? h2h[h2h.length - 1] : null
+  return h2h.length?h2h[h2h.length-1]:null
 }
 
-function calculatePlayoffOdds(homeId, awayId) {
-  const n = standings.length
-  const homePos = standings.findIndex(t => t.id === homeId)
-  const awayPos = standings.findIndex(t => t.id === awayId)
-
-  const homeStr = homePos >= 0 ? (n - homePos) / n : 0.5
-  const awayStr = awayPos >= 0 ? (n - awayPos) / n : 0.5
-
-  let probHome = homeStr / (homeStr + awayStr)
-
-  // Korekce podle posledního vzájemného zápasu ±4%
-  const h2h = getLastH2H(homeId, awayId)
-  let h2hText = "Žádný vzájemný zápas"
-  if(h2h) {
-    const hg = Number(h2h.home_score), ag = Number(h2h.away_score)
-    const homeWonH2H = h2h.home_team === homeId ? hg > ag : ag > hg
-    probHome = Math.max(0.05, Math.min(0.95, probHome + (homeWonH2H ? 0.04 : -0.04)))
-    const winner = homeWonH2H
-      ? teams.find(t=>t.id===homeId)?.name
-      : teams.find(t=>t.id===awayId)?.name
-    h2hText = `Poslední vzájemný: ${hg}:${ag} → ${winner} (${homeWonH2H?'+':'-'}4%)`
+function calcPlayoffOdds(homeId,awayId){
+  const n=standings.length
+  const hp=standings.findIndex(t=>t.id===homeId)
+  const ap=standings.findIndex(t=>t.id===awayId)
+  const hs=hp>=0?(n-hp)/n:0.5
+  const as_=ap>=0?(n-ap)/n:0.5
+  let probH=hs/(hs+as_)
+  const h2h=getLastH2H(homeId,awayId)
+  let h2hText="Žádný vzájemný zápas v ZČ"
+  if(h2h){
+    const hg=Number(h2h.home_score),ag=Number(h2h.away_score)
+    const homeWon=h2h.home_team===homeId?hg>ag:ag>hg
+    probH=Math.max(0.05,Math.min(0.95,probH+(homeWon?0.04:-0.04)))
+    const wName=homeWon?teams.find(t=>t.id===homeId)?.name:teams.find(t=>t.id===awayId)?.name
+    h2hText=`Poslední vzájemný: ${hg}:${ag} → vyhrál ${wName} (${homeWon?"+":"-"}4%)`
   }
-
-  const probAway = 1 - probHome
-  return {
-    home: (1 / probHome) * PLAYOFF_MARGIN,
-    away: (1 / probAway) * PLAYOFF_MARGIN,
-    probHome: Math.round(probHome * 100),
-    probAway: Math.round(probAway * 100),
-    homePos: homePos + 1,
-    awayPos: awayPos + 1,
+  const probA=1-probH
+  return{
+    home:(1/probH)*PLAYOFF_MARGIN,
+    away:(1/probA)*PLAYOFF_MARGIN,
+    probHome:Math.round(probH*100),
+    probAway:Math.round(probA*100),
+    homePos:hp+1,
+    awayPos:ap+1,
     h2hText,
   }
 }
 
-// ── ODDS PRO ZÁKLADNÍ ČÁST ──
-function calculateWinnerOdds() {
-  const s = teams.map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
-  const total = s.reduce((a,b)=>a+b,0)
-  const map = {}
-  teams.forEach((t,i)=>{ map[t.id]=MARGIN/(s[i]/total) })
-  return map
+function calculateWinnerOdds(){
+  const s=teams.map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
+  const total=s.reduce((a,b)=>a+b,0)
+  const map={};teams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
 }
-function calculateNonWinnerOdds() {
+function calculateNonWinnerOdds(){
   const sorted=[...teams].sort((a,b)=>(formRatings[a.id]||1000)-(formRatings[b.id]||1000))
   const map={}
   sorted.forEach((t,i)=>{
@@ -421,323 +404,283 @@ function calculateNonWinnerOdds() {
   })
   return map
 }
-function calculateLastOdds() {
-  const s = teams.map(t=>Math.pow(1/(Number(formRatings[t.id]||1000)),6))
-  const total = s.reduce((a,b)=>a+b,0)
-  const map = {}
-  teams.forEach((t,i)=>{ map[t.id]=MARGIN/(s[i]/total) })
-  return map
+function calculateLastOdds(){
+  const s=teams.map(t=>Math.pow(1/(Number(formRatings[t.id]||1000)),6))
+  const total=s.reduce((a,b)=>a+b,0)
+  const map={};teams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
 }
-function calculateEqualOdds(factor=2.5) {
-  const map = {}
-  teams.forEach(t=>{ map[t.id]=factor })
-  return map
+function calculateEqualOdds(f=2.5){
+  const map={};teams.forEach(t=>{map[t.id]=f});return map
 }
 
-// ── ZÁMKY ──
-async function loadLocks() {
-  const { data } = await supabase.from("bet_locks").select("*")
-  locks = {}
-  ;(data||[]).forEach(row => { if(row.locked) locks[row.id] = true })
+async function loadLocks(){
+  const{data}=await supabase.from("bet_locks").select("*")
+  locks={}
+  ;(data||[]).forEach(row=>{if(row.locked)locks[row.id]=true})
 }
-function isCatLocked(type){ return !!locks[`cat:${type}`] }
-function isTeamLocked(type, teamId){ return !!locks[`team:${type}:${teamId}`] }
-function isLocked(type, teamId){ return isCatLocked(type) || isTeamLocked(type, teamId) }
+function isCatLocked(type){return!!locks[`cat:${type}`]}
+function isTeamLocked(type,teamId){return!!locks[`team:${type}:${teamId}`]}
+function isLocked(type,teamId){return isCatLocked(type)||isTeamLocked(type,teamId)}
 
-// ── LOAD ──
-async function load() {
-  const { data: t } = await supabase.from("teams").select("*").eq("competition","extraliga")
-  teams = t || []
+async function load(){
+  const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
+  teams=t||[]
 
-  const { data: m } = await supabase.from("matches").select("*")
+  const{data:played}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null)
     .order("round",{ascending:true})
-  allMatches = m || []
+  allPlayedMatches=played||[]
 
-  // Zápasy základní části pro tabulku
-  const basicMatches = allMatches.filter(m => ZAKLADNI_CAST_STAGE_IDS.includes(m.stage_id))
-  formRatings = calculateFormRatings(basicMatches)
-  standings = calculateStandings(basicMatches)
+  const basicMatches=allPlayedMatches.filter(m=>ZAKLADNI_STAGE_IDS.includes(m.stage_id))
+  formRatings=calculateFormRatings(basicMatches)
+  standings=calculateStandings(basicMatches)
 
-  // Play off zápasy podle fáze (včetně neodehraných)
-  const { data: allM2 } = await supabase.from("matches").select("*")
+  // Načti play off zápasy pro každou fázi (i neodehrané)
+  const allPoStageIds=[
+    ...PLAYOFF_STAGE_IDS.ctvrtfinale,
+    ...PLAYOFF_STAGE_IDS.semifinale,
+    ...PLAYOFF_STAGE_IDS.finale,
+  ]
+  const{data:poAll}=await supabase.from("matches").select("*")
+    .in("stage_id",allPoStageIds)
     .order("round",{ascending:true})
-  const allMatchesIncUnplayed = allM2 || []
 
-  playoffMatches = {}
-  Object.entries(PLAYOFF_STAGE_MAP).forEach(([phase, stageIds]) => {
-    playoffMatches[phase] = allMatchesIncUnplayed
-      .filter(m => stageIds.includes(m.stage_id))
-      .sort((a,b) => Number(a.round)-Number(b.round))
+  playoffMatchesByPhase={}
+  Object.entries(PLAYOFF_STAGE_IDS).forEach(([phase,stageIds])=>{
+    playoffMatchesByPhase[phase]=(poAll||[]).filter(m=>stageIds.includes(m.stage_id))
   })
 
-  // Playoff phase také = všechny play off dohromady
-  playoffMatches["playoff"] = [
-    ...playoffMatches["ctvrtfinale"]||[],
-    ...playoffMatches["semifinale"]||[],
-    ...playoffMatches["finale"]||[],
-  ]
-
-  const { data: p } = await supabase.from("players").select("*").in("name",["Kubele","Pici"])
+  const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
   ;(p||[]).forEach(pl=>players[pl.name]=pl)
 
-  const { data: b } = await supabase.from("bets_special").select("*").eq("status","pending")
-  bets = b || []
+  const{data:b}=await supabase.from("bets_special").select("*").eq("status","pending")
+  bets=b||[]
 
   await loadLocks()
   render()
 }
 
-// ── NAVIGACE ──
-window.setComp = function(comp) {
-  currentComp = comp
-  const cfg = COMP_CONFIG[comp]
-  currentPhase = cfg.phases[0].id
+window.setComp=function(comp){
+  currentComp=comp
+  const cfg=COMP_CONFIG[comp]
+  currentPhase=cfg.phases[0].id
   document.querySelectorAll(".comp-tab").forEach((el,i)=>{
-    el.classList.toggle("active", Object.keys(COMP_CONFIG)[i] === comp)
+    el.classList.toggle("active",Object.keys(COMP_CONFIG)[i]===comp)
   })
   renderPhaseTabs()
   render()
 }
-function renderPhaseTabs() {
-  const cfg = COMP_CONFIG[currentComp]
-  document.getElementById("phaseBar").innerHTML = cfg.phases.map(p=>`
+function renderPhaseTabs(){
+  const cfg=COMP_CONFIG[currentComp]
+  document.getElementById("phaseBar").innerHTML=cfg.phases.map(p=>`
     <button class="phase-tab${p.id===currentPhase?" active":""}" onclick="setPhase('${p.id}')">${p.label}</button>
   `).join("")
 }
-window.setPhase = function(phase) {
-  currentPhase = phase
+window.setPhase=function(phase){
+  currentPhase=phase
   renderPhaseTabs()
   render()
 }
 
-// ── HELPERS ──
-function getBet(playerId, teamId, type) {
+function getBet(playerId,teamId,type){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type===type)
 }
-function getExistingGoalBet(playerId, teamId) {
+function getExistingGoalBet(playerId,teamId){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type?.startsWith("goals_"))
 }
 
-// ── BET AKCE ──
-window.updateWin = function(player, teamId, type, odds) {
-  const val = Number(document.getElementById(`a_${player}_${teamId}_${type}`).value)
-  const box = document.getElementById(`w_${player}_${teamId}_${type}`)
-  if(box) box.textContent = val ? Math.round(val*odds)+" Kč" : "—"
+window.updateWin=function(player,teamId,type,odds){
+  const val=Number(document.getElementById(`a_${player}_${teamId}_${type}`).value)
+  const box=document.getElementById(`w_${player}_${teamId}_${type}`)
+  if(box) box.textContent=val?Math.round(val*odds)+" Kč":"—"
 }
 
-window.bet = async function(playerName, teamId, odds, type) {
-  if(isLocked(type, teamId)) return alert("Tato sázka je uzavřena pro tipování.")
-  const player = players[playerName]
-  const val = Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
+window.bet=async function(playerName,teamId,odds,type){
+  if(isLocked(type,teamId)) return alert("Tato sázka je uzavřena pro tipování.")
+  const player=players[playerName]
+  const val=Number(document.getElementById(`a_${playerName}_${teamId}_${type}`).value)
   if(!val||val<=0) return alert("Zadej částku")
   if(player.credit<val) return alert("Nedostatek kreditu")
   await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
   await supabase.from("bets_special").insert({
-    player_id:player.id, type, target_id:teamId,
-    odds, amount:val, potential_win:val*odds, status:"pending"
+    player_id:player.id,type,target_id:teamId,
+    odds,amount:val,potential_win:val*odds,status:"pending"
   })
   load()
 }
 
-window.selectGoal = function(playerName, teamId, thr) {
+window.selectGoal=function(playerName,teamId,thr){
   if(!selectedGoal[playerName]) selectedGoal[playerName]={}
-  selectedGoal[playerName][teamId] = selectedGoal[playerName][teamId]===thr ? null : thr
+  selectedGoal[playerName][teamId]=selectedGoal[playerName][teamId]===thr?null:thr
   ;["25","30","35"].forEach(t=>{
-    const btn = document.getElementById(`gbtn_${playerName}_${teamId}_${t}`)
-    if(btn) btn.classList.toggle("selected", selectedGoal[playerName][teamId]===t)
+    const btn=document.getElementById(`gbtn_${playerName}_${teamId}_${t}`)
+    if(btn) btn.classList.toggle("selected",selectedGoal[playerName][teamId]===t)
   })
-  updateGoalWin(playerName, teamId)
+  updateGoalWin(playerName,teamId)
 }
 
-window.updateGoalWin = function(playerName, teamId) {
-  const sel = selectedGoal[playerName]?.[teamId]
-  const winEl = document.getElementById(`gw_${playerName}_${teamId}`)
-  const inputEl = document.getElementById(`gi_${playerName}_${teamId}`)
-  const val = inputEl ? Number(inputEl.value) : 0
-  if(!sel||!val){ if(winEl) winEl.textContent="—"; return }
-  const team = teams.find(t=>t.id===teamId)
-  const odds = getGoalsOdds(team?.name||"")
+window.updateGoalWin=function(playerName,teamId){
+  const sel=selectedGoal[playerName]?.[teamId]
+  const winEl=document.getElementById(`gw_${playerName}_${teamId}`)
+  const inputEl=document.getElementById(`gi_${playerName}_${teamId}`)
+  const val=inputEl?Number(inputEl.value):0
+  if(!sel||!val){if(winEl)winEl.textContent="—";return}
+  const team=teams.find(t=>t.id===teamId)
+  const odds=getGoalsOdds(team?.name||"")
   if(!odds||!winEl) return
-  winEl.textContent = Math.round(val*odds[sel])+" Kč"
+  winEl.textContent=Math.round(val*odds[sel])+" Kč"
 }
 
-window.betGoals = async function(playerName, teamId) {
-  const type = "goals_regular_season"
-  if(isLocked(type, teamId)) return alert("Tato sázka je uzavřena pro tipování.")
-  const sel = selectedGoal[playerName]?.[teamId]
+window.betGoals=async function(playerName,teamId){
+  const type="goals_regular_season"
+  if(isLocked(type,teamId)) return alert("Tato sázka je uzavřena pro tipování.")
+  const sel=selectedGoal[playerName]?.[teamId]
   if(!sel) return alert("Vyber počet gólů (25+, 30+ nebo 35+)")
-  const player = players[playerName]
-  const val = Number(document.getElementById(`gi_${playerName}_${teamId}`).value)
+  const player=players[playerName]
+  const val=Number(document.getElementById(`gi_${playerName}_${teamId}`).value)
   if(!val||val<=0) return alert("Zadej částku")
   if(player.credit<val) return alert("Nedostatek kreditu")
-  const team = teams.find(t=>t.id===teamId)
-  const odds = getGoalsOdds(team?.name||"")
-  const o = odds[sel]
-  const dbType = `goals_${sel}_regular_season`
+  const team=teams.find(t=>t.id===teamId)
+  const odds=getGoalsOdds(team?.name||"")
+  const o=odds[sel]
+  const dbType=`goals_${sel}_regular_season`
   await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
   await supabase.from("bets_special").insert({
-    player_id:player.id, type:dbType, target_id:teamId,
-    odds:o, amount:val, potential_win:val*o, status:"pending"
+    player_id:player.id,type:dbType,target_id:teamId,
+    odds:o,amount:val,potential_win:val*o,status:"pending"
   })
   load()
 }
 
-// ── PLAY OFF RENDER ──
-function renderPlayoffPhase(phase) {
-  const phaseLabelMap = {
-    playoff:"Play off – přehled", ctvrtfinale:"Čtvrtfinále", semifinale:"Semifinále", finale:"Finále"
-  }
-  const dbTypeMap = {
-    playoff:"winner_playoff_qf", ctvrtfinale:"winner_playoff_qf",
-    semifinale:"winner_playoff_sf", finale:"winner_playoff_final"
-  }
+// ── PLAY OFF ZÁPASY RENDER ──
+function renderPlayoffMatches(phase){
+  const matches=playoffMatchesByPhase[phase]||[]
+  if(matches.length===0) return renderComingSoon()
 
-  const matches = playoffMatches[phase] || []
-  if(matches.length === 0) return renderComingSoon()
+  const dbType=PLAYOFF_DB_TYPE[phase]
+  const phaseLabel={ctvrtfinale:"Čtvrtfinále",semifinale:"Semifinále",finale:"Finále"}[phase]||""
 
-  let html = ""
-  matches.forEach(m => {
-    const home = teams.find(t=>t.id===m.home_team)
-    const away = teams.find(t=>t.id===m.away_team)
-    if(!home || !away) return
+  let html=""
+  matches.forEach(m=>{
+    const home=teams.find(t=>t.id===m.home_team)
+    const away=teams.find(t=>t.id===m.away_team)
+    if(!home||!away) return
 
-    const odds = calculatePlayoffOdds(home.id, away.id)
-    const dbType = dbTypeMap[phase] || "winner_playoff_qf"
-    const stageName = phaseLabelMap[phase] || "Play off"
+    const odds=calcPlayoffOdds(home.id,away.id)
+    const played=m.played&&m.home_score!=null
+    const scoreStr=played?`${m.home_score} : ${m.away_score}`:"vs"
 
-    const isLocked_home = isLocked(dbType, home.id)
-    const isLocked_away = isLocked(dbType, away.id)
-
-    const existHome_K = getBet(players["Kubele"]?.id, home.id, dbType)
-    const existAway_K = getBet(players["Kubele"]?.id, away.id, dbType)
-    const existHome_P = getBet(players["Pici"]?.id, home.id, dbType)
-    const existAway_P = getBet(players["Pici"]?.id, away.id, dbType)
-
-    const played = m.played && m.home_score != null
-    const scoreStr = played ? `${m.home_score} : ${m.away_score}` : "vs"
-
-    html += `
-    <div class="playoff-match-card">
-      <div class="playoff-match-header">
-        <span class="playoff-match-title">${home.name} vs ${away.name}</span>
-        <span class="playoff-match-phase">${stageName}</span>
+    html+=`
+    <div class="playoff-card">
+      <div class="playoff-card-header">
+        <span class="playoff-card-title">${home.name} — ${away.name}</span>
+        <span class="playoff-card-phase">${phaseLabel}</span>
       </div>
-
-      <div class="playoff-teams-row">
+      <div class="playoff-matchup">
         <div class="playoff-team">
           <img class="playoff-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
           <div class="playoff-team-name">${home.name}</div>
-          <div class="playoff-team-pos">${odds.homePos > 0 ? odds.homePos+". místo ZČ" : "—"}</div>
+          <div class="playoff-team-pos">${odds.homePos>0?odds.homePos+". místo ZČ":"—"}</div>
         </div>
         <div class="playoff-vs">${scoreStr}</div>
         <div class="playoff-team">
           <img class="playoff-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
           <div class="playoff-team-name">${away.name}</div>
-          <div class="playoff-team-pos">${odds.awayPos > 0 ? odds.awayPos+". místo ZČ" : "—"}</div>
+          <div class="playoff-team-pos">${odds.awayPos>0?odds.awayPos+". místo ZČ":"—"}</div>
         </div>
       </div>
-
-      <div class="playoff-odds-row">
-        <div class="playoff-odd-cell">
-          <div class="playoff-odd-label">Kurz ${home.name}</div>
+      <div class="playoff-odds-strip">
+        <div class="playoff-odd">
+          <div class="playoff-odd-label">Kurz — ${home.name}</div>
           <div class="playoff-odd-val">${odds.home.toFixed(2)}</div>
-          <div class="playoff-odd-prob">${odds.probHome}% pravděp.</div>
+          <div class="playoff-odd-prob">${odds.probHome}% pravděpodobnost</div>
         </div>
-        <div class="playoff-odd-cell">
-          <div class="playoff-odd-label">Kurz ${away.name}</div>
+        <div class="playoff-odd">
+          <div class="playoff-odd-label">Kurz — ${away.name}</div>
           <div class="playoff-odd-val">${odds.away.toFixed(2)}</div>
-          <div class="playoff-odd-prob">${odds.probAway}% pravděp.</div>
+          <div class="playoff-odd-prob">${odds.probAway}% pravděpodobnost</div>
         </div>
       </div>
-
-      <div class="playoff-h2h">
-        <span class="playoff-h2h-icon">⚔️</span>
-        <span>${odds.h2hText}</span>
-      </div>
-
-      <div class="playoff-bet-row">
-        ${renderPlayoffBetCell("Kubele", home, away, odds, dbType, existHome_K, existAway_K, isLocked_home, isLocked_away)}
-        ${renderPlayoffBetCell("Pici",   home, away, odds, dbType, existHome_P, existAway_P, isLocked_home, isLocked_away)}
+      <div class="playoff-h2h">⚔️ ${odds.h2hText}</div>
+      <div class="playoff-bets">
+        ${renderPlayoffBetCell("Kubele",home,away,odds,dbType)}
+        ${renderPlayoffBetCell("Pici",  home,away,odds,dbType)}
       </div>
     </div>`
   })
-
   return html
 }
 
-function renderPlayoffBetCell(playerName, home, away, odds, dbType, existHome, existAway, lockedHome, lockedAway) {
-  const p = players[playerName]
+function renderPlayoffBetCell(playerName,home,away,odds,dbType){
+  const p=players[playerName]
   if(!p) return ""
-
-  // Pokud už vsadil
-  if(existHome || existAway) {
-    const existing = existHome || existAway
-    const betTeam = existHome ? home : away
+  const existHome=getBet(p.id,home.id,dbType)
+  const existAway=getBet(p.id,away.id,dbType)
+  if(existHome||existAway){
+    const ex=existHome||existAway
+    const betTeam=existHome?home:away
     return `<div class="playoff-bet-cell">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">${playerName}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">💰 ${Math.round(p.credit)} Kč</div>
-      <span class="locked-badge">✓ Vsazeno na ${betTeam.name} · ${existing.amount} Kč → ${Math.round(existing.potential_win)} Kč</span>
+      <div class="playoff-bet-player">${playerName}</div>
+      <div class="playoff-bet-credit">💰 ${Math.round(p.credit)} Kč</div>
+      <span class="locked-badge">✓ ${betTeam.name} · ${ex.amount} Kč → ${Math.round(ex.potential_win)} Kč</span>
     </div>`
   }
-
-  // Pokud uzavřeno
-  if(lockedHome && lockedAway) {
+  const lockedHome=isLocked(dbType,home.id)
+  const lockedAway=isLocked(dbType,away.id)
+  if(lockedHome&&lockedAway){
     return `<div class="playoff-bet-cell">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">${playerName}</div>
+      <div class="playoff-bet-player">${playerName}</div>
       <span class="closed-badge">🔒 Uzavřeno</span>
     </div>`
   }
-
+  const rowHome=!lockedHome?`
+    <div class="playoff-bet-row-inner">
+      <span class="playoff-bet-team-label">${home.name} (${odds.home.toFixed(2)})</span>
+      <input class="bet-input" id="a_${playerName}_${home.id}_${dbType}" type="number" min="1" placeholder="Kč"
+        oninput="updateWin('${playerName}','${home.id}','${dbType}',${odds.home})">
+      <span class="win-display" id="w_${playerName}_${home.id}_${dbType}">—</span>
+      <button class="bet-btn" onclick="bet('${playerName}','${home.id}',${odds.home},'${dbType}')">Vsadit</button>
+    </div>`:""
+  const rowAway=!lockedAway?`
+    <div class="playoff-bet-row-inner">
+      <span class="playoff-bet-team-label">${away.name} (${odds.away.toFixed(2)})</span>
+      <input class="bet-input" id="a_${playerName}_${away.id}_${dbType}" type="number" min="1" placeholder="Kč"
+        oninput="updateWin('${playerName}','${away.id}','${dbType}',${odds.away})">
+      <span class="win-display" id="w_${playerName}_${away.id}_${dbType}">—</span>
+      <button class="bet-btn" onclick="bet('${playerName}','${away.id}',${odds.away},'${dbType}')">Vsadit</button>
+    </div>`:""
   return `<div class="playoff-bet-cell">
-    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;">${playerName}</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">💰 ${Math.round(p.credit)} Kč</div>
-    <div class="playoff-bet-inner">
-      ${!lockedHome ? `
-        <input class="bet-input" id="po_${playerName}_${home.id}_${dbType}" type="number" min="1" placeholder="Kč" style="width:70px"
-          oninput="updateWin('${playerName}','${home.id}','${dbType}',${odds.home})">
-        <button class="bet-btn" onclick="bet('${playerName}','${home.id}',${odds.home},'${dbType}')">
-          ${home.name} (${odds.home.toFixed(2)})
-        </button>` : ""}
-      ${!lockedAway ? `
-        <input class="bet-input" id="po_${playerName}_${away.id}_${dbType}" type="number" min="1" placeholder="Kč" style="width:70px"
-          oninput="updateWin('${playerName}','${away.id}','${dbType}',${odds.away})">
-        <button class="bet-btn" onclick="bet('${playerName}','${away.id}',${odds.away},'${dbType}')">
-          ${away.name} (${odds.away.toFixed(2)})
-        </button>` : ""}
-    </div>
+    <div class="playoff-bet-player">${playerName}</div>
+    <div class="playoff-bet-credit">💰 ${Math.round(p.credit)} Kč</div>
+    <div class="playoff-bet-btns">${rowHome}${rowAway}</div>
   </div>`
 }
 
-// ── ZÁKLADNÍ ČÁST RENDER ──
-function playerBetTable(playerName, oddsMap, dbType) {
-  const p = players[playerName]
+// ── ZČ RENDER ──
+function playerBetTable(playerName,oddsMap,dbType){
+  const p=players[playerName]
   if(!p) return ""
-  const sorted = [...teams].sort((a,b)=>oddsMap[a.id]-oddsMap[b.id])
-  let rows = sorted.map(t=>{
-    const o = oddsMap[t.id]
-    const existing = getBet(p.id, t.id, dbType)
-    const form = formRatings[t.id]||1000
-    const locked = isLocked(dbType, t.id)
-    const id = `${playerName}_${t.id}_${dbType}`
-    if(existing){
-      return `<tr>
-        <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-        <td class="tc" data-label="Forma"><span class="form-val">${form}</span></td>
-        <td class="tc" data-label="Kurz"><span class="odds-badge">${o.toFixed(2)}</span></td>
-        <td data-label="Vsazeno">${existing.amount} Kč</td>
-        <td data-label="Výhra">${Math.round(existing.potential_win)} Kč</td>
-        <td><span class="locked-badge">✓ Vsazeno</span></td>
-      </tr>`
-    }
-    if(locked){
-      return `<tr>
-        <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-        <td class="tc" data-label="Forma"><span class="form-val">${form}</span></td>
-        <td class="tc" data-label="Kurz"><span class="odds-badge">${o.toFixed(2)}</span></td>
-        <td colspan="3"><span class="closed-badge">🔒 Uzavřeno pro tipování</span></td>
-      </tr>`
-    }
+  const sorted=[...teams].sort((a,b)=>oddsMap[a.id]-oddsMap[b.id])
+  let rows=sorted.map(t=>{
+    const o=oddsMap[t.id]
+    const existing=getBet(p.id,t.id,dbType)
+    const form=formRatings[t.id]||1000
+    const locked=isLocked(dbType,t.id)
+    const id=`${playerName}_${t.id}_${dbType}`
+    if(existing) return `<tr>
+      <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
+      <td class="tc" data-label="Forma"><span class="form-val">${form}</span></td>
+      <td class="tc" data-label="Kurz"><span class="odds-badge">${o.toFixed(2)}</span></td>
+      <td data-label="Vsazeno">${existing.amount} Kč</td>
+      <td data-label="Výhra">${Math.round(existing.potential_win)} Kč</td>
+      <td><span class="locked-badge">✓ Vsazeno</span></td>
+    </tr>`
+    if(locked) return `<tr>
+      <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
+      <td class="tc" data-label="Forma"><span class="form-val">${form}</span></td>
+      <td class="tc" data-label="Kurz"><span class="odds-badge">${o.toFixed(2)}</span></td>
+      <td colspan="3"><span class="closed-badge">🔒 Uzavřeno pro tipování</span></td>
+    </tr>`
     return `<tr>
       <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
       <td class="tc" data-label="Forma"><span class="form-val">${form}</span></td>
@@ -762,16 +705,16 @@ function playerBetTable(playerName, oddsMap, dbType) {
   </div>`
 }
 
-function goalsPlayerBlock(playerName) {
-  const p = players[playerName]
+function goalsPlayerBlock(playerName){
+  const p=players[playerName]
   if(!p) return ""
-  const goalsTeams = teams.filter(t=>getGoalsOdds(t.name))
-  const rows = goalsTeams.map(t=>{
-    const odds = getGoalsOdds(t.name)
-    const existing = getExistingGoalBet(p.id, t.id)
-    const locked = isLocked("goals_regular_season", t.id)
+  const goalsTeams=teams.filter(t=>getGoalsOdds(t.name))
+  const rows=goalsTeams.map(t=>{
+    const odds=getGoalsOdds(t.name)
+    const existing=getExistingGoalBet(p.id,t.id)
+    const locked=isLocked("goals_regular_season",t.id)
     if(existing){
-      const thr = existing.type.split("_")[1]
+      const thr=existing.type.split("_")[1]
       return `<div class="goals-team-row">
         <div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div>
         <div style="font-size:13px;font-weight:600">${thr}+ gólů · kurz ${existing.odds}</div>
@@ -815,56 +758,50 @@ function goalsPlayerBlock(playerName) {
   </div>`
 }
 
-function renderComingSoon() {
+function renderComingSoon(){
   return `<div class="coming-soon">
     <div class="coming-soon-icon">🏒</div>
-    <div class="coming-soon-title">Sázky připravujeme</div>
-    <div class="coming-soon-sub">Tato sekce bude brzy k dispozici.</div>
+    <div class="coming-soon-title">Zatím žádné zápasy</div>
+    <div class="coming-soon-sub">Sázky se zobrazí jakmile budou přidány zápasy do této fáze.</div>
   </div>`
 }
 
-function renderSection(section) {
-  const winnerOdds    = calculateWinnerOdds()
-  const nonwinnerOdds = calculateNonWinnerOdds()
-  const lastOdds      = calculateLastOdds()
-  const equalOdds     = calculateEqualOdds()
-  let html = `<div class="section-label-wrap">
+function renderSection(section){
+  const wo=calculateWinnerOdds(),nwo=calculateNonWinnerOdds(),lo=calculateLastOdds(),eo=calculateEqualOdds()
+  let html=`<div class="section-label-wrap">
     <div class="section-label-text">${section.title}</div>
     <div class="section-label-line"></div>
   </div>`
-  if(section.type === "goals") {
-    html += goalsPlayerBlock("Kubele") + goalsPlayerBlock("Pici")
+  if(section.type==="goals"){
+    html+=goalsPlayerBlock("Kubele")+goalsPlayerBlock("Pici")
     return html
   }
-  const oddsMap =
-    section.type === "winner"    ? winnerOdds :
-    section.type === "nonwinner" ? nonwinnerOdds :
-    section.type === "last"      ? lastOdds : equalOdds
-  html += `<div class="players-grid">
-    ${playerBetTable("Kubele", oddsMap, section.dbType)}
-    ${playerBetTable("Pici",   oddsMap, section.dbType)}
+  const oddsMap=section.type==="winner"?wo:section.type==="nonwinner"?nwo:section.type==="last"?lo:eo
+  html+=`<div class="players-grid">
+    ${playerBetTable("Kubele",oddsMap,section.dbType)}
+    ${playerBetTable("Pici",  oddsMap,section.dbType)}
   </div>`
   return html
 }
 
-// ── MAIN RENDER ──
-function render() {
-  const cfg = COMP_CONFIG[currentComp]
-  const sections = cfg.betSections[currentPhase]
-  const content = document.getElementById("mainContent")
+function render(){
+  const cfg=COMP_CONFIG[currentComp]
+  const sections=cfg.betSections[currentPhase]
+  const content=document.getElementById("mainContent")
 
-  // Play off fáze pro extraligu
-  if(currentComp === "extraliga" && sections === null) {
-    content.innerHTML = renderPlayoffPhase(currentPhase)
+  // Play off fáze extraligy se zápasy z DB
+  if(currentComp==="extraliga" && sections==="matches"){
+    content.innerHTML=renderPlayoffMatches(currentPhase)
     return
   }
 
-  if(!sections || sections.length === 0){
-    content.innerHTML = renderComingSoon()
+  // Prázdná sekce (play off speciální tipy — zatím prázdné)
+  if(!sections||sections.length===0){
+    content.innerHTML=renderComingSoon()
     return
   }
 
-  content.innerHTML = sections.map(renderSection).join("")
+  content.innerHTML=sections.map(renderSection).join("")
 }
 
 renderPhaseTabs()
