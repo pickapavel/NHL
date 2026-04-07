@@ -93,13 +93,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
-/* ── PLAYOFF MATCH CARD ── */
 .po-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:28px;}
-
 .po-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
 .po-header-title{font-size:14px;font-weight:700;color:#fff;}
 .po-header-phase{font-size:11px;color:var(--gold);font-weight:600;background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;}
-
 .po-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);}
 .po-team{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
 .po-team-logo{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:10px;padding:3px;border:1px solid var(--border);}
@@ -110,14 +107,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .po-score{text-align:center;}
 .po-score-main{font-size:28px;font-weight:800;color:var(--navy);line-height:1;}
 .po-score-vs{font-size:18px;font-weight:700;color:var(--muted);}
-
 .po-odds-strip{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
 .po-odd{padding:12px 18px;border-right:1px solid var(--border);}
 .po-odd:last-child{border-right:none;}
 .po-odd-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
 .po-odd-val{font-size:22px;font-weight:800;color:var(--navy);}
 .po-odd-prob{font-size:11px;color:var(--muted);margin-top:1px;}
-
 .po-h2h{padding:10px 18px;background:#f7fafc;border-bottom:1px solid var(--border);}
 .po-h2h-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
 .po-h2h-list{display:flex;flex-direction:column;gap:4px;}
@@ -129,15 +124,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .po-h2h-tag{font-size:9px;font-weight:700;background:#2f9ec9;color:#fff;padding:1px 5px;border-radius:4px;flex-shrink:0;}
 .po-h2h-empty{font-size:12px;color:var(--muted);font-style:italic;}
 .po-h2h-note{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px;}
-
-/* Bet sekce hráčů */
 .po-players{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
 .po-player{padding:16px 18px;border-right:1px solid var(--border);}
 .po-player:last-child{border-right:none;}
 .po-player-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
 .po-player-credit{font-size:11px;color:var(--muted);margin-bottom:12px;}
-
-/* 3-sloupcový grid tipů */
 .po-odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px;}
 .po-odd-btn{background:#f0f4f8;color:var(--navy);border:2px solid #e0ecf8;border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .po-odd-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
@@ -146,7 +137,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .po-odd-type{font-size:10px;font-weight:800;display:block;line-height:1.3;}
 .po-odd-val{font-size:10px;font-weight:600;color:#666;display:block;margin-top:2px;}
 .po-odd-btn.active .po-odd-val{color:#7ab0cc;}
-
 .po-amount-label{font-size:11px;color:#aaa;font-weight:600;margin-bottom:4px;}
 .po-amount-input{width:100%;padding:8px 10px;border:2px solid #e0ecf8;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--navy);background:#f7f9fc;transition:border .15s;}
 .po-amount-input:focus{outline:none;border-color:var(--navy2);background:#fff;}
@@ -211,14 +201,8 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-  semifinale: [
-    "a132f953-b297-4bc7-958d-928de8128b0d",
-    "0619829c-acf5-4d81-9833-7f00923c4e24",
-  ],
-  finale: [
-    "4f644dca-d281-41ed-97e5-6ff38e860660",
-  ],
-}
+const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+
 const PLAYOFF_DB_TYPE = {
   ctvrtfinale: "winner_playoff_qf",
   semifinale:  "winner_playoff_sf",
@@ -325,7 +309,6 @@ let playoffMatchesByPhase={}
 let currentComp="extraliga", currentPhase="zakladni"
 const selectedGoal={}, poState={}
 
-// ── FORM RATING ──
 function getScore(match,teamId){
   const hg=Number(match.home_score),ag=Number(match.away_score)
   let s=null;try{s=match.stats?JSON.parse(match.stats):null}catch(e){}
@@ -378,7 +361,6 @@ function calculateStandings(basicMatches){
     .sort((a,b)=>b.b!==a.b?b.b-a.b:(b.gf-b.ga)-(a.gf-a.ga))
 }
 
-// ── H2H ──
 function getH2H(homeId,awayId){
   return allPlayedMatches
     .filter(m=>(m.home_team===homeId&&m.away_team===awayId)||(m.home_team===awayId&&m.away_team===homeId))
@@ -410,7 +392,6 @@ function renderH2HHtml(homeId,awayId){
   }).join("")
 }
 
-// ── PLAY OFF KURZY ──
 function getLastH2H(homeId,awayId){
   const h2h=allPlayedMatches.filter(m=>
     (m.home_team===homeId&&m.away_team===awayId)||
@@ -447,7 +428,6 @@ function calcPlayoffOdds(homeId,awayId){
   }
 }
 
-// ── VSAD-SI ODDS ──
 function calcMatchOdds(homeRating,awayRating){
   const HOME_ADV=80,homeAdj=homeRating+HOME_ADV
   const diff=Math.abs(homeAdj-awayRating)
@@ -485,7 +465,6 @@ function getTips(h,a){
   ]
 }
 
-// ── ODDS ZČ ──
 function calculateWinnerOdds(){
   const s=teams.map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
   const total=s.reduce((a,b)=>a+b,0)
@@ -509,7 +488,6 @@ function calculateEqualOdds(f=2.5){
   const map={};teams.forEach(t=>{map[t.id]=f});return map
 }
 
-// ── ZÁMKY ──
 async function loadLocks(){
   const{data}=await supabase.from("bet_locks").select("*")
   locks={}
@@ -519,17 +497,19 @@ function isCatLocked(type){return!!locks[`cat:${type}`]}
 function isTeamLocked(type,teamId){return!!locks[`team:${type}:${teamId}`]}
 function isLocked(type,teamId){return isCatLocked(type)||isTeamLocked(type,teamId)}
 
-// ── LOAD ──
 async function load(){
   const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
   teams=t||[]
 
   // Automaticky najdi nejnovější sezónu extraligy
   const{data:seasons}=await supabase.from("seasons").select("*")
-    .eq("competition_id","5cc76adb-b3e0-404b-9095-7dd4a41edb4e")
+    .eq("competition_id",EXTRALIGA_COMPETITION_ID)
     .order("created_at",{ascending:false})
   const currentSeason=seasons?.[0]
-  if(!currentSeason){ document.getElementById("mainContent").innerHTML=renderComingSoon(); return }
+  if(!currentSeason){
+    document.getElementById("mainContent").innerHTML=renderComingSoon()
+    return
+  }
 
   // Načti všechny stages aktuální sezóny
   const{data:stages}=await supabase.from("stages").select("*")
@@ -547,18 +527,18 @@ async function load(){
     finale:     (stages||[]).filter(s=>s.name==="Finále").map(s=>s.id),
   }
 
-  // Všechny odehrané zápasy extraligy napříč sezónami (pro H2H a form rating)
+  // Všechny odehrané zápasy napříč sezónami (pro H2H)
   const{data:allPlayed}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null)
     .order("round",{ascending:true})
   allPlayedMatches=allPlayed||[]
 
-  // Základní část — jen aktuální sezóna pro tabulku
+  // Základní část — jen aktuální sezóna pro tabulku a form rating
   const basicMatches=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
   formRatings=calculateFormRatings(basicMatches)
   standings=calculateStandings(basicMatches)
 
-  // Play off zápasy (i neodehrané) — aktuální sezóna
+  // Play off zápasy (i neodehrané)
   const allPoStageIds=[
     ...playoffStageMap.ctvrtfinale,
     ...playoffStageMap.semifinale,
@@ -587,7 +567,6 @@ async function load(){
   render()
 }
 
-// ── NAVIGACE ──
 window.setComp=function(comp){
   currentComp=comp
   const cfg=COMP_CONFIG[comp]
@@ -610,7 +589,6 @@ window.setPhase=function(phase){
   render()
 }
 
-// ── HELPERS ──
 function getBet(playerId,teamId,type){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type===type)
 }
@@ -618,7 +596,6 @@ function getExistingGoalBet(playerId,teamId){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type?.startsWith("goals_"))
 }
 
-// ── BET AKCE ZČ ──
 window.updateWin=function(player,teamId,type,odds){
   const val=Number(document.getElementById(`a_${player}_${teamId}_${type}`).value)
   const box=document.getElementById(`w_${player}_${teamId}_${type}`)
@@ -678,10 +655,9 @@ window.betGoals=async function(playerName,teamId){
   load()
 }
 
-// ── PLAY OFF TIPY — akce ──
 window.poSelectTip=function(matchId,playerKey,type){
   const key=`${matchId}_${playerKey}`
-  if(!poState[key]) poState[key]={selected:[]}
+  if(!poState[key]) poState[key]={selected:[],oddsMap:{}}
   const sel=poState[key].selected
   if(sel.includes(type)){
     poState[key].selected=sel.filter(t=>t!==type)
@@ -689,9 +665,8 @@ window.poSelectTip=function(matchId,playerKey,type){
     if(sel.length>=2) return
     sel.push(type)
   }
-  // Překresli tlačítka
   document.querySelectorAll(`.po-odd-btn[data-match="${matchId}"][data-player="${playerKey}"]`).forEach(btn=>{
-    btn.classList.toggle("active", poState[key].selected.includes(btn.dataset.type))
+    btn.classList.toggle("active",poState[key].selected.includes(btn.dataset.type))
   })
   poUpdateSummary(matchId,playerKey)
 }
@@ -708,9 +683,9 @@ function poUpdateSummary(matchId,playerKey){
   if(!summaryEl||!amountEl) return
   const amount=Number(amountEl.value)
   const oddsMap=poState[key]?.oddsMap||{}
-  if(!sel.length){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>'; return }
+  if(!sel.length){summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>';return}
   let combinedOdds=1
-  sel.forEach(t=>{ if(oddsMap[t]) combinedOdds*=oddsMap[t] })
+  sel.forEach(t=>{if(oddsMap[t])combinedOdds*=oddsMap[t]})
   if(amount){
     summaryEl.innerHTML=`<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*combinedOdds)} Kč</span>`
   } else {
@@ -718,7 +693,7 @@ function poUpdateSummary(matchId,playerKey){
   }
 }
 
-window.poPlaceBet=async function(matchId,playerKey,homeId,awayId,dbType){
+window.poPlaceBet=async function(matchId,playerKey){
   const key=`${matchId}_${playerKey}`
   const sel=poState[key]?.selected||[]
   const oddsMap=poState[key]?.oddsMap||{}
@@ -728,8 +703,7 @@ window.poPlaceBet=async function(matchId,playerKey,homeId,awayId,dbType){
   if(!sel.length||!amount) return alert("Vyber tip a zadej částku")
   if(player.credit<amount) return alert("Nedostatek kreditu")
   let combinedOdds=1
-  sel.forEach(t=>{ if(oddsMap[t]) combinedOdds*=oddsMap[t] })
-  // Ulož jako bets (ne bets_special) — stejná tabulka jako vsad-si
+  sel.forEach(t=>{if(oddsMap[t])combinedOdds*=oddsMap[t]})
   await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
   await supabase.from("bets").insert({
     match_id:matchId, player_id:player.id,
@@ -739,7 +713,24 @@ window.poPlaceBet=async function(matchId,playerKey,homeId,awayId,dbType){
   load()
 }
 
-// ── PLAY OFF MATCHES RENDER ──
+function checkTip(match,tip){
+  const type=match.result_type
+  const hg=Number(match.home_score),ag=Number(match.away_score)
+  const hw=hg>ag,aw=ag>hg
+  const isOTorSN=(type==="OT"||type==="SN")
+  switch(tip){
+    case "1":        return hw&&type==="REG"
+    case "0":        return isOTorSN
+    case "2":        return aw&&type==="REG"
+    case "11":       return!(aw&&type==="REG")
+    case "no_draw":  return type==="REG"
+    case "22":       return!(hw&&type==="REG")
+    case "vdr_home": return hw
+    case "vdr_away": return aw
+  }
+  return false
+}
+
 function renderPlayoffMatches(phase){
   const matches=playoffMatchesByPhase[phase]||[]
   if(matches.length===0) return renderComingSoon()
@@ -757,22 +748,17 @@ function renderPlayoffMatches(phase){
     const homeShort=home.short_name||home.name
     const awayShort=away.short_name||away.name
     const tips=getTips(homeShort,awayShort)
-    const matchOdds=calcMatchOdds(home.rating_form||1000, away.rating_form||1000)
-
-    const played=m.played&&m.home_score!=null
-    const scoreStr=played?`${m.home_score} : ${m.away_score}`:null
-
+    const matchOdds=calcMatchOdds(home.rating_form||1000,away.rating_form||1000)
     const homeForm=formRatings[home.id]||1000
     const awayForm=formRatings[away.id]||1000
+    const played=m.played&&m.home_score!=null
 
-    // Připrav stav pro tipy
     ;["kubele","pici"].forEach(pk=>{
       const key=`${m.id}_${pk}`
       if(!poState[key]) poState[key]={selected:[],oddsMap:matchOdds}
       else poState[key].oddsMap=matchOdds
     })
 
-    // Načti existující bets pro tento zápas
     const kubele=players["Kubele"]
     const pici=players["Pici"]
 
@@ -782,7 +768,6 @@ function renderPlayoffMatches(phase){
         <span class="po-header-title">${home.name} — ${away.name}</span>
         <span class="po-header-phase">${phaseLabel}</span>
       </div>
-
       <div class="po-teams">
         <div class="po-team">
           <img class="po-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
@@ -807,7 +792,6 @@ function renderPlayoffMatches(phase){
           </div>
         </div>
       </div>
-
       <div class="po-odds-strip">
         <div class="po-odd">
           <div class="po-odd-label">Kurz — ${home.name}</div>
@@ -820,61 +804,47 @@ function renderPlayoffMatches(phase){
           <div class="po-odd-prob">${poOdds.probAway}% pravděpodobnost</div>
         </div>
       </div>
-
       <div class="po-h2h">
         <div class="po-h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
         <div class="po-h2h-list">${renderH2HHtml(home.id,away.id)}</div>
         <div class="po-h2h-note">ℹ️ ${poOdds.h2hText}</div>
       </div>
-
       <div class="po-players">
-        ${renderPoPlayerBlock(m,kubele,"kubele",tips,matchOdds,dbType)}
-        ${renderPoPlayerBlock(m,pici,"pici",tips,matchOdds,dbType)}
+        ${renderPoPlayerBlock(m,kubele,"kubele",tips,matchOdds)}
+        ${renderPoPlayerBlock(m,pici,"pici",tips,matchOdds)}
       </div>
     </div>`
   })
   return html
 }
 
-function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap,dbType){
+function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap){
   if(!player) return ""
+  const existingBet=allPlayedMatches.find(()=>false)  // placeholder — načteme níže
+  // Načti bet z globálního pole bets (bets_special má jen ZČ, play off bets jsou v tabulce bets)
+  const matchBets=(window._matchBets||{})[m.id]||[]
+  const existing=matchBets.find(b=>b.player_id===player.id)||null
+  const played=m.played&&m.home_score!=null
 
-  // Zjisti existující bet z tabulky bets (vsad-si)
-  const existingBet=bets.find(b=>
-    b.match_id===m.id && b.player_id===player.id
-  )||null
-
-  // Fallback: zkontroluj také bets_special (playoff odds)
-  const existingSpecial=bets.find(b=>
-    b.player_id===player.id &&
-    (b.target_id===m.home_team||b.target_id===m.away_team) &&
-    b.type===dbType
-  )||null
-
-  const key=`${m.id}_${playerKey}`
-
-  if(existingBet){
-    const tips_arr=existingBet.tip.split(",")
-    const played=m.played&&m.home_score!=null
+  if(existing){
+    const tips_arr=existing.tip.split(",")
     let resultHtml=""
     if(played){
-      // Zjisti výsledek
       const won=tips_arr.every(t=>checkTip(m,t))
       resultHtml=won
-        ?`<div style="color:#16a34a;font-weight:800;font-size:13px;">🎉 Výhra ${Math.round(existingBet.potential_win)} Kč!</div>`
-        :`<div style="color:#dc2626;font-weight:700;font-size:12px;">❌ Prohra (${existingBet.amount} Kč)</div>`
+        ?`<div style="color:#16a34a;font-weight:800;font-size:13px;">🎉 Výhra ${Math.round(existing.potential_win)} Kč!</div>`
+        :`<div style="color:#dc2626;font-weight:700;font-size:12px;">❌ Prohra (${existing.amount} Kč)</div>`
     } else {
-      resultHtml=`<div style="font-size:12px;color:var(--muted);">Kurz: ${existingBet.odds.toFixed(2)} · Možná výhra: <b>${Math.round(existingBet.potential_win)} Kč</b></div>`
+      resultHtml=`<div style="font-size:12px;color:var(--muted);">Kurz: ${existing.odds.toFixed(2)} · Možná výhra: <b>${Math.round(existing.potential_win)} Kč</b></div>`
     }
     return `<div class="po-player">
       <div class="po-player-name">${player.name}</div>
       <div class="po-player-credit">💰 ${Math.round(player.credit)} Kč</div>
-      <span class="locked-badge" style="margin-bottom:6px;">✓ Vsazeno: ${tips_arr.join(" + ")} · ${existingBet.amount} Kč</span>
+      <span class="locked-badge" style="margin-bottom:6px;">✓ Vsazeno: ${tips_arr.join(" + ")} · ${existing.amount} Kč</span>
       <div style="margin-top:6px;">${resultHtml}</div>
     </div>`
   }
 
-  const played=m.played&&m.home_score!=null
   if(played){
     return `<div class="po-player">
       <div class="po-player-name">${player.name}</div>
@@ -903,29 +873,10 @@ function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap,dbType){
     <input class="po-amount-input" id="po_amount_${m.id}_${playerKey}" type="number" min="1" placeholder="0 Kč"
       oninput="poUpdateAmount('${m.id}','${playerKey}')">
     <div class="po-summary" id="po_summary_${m.id}_${playerKey}"><span style="color:#aaa;">Vyber tip a částku</span></div>
-    <button class="po-vsadit-btn" onclick="poPlaceBet('${m.id}','${playerKey}','${m.home_team}','${m.away_team}','${dbType}')">🎲 Vsadit</button>
+    <button class="po-vsadit-btn" onclick="poPlaceBet('${m.id}','${playerKey}')">🎲 Vsadit</button>
   </div>`
 }
 
-function checkTip(match,tip){
-  const type=match.result_type
-  const hg=Number(match.home_score),ag=Number(match.away_score)
-  const hw=hg>ag,aw=ag>hg
-  const isOTorSN=(type==="OT"||type==="SN")
-  switch(tip){
-    case "1":        return hw&&type==="REG"
-    case "0":        return isOTorSN
-    case "2":        return aw&&type==="REG"
-    case "11":       return!(aw&&type==="REG")
-    case "no_draw":  return type==="REG"
-    case "22":       return!(hw&&type==="REG")
-    case "vdr_home": return hw
-    case "vdr_away": return aw
-  }
-  return false
-}
-
-// ── ZČ RENDER ──
 function playerBetTable(playerName,oddsMap,dbType){
   const p=players[playerName]
   if(!p) return ""
@@ -1053,18 +1004,40 @@ function renderSection(section){
   return html
 }
 
-function render(){
+async function render(){
   const cfg=COMP_CONFIG[currentComp]
   const sections=cfg.betSections[currentPhase]
   const content=document.getElementById("mainContent")
+
   if(sections==="matches"){
+    // Načti bety pro play off zápasy z tabulky bets
+    const matchIds=[
+      ...(playoffMatchesByPhase["ctvrtfinale"]||[]),
+      ...(playoffMatchesByPhase["semifinale"]||[]),
+      ...(playoffMatchesByPhase["finale"]||[]),
+    ].map(m=>m.id)
+
+    if(matchIds.length){
+      const{data:matchBetsData}=await supabase.from("bets").select("*")
+        .in("match_id",matchIds)
+      window._matchBets={}
+      ;(matchBetsData||[]).forEach(b=>{
+        if(!window._matchBets[b.match_id]) window._matchBets[b.match_id]=[]
+        window._matchBets[b.match_id].push(b)
+      })
+    } else {
+      window._matchBets={}
+    }
+
     content.innerHTML=renderPlayoffMatches(currentPhase)
     return
   }
+
   if(!sections||sections.length===0){
     content.innerHTML=renderComingSoon()
     return
   }
+
   content.innerHTML=sections.map(renderSection).join("")
 }
 
