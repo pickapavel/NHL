@@ -336,15 +336,16 @@ async function loadTicker(){
     })
     const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
 
+    // Odehrané — seřazené od nejstaršího po nejnovější (nejnovější budou těsně před separátorem)
     const played = allMatches
       .filter(m => m.played === true && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
         if(!a.played_at && !b.played_at) return 0
         if(!a.played_at) return 1
         if(!b.played_at) return -1
-        return new Date(b.played_at) - new Date(a.played_at)
+        return new Date(a.played_at) - new Date(b.played_at)
       })
-      .slice(0, 100)
+      .slice(-100)
 
     const upcomingBySeason = {}
     activeSeasons.forEach(season => {
@@ -357,7 +358,7 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    // Odehrané zápasy
+    // Odehrané zápasy (vlevo, nejnovější těsně před separátorem)
     played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
@@ -384,7 +385,7 @@ async function loadTicker(){
       addDivider(track)
     })
 
-    // Nadcházející zápasy
+    // Nadcházející zápasy (vpravo)
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
@@ -429,7 +430,7 @@ async function loadTicker(){
 
     const firstBox = track.querySelector('.t-box')
     if(firstBox) boxWidth = firstBox.offsetWidth + 2
-scrollToPx(0, false)
+    scrollToPx(getMaxPx(), true)
     updateButtons()
 
   } catch(err) {
