@@ -8,12 +8,12 @@
 <style>
 *{box-sizing:border-box}
 body{font-family:'Inter',sans-serif;margin:0;background:#f2f2f2;}
-.wrapper{max-width:900px;margin:auto;padding:20px;}
+.wrapper{max-width:960px;margin:auto;padding:20px;}
 h1{margin-bottom:5px;}
 .subtitle{color:#666;margin-bottom:25px;font-size:14px;}
 
 .card{background:white;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
-.cardHeader{font-weight:700;font-size:16px;margin-bottom:12px;color:#0b2a3c;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
+.cardHeader{font-weight:700;font-size:16px;margin-bottom:12px;color:#0b2a3c;border-bottom:2px solid #e0e0e0;padding-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 
 .betRow{
  display:grid;
@@ -24,29 +24,48 @@ h1{margin-bottom:5px;}
 .betRow:last-child{border-bottom:none;}
 .betHeader{font-weight:600;color:#555;font-size:12px;border-bottom:2px solid #ccc;padding-bottom:6px;margin-bottom:4px;}
 
-.badge{
- display:inline-block;padding:3px 8px;border-radius:20px;
- font-size:12px;font-weight:600;
-}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:12px;font-weight:600;}
 .badge-pending{background:#fff3cd;color:#856404;}
 .badge-won{background:#d1e7dd;color:#155724;}
 .badge-lost{background:#f8d7da;color:#721c24;}
 
-.btnWon{
- background:#27ae60;color:white;border:none;border-radius:6px;
- padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;
-}
-.btnLost{
- background:#e74c3c;color:white;border:none;border-radius:6px;
- padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;
-}
+.btnWon{background:#27ae60;color:white;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;}
+.btnLost{background:#e74c3c;color:white;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;}
 .btnWon:hover{background:#219a52;}
 .btnLost:hover{background:#c0392b;}
-
 .resolved{color:#999;font-size:13px;font-style:italic;}
 
 .section{margin-bottom:30px;}
-.sectionTitle{font-size:20px;font-weight:700;margin-bottom:12px;color:#0b2a3c;}
+
+/* SECTION HEADER s lock tlačítkem */
+.sectionHeader{
+ display:flex;align-items:center;justify-content:space-between;
+ margin-bottom:12px;flex-wrap:wrap;gap:10px;
+}
+.sectionTitle{font-size:20px;font-weight:700;color:#0b2a3c;}
+
+.lockBtn{
+ display:inline-flex;align-items:center;gap:6px;
+ border:none;border-radius:8px;padding:7px 14px;
+ font-size:13px;font-weight:700;cursor:pointer;
+ font-family:'Inter',sans-serif;transition:all .15s;
+}
+.lockBtn.open{background:#fff3cd;color:#856404;border:1.5px solid #f0c040;}
+.lockBtn.open:hover{background:#ffe69c;}
+.lockBtn.locked{background:#f8d7da;color:#721c24;border:1.5px solid #e74c3c;}
+.lockBtn.locked:hover{background:#f5c2c7;}
+
+/* Lock badge na týmu */
+.teamLockBtn{
+ display:inline-flex;align-items:center;gap:5px;
+ border:none;border-radius:6px;padding:4px 10px;
+ font-size:12px;font-weight:600;cursor:pointer;
+ font-family:'Inter',sans-serif;transition:all .15s;
+}
+.teamLockBtn.open{background:#eafaf1;color:#1e8449;border:1px solid #27ae60;}
+.teamLockBtn.open:hover{background:#d5f5e3;}
+.teamLockBtn.locked{background:#fdf2f8;color:#884ea0;border:1px solid #a569bd;}
+.teamLockBtn.locked:hover{background:#f5eef8;}
 
 .empty{color:#999;font-style:italic;font-size:14px;padding:10px 0;}
 
@@ -59,13 +78,13 @@ h1{margin-bottom:5px;}
 }
 .toast.show{opacity:1;}
 
+.lock-info{font-size:12px;color:#888;margin-bottom:16px;padding:8px 12px;background:#f8f9fa;border-radius:8px;border-left:3px solid #dee2e6;}
+
 @media(max-width:600px){
- .betRow{
-  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
-  padding:10px 0;
- }
+ .betRow{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0;}
  .betHeader{display:none;}
  .btnWon,.btnLost{width:100%;}
+ .sectionHeader{flex-direction:column;align-items:flex-start;}
 }
 </style>
 </head>
@@ -73,8 +92,8 @@ h1{margin-bottom:5px;}
 
 <div class="wrapper">
  <h1>Admin – Vyhodnocení sázek</h1>
- <p class="subtitle">Zde vyhodnocuj pending sázky. Po kliknutí na Výhra/Prohra se automaticky aktualizuje DB a přepíše kredit.</p>
-
+ <p class="subtitle">Vyhodnocuj pending sázky a uzavírej kategorie či jednotlivé týmy pro další tipování.</p>
+ <div class="lock-info">🔒 Uzavřená kategorie nebo tým = hráči na ni nemohou vsadit. Lze kdykoliv znovu otevřít.</div>
  <div id="app">Načítám...</div>
 </div>
 
@@ -92,15 +111,51 @@ const supabase = createClient(
 let bets = []
 let players = {}
 let teams = {}
+let locks = {}   // { "winner_regular_season": true, "last_regular_season:TEAM_ID": true, ... }
+
+const LOCKS_KEY = "sazky_admin_locks"
+
+function loadLocks(){
+ try{ locks = JSON.parse(localStorage.getItem(LOCKS_KEY)||"{}") }catch(e){ locks={} }
+}
+function saveLocks(){
+ localStorage.setItem(LOCKS_KEY, JSON.stringify(locks))
+}
+
+// Klíče pro zámky
+function categoryLockKey(type){ return `cat:${type}` }
+function teamLockKey(type, teamId){ return `team:${type}:${teamId}` }
+
+function isCategoryLocked(type){ return !!locks[categoryLockKey(type)] }
+function isTeamLocked(type, teamId){ return !!locks[teamLockKey(type, teamId)] }
+// Tým je uzavřen pokud je uzavřena celá kategorie NEBO konkrétní tým
+function isEffectivelyLocked(type, teamId){ return isCategoryLocked(type) || isTeamLocked(type, teamId) }
+
+window.toggleCategoryLock = function(type){
+ const key = categoryLockKey(type)
+ locks[key] = !locks[key]
+ saveLocks()
+ render()
+ showToast(locks[key] ? "🔒 Kategorie uzavřena pro tipování" : "🔓 Kategorie otevřena pro tipování")
+}
+
+window.toggleTeamLock = function(type, teamId){
+ const key = teamLockKey(type, teamId)
+ locks[key] = !locks[key]
+ saveLocks()
+ render()
+ showToast(locks[key] ? "🔒 Tým uzavřen pro tipování" : "🔓 Tým otevřen pro tipování")
+}
 
 async function load(){
  document.getElementById("app").innerHTML = "Načítám..."
+ loadLocks()
 
  const { data: p } = await supabase.from("players").select("*")
- p.forEach(pl => players[pl.id] = pl)
+ ;(p||[]).forEach(pl => players[pl.id] = pl)
 
  const { data: t } = await supabase.from("teams").select("*")
- t.forEach(tm => teams[tm.id] = tm)
+ ;(t||[]).forEach(tm => teams[tm.id] = tm)
 
  const { data: b } = await supabase.from("bets_special").select("*").order("created_at", { ascending: false })
  bets = b || []
@@ -109,8 +164,9 @@ async function load(){
 }
 
 function getTypLabel(type){
- if(type === "winner_regular_season") return "Vítěz základní části"
- if(type === "last_regular_season")   return "Poslední celek"
+ if(type === "winner_regular_season")    return "Vítěz základní části"
+ if(type === "nonwinner_regular_season") return "Nevítěz základní části"
+ if(type === "last_regular_season")      return "Poslední celek"
  if(type?.startsWith("goals_")){
   const thr = type.split("_")[1]
   return `${thr}+ gólů`
@@ -124,15 +180,8 @@ function getTeamName(id){ return teams[id]?.name || id }
 window.resolve = async function(betId, result){
  const bet = bets.find(b => b.id === betId)
  if(!bet) return
-
  const newStatus = result === "won" ? "won" : "lost"
-
- // Update bet status
- await supabase.from("bets_special")
-  .update({ status: newStatus })
-  .eq("id", betId)
-
- // Pokud vyhrál, přičti kredit
+ await supabase.from("bets_special").update({ status: newStatus }).eq("id", betId)
  if(result === "won"){
   const player = players[bet.player_id]
   if(player){
@@ -141,7 +190,6 @@ window.resolve = async function(betId, result){
     .eq("id", player.id)
   }
  }
-
  showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
  load()
 }
@@ -153,12 +201,25 @@ function showToast(msg){
  setTimeout(() => t.classList.remove("show"), 2500)
 }
 
-function renderSection(title, filteredBets){
- if(filteredBets.length === 0) return `
-  <div class="section">
+function renderSection(title, type, filteredBets){
+ const catLocked = isCategoryLocked(type)
+ const lockBtnLabel = catLocked
+  ? "🔒 Kategorie uzavřena — klikni pro otevření"
+  : "🔓 Otevřeno — klikni pro uzavření kategorie"
+
+ let html = `<div class="section">
+  <div class="sectionHeader">
    <div class="sectionTitle">${title}</div>
-   <div class="card"><div class="empty">Žádné sázky.</div></div>
+   <button class="lockBtn ${catLocked?"locked":"open"}" onclick="toggleCategoryLock('${type}')">
+    ${lockBtnLabel}
+   </button>
   </div>`
+
+ if(filteredBets.length === 0){
+  html += `<div class="card"><div class="empty">Žádné sázky.</div></div>`
+  html += `</div>`
+  return html
+ }
 
  // Seskup podle target_id (týmu)
  const byTeam = {}
@@ -168,18 +229,33 @@ function renderSection(title, filteredBets){
   byTeam[key].push(b)
  })
 
- let html = `<div class="section"><div class="sectionTitle">${title}</div>`
-
  Object.entries(byTeam).forEach(([teamId, teamBets]) => {
   const teamName = getTeamName(teamId)
+  const teamLocked = isEffectivelyLocked(type, teamId)
+  const teamOnlyLocked = isTeamLocked(type, teamId)
+
+  const teamLockLabel = catLocked
+   ? "🔒 Uzavřeno (celá kategorie)"
+   : teamOnlyLocked
+    ? "🔒 Uzavřeno — otevřít"
+    : "🔓 Otevřít — uzavřít tým"
+
   html += `<div class="card">`
-  html += `<div class="cardHeader">🏒 ${teamName}</div>`
+  html += `<div class="cardHeader">
+   <span>🏒 ${teamName}</span>
+   <button class="teamLockBtn ${teamLocked?"locked":"open"}"
+    onclick="toggleTeamLock('${type}','${teamId}')"
+    ${catLocked?"disabled title='Celá kategorie je uzavřena'":""}>
+    ${teamLockLabel}
+   </button>
+  </div>`
+
   html += `<div class="betRow betHeader">
    <div>Hráč</div><div>Typ</div><div>Vsazeno</div><div>Možná výhra</div><div>Status</div><div>Akce</div>
   </div>`
 
   teamBets.forEach(b => {
-   const statusBadge = `<span class="badge badge-${b.status}">${b.status === "pending" ? "Čeká" : b.status === "won" ? "Výhra" : "Prohra"}</span>`
+   const statusBadge = `<span class="badge badge-${b.status}">${b.status==="pending"?"Čeká":b.status==="won"?"Výhra":"Prohra"}</span>`
    const akce = b.status === "pending"
     ? `<button class="btnWon" onclick="resolve('${b.id}','won')">Výhra</button>
        <button class="btnLost" onclick="resolve('${b.id}','lost')">Prohra</button>`
@@ -191,7 +267,7 @@ function renderSection(title, filteredBets){
     <div>${b.amount} Kč</div>
     <div>${Math.round(b.potential_win)} Kč</div>
     <div>${statusBadge}</div>
-    <div style="display:flex;gap:6px;">${akce}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">${akce}</div>
    </div>`
   })
 
@@ -203,14 +279,16 @@ function renderSection(title, filteredBets){
 }
 
 function render(){
- const winner = bets.filter(b => b.type === "winner_regular_season")
- const last   = bets.filter(b => b.type === "last_regular_season")
- const goals  = bets.filter(b => b.type?.startsWith("goals_"))
+ const winner    = bets.filter(b => b.type === "winner_regular_season")
+ const nonwinner = bets.filter(b => b.type === "nonwinner_regular_season")
+ const last      = bets.filter(b => b.type === "last_regular_season")
+ const goals     = bets.filter(b => b.type?.startsWith("goals_"))
 
  document.getElementById("app").innerHTML =
-  renderSection("Vítěz základní části", winner) +
-  renderSection("Poslední celek základní části", last) +
-  renderSection("Počet vstřelených gólů", goals)
+  renderSection("Vítěz základní části",      "winner_regular_season",    winner)    +
+  renderSection("Nevítěz základní části",    "nonwinner_regular_season", nonwinner) +
+  renderSection("Poslední celek základní části", "last_regular_season",  last)      +
+  renderSection("Počet vstřelených gólů",    "goals_regular_season",     goals)
 }
 
 load()
