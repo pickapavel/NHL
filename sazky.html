@@ -211,17 +211,6 @@ const supabase = createClient(
   "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const ZAKLADNI_STAGE_IDS = [
-  "4a512867-51bf-4a4f-9d5c-41db9c792979",
-  "80920813-10a8-42b1-b5ce-c09cd12e2c0e",
-]
-const PLAYOFF_STAGE_IDS = {
-  ctvrtfinale: [
-    "13ae3494-6b7c-4b2e-bc5b-259478274b00",
-    "f5544a65-f97a-4c15-b544-8e39c1ca533d",
-    "70f62ac1-41bc-4a59-8f91-f4c3e27cc24d",
-    "da97b17e-02ed-4cd7-8721-bbe7ec1e325d",
-  ],
   semifinale: [
     "a132f953-b297-4bc7-958d-928de8128b0d",
     "0619829c-acf5-4d81-9833-7f00923c4e24",
@@ -535,31 +524,58 @@ async function load(){
   const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
   teams=t||[]
 
-  const{data:played}=await supabase.from("matches").select("*")
+  // Automaticky najdi nejnovější sezónu extraligy
+  const{data:seasons}=await supabase.from("seasons").select("*")
+    .eq("competition_id","5cc76adb-b3e0-404b-9095-7dd4a41edb4e")
+    .order("created_at",{ascending:false})
+  const currentSeason=seasons?.[0]
+  if(!currentSeason){ document.getElementById("mainContent").innerHTML=renderComingSoon(); return }
+
+  // Načti všechny stages aktuální sezóny
+  const{data:stages}=await supabase.from("stages").select("*")
+    .eq("season_id",currentSeason.id)
+
+  // Základní část — automaticky podle názvu
+  const zakladniStageIds=(stages||[])
+    .filter(s=>s.name==="Základní část")
+    .map(s=>s.id)
+
+  // Play off stages — automaticky podle názvu
+  const playoffStageMap={
+    ctvrtfinale:(stages||[]).filter(s=>s.name.startsWith("Čtvrtfinále")).map(s=>s.id),
+    semifinale: (stages||[]).filter(s=>s.name.startsWith("Semifinále")).map(s=>s.id),
+    finale:     (stages||[]).filter(s=>s.name==="Finále").map(s=>s.id),
+  }
+
+  // Všechny odehrané zápasy extraligy napříč sezónami (pro H2H a form rating)
+  const{data:allPlayed}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null)
     .order("round",{ascending:true})
-  allPlayedMatches=played||[]
+  allPlayedMatches=allPlayed||[]
 
-  const basicMatches=allPlayedMatches.filter(m=>ZAKLADNI_STAGE_IDS.includes(m.stage_id))
+  // Základní část — jen aktuální sezóna pro tabulku
+  const basicMatches=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
   formRatings=calculateFormRatings(basicMatches)
   standings=calculateStandings(basicMatches)
 
+  // Play off zápasy (i neodehrané) — aktuální sezóna
   const allPoStageIds=[
-    ...PLAYOFF_STAGE_IDS.ctvrtfinale,
-    ...PLAYOFF_STAGE_IDS.semifinale,
-    ...PLAYOFF_STAGE_IDS.finale,
+    ...playoffStageMap.ctvrtfinale,
+    ...playoffStageMap.semifinale,
+    ...playoffStageMap.finale,
   ]
-  const{data:poAll}=await supabase.from("matches").select("*")
-    .in("stage_id",allPoStageIds)
-    .order("round",{ascending:true})
+  const{data:poAll}=allPoStageIds.length
+    ?await supabase.from("matches").select("*")
+        .in("stage_id",allPoStageIds)
+        .order("round",{ascending:true})
+    :{data:[]}
 
-  // Seřadit sestupně — novější nahoře
   const poAllDesc=(poAll||[]).slice().reverse()
-
-  playoffMatchesByPhase={}
-  Object.entries(PLAYOFF_STAGE_IDS).forEach(([phase,stageIds])=>{
-    playoffMatchesByPhase[phase]=poAllDesc.filter(m=>stageIds.includes(m.stage_id))
-  })
+  playoffMatchesByPhase={
+    ctvrtfinale:poAllDesc.filter(m=>playoffStageMap.ctvrtfinale.includes(m.stage_id)),
+    semifinale: poAllDesc.filter(m=>playoffStageMap.semifinale.includes(m.stage_id)),
+    finale:     poAllDesc.filter(m=>playoffStageMap.finale.includes(m.stage_id)),
+  }
 
   const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
   ;(p||[]).forEach(pl=>players[pl.name]=pl)
