@@ -94,8 +94,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
 .po-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:28px;}
-.po-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.po-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 .po-header-title{font-size:14px;font-weight:700;color:#fff;}
+.po-header-right{display:flex;align-items:center;gap:8px;}
+.po-header-game{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;background:rgba(255,255,255,.12);padding:3px 10px;border-radius:20px;}
 .po-header-phase{font-size:11px;color:var(--gold);font-weight:600;background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;}
 .po-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);}
 .po-team{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
@@ -110,7 +112,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .po-odds-strip{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
 .po-odd{padding:12px 18px;border-right:1px solid var(--border);}
 .po-odd:last-child{border-right:none;}
-.po-odd-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+.po-odd-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
+.po-odd-sublabel{font-size:10px;color:var(--muted);margin-bottom:4px;font-style:italic;}
 .po-odd-val{font-size:22px;font-weight:800;color:var(--navy);}
 .po-odd-prob{font-size:11px;color:var(--muted);margin-top:1px;}
 .po-h2h{padding:10px 18px;background:#f7fafc;border-bottom:1px solid var(--border);}
@@ -501,7 +504,6 @@ async function load(){
   const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
   teams=t||[]
 
-  // Automaticky najdi nejnovější sezónu extraligy
   const{data:seasons}=await supabase.from("seasons").select("*")
     .eq("competition_id",EXTRALIGA_COMPETITION_ID)
     .order("created_at",{ascending:false})
@@ -511,34 +513,28 @@ async function load(){
     return
   }
 
-  // Načti všechny stages aktuální sezóny
   const{data:stages}=await supabase.from("stages").select("*")
     .eq("season_id",currentSeason.id)
 
-  // Základní část — automaticky podle názvu
   const zakladniStageIds=(stages||[])
     .filter(s=>s.name==="Základní část")
     .map(s=>s.id)
 
-  // Play off stages — automaticky podle názvu
   const playoffStageMap={
     ctvrtfinale:(stages||[]).filter(s=>s.name.startsWith("Čtvrtfinále")).map(s=>s.id),
     semifinale: (stages||[]).filter(s=>s.name.startsWith("Semifinále")).map(s=>s.id),
     finale:     (stages||[]).filter(s=>s.name==="Finále").map(s=>s.id),
   }
 
-  // Všechny odehrané zápasy napříč sezónami (pro H2H)
   const{data:allPlayed}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null)
     .order("round",{ascending:true})
   allPlayedMatches=allPlayed||[]
 
-  // Základní část — jen aktuální sezóna pro tabulku a form rating
   const basicMatches=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
   formRatings=calculateFormRatings(basicMatches)
   standings=calculateStandings(basicMatches)
 
-  // Play off zápasy (i neodehrané)
   const allPoStageIds=[
     ...playoffStageMap.ctvrtfinale,
     ...playoffStageMap.semifinale,
@@ -550,11 +546,13 @@ async function load(){
         .order("round",{ascending:true})
     :{data:[]}
 
-  const poAllDesc=(poAll||[]).slice().reverse()
+  // Seřadit sestupně — novější nahoře, ale zachovat pořadí v rámci série
+  // Skupiny zápasů podle dvojice týmů, pak uvnitř sestupně
+  const poAllAsc=(poAll||[])
   playoffMatchesByPhase={
-    ctvrtfinale:poAllDesc.filter(m=>playoffStageMap.ctvrtfinale.includes(m.stage_id)),
-    semifinale: poAllDesc.filter(m=>playoffStageMap.semifinale.includes(m.stage_id)),
-    finale:     poAllDesc.filter(m=>playoffStageMap.finale.includes(m.stage_id)),
+    ctvrtfinale:poAllAsc.filter(m=>playoffStageMap.ctvrtfinale.includes(m.stage_id)).reverse(),
+    semifinale: poAllAsc.filter(m=>playoffStageMap.semifinale.includes(m.stage_id)).reverse(),
+    finale:     poAllAsc.filter(m=>playoffStageMap.finale.includes(m.stage_id)).reverse(),
   }
 
   const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
@@ -732,97 +730,114 @@ function checkTip(match,tip){
 }
 
 function renderPlayoffMatches(phase){
-  const matches=playoffMatchesByPhase[phase]||[]
-  if(matches.length===0) return renderComingSoon()
+  const allMatches=playoffMatchesByPhase[phase]||[]
+  if(allMatches.length===0) return renderComingSoon()
 
   const dbType=PLAYOFF_DB_TYPE[phase]
   const phaseLabel={ctvrtfinale:"Čtvrtfinále",semifinale:"Semifinále",finale:"Finále"}[phase]||""
 
+  // Seskup zápasy podle dvojice týmů (série)
+  const seriesMap={}
+  allMatches.forEach(m=>{
+    const key=[m.home_team,m.away_team].sort().join("_")
+    if(!seriesMap[key]) seriesMap[key]=[]
+    seriesMap[key].push(m)
+  })
+
   let html=""
-  matches.forEach(m=>{
-    const home=teams.find(t=>t.id===m.home_team)
-    const away=teams.find(t=>t.id===m.away_team)
-    if(!home||!away) return
+  Object.values(seriesMap).forEach(seriesMatches=>{
+    // Uvnitř série — novější nahoře (jsou už obrácené z load)
+    seriesMatches.forEach((m,idx)=>{
+      const home=teams.find(t=>t.id===m.home_team)
+      const away=teams.find(t=>t.id===m.away_team)
+      if(!home||!away) return
 
-    const poOdds=calcPlayoffOdds(home.id,away.id)
-    const homeShort=home.short_name||home.name
-    const awayShort=away.short_name||away.name
-    const tips=getTips(homeShort,awayShort)
-    const matchOdds=calcMatchOdds(home.rating_form||1000,away.rating_form||1000)
-    const homeForm=formRatings[home.id]||1000
-    const awayForm=formRatings[away.id]||1000
-    const played=m.played&&m.home_score!=null
+      // Číslo zápasu v sérii — idx=0 je nejnovější, takže číslo = celkem - idx
+      const gameNumber=seriesMatches.length - idx
 
-    ;["kubele","pici"].forEach(pk=>{
-      const key=`${m.id}_${pk}`
-      if(!poState[key]) poState[key]={selected:[],oddsMap:matchOdds}
-      else poState[key].oddsMap=matchOdds
+      const poOdds=calcPlayoffOdds(home.id,away.id)
+      const homeShort=home.short_name||home.name
+      const awayShort=away.short_name||away.name
+      const tips=getTips(homeShort,awayShort)
+      const matchOdds=calcMatchOdds(home.rating_form||1000,away.rating_form||1000)
+      const homeForm=formRatings[home.id]||1000
+      const awayForm=formRatings[away.id]||1000
+      const played=m.played&&m.home_score!=null
+
+      ;["kubele","pici"].forEach(pk=>{
+        const key=`${m.id}_${pk}`
+        if(!poState[key]) poState[key]={selected:[],oddsMap:matchOdds}
+        else poState[key].oddsMap=matchOdds
+      })
+
+      const kubele=players["Kubele"]
+      const pici=players["Pici"]
+      const matchBets=(window._matchBets||{})[m.id]||[]
+
+      html+=`
+      <div class="po-card">
+        <div class="po-header">
+          <span class="po-header-title">${home.name} — ${away.name}</span>
+          <div class="po-header-right">
+            <span class="po-header-game">${gameNumber}. zápas série</span>
+            <span class="po-header-phase">${phaseLabel}</span>
+          </div>
+        </div>
+        <div class="po-teams">
+          <div class="po-team">
+            <img class="po-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <div class="po-team-name">${home.name}</div>
+            <div class="po-team-meta">
+              <div class="po-team-pos">${poOdds.homePos>0?poOdds.homePos+". místo ZČ":"—"}</div>
+              <div class="po-team-rating">ELO: ${home.rating_overall||1000} · Forma: ${homeForm}</div>
+            </div>
+          </div>
+          <div class="po-score">
+            ${played
+              ?`<div class="po-score-main">${m.home_score} : ${m.away_score}</div>`
+              :`<div class="po-score-vs">vs</div>`
+            }
+          </div>
+          <div class="po-team">
+            <img class="po-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <div class="po-team-name">${away.name}</div>
+            <div class="po-team-meta">
+              <div class="po-team-pos">${poOdds.awayPos>0?poOdds.awayPos+". místo ZČ":"—"}</div>
+              <div class="po-team-rating">ELO: ${away.rating_overall||1000} · Forma: ${awayForm}</div>
+            </div>
+          </div>
+        </div>
+        <div class="po-odds-strip">
+          <div class="po-odd">
+            <div class="po-odd-label">Kurz na vítěze série</div>
+            <div class="po-odd-sublabel">${home.name}</div>
+            <div class="po-odd-val">${poOdds.home.toFixed(2)}</div>
+            <div class="po-odd-prob">${poOdds.probHome}% pravděpodobnost</div>
+          </div>
+          <div class="po-odd">
+            <div class="po-odd-label">Kurz na vítěze série</div>
+            <div class="po-odd-sublabel">${away.name}</div>
+            <div class="po-odd-val">${poOdds.away.toFixed(2)}</div>
+            <div class="po-odd-prob">${poOdds.probAway}% pravděpodobnost</div>
+          </div>
+        </div>
+        <div class="po-h2h">
+          <div class="po-h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
+          <div class="po-h2h-list">${renderH2HHtml(home.id,away.id)}</div>
+          <div class="po-h2h-note">ℹ️ ${poOdds.h2hText}</div>
+        </div>
+        <div class="po-players">
+          ${renderPoPlayerBlock(m,kubele,"kubele",tips,matchOdds,matchBets)}
+          ${renderPoPlayerBlock(m,pici,"pici",tips,matchOdds,matchBets)}
+        </div>
+      </div>`
     })
-
-    const kubele=players["Kubele"]
-    const pici=players["Pici"]
-
-    html+=`
-    <div class="po-card">
-      <div class="po-header">
-        <span class="po-header-title">${home.name} — ${away.name}</span>
-        <span class="po-header-phase">${phaseLabel}</span>
-      </div>
-      <div class="po-teams">
-        <div class="po-team">
-          <img class="po-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <div class="po-team-name">${home.name}</div>
-          <div class="po-team-meta">
-            <div class="po-team-pos">${poOdds.homePos>0?poOdds.homePos+". místo ZČ":"—"}</div>
-            <div class="po-team-rating">ELO: ${home.rating||1000} · Forma: ${homeForm}</div>
-          </div>
-        </div>
-        <div class="po-score">
-          ${played
-            ?`<div class="po-score-main">${m.home_score} : ${m.away_score}</div>`
-            :`<div class="po-score-vs">vs</div>`
-          }
-        </div>
-        <div class="po-team">
-          <img class="po-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <div class="po-team-name">${away.name}</div>
-          <div class="po-team-meta">
-            <div class="po-team-pos">${poOdds.awayPos>0?poOdds.awayPos+". místo ZČ":"—"}</div>
-            <div class="po-team-rating">ELO: ${away.rating||1000} · Forma: ${awayForm}</div>
-          </div>
-        </div>
-      </div>
-      <div class="po-odds-strip">
-        <div class="po-odd">
-          <div class="po-odd-label">Kurz — ${home.name}</div>
-          <div class="po-odd-val">${poOdds.home.toFixed(2)}</div>
-          <div class="po-odd-prob">${poOdds.probHome}% pravděpodobnost</div>
-        </div>
-        <div class="po-odd">
-          <div class="po-odd-label">Kurz — ${away.name}</div>
-          <div class="po-odd-val">${poOdds.away.toFixed(2)}</div>
-          <div class="po-odd-prob">${poOdds.probAway}% pravděpodobnost</div>
-        </div>
-      </div>
-      <div class="po-h2h">
-        <div class="po-h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
-        <div class="po-h2h-list">${renderH2HHtml(home.id,away.id)}</div>
-        <div class="po-h2h-note">ℹ️ ${poOdds.h2hText}</div>
-      </div>
-      <div class="po-players">
-        ${renderPoPlayerBlock(m,kubele,"kubele",tips,matchOdds)}
-        ${renderPoPlayerBlock(m,pici,"pici",tips,matchOdds)}
-      </div>
-    </div>`
   })
   return html
 }
 
-function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap){
+function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap,matchBets){
   if(!player) return ""
-  const existingBet=allPlayedMatches.find(()=>false)  // placeholder — načteme níže
-  // Načti bet z globálního pole bets (bets_special má jen ZČ, play off bets jsou v tabulce bets)
-  const matchBets=(window._matchBets||{})[m.id]||[]
   const existing=matchBets.find(b=>b.player_id===player.id)||null
   const played=m.played&&m.home_score!=null
 
@@ -1010,7 +1025,6 @@ async function render(){
   const content=document.getElementById("mainContent")
 
   if(sections==="matches"){
-    // Načti bety pro play off zápasy z tabulky bets
     const matchIds=[
       ...(playoffMatchesByPhase["ctvrtfinale"]||[]),
       ...(playoffMatchesByPhase["semifinale"]||[]),
