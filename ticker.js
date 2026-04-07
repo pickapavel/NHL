@@ -429,7 +429,7 @@ async function loadTicker(){
 
     const firstBox = track.querySelector('.t-box')
     if(firstBox) boxWidth = firstBox.offsetWidth + 2
-    scrollToPx(getMaxPx(), true)
+scrollToPx(0, false)
     updateButtons()
 
   } catch(err) {
