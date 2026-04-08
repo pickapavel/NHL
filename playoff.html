@@ -16,14 +16,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 .wrapper{max-width:1300px;margin:0 auto;padding:0 20px 40px;}
 
-/* SEASON TABS */
 .season-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
-.season-tab{
- padding:7px 16px;border-radius:20px;
- border:2px solid #c8d8e8;background:white;
- font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
- cursor:pointer;color:#1a3a5c;transition:all .15s;
-}
+.season-tab{padding:7px 16px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
 .season-tab:hover{background:#dce8f5;border-color:#2f9ec9;}
 .season-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
@@ -68,6 +62,20 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .series-score.win{color:#16a34a;}
 .series-score.loss{color:#d0d8e0;}
 
+/* Odkaz na sázky na sérii */
+.serie-bet-link{
+  display:flex;align-items:center;justify-content:center;
+  padding:7px 12px;
+  background:#eafaf1;
+  border-top:1px solid #d5f5e3;
+  font-size:11px;font-weight:700;color:#27ae60;
+  text-decoration:none;
+  transition:background .15s;
+  gap:5px;
+}
+.serie-bet-link:hover{background:#d5f5e3;}
+.serie-bet-link.disabled{background:#f7f9fc;color:#aaa;cursor:default;pointer-events:none;border-top:1px solid #eee;}
+
 .trophy-wrap{background:white;border-radius:14px;border:2px solid #f0c040;padding:20px;text-align:center;box-shadow:0 4px 16px rgba(240,192,64,.15);}
 .trophy-icon{font-size:40px;margin-bottom:6px;}
 .trophy-label{font-size:13px;font-weight:700;color:#888;}
@@ -77,7 +85,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
 
 .result-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.result-card-header{background:#0b2a3c;padding:8px 14px;font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.05);}
+.result-card-header{background:#0b2a3c;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.result-card-header-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;}
+.result-card-bet-link{display:inline-flex;align-items:center;gap:4px;background:#27ae60;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;transition:background .15s;}
+.result-card-bet-link:hover{background:#219a52;}
 
 .result-mini-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;}
 .result-mini-card:last-child{border-bottom:none;}
@@ -105,15 +116,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .loading-msg{padding:30px;text-align:center;color:#7ab0cc;font-size:13px;}
 .phase-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
 
-/* Skrytí fází pokud chybí stage */
 .bracket-phase{margin-bottom:0;}
 .bracket-phase.hidden{display:none;}
 
-.no-playoff-msg{
- background:white;border-radius:14px;border:1px solid #c8d8e8;
- padding:40px;text-align:center;color:#aaa;font-size:14px;
- margin-bottom:20px;
-}
+.no-playoff-msg{background:white;border-radius:14px;border:1px solid #c8d8e8;padding:40px;text-align:center;color:#aaa;font-size:14px;margin-bottom:20px;}
 
 @media(max-width:1100px){.bracket-row-qf{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){
@@ -137,7 +143,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 <div class="wrapper">
 
-<!-- SEASON TABS -->
 <div class="season-tabs" id="seasonTabs"></div>
 
 <div class="section-title">Pavouk</div>
@@ -150,21 +155,25 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header"><span>ČF 1</span><span class="series-state neutral" id="state-qf1">Stav série</span></div>
    <div class="team-row tbd" id="qf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-qf1" href="#">🎲 Sázky na tuto sérii</a>
   </div>
   <div class="series-card" id="card-qf2">
    <div class="series-header"><span>ČF 2</span><span class="series-state neutral" id="state-qf2">Stav série</span></div>
    <div class="team-row tbd" id="qf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-qf2" href="#">🎲 Sázky na tuto sérii</a>
   </div>
   <div class="series-card" id="card-qf3">
    <div class="series-header"><span>ČF 3</span><span class="series-state neutral" id="state-qf3">Stav série</span></div>
    <div class="team-row tbd" id="qf3-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf3-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-qf3" href="#">🎲 Sázky na tuto sérii</a>
   </div>
   <div class="series-card" id="card-qf4">
    <div class="series-header"><span>ČF 4</span><span class="series-state neutral" id="state-qf4">Stav série</span></div>
    <div class="team-row tbd" id="qf4-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf4-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-qf4" href="#">🎲 Sázky na tuto sérii</a>
   </div>
  </div>
 </div>
@@ -177,11 +186,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header"><span>Semifinále 1</span><span class="series-state neutral" id="state-sf1">Stav série</span></div>
    <div class="team-row tbd" id="sf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF1</div></div>
    <div class="team-row tbd" id="sf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF2</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-sf1" href="#">🎲 Sázky na tuto sérii</a>
   </div>
   <div class="series-card" id="card-sf2">
    <div class="series-header"><span>Semifinále 2</span><span class="series-state neutral" id="state-sf2">Stav série</span></div>
    <div class="team-row tbd" id="sf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF3</div></div>
    <div class="team-row tbd" id="sf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF4</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-sf2" href="#">🎲 Sázky na tuto sérii</a>
   </div>
  </div>
 </div>
@@ -194,11 +205,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header is-third"><span>🥉 O 3. místo</span><span class="series-state neutral" id="state-third">Stav série</span></div>
    <div class="team-row tbd" id="third-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF1</div></div>
    <div class="team-row tbd" id="third-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF2</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-third" href="#">🎲 Sázky na tuto sérii</a>
   </div>
   <div class="series-card is-final" id="card-f">
    <div class="series-header is-final"><span>🏆 Finále</span><span class="series-state" id="state-f">Stav série</span></div>
    <div class="team-row tbd" id="f-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF1</div></div>
    <div class="team-row tbd" id="f-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF2</div></div>
+   <a class="serie-bet-link disabled" id="bet-link-f" href="#">🎲 Sázky na tuto sérii</a>
   </div>
  </div>
 </div>
@@ -233,6 +246,13 @@ const LOGOS = './logos/'
 let teamsMap = {}
 let currentSeasonId = null
 let allSeasons = []
+
+// Mapování klíčů série na fázi pro URL
+const PHASE_MAP = {
+ qf1:'ctvrtfinale', qf2:'ctvrtfinale', qf3:'ctvrtfinale', qf4:'ctvrtfinale',
+ sf1:'semifinale',  sf2:'semifinale',
+ third:'finale',    f:'finale',
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -240,15 +260,10 @@ let allSeasons = []
 const { createClient } = supabase
 const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-// =====================================================
-// INIT – načti sezóny a vyber nejnovější
-// =====================================================
-
 async function init(){
  const { data: teams } = await db.from("teams").select("*")
  ;(teams||[]).forEach(t=> teamsMap[t.id] = t)
 
- // Načti jen Extraliga sezóny seřazené od nejnovější
  const { data: seasons } = await db
   .from("seasons")
   .select("*")
@@ -258,7 +273,6 @@ async function init(){
  allSeasons = seasons || []
  if(!allSeasons.length) return
 
- // Vygeneruj taby
  const tabsEl = document.getElementById("seasonTabs")
  allSeasons.forEach((s, i)=>{
   const btn = document.createElement("button")
@@ -272,13 +286,8 @@ async function init(){
   tabsEl.appendChild(btn)
  })
 
- // Načti nejnovější sezónu
  loadSeason(allSeasons[0].id, allSeasons[0].name)
 }
-
-// =====================================================
-// LOAD SEASON – načti stages a zápasy
-// =====================================================
 
 async function loadSeason(seasonId, seasonName){
  currentSeasonId = seasonId
@@ -286,10 +295,8 @@ async function loadSeason(seasonId, seasonName){
  document.getElementById("results-grid").innerHTML = '<div class="loading-msg">Načítám...</div>'
  document.getElementById("champion-label").textContent = "—"
 
- // Resetuj série
  resetSeries()
 
- // Načti stages pro tuto sezónu
  const { data: stages } = await db
   .from("stages")
   .select("*")
@@ -301,17 +308,12 @@ async function loadSeason(seasonId, seasonName){
   return
  }
 
- // Mapuj stages na klíče podle jména
- // Podporuje různé struktury (jen finále, SF+F, ČF+SF+F)
  const STAGE_IDS = {}
- const stageMap = {}
- stages.forEach(s=> stageMap[s.name] = s.id)
-
  const nameMap = {
   'Čtvrtfinále 1': 'qf1', 'Čtvrtfinále 2': 'qf2',
   'Čtvrtfinále 3': 'qf3', 'Čtvrtfinále 4': 'qf4',
   'Semifinále 1':  'sf1', 'Semifinále 2':  'sf2',
-  'Semifinále':    'sf1', // fallback pro jednu SF stage
+  'Semifinále':    'sf1',
   'O 3. místo':    'third',
   'Finále':        'f',
  }
@@ -321,13 +323,22 @@ async function loadSeason(seasonId, seasonName){
   if(key) STAGE_IDS[key] = s.id
  })
 
- // Zjisti strukturu playoff
+ // Nastav bet-linky na série hned jak víme stage IDs
+ Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
+  const phase = PHASE_MAP[key]
+  if(!phase) return
+  const linkEl = document.getElementById(`bet-link-${key}`)
+  if(linkEl){
+   linkEl.href = `sazky.html?phase=${phase}&stage=${stageId}`
+   linkEl.classList.remove("disabled")
+  }
+ })
+
  const hasQF = !!(STAGE_IDS.qf1 || STAGE_IDS.qf2)
  const hasSF = !!(STAGE_IDS.sf1)
  const hasF  = !!(STAGE_IDS.f)
  const hasPlayoff = hasQF || hasSF || hasF
 
- // Ukaž/skryj fáze
  document.getElementById("phase-qf").classList.toggle("hidden", !hasQF)
  document.getElementById("phase-sf").classList.toggle("hidden", !hasSF)
  document.getElementById("phase-f").classList.toggle("hidden", !hasF)
@@ -338,7 +349,6 @@ async function loadSeason(seasonId, seasonName){
   return
  }
 
- // Uprav placeholder texty v SF podle toho zda je ČF
  if(hasSF){
   if(hasQF){
    document.getElementById("sf1-t1").querySelector(".team-name").textContent = "Vítěz ČF1"
@@ -353,7 +363,6 @@ async function loadSeason(seasonId, seasonName){
   }
  }
 
- // Načti zápasy
  const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
  const { data: matches } = await db
   .from("matches")
@@ -362,7 +371,6 @@ async function loadSeason(seasonId, seasonName){
   .in("stage_id", uniqueStageIds)
   .order("round", { ascending: true })
 
- // Sestav SERIES objekt dynamicky
  const SERIES = {}
  const seriesKeys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
  const seriesLabels = {
@@ -384,7 +392,6 @@ async function loadSeason(seasonId, seasonName){
   }
  })
 
- // Roztřiď zápasy
  const stageMatches = {}
  ;(matches||[]).forEach(m=>{
   if(!stageMatches[m.stage_id]) stageMatches[m.stage_id] = []
@@ -421,7 +428,6 @@ async function loadSeason(seasonId, seasonName){
   })
  })
 
- // Propagace vítězů
  if(SERIES.sf1){
   SERIES.sf1.t1 = SERIES.sf1.t1 || getWinner(SERIES.qf1)
   SERIES.sf1.t2 = SERIES.sf1.t2 || getWinner(SERIES.qf2)
@@ -439,15 +445,10 @@ async function loadSeason(seasonId, seasonName){
   SERIES.f.t2 = SERIES.f.t2 || getWinner(SERIES.sf2)
  }
 
- // Render
  Object.keys(SERIES).forEach(k=> renderSeries(k, SERIES[k]))
  renderResults(SERIES)
  renderChampion(SERIES)
 }
-
-// =====================================================
-// HELPERS
-// =====================================================
 
 function resetSeries(){
  const keys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
@@ -458,6 +459,8 @@ function resetSeries(){
   if(t2){ t2.className="team-row tbd"; t2.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
   const state = document.getElementById(`state-${k}`)
   if(state){ state.textContent="Stav série"; state.className="series-state neutral" }
+  const link = document.getElementById(`bet-link-${k}`)
+  if(link){ link.href="#"; link.classList.add("disabled") }
  })
 }
 
@@ -556,6 +559,9 @@ function renderResults(SERIES){
   const s=SERIES[key]
   if(!s) return
 
+  const phase = PHASE_MAP[key]
+  const betUrl = `sazky.html?phase=${phase}&stage=${s.stageId}`
+
   const card=document.createElement('div')
   card.className='result-card'
 
@@ -600,7 +606,13 @@ function renderResults(SERIES){
    })
   }
 
-  card.innerHTML=`<div class="result-card-header">${labels[key]}</div>${matchesHtml}`
+  card.innerHTML=`
+   <div class="result-card-header">
+    <span class="result-card-header-label">${labels[key]}</span>
+    <a class="result-card-bet-link" href="${betUrl}">🎲 Sázky na sérii</a>
+   </div>
+   ${matchesHtml}
+  `
   grid.appendChild(card)
  })
 }
