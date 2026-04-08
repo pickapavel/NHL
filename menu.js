@@ -167,8 +167,8 @@ const items = [
     type: 'link',
     icon: '📋',
     label: 'Sázky – přehled',
-    href: 'sazky-prehled.html',
-    pages: ['sazky-prehled.html']
+    href: 'prehledsazek.html',
+    pages: ['prehledsazek.html']
   },
   {
     type: 'link',
