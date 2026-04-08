@@ -93,69 +93,46 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
-/* ── ACCORDION SÉRIE ── */
-.serie-accordion{margin-bottom:12px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;}
-.serie-header{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:14px 18px;background:var(--white);cursor:pointer;
-  transition:background .15s;user-select:none;
-}
-.serie-header:hover{background:#f7fafc;}
-.serie-header.open{background:#f0f4f8;}
-.serie-header-left{display:flex;align-items:center;gap:12px;}
-.serie-logos{display:flex;align-items:center;gap:4px;}
-.serie-logo{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;border:1px solid var(--border);}
-.serie-title{font-size:14px;font-weight:700;color:var(--navy);}
-.serie-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
-.serie-header-right{display:flex;align-items:center;gap:10px;}
-.serie-score-badge{font-size:12px;font-weight:700;background:#eef2f7;color:var(--navy);padding:3px 10px;border-radius:20px;white-space:nowrap;}
-.serie-arrow{font-size:12px;color:var(--muted);transition:transform .2s;}
-.serie-header.open .serie-arrow{transform:rotate(180deg);}
-.serie-body{display:none;border-top:1px solid var(--border);}
-.serie-body.open{display:block;}
-
-/* ── PLAYOFF MATCH CARD ── */
-.po-card{background:var(--white);border-bottom:1px solid var(--border);overflow:hidden;}
-.po-card:last-child{border-bottom:none;}
-.po-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.po-header-title{font-size:13px;font-weight:700;color:#fff;}
+.po-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:28px;}
+.po-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.po-header-title{font-size:14px;font-weight:700;color:#fff;}
 .po-header-right{display:flex;align-items:center;gap:8px;}
 .po-header-game{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;background:rgba(255,255,255,.12);padding:3px 10px;border-radius:20px;}
 .po-header-phase{font-size:11px;color:var(--gold);font-weight:600;background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;}
-.po-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);}
-.po-team{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
-.po-team-logo{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:8px;padding:3px;border:1px solid var(--border);}
+.po-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);}
+.po-team{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
+.po-team-logo{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:10px;padding:3px;border:1px solid var(--border);}
 .po-team-name{font-size:13px;font-weight:700;color:var(--text);}
-.po-team-meta{display:flex;flex-direction:column;gap:1px;align-items:center;}
+.po-team-meta{display:flex;flex-direction:column;gap:2px;align-items:center;}
 .po-team-pos{font-size:11px;color:var(--muted);}
 .po-team-rating{font-size:11px;color:var(--muted);}
 .po-score{text-align:center;}
-.po-score-main{font-size:26px;font-weight:800;color:var(--navy);line-height:1;}
-.po-score-vs{font-size:16px;font-weight:700;color:var(--muted);}
+.po-score-main{font-size:28px;font-weight:800;color:var(--navy);line-height:1;}
+.po-score-vs{font-size:18px;font-weight:700;color:var(--muted);}
 .po-odds-strip{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
-.po-odd{padding:10px 18px;border-right:1px solid var(--border);}
+.po-odd{padding:12px 18px;border-right:1px solid var(--border);}
 .po-odd:last-child{border-right:none;}
 .po-odd-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
-.po-odd-sublabel{font-size:10px;color:var(--muted);margin-bottom:3px;font-style:italic;}
-.po-odd-val{font-size:20px;font-weight:800;color:var(--navy);}
+.po-odd-sublabel{font-size:10px;color:var(--muted);margin-bottom:4px;font-style:italic;}
+.po-odd-val{font-size:22px;font-weight:800;color:var(--navy);}
 .po-odd-prob{font-size:11px;color:var(--muted);margin-top:1px;}
-.po-h2h{padding:8px 18px;background:#f7fafc;border-bottom:1px solid var(--border);}
-.po-h2h-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
-.po-h2h-list{display:flex;flex-direction:column;gap:3px;}
-.po-h2h-row{display:flex;align-items:center;gap:8px;font-size:12px;background:var(--white);border-radius:6px;padding:4px 10px;border:1px solid var(--border);}
+.po-h2h{padding:10px 18px;background:#f7fafc;border-bottom:1px solid var(--border);}
+.po-h2h-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.po-h2h-list{display:flex;flex-direction:column;gap:4px;}
+.po-h2h-row{display:flex;align-items:center;gap:8px;font-size:12px;background:var(--white);border-radius:6px;padding:5px 10px;border:1px solid var(--border);}
 .po-h2h-teams{flex:1;font-size:11px;color:var(--muted);}
 .po-h2h-winner{color:#166534;font-weight:700;}
 .po-h2h-loser{color:#991b1b;}
 .po-h2h-score{font-weight:800;color:var(--text);background:#eef2f7;padding:2px 8px;border-radius:5px;font-size:12px;flex-shrink:0;}
 .po-h2h-tag{font-size:9px;font-weight:700;background:#2f9ec9;color:#fff;padding:1px 5px;border-radius:4px;flex-shrink:0;}
 .po-h2h-empty{font-size:12px;color:var(--muted);font-style:italic;}
-.po-h2h-note{font-size:11px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:5px;}
-.po-players{display:grid;grid-template-columns:1fr 1fr;}
-.po-player{padding:14px 18px;border-right:1px solid var(--border);}
+.po-h2h-note{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px;}
+.po-players{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
+.po-player{padding:16px 18px;border-right:1px solid var(--border);}
 .po-player:last-child{border-right:none;}
 .po-player-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
-.po-player-credit{font-size:11px;color:var(--muted);margin-bottom:10px;}
-.po-odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px;}
+.po-player-credit{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.po-odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px;}
 .po-odd-btn{background:#f0f4f8;color:var(--navy);border:2px solid #e0ecf8;border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .po-odd-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
 .po-odd-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
@@ -171,6 +148,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .po-summary .odds-val{font-weight:700;color:var(--navy2);}
 .po-vsadit-btn{width:100%;padding:10px;border:none;border-radius:8px;background:var(--green);color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s;}
 .po-vsadit-btn:hover{background:#219a52;}
+
+.serie-accordion{margin-bottom:12px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;}
+.serie-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--white);cursor:pointer;transition:background .15s;user-select:none;}
+.serie-header:hover{background:#f7fafc;}
+.serie-header.open{background:#f0f4f8;}
+.serie-header-left{display:flex;align-items:center;gap:12px;}
+.serie-logos{display:flex;align-items:center;gap:4px;}
+.serie-logo{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;border:1px solid var(--border);}
+.serie-title{font-size:14px;font-weight:700;color:var(--navy);}
+.serie-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+.serie-header-right{display:flex;align-items:center;gap:10px;}
+.serie-score-badge{font-size:12px;font-weight:700;background:#eef2f7;color:var(--navy);padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.serie-arrow{font-size:12px;color:var(--muted);transition:transform .2s;}
+.serie-header.open .serie-arrow{transform:rotate(180deg);}
+.serie-body{display:none;border-top:1px solid var(--border);}
+.serie-body.open{display:block;}
+
+.po-card{background:var(--white);border-bottom:1px solid var(--border);overflow:hidden;}
+.po-card:last-child{border-bottom:none;}
 
 .no-phase{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
 .coming-soon{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:48px 24px;text-align:center;}
@@ -227,17 +223,18 @@ const supabase = createClient(
 )
 
 const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+const GOALS_MARGIN = 1.15
+const PLAYOFF_MARGIN = 1.10
+const START_RATING = 1000
+const K_FORM = 120
+const MARGIN = 2.2
+const MIN_GAMES_CURRENT = 5
 
 const PLAYOFF_DB_TYPE = {
   ctvrtfinale: "winner_playoff_qf",
   semifinale:  "winner_playoff_sf",
   finale:      "winner_playoff_final",
 }
-
-const PLAYOFF_MARGIN = 1.10
-const START_RATING = 1000
-const K_FORM = 120
-const MARGIN = 2.2
 
 const COMP_CONFIG = {
   extraliga: {
@@ -315,30 +312,19 @@ const COMP_CONFIG = {
   }
 }
 
-function getGoalsOdds(teamName){
-  const n=(teamName||"").toLowerCase()
-  if(n.includes("sparta"))                           return {"25":3.20,"30":5.00,"35":7.50}
-  if(n.includes("litvínov")||n.includes("litvinov")) return {"25":3.40,"30":5.40,"35":8.20}
-  if(n.includes("motor"))                            return {"25":3.60,"30":5.80,"35":9.00}
-  if(n.includes("kladno"))                           return {"25":3.90,"30":6.50,"35":10.5}
-  if(n.includes("vary"))                             return {"25":4.20,"30":7.20,"35":12.0}
-  if(n.includes("liberec"))                          return {"25":4.60,"30":8.20,"35":14.5}
-  if(n.includes("pardubice"))                        return {"25":5.20,"30":9.50,"35":17.0}
-  if(n.includes("třinec")||n.includes("trinec"))     return {"25":6.00,"30":11.0,"35":20.0}
-  return null
-}
-
 let teams=[], players={}, bets=[], formRatings={}, locks={}
 let allPlayedMatches=[], standings=[]
 let playoffMatchesByPhase={}
+let goalsOddsMap={} // { teamId: { "25": x, "30": x, "35": x } }
+let currentTeamIds=new Set() // týmy v aktuální sezóně
 let currentComp="extraliga", currentPhase="zakladni"
 const selectedGoal={}, poState={}
 
-// URL parametry — pro deep link z playoff.html
 const urlParams=new URLSearchParams(window.location.search)
 const urlPhase=urlParams.get("phase")
 const urlStage=urlParams.get("stage")
 
+// ── FORM RATING ──
 function getScore(match,teamId){
   const hg=Number(match.home_score),ag=Number(match.away_score)
   let s=null;try{s=match.stats?JSON.parse(match.stats):null}catch(e){}
@@ -391,37 +377,116 @@ function calculateStandings(basicMatches){
     .sort((a,b)=>b.b!==a.b?b.b-a.b:(b.gf-b.ga)-(a.gf-a.ga))
 }
 
-function getH2H(homeId,awayId){
-  return allPlayedMatches
-    .filter(m=>(m.home_team===homeId&&m.away_team===awayId)||(m.home_team===awayId&&m.away_team===homeId))
-    .slice(-5).reverse()
+// ── GOALS ODDS — dynamické z dat ──
+// Počítá kurzy na základě průměrného počtu gólů za zápas
+// Odhadne celkový počet gólů za sezónu (předpokládáme 8 zápasů na tým v ZČ)
+function goalsOddsFromAvg(avgGoalsPerGame, totalGames){
+  // Odhadni celkový počet gólů za sezónu
+  const projected = avgGoalsPerGame * totalGames
+
+  // Pravděpodobnosti překročení thresholdů
+  // Používáme Poissonovo rozdělení approximaci
+  function probOver(threshold){
+    // Jednoduchá sigmoida — čím vyšší projected, tím vyšší prob
+    const diff = projected - threshold
+    return 1 / (1 + Math.exp(-diff * 0.3))
+  }
+
+  const p25 = Math.max(0.05, Math.min(0.95, probOver(25)))
+  const p30 = Math.max(0.05, Math.min(0.95, probOver(30)))
+  const p35 = Math.max(0.05, Math.min(0.95, probOver(35)))
+
+  return {
+    "25": Math.round((1/p25) * GOALS_MARGIN * 100) / 100,
+    "30": Math.round((1/p30) * GOALS_MARGIN * 100) / 100,
+    "35": Math.round((1/p35) * GOALS_MARGIN * 100) / 100,
+  }
 }
 
-function renderH2HHtml(homeId,awayId){
-  const h2h=getH2H(homeId,awayId)
-  if(!h2h.length) return `<div class="po-h2h-empty">Žádné vzájemné zápasy</div>`
-  return h2h.map(m=>{
-    const home=teams.find(t=>t.id===m.home_team)
-    const away=teams.find(t=>t.id===m.away_team)
-    if(!home||!away) return ""
+function calculateGoalsOdds(currentBasicMatches, prevBasicMatches, totalGamesInSeason){
+  const result={}
+
+  // Spočítej góly v aktuální sezóně
+  const currentGoals={}
+  const currentGames={}
+  currentBasicMatches.forEach(m=>{
     const hg=Number(m.home_score),ag=Number(m.away_score)
-    const homeWin=hg>ag
-    let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
-    const isSN=s&&(s[20]==="1"||s[20]==="2")
-    const isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11")
-    const tag=isSN?"SN":isOT?"OT":""
-    return `<div class="po-h2h-row">
-      <span class="po-h2h-teams">
-        <span class="${homeWin?"po-h2h-winner":"po-h2h-loser"}">${home.name.replace(/\(.\)$/,'').trim()}</span>
-        vs
-        <span class="${homeWin?"po-h2h-loser":"po-h2h-winner"}">${away.name.replace(/\(.\)$/,'').trim()}</span>
-      </span>
-      <span class="po-h2h-score">${hg} : ${ag}</span>
-      ${tag?`<span class="po-h2h-tag">${tag}</span>`:""}
-    </div>`
-  }).join("")
+    currentGoals[m.home_team]=(currentGoals[m.home_team]||0)+hg
+    currentGoals[m.away_team]=(currentGoals[m.away_team]||0)+ag
+    currentGames[m.home_team]=(currentGames[m.home_team]||0)+1
+    currentGames[m.away_team]=(currentGames[m.away_team]||0)+1
+  })
+
+  // Spočítej góly v předchozí sezóně
+  const prevGoals={}
+  const prevGames={}
+  prevBasicMatches.forEach(m=>{
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    prevGoals[m.home_team]=(prevGoals[m.home_team]||0)+hg
+    prevGoals[m.away_team]=(prevGoals[m.away_team]||0)+ag
+    prevGames[m.home_team]=(prevGames[m.home_team]||0)+1
+    prevGames[m.away_team]=(prevGames[m.away_team]||0)+1
+  })
+
+  // Průměrný avg z předchozí sezóny (pro nové týmy)
+  const prevAvgs=Object.keys(prevGoals).map(id=>prevGames[id]>0?prevGoals[id]/prevGames[id]:0)
+  const globalAvg=prevAvgs.length>0?prevAvgs.reduce((a,b)=>a+b,0)/prevAvgs.length:2.5
+
+  // Pro každý tým v aktuální sezóně
+  currentTeamIds.forEach(teamId=>{
+    const games=currentGames[teamId]||0
+    let avg
+
+    if(games>=MIN_GAMES_CURRENT){
+      // Máme dost dat z aktuální sezóny
+      avg=currentGoals[teamId]/games
+    } else if(prevGames[teamId]>0){
+      // Použij předchozí sezónu
+      avg=prevGoals[teamId]/prevGames[teamId]
+    } else {
+      // Nový tým — použij globální průměr
+      avg=globalAvg
+    }
+
+    result[teamId]=goalsOddsFromAvg(avg, totalGamesInSeason)
+  })
+
+  return result
 }
 
+// ── ODDS ZČ ──
+function calculateWinnerOdds(){
+  const s=teams.filter(t=>currentTeamIds.has(t.id)).map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
+  const currentTeams=teams.filter(t=>currentTeamIds.has(t.id))
+  const total=s.reduce((a,b)=>a+b,0)
+  const map={}
+  currentTeams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)})
+  return map
+}
+function calculateNonWinnerOdds(){
+  const sorted=teams.filter(t=>currentTeamIds.has(t.id)).sort((a,b)=>(formRatings[a.id]||1000)-(formRatings[b.id]||1000))
+  const map={}
+  sorted.forEach((t,i)=>{
+    const ratio=sorted.length>1?i/(sorted.length-1):0
+    map[t.id]=1.10+Math.pow(ratio,3)*(3.00-1.10)
+  })
+  return map
+}
+function calculateLastOdds(){
+  const currentTeams=teams.filter(t=>currentTeamIds.has(t.id))
+  const s=currentTeams.map(t=>Math.pow(1/(Number(formRatings[t.id]||1000)),6))
+  const total=s.reduce((a,b)=>a+b,0)
+  const map={}
+  currentTeams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)})
+  return map
+}
+function calculateEqualOdds(f=2.5){
+  const map={}
+  teams.filter(t=>currentTeamIds.has(t.id)).forEach(t=>{map[t.id]=f})
+  return map
+}
+
+// ── PLAYOFF ODDS ──
 function getLastH2H(homeId,awayId){
   const h2h=allPlayedMatches.filter(m=>
     (m.home_team===homeId&&m.away_team===awayId)||
@@ -495,29 +560,7 @@ function getTips(h,a){
   ]
 }
 
-function calculateWinnerOdds(){
-  const s=teams.map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
-  const total=s.reduce((a,b)=>a+b,0)
-  const map={};teams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
-}
-function calculateNonWinnerOdds(){
-  const sorted=[...teams].sort((a,b)=>(formRatings[a.id]||1000)-(formRatings[b.id]||1000))
-  const map={}
-  sorted.forEach((t,i)=>{
-    const ratio=sorted.length>1?i/(sorted.length-1):0
-    map[t.id]=1.10+Math.pow(ratio,3)*(3.00-1.10)
-  })
-  return map
-}
-function calculateLastOdds(){
-  const s=teams.map(t=>Math.pow(1/(Number(formRatings[t.id]||1000)),6))
-  const total=s.reduce((a,b)=>a+b,0)
-  const map={};teams.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
-}
-function calculateEqualOdds(f=2.5){
-  const map={};teams.forEach(t=>{map[t.id]=f});return map
-}
-
+// ── ZÁMKY ──
 async function loadLocks(){
   const{data}=await supabase.from("bet_locks").select("*")
   locks={}
@@ -527,19 +570,25 @@ function isCatLocked(type){return!!locks[`cat:${type}`]}
 function isTeamLocked(type,teamId){return!!locks[`team:${type}:${teamId}`]}
 function isLocked(type,teamId){return isCatLocked(type)||isTeamLocked(type,teamId)}
 
+// ── LOAD ──
 async function load(){
   const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
   teams=t||[]
 
+  // Načti sezóny seřazené od nejnovější
   const{data:seasons}=await supabase.from("seasons").select("*")
     .eq("competition_id",EXTRALIGA_COMPETITION_ID)
     .order("created_at",{ascending:false})
+
   const currentSeason=seasons?.[0]
+  const prevSeason=seasons?.[1] // předchozí sezóna
+
   if(!currentSeason){
     document.getElementById("mainContent").innerHTML=renderComingSoon()
     return
   }
 
+  // Stages aktuální sezóny
   const{data:stages}=await supabase.from("stages").select("*")
     .eq("season_id",currentSeason.id)
 
@@ -552,19 +601,62 @@ async function load(){
     semifinale: (stages||[]).filter(s=>s.name.startsWith("Semifinále")).map(s=>s.id),
     finale:     (stages||[]).filter(s=>s.name==="Finále").map(s=>s.id),
   }
-
-  // Uložíme stage map globálně pro deep link
   window._playoffStageMap=playoffStageMap
 
+  // Stages předchozí sezóny
+  let prevZakladniStageIds=[]
+  if(prevSeason){
+    const{data:prevStages}=await supabase.from("stages").select("*")
+      .eq("season_id",prevSeason.id)
+    prevZakladniStageIds=(prevStages||[])
+      .filter(s=>s.name==="Základní část")
+      .map(s=>s.id)
+  }
+
+  // Všechny odehrané zápasy (pro H2H)
   const{data:allPlayed}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null)
     .order("round",{ascending:true})
   allPlayedMatches=allPlayed||[]
 
-  const basicMatches=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
-  formRatings=calculateFormRatings(basicMatches)
-  standings=calculateStandings(basicMatches)
+  // Základní část aktuální sezóny
+  const currentBasicMatches=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
 
+  // Zjisti týmy v aktuální sezóně ze zápasů základní části
+  // Pokud ještě nejsou odehrané zápasy, načteme týmy ze stages/matches bez skóre
+  currentTeamIds=new Set()
+  if(currentBasicMatches.length>0){
+    currentBasicMatches.forEach(m=>{
+      currentTeamIds.add(m.home_team)
+      currentTeamIds.add(m.away_team)
+    })
+  } else {
+    // Načti všechny zápasy základní části (i neodehrané) abychom zjistili týmy
+    const{data:allCurrentBasic}=await supabase.from("matches").select("home_team,away_team")
+      .in("stage_id",zakladniStageIds)
+    ;(allCurrentBasic||[]).forEach(m=>{
+      currentTeamIds.add(m.home_team)
+      currentTeamIds.add(m.away_team)
+    })
+  }
+
+  // Základní část předchozí sezóny (pro goals odds)
+  const prevBasicMatches=prevZakladniStageIds.length
+    ?allPlayedMatches.filter(m=>prevZakladniStageIds.includes(m.stage_id))
+    :[]
+
+  // Odhadni celkový počet zápasů v sezóně na tým
+  // Z počtu týmů: každý hraje s každým 2x = (n-1)*2
+  const teamCount=currentTeamIds.size||10
+  const totalGamesPerTeam=(teamCount-1)*2
+
+  formRatings=calculateFormRatings(currentBasicMatches)
+  standings=calculateStandings(currentBasicMatches)
+
+  // Vypočítej goals odds dynamicky
+  goalsOddsMap=calculateGoalsOdds(currentBasicMatches, prevBasicMatches, totalGamesPerTeam)
+
+  // Play off zápasy
   const allPoStageIds=[
     ...playoffStageMap.ctvrtfinale,
     ...playoffStageMap.semifinale,
@@ -590,7 +682,6 @@ async function load(){
 
   await loadLocks()
 
-  // Zpracuj URL parametry — přepni na správnou fázi
   if(urlPhase && COMP_CONFIG.extraliga.betSections[urlPhase]==="matches"){
     currentPhase=urlPhase
   }
@@ -598,6 +689,7 @@ async function load(){
   render()
 }
 
+// ── NAVIGACE ──
 window.setComp=function(comp){
   currentComp=comp
   const cfg=COMP_CONFIG[comp]
@@ -620,6 +712,7 @@ window.setPhase=function(phase){
   render()
 }
 
+// ── HELPERS ──
 function getBet(playerId,teamId,type){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type===type)
 }
@@ -627,6 +720,7 @@ function getExistingGoalBet(playerId,teamId){
   return bets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type?.startsWith("goals_"))
 }
 
+// ── BET AKCE ──
 window.updateWin=function(player,teamId,type,odds){
   const val=Number(document.getElementById(`a_${player}_${teamId}_${type}`).value)
   const box=document.getElementById(`w_${player}_${teamId}_${type}`)
@@ -660,8 +754,7 @@ window.updateGoalWin=function(playerName,teamId){
   const inputEl=document.getElementById(`gi_${playerName}_${teamId}`)
   const val=inputEl?Number(inputEl.value):0
   if(!sel||!val){if(winEl)winEl.textContent="—";return}
-  const team=teams.find(t=>t.id===teamId)
-  const odds=getGoalsOdds(team?.name||"")
+  const odds=goalsOddsMap[teamId]
   if(!odds||!winEl) return
   winEl.textContent=Math.round(val*odds[sel])+" Kč"
 }
@@ -674,8 +767,7 @@ window.betGoals=async function(playerName,teamId){
   const val=Number(document.getElementById(`gi_${playerName}_${teamId}`).value)
   if(!val||val<=0) return alert("Zadej částku")
   if(player.credit<val) return alert("Nedostatek kreditu")
-  const team=teams.find(t=>t.id===teamId)
-  const odds=getGoalsOdds(team?.name||"")
+  const odds=goalsOddsMap[teamId]
   const o=odds[sel]
   const dbType=`goals_${sel}_regular_season`
   await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
@@ -686,6 +778,7 @@ window.betGoals=async function(playerName,teamId){
   load()
 }
 
+// ── PLAYOFF ──
 window.poSelectTip=function(matchId,playerKey,type){
   const key=`${matchId}_${playerKey}`
   if(!poState[key]) poState[key]={selected:[],oddsMap:{}}
@@ -759,7 +852,38 @@ function checkTip(match,tip){
   return false
 }
 
-// ── ACCORDION TOGGLE ──
+// ── H2H ──
+function getH2H(homeId,awayId){
+  return allPlayedMatches
+    .filter(m=>(m.home_team===homeId&&m.away_team===awayId)||(m.home_team===awayId&&m.away_team===homeId))
+    .slice(-5).reverse()
+}
+function renderH2HHtml(homeId,awayId){
+  const h2h=getH2H(homeId,awayId)
+  if(!h2h.length) return `<div class="po-h2h-empty">Žádné vzájemné zápasy</div>`
+  return h2h.map(m=>{
+    const home=teams.find(t=>t.id===m.home_team)
+    const away=teams.find(t=>t.id===m.away_team)
+    if(!home||!away) return ""
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    const homeWin=hg>ag
+    let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=s&&(s[20]==="1"||s[20]==="2")
+    const isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11")
+    const tag=isSN?"SN":isOT?"OT":""
+    return `<div class="po-h2h-row">
+      <span class="po-h2h-teams">
+        <span class="${homeWin?"po-h2h-winner":"po-h2h-loser"}">${home.name.replace(/\(.\)$/,'').trim()}</span>
+        vs
+        <span class="${homeWin?"po-h2h-loser":"po-h2h-winner"}">${away.name.replace(/\(.\)$/,'').trim()}</span>
+      </span>
+      <span class="po-h2h-score">${hg} : ${ag}</span>
+      ${tag?`<span class="po-h2h-tag">${tag}</span>`:""}
+    </div>`
+  }).join("")
+}
+
+// ── ACCORDION ──
 window.toggleSerie=function(stageId){
   const body=document.getElementById(`serie-body-${stageId}`)
   const header=document.getElementById(`serie-header-${stageId}`)
@@ -769,13 +893,11 @@ window.toggleSerie=function(stageId){
   header.classList.toggle("open",!isOpen)
 }
 
-// ── SÉRIE HEADER ──
 function renderSerieHeader(stageId, matches, phaseLabel){
   const home=teams.find(t=>t.id===matches[0]?.home_team)
   const away=teams.find(t=>t.id===matches[0]?.away_team)
   if(!home||!away) return ""
 
-  // Skóre série (počty vyhraných zápasů)
   let wHome=0, wAway=0
   matches.forEach(m=>{
     if(!m.played||m.home_score==null) return
@@ -809,7 +931,6 @@ function renderSerieHeader(stageId, matches, phaseLabel){
   </div>`
 }
 
-// ── ZÁPAS CARD ──
 function renderMatchCard(m, gameNumber, phaseLabel){
   const home=teams.find(t=>t.id===m.home_team)
   const away=teams.find(t=>t.id===m.away_team)
@@ -949,32 +1070,28 @@ function renderPoPlayerBlock(m,player,playerKey,tips,oddsMap,matchBets){
   </div>`
 }
 
-// ── RENDER PLAYOFF PHASE ──
 function renderPlayoffMatches(phase){
   const allMatches=playoffMatchesByPhase[phase]||[]
   if(allMatches.length===0) return renderComingSoon()
 
   const phaseLabel={ctvrtfinale:"Čtvrtfinále",semifinale:"Semifinále",finale:"Finále"}[phase]||""
 
-  // Seskup podle stage_id (každý stage = jedna série)
   const byStage={}
   allMatches.forEach(m=>{
     if(!byStage[m.stage_id]) byStage[m.stage_id]=[]
     byStage[m.stage_id].push(m)
   })
 
-  // Seřaď zápasy uvnitř série — nejnovější nahoře
   Object.keys(byStage).forEach(sid=>{
     byStage[sid].sort((a,b)=>Number(b.round)-Number(a.round))
   })
 
   let html=""
-  Object.entries(byStage).forEach(([stageId, matches])=>{
-    html+=renderSerieHeader(stageId, matches, phaseLabel)
+  Object.entries(byStage).forEach(([stageId,matches])=>{
+    html+=renderSerieHeader(stageId,matches,phaseLabel)
   })
 
-  // Po renderu — otevři správnou sérii pokud přišel deep link
-  if(urlStage && byStage[urlStage]){
+  if(urlStage&&byStage[urlStage]){
     setTimeout(()=>{
       const body=document.getElementById(`serie-body-${urlStage}`)
       const header=document.getElementById(`serie-header-${urlStage}`)
@@ -989,12 +1106,15 @@ function renderPlayoffMatches(phase){
   return html
 }
 
+// ── ZČ RENDER ──
 function playerBetTable(playerName,oddsMap,dbType){
   const p=players[playerName]
   if(!p) return ""
-  const sorted=[...teams].sort((a,b)=>oddsMap[a.id]-oddsMap[b.id])
+  const currentTeams=teams.filter(t=>currentTeamIds.has(t.id))
+  const sorted=currentTeams.sort((a,b)=>(oddsMap[a.id]||99)-(oddsMap[b.id]||99))
   let rows=sorted.map(t=>{
     const o=oddsMap[t.id]
+    if(!o) return ""
     const existing=getBet(p.id,t.id,dbType)
     const form=formRatings[t.id]||1000
     const locked=isLocked(dbType,t.id)
@@ -1040,9 +1160,12 @@ function playerBetTable(playerName,oddsMap,dbType){
 function goalsPlayerBlock(playerName){
   const p=players[playerName]
   if(!p) return ""
-  const goalsTeams=teams.filter(t=>getGoalsOdds(t.name))
-  const rows=goalsTeams.map(t=>{
-    const odds=getGoalsOdds(t.name)
+  const currentTeams=teams.filter(t=>currentTeamIds.has(t.id)&&goalsOddsMap[t.id])
+  if(!currentTeams.length) return ""
+
+  const rows=currentTeams.map(t=>{
+    const odds=goalsOddsMap[t.id]
+    if(!odds) return ""
     const existing=getExistingGoalBet(p.id,t.id)
     const locked=isLocked("goals_regular_season",t.id)
     if(existing){
@@ -1078,6 +1201,7 @@ function goalsPlayerBlock(playerName){
       <button class="bet-btn" onclick="betGoals('${playerName}','${t.id}')">Vsadit</button>
     </div>`
   }).join("")
+
   return `<div class="goals-player-card">
     <div class="player-card-header">
       <span class="player-name">${playerName}</span>
@@ -1139,7 +1263,6 @@ async function render(){
     } else {
       window._matchBets={}
     }
-
     content.innerHTML=renderPlayoffMatches(currentPhase)
     return
   }
