@@ -444,27 +444,44 @@ function calculateEqualOdds(f=2.5){
 
 // ── PLAY OFF CELKOVÉ ODDS (čistě z pozice v ZČ) ──
 function calcOverallPlayoffOdds(dbType){
-  // Vezmi jen týmy co jsou v play off (mají zápasy v play off stages)
   const playoffTeamIds=new Set()
   Object.values(playoffMatchesByPhase).flat().forEach(m=>{
     playoffTeamIds.add(m.home_team)
     playoffTeamIds.add(m.away_team)
   })
-
-  // Pokud ještě nejsou play off zápasy, vezmi všechny týmy ZČ
   const teamPool=playoffTeamIds.size>0
     ?standings.filter(t=>playoffTeamIds.has(t.id))
     :standings
-
   if(!teamPool.length) return {}
 
   const n=teamPool.length
-  // Síla = inverzní pozice (1. místo = nejvyšší síla)
-  const strengths=teamPool.map((t,i)=>Math.pow(n-i,3))
-  const total=strengths.reduce((a,b)=>a+b,0)
   const map={}
+
   teamPool.forEach((t,i)=>{
-map[t.id]=Math.min(180, Math.round((OVERALL_MARGIN/(strengths[i]/total))*100)/100)  })
+    // i=0 je nejsilnější tým (1. místo ZČ)
+    const rank=i+1
+    const str=(n-i)/n // 1.0 pro 1. místo, nízké pro poslední
+
+    let prob
+    if(dbType==="winner_playoff_overall"){
+      // Vítěz — exponenciálně zvýhodní nejsilnější
+      prob=Math.pow(str,3)
+    } else if(dbType==="second_playoff_overall"){
+      // Druhý — silný tým ale ne nejsilnější, vrchol kolem 2.-3. místa
+      prob=Math.pow(str,1.5)*Math.pow(1-str+0.1,1)
+    } else {
+      // Třetí — střední týmy, vrchol kolem 4.-6. místa
+      prob=Math.pow(str,0.8)*Math.pow(1-str+0.15,1.5)
+    }
+    map[t.id]=prob
+  })
+
+  // Normalizuj
+  const total=Object.values(map).reduce((a,b)=>a+b,0)
+  teamPool.forEach(t=>{
+    const raw=(OVERALL_MARGIN/(map[t.id]/total))
+    map[t.id]=Math.min(180, Math.round(raw*100)/100)
+  })
   return map
 }
 
