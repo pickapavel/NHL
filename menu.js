@@ -1,17 +1,5 @@
 ;(function(){
 
-const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
-const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-
-async function sbFetch(table, select, params){
-  let url = `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}`
-  if(params) url += '&' + params
-  const res = await fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-  })
-  return res.json()
-}
-
 const style = document.createElement('style')
 style.textContent = `
 nav {
@@ -69,7 +57,6 @@ nav {
   transform: rotate(180deg);
 }
 
-/* DROPDOWN */
 .nav-dropdown {
   position: absolute;
   top: calc(100% + 6px);
@@ -171,11 +158,16 @@ const items = [
     pages: ['prehledsazek.html']
   },
   {
-    type: 'link',
+    type: 'dropdown',
     icon: '🎲',
     label: 'Sázky',
-    href: 'sazky.html',
-    pages: ['sazky.html']
+    pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html'],
+    children: [
+      { icon: '🏒', label: 'Extraliga',          href: 'sazky.html',      pages: ['sazky.html'] },
+      { icon: '🥇', label: 'Olympiáda',          href: 'sazkyoh.html',    pages: ['sazkyoh.html'] },
+      { icon: '🌍', label: 'Mistrovství světa',  href: 'sazkyms.html',    pages: ['sazkyms.html'] },
+      { icon: '🤪', label: 'Blbounský pohár',    href: 'sazkypohár.html', pages: ['sazkypohár.html'] },
+    ]
   },
   {
     type: 'dropdown',
@@ -183,7 +175,7 @@ const items = [
     label: 'Zápisy',
     pages: ['zapis.html', 'olympiadaa.html'],
     children: [
-      { icon: '📝', label: 'Zápasy', href: 'zapis.html', pages: ['zapis.html'] },
+      { icon: '📝', label: 'Zápasy',    href: 'zapis.html',      pages: ['zapis.html'] },
       { icon: '🥇', label: 'Olympiáda', href: 'olympiadaa.html', pages: ['olympiadaa.html'] },
     ]
   },
@@ -213,7 +205,7 @@ items.forEach(item => {
     const dropdown = document.createElement('div')
     dropdown.className = 'nav-dropdown'
 
-    item.children.forEach((child, i) => {
+    item.children.forEach(child => {
       if(child.divider){
         const div = document.createElement('div')
         div.className = 'nav-divider'
@@ -234,7 +226,6 @@ items.forEach(item => {
   nav.appendChild(wrap)
 })
 
-// Zavři dropdown při kliknutí mimo
 document.addEventListener('click', () => {
   document.querySelectorAll('.nav-item.open').forEach(el => el.classList.remove('open'))
 })
