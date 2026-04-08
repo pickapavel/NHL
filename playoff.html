@@ -586,7 +586,8 @@ function renderResults(SERIES){
        <span class="rm-num">${i+1}. zápas</span>
        ${played
         ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
-        :`<button class="btn-sm btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
+        :`<button class="btn-sm btn-bet" onclick="window.location.href='${betUrl}'">🎲 Vsaď si</button>`
+
        }
       </div>
       <div class="rm-teams">
