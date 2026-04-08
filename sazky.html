@@ -457,24 +457,21 @@ function calcOverallPlayoffOdds(dbType){
   const n=teamPool.length
   const map={}
 
+  // Základ — kurzy na vítěze
+  const strengths=teamPool.map((t,i)=>Math.pow((n-i)/n,3))
+  const total=strengths.reduce((a,b)=>a+b,0)
   teamPool.forEach((t,i)=>{
-    // i=0 je nejsilnější tým (1. místo ZČ)
-    const rank=i+1
-    const str=(n-i)/n // 1.0 pro 1. místo, nízké pro poslední
-
-    let prob
+    const baseOdds=Math.min(180, Math.round((OVERALL_MARGIN/(strengths[i]/total))*100)/100)
     if(dbType==="winner_playoff_overall"){
-      // Vítěz — exponenciálně zvýhodní nejsilnější
-      prob=Math.pow(str,3)
+      map[t.id]=baseOdds
     } else if(dbType==="second_playoff_overall"){
-      // Druhý — silný tým ale ne nejsilnější, vrchol kolem 2.-3. místa
-      prob=Math.pow(str,1.5)*Math.pow(1-str+0.1,1)
+      map[t.id]=Math.round(baseOdds*0.7*100)/100
     } else {
-      // Třetí — střední týmy, vrchol kolem 4.-6. místa
-      prob=Math.pow(str,0.8)*Math.pow(1-str+0.15,1.5)
+      map[t.id]=Math.round(baseOdds*0.5*100)/100
     }
-    map[t.id]=prob
   })
+  return map
+}
 
   // Normalizuj
   const total=Object.values(map).reduce((a,b)=>a+b,0)
