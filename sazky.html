@@ -464,8 +464,7 @@ function calcOverallPlayoffOdds(dbType){
   const total=strengths.reduce((a,b)=>a+b,0)
   const map={}
   teamPool.forEach((t,i)=>{
-    map[t.id]=Math.round((OVERALL_MARGIN/(strengths[i]/total))*100)/100
-  })
+map[t.id]=Math.min(180, Math.round((OVERALL_MARGIN/(strengths[i]/total))*100)/100)  })
   return map
 }
 
