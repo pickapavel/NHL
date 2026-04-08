@@ -852,24 +852,40 @@ function renderOverallPlayerTable(playerName,oddsMap,dbType,teamPool){
   const p=players[playerName]
   if(!p) return ""
   const sorted=teamPool.slice().sort((a,b)=>(oddsMap[a.id]||99)-(oddsMap[b.id]||99))
+
+  // Předpočítej pořadí v ZČ
+  const standingsPos={}
+  standings.forEach((t,i)=>{standingsPos[t.id]=i+1})
+
   let rows=sorted.map(t=>{
     const o=oddsMap[t.id];if(!o) return ""
     const existing=getSpecialBet(p.id,t.id,dbType)
     const locked=isLocked(dbType,t.id)
     const id=`${playerName}_${t.id}_${dbType}`
+    const elo=formRatings[t.id]||1000
+    const pos=standingsPos[t.id]
+    const posHtml=pos?`<span style="font-size:11px;font-weight:700;color:var(--navy);background:#eef2f7;border-radius:5px;padding:2px 6px;">${pos}.</span>`:`<span style="color:var(--muted);font-size:11px;">—</span>`
+    const eloHtml=`<span style="font-size:11px;color:var(--muted);font-weight:600;">${elo}</span>`
+
     if(existing) return `<tr>
       <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
+      <td class="tc">${posHtml}</td>
+      <td class="tc">${eloHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td>${existing.amount} Kč</td><td>${Math.round(existing.potential_win)} Kč</td>
       <td><span class="locked-badge">✓ Vsazeno</span></td>
     </tr>`
     if(locked) return `<tr>
       <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
+      <td class="tc">${posHtml}</td>
+      <td class="tc">${eloHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td colspan="3"><span class="closed-badge">🔒 Uzavřeno</span></td>
     </tr>`
     return `<tr>
       <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
+      <td class="tc">${posHtml}</td>
+      <td class="tc">${eloHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td><input class="bet-input" id="a_${id}" type="number" min="1" placeholder="Kč" oninput="updateWin('${playerName}','${t.id}','${dbType}',${o})"></td>
       <td><span class="win-display" id="w_${id}">—</span></td>
@@ -879,7 +895,7 @@ function renderOverallPlayerTable(playerName,oddsMap,dbType,teamPool){
   return `<div class="player-card">
     <div class="player-card-header"><span class="player-name">${playerName}</span><span class="player-credit">💰 ${Math.round(p.credit)} Kč</span></div>
     <table class="bet-table">
-      <thead><tr><th>Tým</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
+      <thead><tr><th>Tým</th><th class="tc">ZČ</th><th class="tc">ELO</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`
