@@ -41,7 +41,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .player-name{font-size:15px;font-weight:700;color:#fff}
 .player-credit{font-size:13px;font-weight:600;color:var(--gold);background:rgba(240,192,64,.12);padding:4px 10px;border-radius:20px}
 
-.bet-table{width:100%;border-collapse:collapse}
+.bet-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.bet-table th:first-child,.bet-table td:first-child{width:50%}
+.bet-table tbody td:not(:first-child){white-space:nowrap}
 .bet-table thead tr{background:#f7fafc}
 .bet-table th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
 .bet-table th.tc{text-align:center}
@@ -54,8 +56,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .team-info-wrap{display:flex;flex-direction:column;gap:4px}
 .team-name{font-weight:600;font-size:13px;white-space:nowrap}
 .team-meta{display:flex;gap:4px;flex-wrap:wrap}
-.team-meta-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
-.tag-pos{background:#e8f0fe;color:#1a4fa0}
+.team-meta-tag{font-size:10px;font-weight:600;padding:1px 5px;border-radius:4px;white-space:nowrap}.tag-pos{background:#e8f0fe;color:#1a4fa0}
 .tag-elo{background:#eef2f7;color:var(--navy)}
 .tag-forma{background:#e8f7ef;color:#166534}
 
