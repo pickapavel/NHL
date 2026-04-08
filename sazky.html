@@ -51,7 +51,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 .team-cell{display:flex;align-items:center;gap:8px}
 .logo{width:28px;height:28px;object-fit:contain;background:#fff;border-radius:5px;padding:2px;border:1px solid var(--border);flex-shrink:0}
-.team-name{font-weight:600;font-size:13px}
+.team-info-wrap{display:flex;flex-direction:column;gap:4px}
+.team-name{font-weight:600;font-size:13px;white-space:nowrap}
+.team-meta{display:flex;gap:4px;flex-wrap:wrap}
+.team-meta-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.tag-pos{background:#e8f0fe;color:#1a4fa0}
+.tag-elo{background:#eef2f7;color:var(--navy)}
+.tag-forma{background:#e8f7ef;color:#166534}
+
 .odds-badge{display:inline-block;background:#eef2f7;border-radius:6px;padding:3px 9px;font-weight:700;font-size:13px;color:var(--navy);min-width:44px;text-align:center}
 .form-val{font-size:12px;color:var(--muted);font-weight:500}
 .bet-input{width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;transition:border-color .15s}
@@ -81,7 +88,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
-/* ── SÉRIE ACCORDION ── */
 .serie-accordion{margin-bottom:12px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;}
 .serie-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--white);cursor:pointer;transition:background .15s;user-select:none;}
 .serie-header:hover{background:#f7fafc;}
@@ -98,7 +104,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .serie-body{display:none;border-top:1px solid var(--border);}
 .serie-body.open{display:block;}
 
-/* ── SÉRIE TIPY ── */
 .serie-tips-section{padding:16px 18px;background:#f7fafc;border-bottom:1px solid var(--border);}
 .serie-tips-title{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
 .serie-tips-players{display:grid;grid-template-columns:1fr 1fr;gap:0;}
@@ -134,7 +139,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .tip-summary .win-amount{font-weight:700;color:var(--green);}
 .tip-summary .odds-val{font-weight:700;color:var(--navy2);}
 
-/* ── ZÁPAS CARD ── */
 .match-card{background:var(--white);border-bottom:1px solid var(--border);overflow:hidden;}
 .match-card:last-child{border-bottom:none;}
 .match-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:9px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -271,6 +275,9 @@ const urlPhase=urlParams.get("phase")
 const urlStage=urlParams.get("stage")
 
 // ── FORM RATING ──
+// Vrací { elo: {teamId: number}, forma: {teamId: number} }
+// elo = celkové ELO přes celou sezónu
+// forma = ELO počítané jen z posledních 5 zápasů (klouzavé okno)
 function getScore(match,teamId){
   const hg=Number(match.home_score),ag=Number(match.away_score)
   let s=null;try{s=match.stats?JSON.parse(match.stats):null}catch(e){}
@@ -283,25 +290,35 @@ function getScore(match,teamId){
 }
 
 function calculateFormRatings(matches){
-  const ratings={},fh={},fr={}
-  teams.forEach(t=>{ratings[t.id]=START_RATING;fh[t.id]=[];fr[t.id]=START_RATING})
+  const elo={}, formaHistory={}, forma={}
+  teams.forEach(t=>{
+    elo[t.id]=START_RATING
+    formaHistory[t.id]=[]
+    forma[t.id]=START_RATING
+  })
   matches.forEach(m=>{
     const h=m.home_team,a=m.away_team
-    if(!fr[h]||!fr[a]) return
+    if(!elo[h]||!elo[a]) return
     const sH=getScore(m,h),sA=getScore(m,a)
-    function upd(tid,oid,score){
-      const cur=fr[tid],opp=fr[oid]
+
+    // Aktualizuj celkové ELO
+    const rH=elo[h],rA=elo[a]
+    elo[h]=Math.round(rH+K_FORM*(sH-(1/(1+Math.pow(10,(rA-rH)/400)))))
+    elo[a]=Math.round(rA+K_FORM*(sA-(1/(1+Math.pow(10,(rH-rA)/400)))))
+
+    // Aktualizuj formu (klouzavé okno posledních 5 zápasů)
+    function updForma(tid,oid,score){
+      const cur=forma[tid],opp=forma[oid]
       const exp=1/(1+Math.pow(10,(opp-cur)/400))
       const ch=K_FORM*(score-exp)
-      fh[tid].push(ch);if(fh[tid].length>5)fh[tid].shift()
-      fr[tid]=Math.round(START_RATING+fh[tid].reduce((a,b)=>a+Math.round(b),0))
+      formaHistory[tid].push(ch)
+      if(formaHistory[tid].length>5) formaHistory[tid].shift()
+      forma[tid]=Math.round(START_RATING+formaHistory[tid].reduce((a,b)=>a+Math.round(b),0))
     }
-    upd(h,a,sH);upd(a,h,sA)
-    const rH=ratings[h],rA=ratings[a]
-    ratings[h]=Math.round(rH+K_FORM*(sH-(1/(1+Math.pow(10,(rA-rH)/400)))))
-    ratings[a]=Math.round(rA+K_FORM*(sA-(1/(1+Math.pow(10,(rH-rA)/400)))))
+    updForma(h,a,sH)
+    updForma(a,h,sA)
   })
-  return fr
+  return { elo, forma }
 }
 
 function calculateStandings(basicMatches){
@@ -361,12 +378,12 @@ function calculateGoalsOdds(curMatches,prevMatches,totalGames){
 // ── ZČ ODDS ──
 function calculateWinnerOdds(){
   const ct=teams.filter(t=>currentTeamIds.has(t.id))
-  const s=ct.map(t=>Math.pow(Number(formRatings[t.id]||1000),6))
+  const s=ct.map(t=>Math.pow(Number(formRatings.elo[t.id]||1000),6))
   const total=s.reduce((a,b)=>a+b,0)
   const map={};ct.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
 }
 function calculateNonWinnerOdds(){
-  const sorted=teams.filter(t=>currentTeamIds.has(t.id)).sort((a,b)=>(formRatings[a.id]||1000)-(formRatings[b.id]||1000))
+  const sorted=teams.filter(t=>currentTeamIds.has(t.id)).sort((a,b)=>(formRatings.elo[a.id]||1000)-(formRatings.elo[b.id]||1000))
   const map={}
   sorted.forEach((t,i)=>{
     const ratio=sorted.length>1?i/(sorted.length-1):0
@@ -376,7 +393,7 @@ function calculateNonWinnerOdds(){
 }
 function calculateLastOdds(){
   const ct=teams.filter(t=>currentTeamIds.has(t.id))
-  const s=ct.map(t=>Math.pow(1/(Number(formRatings[t.id]||1000)),6))
+  const s=ct.map(t=>Math.pow(1/(Number(formRatings.elo[t.id]||1000)),6))
   const total=s.reduce((a,b)=>a+b,0)
   const map={};ct.forEach((t,i)=>{map[t.id]=MARGIN/(s[i]/total)});return map
 }
@@ -418,8 +435,8 @@ function calcSeriesOdds(homeId,awayId){
   const ap=standings.findIndex(t=>t.id===awayId)
   const hPos=hp>=0?(n-hp)/n:0.5
   const aPos=ap>=0?(n-ap)/n:0.5
-  const hForm=(formRatings[homeId]||1000)/2000
-  const aForm=(formRatings[awayId]||1000)/2000
+  const hForm=(formRatings.elo[homeId]||1000)/2000
+  const aForm=(formRatings.elo[awayId]||1000)/2000
   const hStr=(hPos+hForm)/2,aStr=(aPos+aForm)/2
   let probH=hStr/(hStr+aStr)
   const h2h=getLastH2H(homeId,awayId)
@@ -596,6 +613,25 @@ function getSpecialBet(playerId,teamId,type){return specialBets.find(b=>b.player
 function getExistingGoalBet(playerId,teamId){return specialBets.find(b=>b.player_id===playerId&&b.target_id===teamId&&b.type?.startsWith("goals_"))}
 function getSerieWinnerBet(playerId,stageId){return specialBets.find(b=>b.player_id===playerId&&b.type===`serie_winner_${stageId}`)}
 function getSerieGamesBet(playerId,stageId){return specialBets.find(b=>b.player_id===playerId&&b.type===`serie_games_${stageId}`)}
+
+// ── HELPER: vyrenderuj buňku týmu s ELO + Forma pod názvem ──
+function renderTeamCell(t){
+  const pos=standings.findIndex(s=>s.id===t.id)
+  const eloVal=formRatings.elo?.[t.id]||1000
+  const formaVal=formRatings.forma?.[t.id]||1000
+  const posTag=pos>=0?`<span class="team-meta-tag tag-pos">${pos+1}. místo ZČ</span>`:''
+  return `<div class="team-cell">
+    <img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'">
+    <div class="team-info-wrap">
+      <span class="team-name">${t.name}</span>
+      <div class="team-meta">
+        ${posTag}
+        <span class="team-meta-tag tag-elo">ELO: ${eloVal}</span>
+        <span class="team-meta-tag tag-forma">Forma: ${formaVal}</span>
+      </div>
+    </div>
+  </div>`
+}
 
 // ── ZČ BET AKCE ──
 window.updateWin=function(player,teamId,type,odds){
@@ -852,40 +888,25 @@ function renderOverallPlayerTable(playerName,oddsMap,dbType,teamPool){
   const p=players[playerName]
   if(!p) return ""
   const sorted=teamPool.slice().sort((a,b)=>(oddsMap[a.id]||99)-(oddsMap[b.id]||99))
-
-  // Předpočítej pořadí v ZČ
-  const standingsPos={}
-  standings.forEach((t,i)=>{standingsPos[t.id]=i+1})
-
   let rows=sorted.map(t=>{
     const o=oddsMap[t.id];if(!o) return ""
     const existing=getSpecialBet(p.id,t.id,dbType)
     const locked=isLocked(dbType,t.id)
     const id=`${playerName}_${t.id}_${dbType}`
-    const elo=formRatings[t.id]||1000
-    const pos=standingsPos[t.id]
-    const posHtml=pos?`<span style="font-size:11px;font-weight:700;color:var(--navy);background:#eef2f7;border-radius:5px;padding:2px 6px;">${pos}.</span>`:`<span style="color:var(--muted);font-size:11px;">—</span>`
-    const eloHtml=`<span style="font-size:11px;color:var(--muted);font-weight:600;">${elo}</span>`
-
+    const teamCellHtml=renderTeamCell(t)
     if(existing) return `<tr>
-      <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc">${posHtml}</td>
-      <td class="tc">${eloHtml}</td>
+      <td>${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td>${existing.amount} Kč</td><td>${Math.round(existing.potential_win)} Kč</td>
       <td><span class="locked-badge">✓ Vsazeno</span></td>
     </tr>`
     if(locked) return `<tr>
-      <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc">${posHtml}</td>
-      <td class="tc">${eloHtml}</td>
+      <td>${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td colspan="3"><span class="closed-badge">🔒 Uzavřeno</span></td>
     </tr>`
     return `<tr>
-      <td><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc">${posHtml}</td>
-      <td class="tc">${eloHtml}</td>
+      <td>${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td><input class="bet-input" id="a_${id}" type="number" min="1" placeholder="Kč" oninput="updateWin('${playerName}','${t.id}','${dbType}',${o})"></td>
       <td><span class="win-display" id="w_${id}">—</span></td>
@@ -895,7 +916,7 @@ function renderOverallPlayerTable(playerName,oddsMap,dbType,teamPool){
   return `<div class="player-card">
     <div class="player-card-header"><span class="player-name">${playerName}</span><span class="player-credit">💰 ${Math.round(p.credit)} Kč</span></div>
     <table class="bet-table">
-      <thead><tr><th>Tým</th><th class="tc">ZČ</th><th class="tc">ELO</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
+      <thead><tr><th>Tým</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`
@@ -927,13 +948,11 @@ function renderMatchesPhase(phase){
     const seriesOdds=calcSeriesOdds(home.id,away.id)
     const gamesOdds=calcGamesOdds(home.id,away.id,winsNeeded)
 
-    // Ulož odds do state
     ;["kubele","pici"].forEach(pk=>{
       winnerState[`sw_odds_${stage.id}_${pk}`]={[home.id]:seriesOdds.home,[away.id]:seriesOdds.away}
       gamesState[`sg_odds_${stage.id}_${pk}`]=gamesOdds
     })
 
-    // Skóre série
     let wHome=0,wAway=0
     matches.forEach(m=>{
       if(!m.played||m.home_score==null) return
@@ -943,7 +962,6 @@ function renderMatchesPhase(phase){
     const playedCount=matches.filter(m=>m.played&&m.home_score!=null).length
     const scoreStr=playedCount>0?`${wHome} : ${wAway}`:"Nezačalo"
 
-    // Tipy na sérii pro hráče
     const kubele=players["Kubele"],pici=players["Pici"]
 
     html+=`
@@ -965,8 +983,6 @@ function renderMatchesPhase(phase){
         </div>
       </div>
       <div class="serie-body" id="serie-body-${stage.id}">
-
-        <!-- TIPY NA SÉRII -->
         <div class="serie-tips-section">
           <div class="serie-tips-title">🎲 Tipy na sérii</div>
           <div class="serie-tips-players">
@@ -974,15 +990,12 @@ function renderMatchesPhase(phase){
             ${renderSeriePlayerTips(stage.id,"pici",  pici,  home,away,seriesOdds,gamesOdds,winsNeeded)}
           </div>
         </div>
-
-        <!-- ZÁPASY V SÉRII -->
         ${matches.slice().sort((a,b)=>Number(b.round)-Number(a.round))
           .map((m,idx)=>renderMatchCard(m,matches.length-idx,stage.name)).join("")}
       </div>
     </div>`
   })
 
-  // Deep link
   if(urlStage&&byStage[urlStage]){
     setTimeout(()=>{
       const body=document.getElementById(`serie-body-${urlStage}`)
@@ -1003,7 +1016,6 @@ function renderSeriePlayerTips(stageId,playerKey,player,home,away,seriesOdds,gam
   const existingWinner=getSerieWinnerBet(player.id,stageId)
   const existingGames=getSerieGamesBet(player.id,stageId)
 
-  // Blok — vítěz série
   let winnerBlock=""
   if(existingWinner){
     const team=teams.find(t=>t.id===existingWinner.target_id)
@@ -1036,7 +1048,6 @@ function renderSeriePlayerTips(stageId,playerKey,player,home,away,seriesOdds,gam
     </div>`
   }
 
-  // Blok — počet zápasů
   let gamesBlock=""
   if(existingGames){
     gamesBlock=`<div class="tip-block">
@@ -1082,8 +1093,11 @@ function renderMatchCard(m,gameNumber,phaseName){
   if(!home||!away) return ""
   const homeShort=home.short_name||home.name,awayShort=away.short_name||away.name
   const tips=getTips(homeShort,awayShort)
-  const matchOdds=calcMatchOdds(formRatings[home.id]||1000,formRatings[away.id]||1000)
-  const homeForm=formRatings[home.id]||1000,awayForm=formRatings[away.id]||1000
+  const homeElo=formRatings.elo?.[home.id]||1000
+  const awayElo=formRatings.elo?.[away.id]||1000
+  const homeForma=formRatings.forma?.[home.id]||1000
+  const awayForma=formRatings.forma?.[away.id]||1000
+  const matchOdds=calcMatchOdds(homeElo,awayElo)
   const played=m.played&&m.home_score!=null
   const seriesOdds=calcSeriesOdds(home.id,away.id)
 
@@ -1106,7 +1120,7 @@ function renderMatchCard(m,gameNumber,phaseName){
       <div class="match-team">
         <img class="match-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
         <div class="match-team-name">${home.name}</div>
-        <div class="match-team-info">${seriesOdds.homePos>0?seriesOdds.homePos+". místo ZČ":"—"} · Forma: ${homeForm}</div>
+        <div class="match-team-info">${seriesOdds.homePos>0?seriesOdds.homePos+". místo ZČ":"—"} · ELO: ${homeElo} · Forma: ${homeForma}</div>
       </div>
       <div class="match-score">
         ${played?`<div class="match-score-main">${m.home_score} : ${m.away_score}</div>`:`<div class="match-score-vs">vs</div>`}
@@ -1114,7 +1128,7 @@ function renderMatchCard(m,gameNumber,phaseName){
       <div class="match-team">
         <img class="match-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
         <div class="match-team-name">${away.name}</div>
-        <div class="match-team-info">${seriesOdds.awayPos>0?seriesOdds.awayPos+". místo ZČ":"—"} · Forma: ${awayForm}</div>
+        <div class="match-team-info">${seriesOdds.awayPos>0?seriesOdds.awayPos+". místo ZČ":"—"} · ELO: ${awayElo} · Forma: ${awayForma}</div>
       </div>
     </div>
     <div class="match-h2h">
@@ -1185,25 +1199,22 @@ function playerBetTable(playerName,oddsMap,dbType){
   let rows=sorted.map(t=>{
     const o=oddsMap[t.id];if(!o) return ""
     const existing=getSpecialBet(p.id,t.id,dbType)
-    const form=formRatings[t.id]||1000
     const locked=isLocked(dbType,t.id)
     const id=`${playerName}_${t.id}_${dbType}`
+    const teamCellHtml=renderTeamCell(t)
     if(existing) return `<tr>
-      <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc"><span class="form-val">${form}</span></td>
+      <td data-label="Tým">${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td>${existing.amount} Kč</td><td>${Math.round(existing.potential_win)} Kč</td>
       <td><span class="locked-badge">✓ Vsazeno</span></td>
     </tr>`
     if(locked) return `<tr>
-      <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc"><span class="form-val">${form}</span></td>
+      <td data-label="Tým">${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td colspan="3"><span class="closed-badge">🔒 Uzavřeno</span></td>
     </tr>`
     return `<tr>
-      <td data-label="Tým"><div class="team-cell"><img class="logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-name">${t.name}</span></div></td>
-      <td class="tc"><span class="form-val">${form}</span></td>
+      <td data-label="Tým">${teamCellHtml}</td>
       <td class="tc"><span class="odds-badge">${o.toFixed(2)}</span></td>
       <td><input class="bet-input" id="a_${id}" type="number" min="1" placeholder="Kč" oninput="updateWin('${playerName}','${t.id}','${dbType}',${o})"></td>
       <td><span class="win-display" id="w_${id}">—</span></td>
@@ -1213,7 +1224,7 @@ function playerBetTable(playerName,oddsMap,dbType){
   return `<div class="player-card">
     <div class="player-card-header"><span class="player-name">${playerName}</span><span class="player-credit">💰 ${Math.round(p.credit)} Kč</span></div>
     <table class="bet-table">
-      <thead><tr><th>Tým</th><th class="tc">Forma</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
+      <thead><tr><th>Tým</th><th class="tc">Kurz</th><th>Vsadit</th><th>Výhra</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`
