@@ -473,14 +473,6 @@ function calcOverallPlayoffOdds(dbType){
   return map
 }
 
-  // Normalizuj
-  const total=Object.values(map).reduce((a,b)=>a+b,0)
-  teamPool.forEach(t=>{
-    const raw=(OVERALL_MARGIN/(map[t.id]/total))
-    map[t.id]=Math.min(180, Math.round(raw*100)/100)
-  })
-  return map
-}
 
 // ── PLAYOFF SÉRIE ODDS ──
 function getLastH2H(homeId,awayId){
