@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hráčské statistiky – SPA vs PCE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0b2a3c;--navy2:#1a5276;--gold:#f0c040;--green:#27ae60;--red:#e74c3c;--blue:#2f9ec9;
+  --bg:#f0f4f8;--white:#fff;--muted:#6b7a8d;--border:#e2e8f0;--text:#1a2a3c;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.page-header{background:linear-gradient(135deg,var(--navy),var(--navy2))}
+.scoreline{display:flex;align-items:center;justify-content:center;gap:0;padding:24px 20px 20px}
+.team-block{flex:1;text-align:center}
+.team-block-name{font-size:16px;font-weight:800;color:#fff}
+.team-block-abbr{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.12em;margin-top:2px}
+.score-center{text-align:center;padding:0 24px}
+.score-big{font-size:56px;font-weight:800;color:#fff;line-height:1;letter-spacing:-2px}
+.score-date{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px}
+.tabs-bar{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:50}
+.tab{padding:12px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy2)}
+.wrapper{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+.section{margin-bottom:28px}
+.section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;padding:0 2px}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(11,42,60,.06);margin-bottom:16px}
+.card-header{padding:12px 18px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-header-title{font-size:15px;font-weight:800;color:#fff}
+.card-header-sub{font-size:12px;color:rgba(255,255,255,.55)}
+.card-header-badge{font-size:11px;font-weight:600;color:var(--gold);background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px;white-space:nowrap}
+.stat-summary{display:flex;border-bottom:1px solid var(--border)}
+.stat-box{flex:1;text-align:center;padding:12px 8px;border-right:1px solid var(--border)}
+.stat-box:last-child{border-right:none}
+.stat-box-val{font-size:22px;font-weight:800;color:var(--navy)}
+.stat-box-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:#f7fafc;white-space:nowrap;cursor:pointer;user-select:none}
+.tbl th:hover{color:var(--navy)}
+.tbl th.r{text-align:right}
+.tbl td{padding:9px 10px;border-bottom:1px solid #f4f6f9;vertical-align:middle;white-space:nowrap}
+.tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f7fafc}
+.tbl .sorted{color:var(--navy) !important}
+.tbl .sorted::after{content:' ▼';font-size:8px}
+.tbl .sorted-asc::after{content:' ▲';font-size:8px}
+.pname{font-weight:600;color:var(--text);font-size:12px}
+.v-g{font-weight:800;color:var(--green)}
+.v-a{font-weight:800;color:var(--blue)}
+.v-p{font-weight:800;color:var(--navy)}
+.v-pm-pos{font-weight:700;color:var(--green)}
+.v-pm-neg{font-weight:700;color:var(--red)}
+.v-pm-zero{color:var(--muted)}
+.v-pim{font-weight:700;color:var(--red)}
+.v-pim-zero{color:var(--muted)}
+.v-ppg{font-weight:700;color:#9333ea}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.badge-g{background:#dcfce7;color:#166534}
+.badge-a{background:#dbeafe;color:#1e40af}
+.badge-ppg{background:#f3e8ff;color:#7e22ce}
+.badge-pim{background:#fee2e2;color:#991b1b}
+.badge-hit{background:#f0f4f8;color:#0b2a3c}
+.goalie-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.goalie-grid{grid-template-columns:1fr}}
+.goalie-card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(11,42,60,.06)}
+.goalie-top{padding:12px 16px;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;justify-content:space-between;align-items:flex-start}
+.goalie-name{font-size:14px;font-weight:800;color:#fff}
+.goalie-meta{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px}
+.goalie-result{font-size:24px;font-weight:800}
+.goalie-stats{display:grid;grid-template-columns:repeat(5,1fr)}
+.goalie-stat{text-align:center;padding:14px 6px;border-right:1px solid var(--border)}
+.goalie-stat:last-child{border-right:none}
+.goalie-val{font-size:20px;font-weight:800;color:var(--navy)}
+.goalie-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+.bar-wrap{padding:10px 16px 14px}
+.bar-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:flex;justify-content:space-between}
+.bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.event-list{padding:12px 16px}
+.event-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f4f6f9}
+.event-item:last-child{border-bottom:none}
+.event-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.event-body{flex:1}
+.event-player{font-size:13px;font-weight:600;color:var(--text)}
+.event-detail{font-size:11px;color:var(--muted);margin-top:1px}
+.event-team{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.et-spa{background:rgba(11,42,60,.08);color:var(--navy)}
+.et-pce{background:rgba(231,76,60,.08);color:var(--red)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f4f6f9}
+.bar-row:last-child{border-bottom:none}
+.bar-row-name{font-size:12px;font-weight:600;width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row-bar{flex:1}
+.bar-row-bar .bar{height:6px}
+.bar-row-val{font-size:13px;font-weight:700;color:var(--navy);width:50px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.bar-row-team{font-size:10px;font-weight:700;color:var(--muted);width:28px;flex-shrink:0}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filter-btn{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s}
+.filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.hidden{display:none}
+.shots-compare{display:flex;align-items:center;gap:12px;padding:16px}
+.shots-team{text-align:center;flex:1}
+.shots-num{font-size:36px;font-weight:800;color:var(--navy)}
+.shots-lbl{font-size:11px;color:var(--muted);font-weight:600}
+.shots-bar-dual{height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden;display:flex}
+.shots-bar-left{height:100%;background:var(--navy);border-radius:5px 0 0 5px}
+.shots-bar-right{height:100%;background:var(--red);border-radius:0 5px 5px 0}
+@media(max-width:500px){.score-big{font-size:42px}.team-block-name{font-size:13px}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="scoreline">
+    <div class="team-block">
+      <div class="team-block-name">HC Sparta Praha</div>
+      <div class="team-block-abbr">SPA</div>
+    </div>
+    <div class="score-center">
+      <div class="score-big">2 : 1</div>
+      <div class="score-date">2. dubna 2026</div>
+    </div>
+    <div class="team-block">
+      <div class="team-block-name">HC Dynamo Pardubice</div>
+      <div class="team-block-abbr">PCE</div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-bar">
+  <button class="tab active" onclick="showSection('overview',this)">Přehled</button>
+  <button class="tab" onclick="showSection('goalies',this)">Brankáři</button>
+  <button class="tab" onclick="showSection('goals',this)">Góly &amp; Asistence</button>
+  <button class="tab" onclick="showSection('penalties',this)">Tresty</button>
+  <button class="tab" onclick="showSection('shots',this)">Střely</button>
+  <button class="tab" onclick="showSection('hits',this)">Hity</button>
+  <button class="tab" onclick="showSection('toi',this)">Čas na ledě</button>
+  <button class="tab" onclick="showSection('fullstats',this)">Plná tabulka</button>
+</div>
+
+<div class="wrapper">
+
+<!-- OVERVIEW -->
+<div id="sec-overview">
+  <div class="section">
+    <div class="section-title">📊 Týmový souhrn</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-header-title">HC Sparta Praha</span><span class="card-header-badge">Vítěz</span></div>
+        <div class="stat-summary">
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--green)">2</div><div class="stat-box-lbl">Góly</div></div>
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--blue)">2</div><div class="stat-box-lbl">Asistence</div></div>
+          <div class="stat-box"><div class="stat-box-val">22</div><div class="stat-box-lbl">Střely</div></div>
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--red)">2</div><div class="stat-box-lbl">Tr. minuty</div></div>
+          <div class="stat-box"><div class="stat-box-val">34</div><div class="stat-box-lbl">Hity</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-header-title">HC Dynamo Pardubice</span></div>
+        <div class="stat-summary">
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--green)">1</div><div class="stat-box-lbl">Góly</div></div>
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--blue)">1</div><div class="stat-box-lbl">Asistence</div></div>
+          <div class="stat-box"><div class="stat-box-val">19</div><div class="stat-box-lbl">Střely</div></div>
+          <div class="stat-box"><div class="stat-box-val" style="color:var(--red)">6</div><div class="stat-box-lbl">Tr. minuty</div></div>
+          <div class="stat-box"><div class="stat-box-val">50</div><div class="stat-box-lbl">Hity</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">🎯 Střely a přesilovky</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="shots-compare">
+          <div class="shots-team"><div class="shots-num">22</div><div class="shots-lbl">SPA střely</div></div>
+          <div style="flex:2">
+            <div class="shots-bar-dual"><div class="shots-bar-left" style="width:53.7%"></div><div class="shots-bar-right" style="width:46.3%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:4px"><span style="color:var(--navy);font-weight:700">53.7%</span><span style="color:var(--red);font-weight:700">46.3%</span></div>
+          </div>
+          <div class="shots-team"><div class="shots-num" style="color:var(--red)">19</div><div class="shots-lbl">PCE střely</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="padding:16px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Přesilovka / Oslabení</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="badge badge-ppg">SPA: 1 PPG (Mrna)</span>
+            <span class="badge" style="background:#f0f4f8;color:var(--muted)">PCE: 0 PPG</span>
+            <span class="badge" style="background:#f0f4f8;color:var(--muted)">SHG: 0 oběma</span>
+            <span class="badge badge-pim">SPA: 2 TM celkem</span>
+            <span class="badge badge-pim">PCE: 6 TM celkem</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BRANKÁŘI -->
+<div id="sec-goalies" class="hidden">
+  <div class="section">
+    <div class="section-title">🥅 Brankáři</div>
+    <div class="goalie-grid">
+      <div class="goalie-card">
+        <div class="goalie-top">
+          <div><div class="goalie-name">Duba Tomáš</div><div class="goalie-meta">HC Sparta Praha · 59:05 na ledě</div></div>
+          <div class="goalie-result" style="color:var(--green)">W</div>
+        </div>
+        <div class="goalie-stats">
+          <div class="goalie-stat"><div class="goalie-val">17</div><div class="goalie-lbl">Střel</div></div>
+          <div class="goalie-stat"><div class="goalie-val">16</div><div class="goalie-lbl">Zákroků</div></div>
+          <div class="goalie-stat"><div class="goalie-val">1</div><div class="goalie-lbl">Inkasoval</div></div>
+          <div class="goalie-stat"><div class="goalie-val" style="color:var(--green)">94.1%</div><div class="goalie-lbl">SV%</div></div>
+          <div class="goalie-stat"><div class="goalie-val">1.02</div><div class="goalie-lbl">GAA</div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>Úspěšnost zákroků</span><span style="color:var(--green);font-weight:700">94.1 %</span></div>
+          <div class="bar"><div class="bar-fill" style="width:94.1%;background:var(--green)"></div></div>
+        </div>
+      </div>
+      <div class="goalie-card">
+        <div class="goalie-top">
+          <div><div class="goalie-name">Lašák Ján</div><div class="goalie-meta">HC Dynamo Pardubice · 60:00 na ledě</div></div>
+          <div class="goalie-result" style="color:var(--red)">L</div>
+        </div>
+        <div class="goalie-stats">
+          <div class="goalie-stat"><div class="goalie-val">22</div><div class="goalie-lbl">Střel</div></div>
+          <div class="goalie-stat"><div class="goalie-val">20</div><div class="goalie-lbl">Zákroků</div></div>
+          <div class="goalie-stat"><div class="goalie-val">2</div><div class="goalie-lbl">Inkasoval</div></div>
+          <div class="goalie-stat"><div class="goalie-val" style="color:var(--navy2)">90.9%</div><div class="goalie-lbl">SV%</div></div>
+          <div class="goalie-stat"><div class="goalie-val">2.00</div><div class="goalie-lbl">GAA</div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>Úspěšnost zákroků</span><span style="color:var(--navy2);font-weight:700">90.9 %</span></div>
+          <div class="bar"><div class="bar-fill" style="width:90.9%;background:var(--navy2)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Náhradní brankáři (0 minut)</div>
+        <div style="display:flex;gap:16px;font-size:13px">
+          <span><b>Stefl Martin</b> <span style="color:var(--muted)">(SPA)</span> – nenastoupil</span>
+          <span><b>Hylák Alexandr</b> <span style="color:var(--muted)">(PCE)</span> – nenastoupil</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GÓLY & ASISTENCE -->
+<div id="sec-goals" class="hidden">
+  <div class="section">
+    <div class="section-title">⚽ Všechny góly (3 celkem)</div>
+    <div class="card">
+      <div class="event-list">
+        <div class="event-item">
+          <div class="event-icon" style="background:#dcfce7">⚽</div>
+          <div class="event-body">
+            <div class="event-player">Mrna Pavel <span class="badge badge-ppg">PPG</span></div>
+            <div class="event-detail">HC Sparta Praha · TOI 23:49 · 2 střely · +/- 0</div>
+          </div>
+          <span class="event-team et-spa">SPA</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#dcfce7">⚽</div>
+          <div class="event-body">
+            <div class="event-player">Podlesak Martin</div>
+            <div class="event-detail">HC Sparta Praha · TOI 07:37 · 3 střely · +/- +1</div>
+          </div>
+          <span class="event-team et-spa">SPA</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">⚽</div>
+          <div class="event-body">
+            <div class="event-player">Koukal Petr</div>
+            <div class="event-detail">HC Dynamo Pardubice · TOI 13:57 · 3 střely · +/- 0 · 4 hity</div>
+          </div>
+          <span class="event-team et-pce">PCE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">🎯 Všechny asistence (2 celkem)</div>
+    <div class="card">
+      <div class="event-list">
+        <div class="event-item">
+          <div class="event-icon" style="background:#dbeafe">🎯</div>
+          <div class="event-body">
+            <div class="event-player">Cernosek Marek</div>
+            <div class="event-detail">HC Sparta Praha · TOI 21:53 · +/- -1 · 2 hity</div>
+          </div>
+          <span class="event-team et-spa">SPA</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#dbeafe">🎯</div>
+          <div class="event-body">
+            <div class="event-player">Ton Petr</div>
+            <div class="event-detail">HC Sparta Praha · TOI 19:49 · 2 TM · +/- -1 · 3 hity</div>
+          </div>
+          <span class="event-team et-spa">SPA</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">🎯</div>
+          <div class="event-body">
+            <div class="event-player">Cetkovský Jirí</div>
+            <div class="event-detail">HC Dynamo Pardubice · TOI 22:54 · 3 střely · +/- -1 · 3 hity</div>
+          </div>
+          <span class="event-team et-pce">PCE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">📋 Hráči bez bodu – SPA (14 hráčů)</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Hráč</th><th class="r">TOI</th><th class="r">+/-</th><th class="r">Střely</th><th class="r">Hity</th><th class="r">TM</th></tr></thead>
+        <tbody>
+          <tr><td class="pname">Tabacek Ján</td><td class="r">26:18</td><td class="r v-pm-pos">+1</td><td class="r">1</td><td class="r">4</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Nedved Petr</td><td class="r">21:56</td><td class="r v-pm-neg">-1</td><td class="r">2</td><td class="r">3</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Hanzlik Jan</td><td class="r">22:20</td><td class="r v-pm-neg">-1</td><td class="r">1</td><td class="r">1</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Vykoukal Jiri</td><td class="r">19:03</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">3</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Dragoun Michal</td><td class="r">12:36</td><td class="r v-pm-pos">+1</td><td class="r">1</td><td class="r">5</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Melicharek Tibor</td><td class="r">17:10</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Vaic Lubomír</td><td class="r">16:14</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">2</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Jerofejevs A.</td><td class="r">14:39</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Sivek Michal</td><td class="r">12:10</td><td class="r v-pm-zero">0</td><td class="r">2</td><td class="r">3</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Hromas Karel</td><td class="r">12:20</td><td class="r v-pm-neg">-1</td><td class="r">2</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Rucinsky Martin</td><td class="r">10:45</td><td class="r v-pm-pos">+1</td><td class="r">1</td><td class="r">2</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Langhammer J.</td><td class="r">11:23</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">1</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Ptacek František</td><td class="r">15:47</td><td class="r v-pm-pos">+1</td><td class="r">0</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Netik Tomáš</td><td class="r">10:07</td><td class="r v-pm-zero">0</td><td class="r">2</td><td class="r">2</td><td class="r v-pim-zero">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="section-title" style="margin-top:16px">📋 Hráči bez bodu – PCE (16 hráčů)</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Hráč</th><th class="r">TOI</th><th class="r">+/-</th><th class="r">Střely</th><th class="r">Hity</th><th class="r">TM</th></tr></thead>
+        <tbody>
+          <tr><td class="pname">Nikolov Angel</td><td class="r">26:50</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">4</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Kolár Jan</td><td class="r">26:03</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">7</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Blažek Tomáš</td><td class="r">22:55</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">2</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Sýkora Petr</td><td class="r">19:29</td><td class="r v-pm-pos">+1</td><td class="r">1</td><td class="r">2</td><td class="r v-pim">2</td></tr>
+          <tr><td class="pname">Linhart Tomáš</td><td class="r">19:42</td><td class="r v-pm-pos">+1</td><td class="r">0</td><td class="r">5</td><td class="r v-pim">2</td></tr>
+          <tr><td class="pname">Šeda Michal</td><td class="r">19:01</td><td class="r v-pm-neg">-1</td><td class="r">0</td><td class="r">3</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Snopek Jan</td><td class="r">17:30</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">4</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Somík Radovan</td><td class="r">14:43</td><td class="r v-pm-zero">0</td><td class="r">2</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Ondrej Zdenek</td><td class="r">14:02</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">4</td><td class="r v-pim">2</td></tr>
+          <tr><td class="pname">Pucher Peter</td><td class="r">10:42</td><td class="r v-pm-neg">-1</td><td class="r">1</td><td class="r">1</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Havír David</td><td class="r">10:54</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">3</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Tvrdík Michal</td><td class="r">10:50</td><td class="r v-pm-pos">+1</td><td class="r">2</td><td class="r">1</td><td class="r v-pim">2</td></tr>
+          <tr><td class="pname">Zohorna Tomáš</td><td class="r">11:14</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">1</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Rolinek Tomáš</td><td class="r">11:18</td><td class="r v-pm-zero">0</td><td class="r">0</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Starý Jan</td><td class="r">10:04</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">0</td><td class="r v-pim-zero">0</td></tr>
+          <tr><td class="pname">Pivko Libor</td><td class="r">06:20</td><td class="r v-pm-zero">0</td><td class="r">1</td><td class="r">2</td><td class="r v-pim-zero">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TRESTY -->
+<div id="sec-penalties" class="hidden">
+  <div class="section">
+    <div class="section-title">🚫 Všechny trestné minuty (8 min celkem)</div>
+    <div class="card">
+      <div style="padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;gap:20px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--muted)">SPA: <b style="color:var(--navy)">2 min · 1 trest</b></span>
+        <span style="font-size:13px;color:var(--muted)">PCE: <b style="color:var(--red)">6 min · 3 tresty</b></span>
+        <span style="font-size:13px;color:var(--muted)">Celkem: <b>8 min · 4 tresty</b></span>
+      </div>
+      <div class="event-list">
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">🚫</div>
+          <div class="event-body">
+            <div class="event-player">Ton Petr <span class="badge badge-pim">2 min</span></div>
+            <div class="event-detail">HC Sparta Praha · TOI 19:49 · 1 asistence · -1 · 3 hity</div>
+          </div>
+          <span class="event-team et-spa">SPA</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">🚫</div>
+          <div class="event-body">
+            <div class="event-player">Sýkora Petr <span class="badge badge-pim">2 min</span></div>
+            <div class="event-detail">HC Dynamo Pardubice · TOI 19:29 · +1 · 2 hity</div>
+          </div>
+          <span class="event-team et-pce">PCE</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">🚫</div>
+          <div class="event-body">
+            <div class="event-player">Linhart Tomáš <span class="badge badge-pim">2 min</span></div>
+            <div class="event-detail">HC Dynamo Pardubice · TOI 19:42 · +1 · 5 hitů</div>
+          </div>
+          <span class="event-team et-pce">PCE</span>
+        </div>
+        <div class="event-item">
+          <div class="event-icon" style="background:#fee2e2">🚫</div>
+          <div class="event-body">
+            <div class="event-player">Ondrej Zdenek <span class="badge badge-pim">2 min</span></div>
+            <div class="event-detail">HC Dynamo Pardubice · TOI 14:02 · 4 hity</div>
+          </div>
+          <span class="event-team et-pce">PCE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">✅ Hráči bez trestu</div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-header-title">SPA – čistí</span><span class="card-header-sub">17 hráčů</span></div>
+        <div style="padding:10px 16px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge badge-hit">Rucinsky</span><span class="badge badge-hit">Nedved</span><span class="badge badge-hit">Sivek</span>
+          <span class="badge badge-hit">Vykoukal</span><span class="badge badge-hit">Cernosek</span><span class="badge badge-hit">Hanzlik</span>
+          <span class="badge badge-hit">Jerofejevs</span><span class="badge badge-hit">Ptacek</span><span class="badge badge-hit">Tabacek</span>
+          <span class="badge badge-hit">Dragoun</span><span class="badge badge-hit">Hromas</span><span class="badge badge-hit">Langhammer</span>
+          <span class="badge badge-hit">Melicharek</span><span class="badge badge-hit">Mrna</span><span class="badge badge-hit">Netik</span>
+          <span class="badge badge-hit">Podlesak</span><span class="badge badge-hit">Vaic</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-header-title">PCE – čistí</span><span class="card-header-sub">15 hráčů</span></div>
+        <div style="padding:10px 16px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge badge-hit">Pivko</span><span class="badge badge-hit">Somík</span><span class="badge badge-hit">Havír</span>
+          <span class="badge badge-hit">Nikolov</span><span class="badge badge-hit">Snopek</span><span class="badge badge-hit">Šeda</span>
+          <span class="badge badge-hit">Blažek</span><span class="badge badge-hit">Cetkovský</span><span class="badge badge-hit">Kolár</span>
+          <span class="badge badge-hit">Koukal</span><span class="badge badge-hit">Pucher</span><span class="badge badge-hit">Rolinek</span>
+          <span class="badge badge-hit">Starý</span><span class="badge badge-hit">Tvrdík</span><span class="badge badge-hit">Zohorna</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STŘELY -->
+<div id="sec-shots" class="hidden">
+  <div class="section">
+    <div class="section-title">🎯 Střely na branku – všichni hráči</div>
+    <div class="card">
+      <div style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">HC Sparta Praha (22 střel celkem)</div>
+        <div id="shots-spa-list"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px">HC Dynamo Pardubice (19 střel celkem)</div>
+        <div id="shots-pce-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HITY -->
+<div id="sec-hits" class="hidden">
+  <div class="section">
+    <div class="section-title">💪 Hity – všichni hráči (seřazeno)</div>
+    <div class="card"><div style="padding:14px 16px" id="hits-list"></div></div>
+  </div>
+</div>
+
+<!-- ČAS NA LEDĚ -->
+<div id="sec-toi" class="hidden">
+  <div class="section">
+    <div class="section-title">⏱️ Čas na ledě – všichni hráči (seřazeno)</div>
+    <div class="card"><div style="padding:14px 16px" id="toi-list"></div></div>
+  </div>
+</div>
+
+<!-- PLNÁ TABULKA -->
+<div id="sec-fullstats" class="hidden">
+  <div class="section">
+    <div class="section-title">📋 Plná statistická tabulka</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterTeam('all',this)">Všichni</button>
+      <button class="filter-btn" onclick="filterTeam('SPA',this)">SPA</button>
+      <button class="filter-btn" onclick="filterTeam('PCE',this)">PCE</button>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl" id="full-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Hráč</th>
+            <th onclick="sortTable(1)">Tým</th>
+            <th class="r" onclick="sortTable(2)">TOI</th>
+            <th class="r" onclick="sortTable(3)">G</th>
+            <th class="r" onclick="sortTable(4)">A</th>
+            <th class="r" onclick="sortTable(5)">Body</th>
+            <th class="r" onclick="sortTable(6)">+/-</th>
+            <th class="r" onclick="sortTable(7)">TM</th>
+            <th class="r" onclick="sortTable(8)">PPG</th>
+            <th class="r" onclick="sortTable(9)">SHG</th>
+            <th class="r" onclick="sortTable(10)">Střely</th>
+            <th class="r" onclick="sortTable(11)">Hity</th>
+          </tr>
+        </thead>
+        <tbody id="full-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px 16px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Legenda · kliknutím na záhlaví seřadíš</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)">
+        <span><b>TOI</b> čas na ledě</span><span><b class="v-g">G</b> góly</span><span><b class="v-a">A</b> asistence</span>
+        <span><b>+/-</b> plus/minus</span><span><b class="v-pim">TM</b> trestné minuty</span>
+        <span><b class="v-ppg">PPG</b> gól v přesilovce</span><span><b>SHG</b> gól v oslabení</span>
+        <span><b>Střely</b> na branku</span><span><b>Hity</b> body checksy</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const players = [
+  {name:'Mrna Pavel',team:'SPA',toi:'23:49',toisec:1429,g:1,a:0,pm:0,pim:0,ppg:1,shg:0,shots:2,hits:2},
+  {name:'Podlesak Martin',team:'SPA',toi:'07:37',toisec:457,g:1,a:0,pm:1,pim:0,ppg:0,shg:0,shots:3,hits:2},
+  {name:'Cernosek Marek',team:'SPA',toi:'21:53',toisec:1313,g:0,a:1,pm:-1,pim:0,ppg:0,shg:0,shots:0,hits:2},
+  {name:'Ton Petr',team:'SPA',toi:'19:49',toisec:1189,g:0,a:1,pm:-1,pim:2,ppg:0,shg:0,shots:1,hits:3},
+  {name:'Tabacek Ján',team:'SPA',toi:'26:18',toisec:1578,g:0,a:0,pm:1,pim:0,ppg:0,shg:0,shots:1,hits:4},
+  {name:'Nedved Petr',team:'SPA',toi:'21:56',toisec:1316,g:0,a:0,pm:-1,pim:0,ppg:0,shg:0,shots:2,hits:3},
+  {name:'Hanzlik Jan',team:'SPA',toi:'22:20',toisec:1340,g:0,a:0,pm:-1,pim:0,ppg:0,shg:0,shots:1,hits:1},
+  {name:'Vykoukal Jiri',team:'SPA',toi:'19:03',toisec:1143,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:0,hits:3},
+  {name:'Dragoun Michal',team:'SPA',toi:'12:36',toisec:756,g:0,a:0,pm:1,pim:0,ppg:0,shg:0,shots:1,hits:5},
+  {name:'Melicharek Tibor',team:'SPA',toi:'17:10',toisec:1030,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:0},
+  {name:'Vaic Lubomír',team:'SPA',toi:'16:14',toisec:974,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:2},
+  {name:'Jerofejevs A.',team:'SPA',toi:'14:39',toisec:879,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:0},
+  {name:'Sivek Michal',team:'SPA',toi:'12:10',toisec:730,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:2,hits:3},
+  {name:'Hromas Karel',team:'SPA',toi:'12:20',toisec:740,g:0,a:0,pm:-1,pim:0,ppg:0,shg:0,shots:2,hits:0},
+  {name:'Rucinsky Martin',team:'SPA',toi:'10:45',toisec:645,g:0,a:0,pm:1,pim:0,ppg:0,shg:0,shots:1,hits:2},
+  {name:'Langhammer J.',team:'SPA',toi:'11:23',toisec:683,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:1},
+  {name:'Ptacek František',team:'SPA',toi:'15:47',toisec:947,g:0,a:0,pm:1,pim:0,ppg:0,shg:0,shots:0,hits:0},
+  {name:'Netik Tomáš',team:'SPA',toi:'10:07',toisec:607,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:2,hits:2},
+  {name:'Koukal Petr',team:'PCE',toi:'13:57',toisec:837,g:1,a:0,pm:0,pim:0,ppg:0,shg:0,shots:3,hits:4},
+  {name:'Cetkovský Jirí',team:'PCE',toi:'22:54',toisec:1374,g:0,a:1,pm:-1,pim:0,ppg:0,shg:0,shots:3,hits:3},
+  {name:'Nikolov Angel',team:'PCE',toi:'26:50',toisec:1610,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:4},
+  {name:'Kolár Jan',team:'PCE',toi:'26:03',toisec:1563,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:7},
+  {name:'Blažek Tomáš',team:'PCE',toi:'22:55',toisec:1375,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:2},
+  {name:'Sýkora Petr',team:'PCE',toi:'19:29',toisec:1169,g:0,a:0,pm:1,pim:2,ppg:0,shg:0,shots:1,hits:2},
+  {name:'Linhart Tomáš',team:'PCE',toi:'19:42',toisec:1182,g:0,a:0,pm:1,pim:2,ppg:0,shg:0,shots:0,hits:5},
+  {name:'Šeda Michal',team:'PCE',toi:'19:01',toisec:1141,g:0,a:0,pm:-1,pim:0,ppg:0,shg:0,shots:0,hits:3},
+  {name:'Snopek Jan',team:'PCE',toi:'17:30',toisec:1050,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:0,hits:4},
+  {name:'Somík Radovan',team:'PCE',toi:'14:43',toisec:883,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:2,hits:0},
+  {name:'Ondrej Zdenek',team:'PCE',toi:'14:02',toisec:842,g:0,a:0,pm:0,pim:2,ppg:0,shg:0,shots:0,hits:4},
+  {name:'Pucher Peter',team:'PCE',toi:'10:42',toisec:642,g:0,a:0,pm:-1,pim:0,ppg:0,shg:0,shots:1,hits:1},
+  {name:'Havír David',team:'PCE',toi:'10:54',toisec:654,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:0,hits:3},
+  {name:'Tvrdík Michal',team:'PCE',toi:'10:50',toisec:650,g:0,a:0,pm:1,pim:2,ppg:0,shg:0,shots:2,hits:1},
+  {name:'Zohorna Tomáš',team:'PCE',toi:'11:14',toisec:674,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:0,hits:1},
+  {name:'Rolinek Tomáš',team:'PCE',toi:'11:18',toisec:678,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:0,hits:0},
+  {name:'Starý Jan',team:'PCE',toi:'10:04',toisec:604,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:0},
+  {name:'Pivko Libor',team:'PCE',toi:'06:20',toisec:380,g:0,a:0,pm:0,pim:0,ppg:0,shg:0,shots:1,hits:2},
+]
+
+function pmStr(v){ if(v>0) return `<span class="v-pm-pos">+${v}</span>`; if(v<0) return `<span class="v-pm-neg">${v}</span>`; return `<span class="v-pm-zero">0</span>` }
+function pimStr(v){ return v>0?`<span class="v-pim">${v}</span>`:`<span class="v-pim-zero">0</span>` }
+function gStr(v){ return v>0?`<span class="v-g">${v}</span>`:v }
+function aStr(v){ return v>0?`<span class="v-a">${v}</span>`:v }
+function pStr(v){ return v>0?`<span class="v-p">${v}</span>`:v }
+function ppgStr(v){ return v>0?`<span class="v-ppg">${v}</span>`:v }
+
+// Build full table
+const tbody = document.getElementById('full-tbody')
+players.forEach(p=>{
+  const tr = document.createElement('tr')
+  tr.dataset.team = p.team
+  tr.innerHTML=`<td class="pname">${p.name}</td><td>${p.team}</td><td class="r">${p.toi}</td><td class="r">${gStr(p.g)}</td><td class="r">${aStr(p.a)}</td><td class="r">${pStr(p.g+p.a)}</td><td class="r">${pmStr(p.pm)}</td><td class="r">${pimStr(p.pim)}</td><td class="r">${ppgStr(p.ppg)}</td><td class="r">${p.shg}</td><td class="r">${p.shots}</td><td class="r">${p.hits}</td>`
+  tbody.appendChild(tr)
+})
+
+// Build shots bars
+function buildBars(containerId, list, color, maxVal){
+  const el = document.getElementById(containerId)
+  if(!el) return
+  list.sort((a,b)=>b.shots-a.shots).forEach(p=>{
+    const pct = maxVal>0 ? (p.shots/maxVal*100).toFixed(1) : 0
+    el.innerHTML += `<div class="bar-row"><span class="bar-row-name">${p.name}</span><div class="bar-row-bar"><div class="bar"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div></div><span class="bar-row-val">${p.shots}</span></div>`
+  })
+}
+const spaPlayers = players.filter(p=>p.team==='SPA')
+const pcePlayers = players.filter(p=>p.team==='PCE')
+const maxShots = Math.max(...players.map(p=>p.shots))
+buildBars('shots-spa-list', [...spaPlayers], 'var(--navy)', maxShots)
+buildBars('shots-pce-list', [...pcePlayers], 'var(--red)', maxShots)
+
+// Hits list
+const hitsSorted = [...players].sort((a,b)=>b.hits-a.hits)
+const maxHits = hitsSorted[0].hits
+const hitsList = document.getElementById('hits-list')
+hitsSorted.forEach(p=>{
+  const pct = (p.hits/maxHits*100).toFixed(1)
+  const col = p.team==='SPA'?'var(--navy)':'var(--red)'
+  hitsList.innerHTML += `<div class="bar-row"><span class="bar-row-team" style="color:${col}">${p.team}</span><span class="bar-row-name">${p.name}</span><div class="bar-row-bar"><div class="bar"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div><span class="bar-row-val">${p.hits}</span></div>`
+})
+
+// TOI list
+const toiSorted = [...players].sort((a,b)=>b.toisec-a.toisec)
+const maxToi = toiSorted[0].toisec
+const toiList = document.getElementById('toi-list')
+toiSorted.forEach(p=>{
+  const pct = (p.toisec/maxToi*100).toFixed(1)
+  const col = p.team==='SPA'?'var(--navy)':'var(--red)'
+  toiList.innerHTML += `<div class="bar-row"><span class="bar-row-team" style="color:${col}">${p.team}</span><span class="bar-row-name">${p.name}</span><div class="bar-row-bar"><div class="bar"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div><span class="bar-row-val">${p.toi}</span></div>`
+})
+
+// Sections
+const sections=['overview','goalies','goals','penalties','shots','hits','toi','fullstats']
+function showSection(id,btn){
+  sections.forEach(s=>document.getElementById('sec-'+s).classList.add('hidden'))
+  document.getElementById('sec-'+id).classList.remove('hidden')
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+  btn.classList.add('active')
+}
+
+function filterTeam(team,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  document.querySelectorAll('#full-tbody tr').forEach(row=>{
+    row.style.display=(team==='all'||row.dataset.team===team)?'':' none'
+  })
+}
+
+let sortCol=-1,sortAsc=false
+function sortTable(col){
+  const tb=document.getElementById('full-tbody')
+  const rows=Array.from(tb.querySelectorAll('tr'))
+  if(sortCol===col){sortAsc=!sortAsc}else{sortCol=col;sortAsc=false}
+  rows.sort((a,b)=>{
+    const av=a.cells[col]?.textContent.trim()||''
+    const bv=b.cells[col]?.textContent.trim()||''
+    const toSec=s=>{const p=s.split(':');return p.length===2?+p[0]*60+ +p[1]:NaN}
+    const at=toSec(av),bt=toSec(bv)
+    if(!isNaN(at)&&!isNaN(bt)) return sortAsc?at-bt:bt-at
+    const an=parseFloat(av.replace('+',''))||0,bn=parseFloat(bv.replace('+',''))||0
+    if(!isNaN(an)&&!isNaN(bn)) return sortAsc?an-bn:bn-an
+    return sortAsc?av.localeCompare(bv):bv.localeCompare(av)
+  })
+  rows.forEach(r=>tb.appendChild(r))
+  document.querySelectorAll('#full-table th').forEach((th,i)=>{
+    th.classList.remove('sorted','sorted-asc')
+    if(i===col) th.classList.add(sortAsc?'sorted-asc':'sorted')
+  })
+}
+</script>
+</body>
+</html>
