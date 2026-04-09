@@ -2,7 +2,6 @@
 
 const style = document.createElement('style')
 style.textContent = `
-/* ── DESKTOP NAV ── */
 nav {
   background: #0b2a3c;
   display: flex;
@@ -17,9 +16,7 @@ nav {
   border-bottom: 2px solid rgba(240,192,64,.2);
 }
 
-.nav-item {
-  position: relative;
-}
+.nav-item { position: relative; }
 
 .nav-link {
   display: inline-flex;
@@ -83,23 +80,26 @@ nav {
 
 .nav-hamburger { display: none; }
 
-/* ── MOBILNÍ OVERLAY ── */
 .nav-mobile-overlay {
   display: none;
   position: fixed;
-  inset: 0;
-  z-index: 998;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
   background: rgba(0,0,0,.5);
 }
 .nav-mobile-overlay.open { display: block; }
 
 .nav-mobile-menu {
   position: fixed;
-  top: 0; right: 0;
+  top: 0;
+  right: 0;
   width: 280px;
-  height: 100%;
+  height: 100vh;
   background: #0b2a3c;
-  z-index: 999;
+  z-index: 10001;
   overflow-y: auto;
   transform: translateX(100%);
   transition: transform .25s ease;
@@ -134,7 +134,7 @@ nav {
 .nav-mobile-close:hover { background: rgba(255,255,255,.1); color: #fff; }
 
 .nav-mobile-items {
-  padding: 10px 10px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -213,7 +213,6 @@ nav {
   margin: 6px 4px;
 }
 
-/* ── RESPONSIVE ── */
 @media(max-width: 700px){
   nav {
     justify-content: space-between;
@@ -409,9 +408,7 @@ items.forEach((item) => {
     const groupBtn = document.createElement('button')
     groupBtn.className = 'nav-mobile-group-btn ' + isActive(item.pages)
     groupBtn.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="nav-mobile-group-arrow">▼</span>`
-    groupBtn.onclick = () => {
-      group.classList.toggle('open')
-    }
+    groupBtn.onclick = () => { group.classList.toggle('open') }
 
     const children = document.createElement('div')
     children.className = 'nav-mobile-group-children'
