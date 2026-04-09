@@ -35,7 +35,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 .players-grid{display:grid;grid-template-columns:1fr;gap:16px;}
 
-
 .player-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}
 .player-card-header{background:var(--navy);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
 .player-name{font-size:15px;font-weight:700;color:#fff}
@@ -45,7 +44,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .bet-table thead tr{background:#f7fafc}
 .bet-table th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
 .bet-table th.tc{text-align:center}
-.bet-table tbody td{padding:10px 12px;border-bottom:1px solid #f0f4f8;vertical-align:middle;font-size:13px}
+.bet-table tbody td{padding:10px 12px;border-bottom:1px solid #f0f4f8;vertical-align:middle;font-size:13px;white-space:nowrap}
+.bet-table tbody td:first-child{white-space:normal}
 .bet-table tbody tr:last-child td{border-bottom:none}
 .bet-table tbody tr:hover td{background:#f7fafc}
 
@@ -189,11 +189,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .coming-soon-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
 .coming-soon-sub{font-size:13px;color:var(--muted);}
 
-.bet-table{width:100%;border-collapse:collapse;table-layout:fixed}
-.bet-table td{white-space:nowrap}
-.bet-table td:first-child{white-space:normal}
-
-  
 @media(max-width:700px){
   .goals-header-row,.goals-team-row{grid-template-columns:1fr}
   .goals-header-row{display:none}
@@ -500,7 +495,6 @@ async function loadLocks(){
 }
 function isLocked(type,teamId){return!!(locks[`cat:${type}`]||locks[`team:${type}:${teamId}`])}
 
-// ── HELPER: renderuje meta řádek pod názvem týmu ──
 function renderTeamMeta(t){
   const pos=standings.findIndex(s=>s.id===t.id)
   const eloVal=formRatings.elo?.[t.id]||1000
@@ -895,7 +889,7 @@ function renderOverallPlayerTable(playerName,oddsMap,dbType,teamPool){
   return `<div class="player-card">
     <div class="player-card-header"><span class="player-name">${playerName}</span><span class="player-credit">💰 ${Math.round(p.credit)} Kč</span></div>
     <table class="bet-table">
-<thead><tr><th style="width:100%">Tým</th><th class="tc" style="white-space:nowrap">Kurz</th><th style="white-space:nowrap">Vsadit</th><th style="white-space:nowrap">Výhra</th><th></th></tr></thead>
+      <thead><tr><th>Tým</th><th class="tc" style="white-space:nowrap;width:60px">Kurz</th><th style="white-space:nowrap;width:90px">Vsadit</th><th style="white-space:nowrap;width:80px">Výhra</th><th style="width:80px"></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`
@@ -1188,7 +1182,7 @@ function playerBetTable(playerName,oddsMap,dbType){
   return `<div class="player-card">
     <div class="player-card-header"><span class="player-name">${playerName}</span><span class="player-credit">💰 ${Math.round(p.credit)} Kč</span></div>
     <table class="bet-table">
-<thead><tr><th style="width:100%">Tým</th><th class="tc" style="white-space:nowrap">Kurz</th><th style="white-space:nowrap">Vsadit</th><th style="white-space:nowrap">Výhra</th><th></th></tr></thead>
+      <thead><tr><th>Tým</th><th class="tc" style="white-space:nowrap;width:60px">Kurz</th><th style="white-space:nowrap;width:90px">Vsadit</th><th style="white-space:nowrap;width:80px">Výhra</th><th style="width:80px"></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`
