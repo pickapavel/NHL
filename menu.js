@@ -240,6 +240,7 @@ nav {
     font-size: 14px;
     font-weight: 700;
     color: #fff;
+    text-decoration: none;
   }
 }
 @media(min-width: 701px){
@@ -318,9 +319,10 @@ const items = [
 // ── DESKTOP NAV ──
 const nav = document.createElement('nav')
 
-// Logo vlevo na mobilu
-const logoMobile = document.createElement('span')
+// Logo vlevo na mobilu — klikatelný odkaz
+const logoMobile = document.createElement('a')
 logoMobile.className = 'nav-logo-mobile'
+logoMobile.href = 'elh.html'
 logoMobile.textContent = '🏒 ELH'
 nav.appendChild(logoMobile)
 
@@ -403,12 +405,9 @@ items.forEach((item, idx) => {
     a.onclick = closeMobileMenu
     mobileItems.appendChild(a)
   } else if(item.type === 'dropdown'){
-    // Oddělovač před dropdown skupinami
-    if(idx > 0){
-      const sep = document.createElement('div')
-      sep.className = 'nav-mobile-sep'
-      mobileItems.appendChild(sep)
-    }
+    const sep = document.createElement('div')
+    sep.className = 'nav-mobile-sep'
+    mobileItems.appendChild(sep)
 
     const group = document.createElement('div')
     group.className = 'nav-mobile-group'
@@ -417,8 +416,7 @@ items.forEach((item, idx) => {
     groupBtn.className = 'nav-mobile-group-btn ' + isActive(item.pages)
     groupBtn.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="nav-mobile-group-arrow">▼</span>`
     groupBtn.onclick = () => {
-      const isOpen = group.classList.contains('open')
-      group.classList.toggle('open', !isOpen)
+      group.classList.toggle('open')
     }
 
     const children = document.createElement('div')
@@ -433,7 +431,6 @@ items.forEach((item, idx) => {
       children.appendChild(a)
     })
 
-    // Pokud je některá child aktivní, otevři skupinu
     if(isActive(item.pages)) group.classList.add('open')
 
     group.appendChild(groupBtn)
@@ -445,7 +442,6 @@ items.forEach((item, idx) => {
 mobileMenu.appendChild(mobileItems)
 overlay.appendChild(mobileMenu)
 
-// Otevření/zavření
 hamburger.onclick = (e) => {
   e.stopPropagation()
   openMobileMenu()
@@ -465,7 +461,6 @@ function closeMobileMenu(){
   document.body.style.overflow = ''
 }
 
-// Zavři desktop dropdown při kliknutí mimo
 document.addEventListener('click', () => {
   document.querySelectorAll('.nav-item.open').forEach(el => el.classList.remove('open'))
 })
