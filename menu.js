@@ -466,10 +466,22 @@ function insertNav(){
   document.body.appendChild(overlay)
 }
 
+function tryInsert(attempts){
+  // Pokud je stránka připravená, vlož hned
+  if(document.body){
+    insertNav()
+    return
+  }
+  // Jinak zkus znovu, max 20x po 50ms
+  if(attempts > 0){
+    setTimeout(() => tryInsert(attempts - 1), 50)
+  }
+}
+
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', insertNav)
 } else {
-  insertNav()
+  tryInsert(20)
 }
 
 })()
