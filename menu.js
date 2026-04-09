@@ -81,7 +81,6 @@ nav {
 
 .nav-divider { height: 1px; background: rgba(255,255,255,.1); margin: 4px 0; }
 
-/* hamburger — skrytý na desktopu */
 .nav-hamburger { display: none; }
 
 /* ── MOBILNÍ OVERLAY ── */
@@ -298,10 +297,10 @@ const items = [
     label: 'Sázky',
     pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html'],
     children: [
-      { icon: '🏒', label: 'Extraliga',         href: 'sazky.html',       pages: ['sazky.html'] },
-      { icon: '🥇', label: 'Olympiáda',         href: 'sazkyoh.html',     pages: ['sazkyoh.html'] },
-      { icon: '🌍', label: 'Mistrovství světa', href: 'sazkyms.html',     pages: ['sazkyms.html'] },
-      { icon: '🤪', label: 'Blbounský pohár',   href: 'sazkypohár.html',  pages: ['sazkypohár.html'] },
+      { icon: '🏒', label: 'Extraliga',         href: 'sazky.html',      pages: ['sazky.html'] },
+      { icon: '🥇', label: 'Olympiáda',         href: 'sazkyoh.html',    pages: ['sazkyoh.html'] },
+      { icon: '🌍', label: 'Mistrovství světa', href: 'sazkyms.html',    pages: ['sazkyms.html'] },
+      { icon: '🤪', label: 'Blbounský pohár',   href: 'sazkypohár.html', pages: ['sazkypohár.html'] },
     ]
   },
   {
@@ -319,14 +318,12 @@ const items = [
 // ── DESKTOP NAV ──
 const nav = document.createElement('nav')
 
-// Logo vlevo na mobilu — klikatelný odkaz
 const logoMobile = document.createElement('a')
 logoMobile.className = 'nav-logo-mobile'
 logoMobile.href = 'elh.html'
 logoMobile.textContent = '🏒 ELH'
 nav.appendChild(logoMobile)
 
-// Desktop položky
 const desktopItems = document.createElement('div')
 desktopItems.className = 'nav-desktop-items'
 
@@ -367,7 +364,6 @@ items.forEach(item => {
 })
 nav.appendChild(desktopItems)
 
-// Hamburger tlačítko
 const hamburger = document.createElement('button')
 hamburger.className = 'nav-hamburger'
 hamburger.innerHTML = '☰'
@@ -381,7 +377,6 @@ overlay.className = 'nav-mobile-overlay'
 const mobileMenu = document.createElement('div')
 mobileMenu.className = 'nav-mobile-menu'
 
-// Header mobilního menu
 const mobileHeader = document.createElement('div')
 mobileHeader.className = 'nav-mobile-header'
 mobileHeader.innerHTML = `<span class="nav-mobile-title">🏒 Menu</span>`
@@ -392,11 +387,10 @@ closeBtn.onclick = closeMobileMenu
 mobileHeader.appendChild(closeBtn)
 mobileMenu.appendChild(mobileHeader)
 
-// Položky mobilního menu
 const mobileItems = document.createElement('div')
 mobileItems.className = 'nav-mobile-items'
 
-items.forEach((item, idx) => {
+items.forEach((item) => {
   if(item.type === 'link'){
     const a = document.createElement('a')
     a.className = 'nav-mobile-link ' + isActive(item.pages)
@@ -469,11 +463,10 @@ function insertNav(){
   const ticker = document.getElementById('ticker-bar')
   if(ticker){
     ticker.insertAdjacentElement('afterend', nav)
-    ticker.insertAdjacentElement('afterend', overlay)
   } else {
-    document.body.insertBefore(overlay, document.body.firstChild)
     document.body.insertBefore(nav, document.body.firstChild)
   }
+  document.body.appendChild(overlay)
 }
 
 if(document.readyState === 'loading'){
