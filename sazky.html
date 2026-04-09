@@ -87,7 +87,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
 .section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
 
-.serie-accordion{margin-bottom:12px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;}
+.serie-accordion{margin-bottom:16px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(11,42,60,.06);}
 .serie-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--white);cursor:pointer;transition:background .15s;user-select:none;}
 .serie-header:hover{background:#f7fafc;}
 .serie-header.open{background:#f0f4f8;}
@@ -100,10 +100,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .serie-score-badge{font-size:12px;font-weight:700;background:#eef2f7;color:var(--navy);padding:3px 10px;border-radius:20px;white-space:nowrap;}
 .serie-arrow{font-size:12px;color:var(--muted);transition:transform .2s;}
 .serie-header.open .serie-arrow{transform:rotate(180deg);}
-.serie-body{display:none;border-top:1px solid var(--border);}
+.serie-body{display:none;border-top:1px solid var(--border);background:var(--bg);}
 .serie-body.open{display:block;}
 
-.serie-tips-section{padding:0;border-bottom:1px solid var(--border);}
+.serie-tips-section{padding:0;border-bottom:3px solid var(--border);margin-bottom:0;}
 .serie-tips-title{font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;padding:10px 18px;background:linear-gradient(135deg,var(--navy),var(--navy2));margin-bottom:0;}
 .serie-tips-players{display:grid;grid-template-columns:1fr 1fr;gap:0;}
 .serie-tips-player{padding:14px 16px;border-right:1px solid var(--border);background:var(--white);}
@@ -138,8 +138,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .tip-summary .win-amount{font-weight:700;color:var(--green);}
 .tip-summary .odds-val{font-weight:700;color:var(--navy2);}
 
-.match-card{background:var(--white);border-bottom:1px solid var(--border);overflow:hidden;}
-.match-card:last-child{border-bottom:none;}
+/* Zápas karta — s odsazením a stínem pro oddělení */
+.match-wrap{margin:16px 0;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:0 2px 10px rgba(11,42,60,.08);}
+.match-wrap:first-child{margin-top:12px;}
+
+.match-card{background:var(--white);overflow:hidden;}
 .match-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:9px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .match-header-title{font-size:13px;font-weight:700;color:#fff;}
 .match-header-num{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;background:rgba(255,255,255,.12);padding:3px 10px;border-radius:20px;}
@@ -161,7 +164,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .h2h-score{font-weight:800;color:var(--text);background:#eef2f7;padding:2px 6px;border-radius:5px;font-size:11px;flex-shrink:0;}
 .h2h-tag{font-size:9px;font-weight:700;background:#2f9ec9;color:#fff;padding:1px 5px;border-radius:4px;flex-shrink:0;}
 .h2h-empty{font-size:12px;color:var(--muted);font-style:italic;}
-.match-players{display:grid;grid-template-columns:1fr 1fr;}
+.match-players{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
 .match-player{padding:12px 16px;border-right:1px solid var(--border);}
 .match-player:last-child{border-right:none;}
 .match-player-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
@@ -183,9 +186,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .match-vsadit-btn{width:100%;padding:9px;border:none;border-radius:8px;background:var(--green);color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s;}
 .match-vsadit-btn:hover{background:#219a52;}
 
+/* Oddělovač před gólovou sekcí */
+.goals-divider{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg);border-top:2px solid var(--border);}
+.goals-divider-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+.goals-divider-line{flex:1;height:1px;background:var(--border);}
+
 /* Accordion pro góly v zápasech */
-.match-goals-accordion{border-top:1px solid var(--border);}
-.mga-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;background:#f7fafc;user-select:none;transition:background .15s;}
+.match-goals-accordion{border-top:1px solid var(--border);background:var(--white);}
+.mga-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;background:#f7fafc;user-select:none;transition:background .15s;}
 .mga-header:hover{background:#eef2f7;}
 .mga-header.open{background:#edf2f7;}
 .mga-title{font-size:12px;font-weight:700;color:var(--navy);}
@@ -193,7 +201,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .mga-header.open .mga-arrow{transform:rotate(180deg);}
 .mga-body{display:none;border-top:1px solid var(--border);}
 .mga-body.open{display:block;}
-.mga-players{display:grid;grid-template-columns:1fr 1fr;border-top:0px;}
+.mga-players{display:grid;grid-template-columns:1fr 1fr;}
 .mga-player{padding:12px 16px;border-right:1px solid var(--border);}
 .mga-player:last-child{border-right:none;}
 .mga-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;}
@@ -229,8 +237,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </style>
 </head>
 <body>
-<script src="./ticker.js"></script>
-<script src="./menu.js" onerror="void 0"></script>
+<script src="./ticker.js" defer></script>
+<script src="./menu.js" defer></script>
 
 <div class="site-header">
   <div class="header-logo">🏒 <span>Sázky – Extraliga</span></div>
@@ -296,7 +304,6 @@ const urlParams=new URLSearchParams(window.location.search)
 const urlPhase=urlParams.get("phase")
 const urlStage=urlParams.get("stage")
 
-// ── Poisson ──
 function poissonProb(lambda,k){
   let p=Math.exp(-lambda)
   for(let i=0;i<k;i++) p*=lambda/(i+1)
@@ -317,8 +324,6 @@ function calcMatchGoalsOdds(homeId,awayId){
   const lA=calcAvgGoals(allPlayedMatches,awayId,false)
   const lT=lH+lA
   const M=GOALS_BET_MARGIN
-
-  // Celkem
   const total={}
   ;[3,4,5,6,7].forEach(t=>{
     const pO=1-poissonCumulative(lT,t)
@@ -328,8 +333,6 @@ function calcMatchGoalsOdds(homeId,awayId){
       total[`under_${t}`]={label:`Méně než ${t+1}`,odds:Math.round((M/pU)*100)/100}
     }
   })
-
-  // Týmové góly
   function teamGoals(lambda){
     const r={}
     ;[{k:"0",l:"0 gólů",p:poissonProb(lambda,0)},
@@ -340,8 +343,6 @@ function calcMatchGoalsOdds(homeId,awayId){
     ].forEach(({k,l,p})=>{ if(p>0.02) r[k]={label:l,odds:Math.round((M/p)*100)/100} })
     return r
   }
-
-  // Rozdíl
   const maxG=15,diffProbs={}
   for(let h=0;h<=maxG;h++) for(let a=0;a<=maxG;a++){
     const p=poissonProb(lH,h)*poissonProb(lA,a)
@@ -357,7 +358,6 @@ function calcMatchGoalsOdds(homeId,awayId){
     {k:"away_2", l:"Hosté o 2",p:diffProbs[-2]||0},
     {k:"away_3p",l:"Hosté o 3+",p:(diffProbs[-3]||0)+(diffProbs[-4]||0)+(diffProbs[-5]||0)+(diffProbs[-6]||0)+(diffProbs[-7]||0)},
   ].forEach(({k,l,p})=>{ if(p>0.02) diff[k]={label:l,odds:Math.round((M/p)*100)/100} })
-
   return{total,home:teamGoals(lH),away:teamGoals(lA),diff}
 }
 
@@ -610,9 +610,7 @@ function renderTeamMeta(t){
   const pos=standings.findIndex(s=>s.id===t.id)
   const eloVal=formRatings.elo?.[t.id]||1000
   const formaVal=formRatings.forma?.[t.id]||1000
-  const teamMatches=allPlayedMatches
-    .filter(m=>m.home_team===t.id||m.away_team===t.id)
-    .slice(-5)
+  const teamMatches=allPlayedMatches.filter(m=>m.home_team===t.id||m.away_team===t.id).slice(-5)
   const dots=teamMatches.map(m=>{
     const isHome=m.home_team===t.id
     const tw=isHome?Number(m.home_score)>Number(m.away_score):Number(m.away_score)>Number(m.home_score)
@@ -622,7 +620,6 @@ function renderTeamMeta(t){
   return `${posTag}<span class="team-meta-tag tag-elo">ELO ${eloVal}</span><span class="team-meta-tag tag-forma">Forma ${formaVal} ${dots}</span>`
 }
 
-// ── Accordion toggle pro góly v zápasech ──
 window.toggleMGA=function(matchId,category){
   const body=document.getElementById(`mga-body-${matchId}-${category}`)
   const header=document.getElementById(`mga-header-${matchId}-${category}`)
@@ -631,11 +628,9 @@ window.toggleMGA=function(matchId,category){
   header.classList.toggle("open")
 }
 
-// ── Výběr góly tipu ──
 window.selectMGABtn=function(matchId,category,playerKey,key){
   const prev=matchGoalsState[`${matchId}-${category}-${playerKey}`]
   matchGoalsState[`${matchId}-${category}-${playerKey}`]=prev===key?null:key
-  // re-render tlačítek
   document.querySelectorAll(`.mga-btn[data-match="${matchId}"][data-cat="${category}"][data-player="${playerKey}"]`).forEach(btn=>{
     btn.classList.toggle("active",btn.dataset.key===matchGoalsState[`${matchId}-${category}-${playerKey}`])
   })
@@ -681,8 +676,7 @@ window.placeMGABet=async function(matchId,category,playerKey){
 }
 
 function renderMGASection(matchId,category,title,oddsMap,homeId,awayId,existingBets,match,played){
-  const cats=["kubele","pici"]
-  const playerBlocks=cats.map(pk=>{
+  const playerBlocks=["kubele","pici"].map(pk=>{
     const player=players[pk==="kubele"?"Kubele":"Pici"]
     if(!player) return ""
     const existing=existingBets.find(b=>b.player_id===player.id&&b.type===`match_goals_${category}`)
@@ -719,7 +713,6 @@ function renderMGASection(matchId,category,title,oddsMap,homeId,awayId,existingB
       <button class="match-vsadit-btn" onclick="placeMGABet('${matchId}','${category}','${pk}')">🎲 Vsadit</button>
     </div>`
   }).join("")
-
   return `
   <div class="match-goals-accordion">
     <div class="mga-header" id="mga-header-${matchId}-${category}" onclick="toggleMGA('${matchId}','${category}')">
@@ -735,15 +728,12 @@ function renderMGASection(matchId,category,title,oddsMap,homeId,awayId,existingB
 async function load(){
   const{data:t}=await supabase.from("teams").select("*").eq("competition","extraliga")
   teams=t||[]
-
   const{data:seasons}=await supabase.from("seasons").select("*")
     .eq("competition_id",EXTRALIGA_COMPETITION_ID).order("created_at",{ascending:false})
   const currentSeason=seasons?.[0],prevSeason=seasons?.[1]
   if(!currentSeason){document.getElementById("mainContent").innerHTML=renderComingSoon();return}
-
   const{data:stages}=await supabase.from("stages").select("*").eq("season_id",currentSeason.id)
   const zakladniStageIds=(stages||[]).filter(s=>s.name==="Základní část").map(s=>s.id)
-
   playoffStagesByPhase={}
   ;(stages||[]).forEach(s=>{
     const phase=STAGE_NAME_TO_PHASE[s.name]
@@ -752,17 +742,14 @@ async function load(){
       playoffStagesByPhase[phase].push({id:s.id,name:s.name,wins_needed:s.wins_needed||4})
     }
   })
-
   let prevZakladniStageIds=[]
   if(prevSeason){
     const{data:ps}=await supabase.from("stages").select("*").eq("season_id",prevSeason.id)
     prevZakladniStageIds=(ps||[]).filter(s=>s.name==="Základní část").map(s=>s.id)
   }
-
   const{data:allPlayed}=await supabase.from("matches").select("*")
     .not("home_score","is",null).not("away_score","is",null).order("round",{ascending:true})
   allPlayedMatches=allPlayed||[]
-
   const curBasic=allPlayedMatches.filter(m=>zakladniStageIds.includes(m.stage_id))
   currentTeamIds=new Set()
   if(curBasic.length){
@@ -772,32 +759,25 @@ async function load(){
       .in("stage_id",zakladniStageIds.length?zakladniStageIds:["none"])
     ;(ab||[]).forEach(m=>{currentTeamIds.add(m.home_team);currentTeamIds.add(m.away_team)})
   }
-
   const prevBasic=prevZakladniStageIds.length
     ?allPlayedMatches.filter(m=>prevZakladniStageIds.includes(m.stage_id)):[]
   const teamCount=currentTeamIds.size||10
-
   formRatings=calculateFormRatings(curBasic)
   standings=calculateStandings(curBasic)
   goalsOddsMap=calculateGoalsOdds(curBasic,prevBasic,(teamCount-1)*2)
-
   const allPoStageIds=Object.values(playoffStagesByPhase).flat().map(s=>s.id)
   const{data:poAll}=allPoStageIds.length
     ?await supabase.from("matches").select("*").in("stage_id",allPoStageIds).order("round",{ascending:true})
     :{data:[]}
-
   playoffMatchesByPhase={}
   Object.entries(playoffStagesByPhase).forEach(([phase,phaseStages])=>{
     const ids=phaseStages.map(s=>s.id)
     playoffMatchesByPhase[phase]=(poAll||[]).filter(m=>ids.includes(m.stage_id))
   })
-
   const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
   ;(p||[]).forEach(pl=>players[pl.name]=pl)
-
   const{data:b}=await supabase.from("bets_special").select("*").eq("status","pending")
   specialBets=b||[]
-
   const allPoMatchIds=(poAll||[]).map(m=>m.id)
   if(allPoMatchIds.length){
     const{data:mb}=await supabase.from("bets").select("*").in("match_id",allPoMatchIds)
@@ -806,7 +786,6 @@ async function load(){
       if(!window._matchBets[b.match_id]) window._matchBets[b.match_id]=[]
       window._matchBets[b.match_id].push(b)
     })
-    // Načíst i góly bety
     const{data:mgb}=await supabase.from("bets_special").select("*")
       .in("match_id",allPoMatchIds).like("type","match_goals_%")
     window._matchGoalsBets={}
@@ -818,12 +797,9 @@ async function load(){
     window._matchBets={}
     window._matchGoalsBets={}
   }
-
   await loadLocks()
-
   const matchPhase=PHASES.find(p=>p.id===urlPhase&&(p.type==="matches"||p.type==="playoff"))
   if(matchPhase) currentPhase=urlPhase
-
   render()
 }
 
@@ -1184,6 +1160,9 @@ function renderMatchesPhase(phase){
             ${renderSeriePlayerTips(stage.id,"pici",  pici,  home,away,seriesOdds,gamesOdds,winsNeeded)}
           </div>
         </div>
+        <div style="padding:16px 18px 8px;background:var(--bg);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">🏒 Jednotlivé zápasy</div>
+        </div>
         ${matches.slice().sort((a,b)=>Number(b.round)-Number(a.round))
           .map((m,idx)=>renderMatchCard(m,matches.length-idx,stage.name)).join("")}
       </div>
@@ -1293,47 +1272,51 @@ function renderMatchCard(m,gameNumber,phaseName){
   const kubele=players["Kubele"],pici=players["Pici"]
   const matchBets=(window._matchBets||{})[m.id]||[]
   const matchGoalsBets=(window._matchGoalsBets||{})[m.id]||[]
-
-  // Gólové kurzy pro tento zápas
   const mgo=calcMatchGoalsOdds(home.id,away.id)
-
   const goalsSections=[
-    {category:"total", title:"⚽ Počet gólů celkem", oddsMap:mgo.total},
+    {category:"total", title:"⚽ Počet gólů celkem",                              oddsMap:mgo.total},
     {category:"home",  title:`🏠 Góly — ${home.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.home},
     {category:"away",  title:`✈️ Góly — ${away.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.away},
-    {category:"diff",  title:"📊 Rozdíl gólů", oddsMap:mgo.diff},
+    {category:"diff",  title:"📊 Rozdíl gólů",                                    oddsMap:mgo.diff},
   ]
 
   return `
-  <div class="match-card">
-    <div class="match-header">
-      <span class="match-header-title">${home.name} — ${away.name}</span>
-      <span class="match-header-num">${gameNumber}. zápas · ${phaseName}</span>
-    </div>
-    <div class="match-teams">
-      <div class="match-team">
-        <img class="match-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-        <div class="match-team-name">${home.name}</div>
-        <div class="match-team-info">${seriesOdds.homePos>0?seriesOdds.homePos+". místo ZČ":"—"} · Forma: ${homeForm}</div>
+  <div class="match-wrap">
+    <div class="match-card">
+      <div class="match-header">
+        <span class="match-header-title">${home.name} — ${away.name}</span>
+        <span class="match-header-num">${gameNumber}. zápas · ${phaseName}</span>
       </div>
-      <div class="match-score">
-        ${played?`<div class="match-score-main">${m.home_score} : ${m.away_score}</div>`:`<div class="match-score-vs">vs</div>`}
+      <div class="match-teams">
+        <div class="match-team">
+          <img class="match-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <div class="match-team-name">${home.name}</div>
+          <div class="match-team-info">${seriesOdds.homePos>0?seriesOdds.homePos+". místo ZČ":"—"} · Forma: ${homeForm}</div>
+        </div>
+        <div class="match-score">
+          ${played?`<div class="match-score-main">${m.home_score} : ${m.away_score}</div>`:`<div class="match-score-vs">vs</div>`}
+        </div>
+        <div class="match-team">
+          <img class="match-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <div class="match-team-name">${away.name}</div>
+          <div class="match-team-info">${seriesOdds.awayPos>0?seriesOdds.awayPos+". místo ZČ":"—"} · Forma: ${awayForm}</div>
+        </div>
       </div>
-      <div class="match-team">
-        <img class="match-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-        <div class="match-team-name">${away.name}</div>
-        <div class="match-team-info">${seriesOdds.awayPos>0?seriesOdds.awayPos+". místo ZČ":"—"} · Forma: ${awayForm}</div>
+      <div class="match-h2h">
+        <div class="match-h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
+        <div class="match-h2h-list">${renderH2HHtml(home.id,away.id)}</div>
       </div>
+      <div class="match-players">
+        ${renderMatchPlayerBlock(m,kubele,"kubele",tips,matchOdds,matchBets,played)}
+        ${renderMatchPlayerBlock(m,pici,  "pici",  tips,matchOdds,matchBets,played)}
+      </div>
+      <div class="goals-divider">
+        <div class="goals-divider-line"></div>
+        <span class="goals-divider-label">Tipování gólů</span>
+        <div class="goals-divider-line"></div>
+      </div>
+      ${goalsSections.map(s=>renderMGASection(m.id,s.category,s.title,s.oddsMap,home.id,away.id,matchGoalsBets,m,played)).join("")}
     </div>
-    <div class="match-h2h">
-      <div class="match-h2h-title">⚔️ Posledních 5 vzájemných zápasů</div>
-      <div class="match-h2h-list">${renderH2HHtml(home.id,away.id)}</div>
-    </div>
-    <div class="match-players">
-      ${renderMatchPlayerBlock(m,kubele,"kubele",tips,matchOdds,matchBets,played)}
-      ${renderMatchPlayerBlock(m,pici,  "pici",  tips,matchOdds,matchBets,played)}
-    </div>
-    ${goalsSections.map(s=>renderMGASection(m.id,s.category,s.title,s.oddsMap,home.id,away.id,matchGoalsBets,m,played)).join("")}
   </div>`
 }
 
