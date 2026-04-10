@@ -107,10 +107,10 @@ style.textContent = `
 .t-logo {
   width: 24px;
   height: 24px;
-  object-fit: contain;
+  object-fit: cover;
   background: white;
   border-radius: 5px;
-  padding: 2px;
+  padding: 1px;
   flex-shrink: 0;
 }
 
