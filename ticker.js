@@ -110,7 +110,7 @@ style.textContent = `
   object-fit: cover;
   background: white;
   border-radius: 5px;
-  padding: 1px;
+  padding: 0px;
   flex-shrink: 0;
 }
 
