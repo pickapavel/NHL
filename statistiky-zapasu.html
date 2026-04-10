@@ -31,12 +31,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .score-tag{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px}
 .score-periods{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px}
 
-.hero-summary{max-width:900px;margin:20px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+/* HERO SUMMARY — góly na plnou šířku, pak dvě karty pod ním */
+.hero-summary{max-width:900px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px}
 .hero-sum-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px}
+.hero-sum-card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hero-sum-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.hero-sum-row{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:5px;line-height:1.4}
+.hero-sum-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:5px;line-height:1.4}
 .hero-sum-row:last-child{margin-bottom:0}
-.hero-sum-icon{font-size:12px;width:18px;flex-shrink:0;margin-top:1px}
+.hero-team-logo{width:16px;height:16px;object-fit:contain;background:#fff;border-radius:3px;flex-shrink:0;margin-top:1px}
 .hero-sum-val{font-weight:700;color:#fff}
 .hero-sum-muted{color:rgba(255,255,255,.5);font-size:11px}
 .hero-sep{height:1px;background:rgba(255,255,255,.1);margin:8px 0}
@@ -70,6 +72,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .event-icon.ppg{background:#f3e8ff}
 .event-icon.shg{background:#fef3c7}
 .event-icon.pen{background:#fee2e2}
+.event-team-logo{width:20px;height:20px;object-fit:contain;background:#fff;border-radius:4px;border:1px solid var(--border);flex-shrink:0}
 .event-body{flex:1;min-width:0}
 .event-player{font-size:13px;font-weight:600;color:var(--text)}
 .event-detail{font-size:11px;color:var(--muted);margin-top:1px}
@@ -120,7 +123,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .score-main{font-size:42px}
   .team-name-big{font-size:13px}
   .team-logo-big{width:52px;height:52px}
-  .hero-summary{grid-template-columns:1fr}
+  .hero-sum-card-row{grid-template-columns:1fr}
   .anchor-btn{padding:10px 14px;font-size:11px}
 }
 </style>
@@ -330,6 +333,7 @@ async function load(){
     document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
 
+  // Určení abbr
   let homeAbbr='',awayAbbr=''
   if(playerStats&&playerStats.length){
     const abbrs=[...new Set(playerStats.filter(p=>!p.is_goalie).map(p=>p.team_abbr))]
@@ -353,46 +357,57 @@ async function load(){
 
   const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
 
+  // Karta 1: Góly — plná šířka, logo týmu místo ikony
+  const homeLogo=`./logos/${home?.logo}`
+  const awayLogo=`./logos/${away?.logo}`
+
   let goalsCardHtml=goalEvents.length?goalEvents.map(e=>{
     const isHome=e.team_abbr===homeAbbr
+    const logo=isHome?homeLogo:awayLogo
     const col=isHome?'var(--blue)':'#f87171'
     const {label}=getEventMeta(e.type)
     const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
     const scoreStr=scoreMatch?` <span class="hero-sum-muted">${scoreMatch[1]}</span>`:''
     const assistsStr=e.note?` <span class="hero-sum-muted">↳ ${e.note}</span>`:''
     return `<div class="hero-sum-row">
-      <span class="hero-sum-icon">${isHome?'🏠':'✈️'}</span>
+      <img class="hero-team-logo" src="${logo}" onerror="this.style.display='none'">
       <span><span class="hero-sum-val" style="color:${col}">${e.player_name}</span>${scoreStr} <span class="hero-sum-muted">${e.time||''} · ${label}</span>${assistsStr}</span>
     </div>`
   }).join(''):'<div class="hero-sum-row"><span class="hero-sum-muted">Průběh není k dispozici</span></div>'
 
+  // Karta 2: Přesilovky
   const homePPstr=homePP.attempts>0?`${homePP.goals}/${homePP.attempts}`:'0/0'
   const awayPPstr=awayPP.attempts>0?`${awayPP.goals}/${awayPP.attempts}`:'0/0'
   const ppCardHtml=`
-    <div class="hero-sum-row"><span class="hero-sum-icon">⚡</span><span>${shortName(home)||homeAbbr}: <span class="hero-sum-val">${homePPstr}</span></span></div>
-    <div class="hero-sum-row"><span class="hero-sum-icon">⚡</span><span>${shortName(away)||awayAbbr}: <span class="hero-sum-val">${awayPPstr}</span></span></div>
-    ${homeShots||awayShots?`<div class="hero-sep"></div><div class="hero-sum-row"><span class="hero-sum-icon">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
+    <div class="hero-sum-row"><img class="hero-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span>${shortName(home)||homeAbbr}: <span class="hero-sum-val">${homePPstr}</span></span></div>
+    <div class="hero-sum-row"><img class="hero-team-logo" src="${awayLogo}" onerror="this.style.display='none'"><span>${shortName(away)||awayAbbr}: <span class="hero-sum-val">${awayPPstr}</span></span></div>
+    ${homeShots||awayShots?`<div class="hero-sep"></div><div class="hero-sum-row"><span style="font-size:12px;width:18px;flex-shrink:0">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
   `
 
+  // Karta 3: Brankáři
   let gkCardHtml=''
   if(homeGoalie){
     const won=matchScore.hg>matchScore.ag
-    gkCardHtml+=`<div class="hero-sum-row"><span class="hero-sum-icon">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${homeGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(home)}</span></span></div>
+    gkCardHtml+=`<div class="hero-sum-row"><span style="font-size:12px">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${homeGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(home)}</span></span></div>
     <div class="hero-sum-row" style="padding-left:22px"><span class="hero-sum-muted">Zákroky: <span class="hero-sum-val">${svStr(homeGoalie)}</span></span></div>`
   }
   if(awayGoalie){
     const won=matchScore.ag>matchScore.hg
-    gkCardHtml+=`${homeGoalie?'<div class="hero-sep"></div>':''}<div class="hero-sum-row"><span class="hero-sum-icon">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${awayGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(away)}</span></span></div>
+    gkCardHtml+=`${homeGoalie?'<div class="hero-sep"></div>':''}<div class="hero-sum-row"><span style="font-size:12px">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${awayGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(away)}</span></span></div>
     <div class="hero-sum-row" style="padding-left:22px"><span class="hero-sum-muted">Zákroky: <span class="hero-sum-val">${svStr(awayGoalie)}</span></span></div>`
   }
   if(!homeGoalie&&!awayGoalie) gkCardHtml='<div class="hero-sum-row"><span class="hero-sum-muted">Brankáři nejsou k dispozici</span></div>'
 
+  // Sestavení: góly na plnou šířku, PP + brankáři vedle sebe pod nimi
   document.getElementById('heroSummary').innerHTML=`
     <div class="hero-sum-card"><div class="hero-sum-title">⚽ Góly</div>${goalsCardHtml}</div>
-    <div class="hero-sum-card"><div class="hero-sum-title">⚡ Přesilovky (góly / pokusy)</div>${ppCardHtml}</div>
-    <div class="hero-sum-card"><div class="hero-sum-title">🥅 Brankáři</div>${gkCardHtml}</div>
+    <div class="hero-sum-card-row">
+      <div class="hero-sum-card"><div class="hero-sum-title">⚡ Přesilovky (góly / pokusy)</div>${ppCardHtml}</div>
+      <div class="hero-sum-card"><div class="hero-sum-title">🥅 Brankáři</div>${gkCardHtml}</div>
+    </div>
   `
 
+  // TIMELINE
   const timelineEl=document.getElementById('timeline')
   if(events&&events.length){
     const byPeriod={}
@@ -406,10 +421,13 @@ async function load(){
         const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
         const scoreStr=scoreMatch?scoreMatch[1]:''
         const isPen=e.type?.toUpperCase().startsWith('PEN')
+        const isHome=e.team_abbr===homeAbbr
+        const teamLogo=isHome?homeLogo:awayLogo
         const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`
           :`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`
         html+=`<div class="event-row">
           <div class="event-time">${e.time||''}</div>
+          <img class="event-team-logo" src="${teamLogo}" onerror="this.style.display='none'">
           <div class="event-icon ${cls}">${icon}</div>
           <div class="event-body">
             <div class="event-player">${e.player_name||''}</div>
@@ -425,6 +443,7 @@ async function load(){
     timelineEl.innerHTML='<div class="no-events">Průběh zápasu není k dispozici pro tento zápas.</div>'
   }
 
+  // HRÁČI
   if(playerStats&&playerStats.length){
     document.getElementById('homePlayersTitle').textContent=home?.name||homeAbbr
     document.getElementById('awayPlayersTitle').textContent=away?.name||awayAbbr
