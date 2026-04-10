@@ -196,8 +196,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .mga-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;background:#f7fafc;user-select:none;transition:background .15s;}
 .mga-header:hover{background:#eef2f7;}
 .mga-header.open{background:#edf2f7;}
-.mga-title{font-size:12px;font-weight:700;color:var(--navy);}
-.mga-arrow{font-size:11px;color:var(--muted);transition:transform .2s;}
+.mga-title{font-size:12px;font-weight:700;color:var(--navy);display:flex;align-items:center;}.mga-arrow{font-size:11px;color:var(--muted);transition:transform .2s;}
 .mga-header.open .mga-arrow{transform:rotate(180deg);}
 .mga-body{display:none;border-top:1px solid var(--border);}
 .mga-body.open{display:block;}
@@ -1274,9 +1273,9 @@ function renderMatchCard(m,gameNumber,phaseName){
   const matchGoalsBets=(window._matchGoalsBets||{})[m.id]||[]
   const mgo=calcMatchGoalsOdds(home.id,away.id)
   const goalsSections=[
-    {category:"total", title:"⚽ Počet gólů celkem",                              oddsMap:mgo.total},
-    {category:"home",  title:`🏠 Góly — ${home.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.home},
-    {category:"away",  title:`✈️ Góly — ${away.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.away},
+    {category:"total", title:`🏒 Počet gólů celkem`,                              oddsMap:mgo.total},
+    {category:"home",  title:`<img src="./logos/${home.logo}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;border-radius:3px;margin-right:4px;" onerror="this.style.display='none'"> Góly — ${home.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.home},
+    {category:"away",  title:`<img src="./logos/${away.logo}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;border-radius:3px;margin-right:4px;" onerror="this.style.display='none'"> Góly — ${away.name.replace(/\(.\)$/,'').trim()}`, oddsMap:mgo.away},
     {category:"diff",  title:"📊 Rozdíl gólů",                                    oddsMap:mgo.diff},
   ]
 
