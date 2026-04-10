@@ -1113,15 +1113,19 @@ function closeToiDialog() {
 }
 
 async function toiConfirm() {
+  console.log('toiConfirm called, pendingData:', _toiPendingData)
   const toiHome = document.getElementById('toiHome').value.trim() || '0'
   const toiAway = document.getElementById('toiAway').value.trim() || '0'
+  console.log('toi values:', toiHome, toiAway)
   closeToiDialog()
   if (_toiPendingData) {
+    console.log('has pending data, calling doSave')
     const d = _toiPendingData
-    // Vložíme čas v útoku do lines[]
-    d.lines[3]  = toiAway   // hosté čas v útoku (index 3)
-    d.lines[13] = toiHome   // domácí čas v útoku (index 13)
+    d.lines[3]  = toiAway
+    d.lines[13] = toiHome
     await doSaveMatchFromXls(d.matchId, d.lines, d.hg, d.ag, d.resultType, d.gamestatEvents, d.playerstatPlayers)
+  } else {
+    console.log('NO pending data!')
   }
 }
 
