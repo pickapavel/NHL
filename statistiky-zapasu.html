@@ -15,6 +15,12 @@
 }
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
+.anchor-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.anchor-nav-inner{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;justify-content:center;gap:0;overflow-x:auto}
+.anchor-btn{padding:12px 20px;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;display:inline-block}
+.anchor-btn:hover{color:var(--text);border-bottom-color:var(--border)}
+.anchor-btn.active{color:var(--navy);border-bottom-color:var(--navy2)}
+
 .match-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);padding:28px 24px 24px}
 .teams-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;max-width:900px;margin:0 auto}
 .team-side{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
@@ -34,12 +40,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .hero-sum-val{font-weight:700;color:#fff}
 .hero-sum-muted{color:rgba(255,255,255,.5);font-size:11px}
 .hero-sep{height:1px;background:rgba(255,255,255,.1);margin:8px 0}
-
-.anchor-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.anchor-nav-inner{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;justify-content:center;gap:0;overflow-x:auto}
-.anchor-btn{padding:12px 20px;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;display:inline-block}
-.anchor-btn:hover{color:var(--text);border-bottom-color:var(--border)}
-.anchor-btn.active{color:var(--navy);border-bottom-color:var(--navy2)}
 
 .wrapper{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
 .page-section{margin-bottom:44px;scroll-margin-top:56px}
@@ -129,6 +129,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <script src="./ticker.js" defer></script>
 <script src="./menu.js" defer></script>
 
+<nav class="anchor-nav">
+  <div class="anchor-nav-inner">
+    <a class="anchor-btn active" href="#sec-stats">📊 Statistiky</a>
+    <a class="anchor-btn" href="#sec-timeline">🏒 Průběh</a>
+    <a class="anchor-btn" href="#sec-players">👤 Hráči</a>
+    <a class="anchor-btn" href="#sec-goalies">🥅 Brankáři</a>
+  </div>
+</nav>
+
 <div class="match-hero">
   <div class="teams-row">
     <div class="team-side">
@@ -147,15 +156,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </div>
   <div class="hero-summary" id="heroSummary"></div>
 </div>
-
-<nav class="anchor-nav">
-  <div class="anchor-nav-inner">
-    <a class="anchor-btn active" href="#sec-stats">📊 Statistiky</a>
-    <a class="anchor-btn" href="#sec-timeline">🏒 Průběh</a>
-    <a class="anchor-btn" href="#sec-players">👤 Hráči</a>
-    <a class="anchor-btn" href="#sec-goalies">🥅 Brankáři</a>
-  </div>
-</nav>
 
 <div class="wrapper">
   <a class="back-link" href="elh.html">← Zpět na rozpis</a>
@@ -217,18 +217,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 const supabase = createClient("https://qaocbodrflsaerxntfui.supabase.co","sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU")
 
-// Scroll spy pro anchor nav
-const sectionIds = ['sec-stats','sec-timeline','sec-players','sec-goalies']
-const anchorBtns = document.querySelectorAll('.anchor-btn')
-window.addEventListener('scroll', ()=>{
-  let current = sectionIds[0]
+const sectionIds=['sec-stats','sec-timeline','sec-players','sec-goalies']
+const anchorBtns=document.querySelectorAll('.anchor-btn')
+window.addEventListener('scroll',()=>{
+  let current=sectionIds[0]
   sectionIds.forEach(id=>{
-    const el = document.getElementById(id)
-    if(el && window.scrollY >= el.offsetTop - 80) current = id
+    const el=document.getElementById(id)
+    if(el&&window.scrollY>=el.offsetTop-80) current=id
   })
-  anchorBtns.forEach(btn=>{
-    btn.classList.toggle('active', btn.getAttribute('href')==='#'+current)
-  })
+  anchorBtns.forEach(btn=>btn.classList.toggle('active',btn.getAttribute('href')==='#'+current))
 },{passive:true})
 
 function calcScore(stats){
@@ -238,12 +235,10 @@ function calcScore(stats){
   if(stats[20]==="1") hg++; if(stats[20]==="2") ag++
   return {hg,ag}
 }
-
 function parsePP(v){
   if(!v||!v.includes('/')) return {goals:0,attempts:0}
   const p=v.split('/'); return {goals:Number(p[0]),attempts:Number(p[1])}
 }
-
 function renderStatRow(label,hVal,aVal,isText){
   const h=isText?0:(isNaN(Number(hVal))?0:Number(hVal))
   const a=isText?0:(isNaN(Number(aVal))?0:Number(aVal))
@@ -259,13 +254,11 @@ function renderStatRow(label,hVal,aVal,isText){
     </div>
   </div>`
 }
-
 function pmCell(v){
   if(v>0) return `<span class="v-pos">+${v}</span>`
   if(v<0) return `<span class="v-neg">${v}</span>`
   return `<span class="v-zero">0</span>`
 }
-
 function playerRow(p){
   const gStr=p.goals>0?`<span class="v-g">${p.goals}</span>${p.ppg?'<span class="ppg-badge">PP</span>':''}${p.shg?'<span class="shg-badge">SH</span>':''}`:'0'
   const aStr=p.assists>0?`<span class="v-a">${p.assists}</span>`:'0'
@@ -279,7 +272,6 @@ function playerRow(p){
     <td class="r">${p.shots}</td><td class="r">${p.hits}</td>
   </tr>`
 }
-
 function getEventMeta(type){
   if(!type) return {cls:'pen',icon:'🚫',label:'Trest'}
   const t=type.toUpperCase()
@@ -338,7 +330,6 @@ async function load(){
     document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
 
-  // Určení abbr
   let homeAbbr='',awayAbbr=''
   if(playerStats&&playerStats.length){
     const abbrs=[...new Set(playerStats.filter(p=>!p.is_goalie).map(p=>p.team_abbr))]
@@ -349,7 +340,6 @@ async function load(){
     }
   }
 
-  // Brankáři pro souhrn
   const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&Number(p.goalie_sa)>0)
   const homeGoalie=goalies.find(g=>g.team_abbr===homeAbbr)
   const awayGoalie=goalies.find(g=>g.team_abbr===awayAbbr)
@@ -361,44 +351,29 @@ async function load(){
   }
   function shortName(t){return t?.name?.replace(/\(.\)$/,'').trim()||''}
 
-  // HERO SOUHRN
   const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
 
-  // Karta 1: Góly
-  let goalsCardHtml=''
-  if(goalEvents.length){
-    goalsCardHtml=goalEvents.map(e=>{
-      const isHome=e.team_abbr===homeAbbr
-      const col=isHome?'var(--blue)':'#f87171'
-      const {label}=getEventMeta(e.type)
-      const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
-      const scoreStr=scoreMatch?` <span class="hero-sum-muted">${scoreMatch[1]}</span>`:''
-      const assistsStr=e.note&&!e.type?.toUpperCase().startsWith('PEN')?` <span class="hero-sum-muted">↳ ${e.note}</span>`:''
-      return `<div class="hero-sum-row">
-        <span class="hero-sum-icon">${isHome?'🏠':'✈️'}</span>
-        <span>
-          <span class="hero-sum-val" style="color:${col}">${e.player_name}</span>
-          ${scoreStr}
-          <span class="hero-sum-muted"> ${e.time||''} · ${label}</span>
-          ${assistsStr}
-        </span>
-      </div>`
-    }).join('')
-  } else {
-    goalsCardHtml='<div class="hero-sum-row"><span class="hero-sum-muted">Průběh není k dispozici</span></div>'
-  }
+  let goalsCardHtml=goalEvents.length?goalEvents.map(e=>{
+    const isHome=e.team_abbr===homeAbbr
+    const col=isHome?'var(--blue)':'#f87171'
+    const {label}=getEventMeta(e.type)
+    const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
+    const scoreStr=scoreMatch?` <span class="hero-sum-muted">${scoreMatch[1]}</span>`:''
+    const assistsStr=e.note?` <span class="hero-sum-muted">↳ ${e.note}</span>`:''
+    return `<div class="hero-sum-row">
+      <span class="hero-sum-icon">${isHome?'🏠':'✈️'}</span>
+      <span><span class="hero-sum-val" style="color:${col}">${e.player_name}</span>${scoreStr} <span class="hero-sum-muted">${e.time||''} · ${label}</span>${assistsStr}</span>
+    </div>`
+  }).join(''):'<div class="hero-sum-row"><span class="hero-sum-muted">Průběh není k dispozici</span></div>'
 
-  // Karta 2: Přesilovky + střely
   const homePPstr=homePP.attempts>0?`${homePP.goals}/${homePP.attempts}`:'0/0'
   const awayPPstr=awayPP.attempts>0?`${awayPP.goals}/${awayPP.attempts}`:'0/0'
   const ppCardHtml=`
     <div class="hero-sum-row"><span class="hero-sum-icon">⚡</span><span>${shortName(home)||homeAbbr}: <span class="hero-sum-val">${homePPstr}</span></span></div>
     <div class="hero-sum-row"><span class="hero-sum-icon">⚡</span><span>${shortName(away)||awayAbbr}: <span class="hero-sum-val">${awayPPstr}</span></span></div>
-    ${homeShots||awayShots?`<div class="hero-sep"></div>
-    <div class="hero-sum-row"><span class="hero-sum-icon">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
+    ${homeShots||awayShots?`<div class="hero-sep"></div><div class="hero-sum-row"><span class="hero-sum-icon">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
   `
 
-  // Karta 3: Brankáři
   let gkCardHtml=''
   if(homeGoalie){
     const won=matchScore.hg>matchScore.ag
@@ -418,7 +393,6 @@ async function load(){
     <div class="hero-sum-card"><div class="hero-sum-title">🥅 Brankáři</div>${gkCardHtml}</div>
   `
 
-  // TIMELINE
   const timelineEl=document.getElementById('timeline')
   if(events&&events.length){
     const byPeriod={}
@@ -432,8 +406,7 @@ async function load(){
         const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
         const scoreStr=scoreMatch?scoreMatch[1]:''
         const isPen=e.type?.toUpperCase().startsWith('PEN')
-        const detail=isPen
-          ?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`
+        const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`
           :`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`
         html+=`<div class="event-row">
           <div class="event-time">${e.time||''}</div>
@@ -452,7 +425,6 @@ async function load(){
     timelineEl.innerHTML='<div class="no-events">Průběh zápasu není k dispozici pro tento zápas.</div>'
   }
 
-  // HRÁČI
   if(playerStats&&playerStats.length){
     document.getElementById('homePlayersTitle').textContent=home?.name||homeAbbr
     document.getElementById('awayPlayersTitle').textContent=away?.name||awayAbbr
@@ -462,7 +434,6 @@ async function load(){
     document.getElementById('homePlayers').innerHTML=sortPl(homePl).map(playerRow).join('')||'<tr><td colspan="9" class="no-data">Žádní hráči</td></tr>'
     document.getElementById('awayPlayers').innerHTML=sortPl(awayPl).map(playerRow).join('')||'<tr><td colspan="9" class="no-data">Žádní hráči</td></tr>'
 
-    // BRANKÁŘI
     const allGoalies=[...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===homeAbbr),
                       ...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===awayAbbr)]
     if(allGoalies.length){
@@ -475,10 +446,8 @@ async function load(){
         const teamName=isHome?home?.name:away?.name
         return `<div class="goalie-card">
           <div class="goalie-top">
-            <div>
-              <div class="goalie-name">${g.player_name}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">${teamName} · ${g.toi}</div>
-            </div>
+            <div><div class="goalie-name">${g.player_name}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">${teamName} · ${g.toi}</div></div>
             <div class="goalie-result" style="color:${teamWon?'#27ae60':'#e74c3c'}">${teamWon?'W':'L'}</div>
           </div>
           <div class="goalie-stats">
