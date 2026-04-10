@@ -33,14 +33,9 @@ async function sbFetch(table, select, params){
   return res.json()
 }
 
-// Zjisti jestli je tým klubový (extraliga) nebo reprezentační
-function isClubTeam(team, compMap){
-  if(!team.competition_id) return true
-  const comp = compMap[team.competition_id]
-  if(!comp) return true
-  const name = (comp.name || '').toLowerCase()
-  // Reprezentační soutěže nemají slovo "extraliga" v názvu
-  return name.includes('extraliga') || name.includes('liga')
+function logoClass(team){
+  const comp = (team.competition || '').toLowerCase()
+  return comp === 'extraliga' ? 't-logo-club' : 't-logo-national'
 }
 
 const style = document.createElement('style')
@@ -278,10 +273,6 @@ function addDivider(track){
   track.appendChild(d)
 }
 
-function logoClass(team, compMap){
-  return isClubTeam(team, compMap) ? 't-logo-club' : 't-logo-national'
-}
-
 async function loadTicker(){
   try {
     const [teams, seasons, matches, competitions] = await Promise.all([
@@ -384,12 +375,12 @@ async function loadTicker(){
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
         <div class="t-team-row">
-          <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <img class="t-logo ${logoClass(home)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
           <span class="t-team-name">${getShortName(home)}</span>
           <span class="t-score-badge">${m.home_score}</span>
         </div>
         <div class="t-team-row">
-          <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <img class="t-logo ${logoClass(away)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
           <span class="t-team-name">${getShortName(away)}</span>
           <span class="t-score-badge">${m.away_score}</span>
         </div>
@@ -423,12 +414,12 @@ async function loadTicker(){
         box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
         box.innerHTML = `
           <div class="t-team-row">
-            <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <img class="t-logo ${logoClass(home)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
             <span class="t-team-name">${getShortName(home)}</span>
             <span class="t-score-badge empty">–</span>
           </div>
           <div class="t-team-row">
-            <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <img class="t-logo ${logoClass(away)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
             <span class="t-team-name">${getShortName(away)}</span>
             <span class="t-score-badge empty">–</span>
           </div>
