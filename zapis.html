@@ -1226,6 +1226,7 @@ async function saveMatch(matchId, homeTeamName, awayTeamName){
 }
 
 async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEvents, playerstatPlayers) {
+  console.log('doSave start', matchId, hg, ag, resultType)
   await db.from("matches").update({
     home_score: hg,
     away_score: ag,
@@ -1234,13 +1235,18 @@ async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEv
     result_type: resultType,
     played_at: new Date().toISOString()
   }).eq("id", matchId)
+  console.log('matches updated')
 
   const {data:fullMatch} = await db.from("matches").select("*").eq("id", matchId).single()
+  console.log('fullMatch', fullMatch)
   await evaluateBets(fullMatch)
+  console.log('bets evaluated')
   await recalculateAllRatings()
+  console.log('ratings recalculated')
 
   if (gamestatEvents || playerstatPlayers) {
     await savePlayerStats(matchId, gamestatEvents, playerstatPlayers)
+    console.log('player stats saved')
     alert(`Uloženo ✅\nVýsledek: ${hg}:${ag} (${resultType})\nVčetně hráčských statistik 👤`)
   } else {
     alert(`Uloženo ✅\nVýsledek: ${hg}:${ag} (${resultType})`)
