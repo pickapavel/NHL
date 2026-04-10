@@ -108,10 +108,11 @@ style.textContent = `
   width: 24px;
   height: 24px;
   object-fit: cover;
-  background: white;
+  background: transparent;
   border-radius: 5px;
   padding: 0px;
   flex-shrink: 0;
+  border: none;
 }
 
 .t-team-row {
