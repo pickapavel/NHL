@@ -33,6 +33,16 @@ async function sbFetch(table, select, params){
   return res.json()
 }
 
+// Zjisti jestli je tým klubový (extraliga) nebo reprezentační
+function isClubTeam(team, compMap){
+  if(!team.competition_id) return true
+  const comp = compMap[team.competition_id]
+  if(!comp) return true
+  const name = (comp.name || '').toLowerCase()
+  // Reprezentační soutěže nemají slovo "extraliga" v názvu
+  return name.includes('extraliga') || name.includes('liga')
+}
+
 const style = document.createElement('style')
 style.textContent = `
 #ticker-bar {
@@ -108,10 +118,15 @@ style.textContent = `
   width: 24px;
   height: 24px;
   object-fit: cover;
+  flex-shrink: 0;
+}
+.t-logo.t-logo-club {
   background: white;
   border-radius: 5px;
-  padding: 0px;
-  flex-shrink: 0;
+}
+.t-logo.t-logo-national {
+  background: transparent;
+  border-radius: 50%;
 }
 
 .t-team-row {
@@ -263,6 +278,10 @@ function addDivider(track){
   track.appendChild(d)
 }
 
+function logoClass(team, compMap){
+  return isClubTeam(team, compMap) ? 't-logo-club' : 't-logo-national'
+}
+
 async function loadTicker(){
   try {
     const [teams, seasons, matches, competitions] = await Promise.all([
@@ -296,7 +315,6 @@ async function loadTicker(){
     btnPrev.onclick = () => scrollToPx(currentPx - SCROLL_STEP * boxWidth, true)
     btnNext.onclick = () => scrollToPx(currentPx + SCROLL_STEP * boxWidth, true)
 
-    // Touch / drag
     let dragStartX = 0, dragStartPx = 0, isDragging = false
     trackWrap.addEventListener('mousedown', e => {
       isDragging = true; dragStartX = e.clientX; dragStartPx = currentPx
@@ -336,7 +354,6 @@ async function loadTicker(){
     })
     const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
 
-    // Odehrané — seřazené od nejstaršího po nejnovější (nejnovější budou těsně před separátorem)
     const played = allMatches
       .filter(m => m.played === true && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
@@ -358,7 +375,6 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    // Odehrané zápasy (vlevo, nejnovější těsně před separátorem)
     played.forEach((m, i) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
@@ -368,12 +384,12 @@ async function loadTicker(){
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
         <div class="t-team-row">
-          <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
           <span class="t-team-name">${getShortName(home)}</span>
           <span class="t-score-badge">${m.home_score}</span>
         </div>
         <div class="t-team-row">
-          <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
           <span class="t-team-name">${getShortName(away)}</span>
           <span class="t-score-badge">${m.away_score}</span>
         </div>
@@ -385,7 +401,6 @@ async function loadTicker(){
       addDivider(track)
     })
 
-    // Nadcházející zápasy (vpravo)
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
@@ -408,12 +423,12 @@ async function loadTicker(){
         box.onclick = () => { window.location.href = `vsad-si.html?id=${m.id}` }
         box.innerHTML = `
           <div class="t-team-row">
-            <img class="t-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+            <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
             <span class="t-team-name">${getShortName(home)}</span>
             <span class="t-score-badge empty">–</span>
           </div>
           <div class="t-team-row">
-            <img class="t-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+            <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
             <span class="t-team-name">${getShortName(away)}</span>
             <span class="t-score-badge empty">–</span>
           </div>
