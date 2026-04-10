@@ -3,287 +3,471 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Match centrum</title>
-
+<title>Statistiky zápasu</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-
-body{
- margin:0;
- font-family:Arial;
- background:#0b2a3c;
- color:white;
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0b2a3c;--navy2:#1a5276;--gold:#f0c040;
+  --green:#27ae60;--red:#e74c3c;--blue:#2f9ec9;
+  --bg:#f0f4f8;--white:#fff;--muted:#6b7a8d;
+  --border:#e2e8f0;--text:#1a2a3c;
 }
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-.wrapper{
- max-width:1100px;
- margin:auto;
- padding:25px;
-}
+/* HEADER */
+.match-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);padding:28px 24px 24px;color:#fff}
+.teams-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;max-width:900px;margin:0 auto}
+.team-side{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.team-logo-big{width:70px;height:70px;object-fit:contain;background:#fff;border-radius:12px;padding:5px;border:2px solid rgba(255,255,255,.15)}
+.team-name-big{font-size:15px;font-weight:700;color:#fff;line-height:1.3}
+.team-meta-small{font-size:11px;color:rgba(255,255,255,.55)}
+.score-center{text-align:center}
+.score-main{font-size:58px;font-weight:800;color:#fff;line-height:1;letter-spacing:-2px}
+.score-tag{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px}
+.score-periods{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px}
 
-.header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-bottom:30px;
- flex-wrap:wrap;
- gap:20px;
-}
+/* TABS */
+.tabs-bar{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:50}
+.tab-btn{padding:12px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy2)}
 
-.teamBlock{
- display:flex;
- align-items:center;
- gap:15px;
- font-size:22px;
- font-weight:bold;
-}
+.wrapper{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+.section{margin-bottom:24px}
+.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(11,42,60,.06);margin-bottom:14px}
+.card-header{padding:11px 16px;background:var(--navy);display:flex;align-items:center;justify-content:space-between}
+.card-header-title{font-size:14px;font-weight:700;color:#fff}
+.card-header-badge{font-size:11px;font-weight:600;color:var(--gold);background:rgba(240,192,64,.15);padding:3px 10px;border-radius:20px}
 
-.teamBlock img{
- width:75px;
- height:75px;
- object-fit:contain;
- background:white;
- padding:6px;
- border-radius:10px;
-}
+/* KOMPAKTNÍ BARY */
+.stats-compare{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.stat-row{display:grid;grid-template-columns:45px 1fr 45px;align-items:center;gap:8px}
+.stat-val{font-size:13px;font-weight:700;color:var(--navy);text-align:center}
+.stat-val.right{text-align:right}
+.stat-label-center{text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.bar-track{height:6px;background:#e8eef4;border-radius:3px;overflow:hidden;display:flex}
+.bar-home{background:var(--navy2);border-radius:3px 0 0 3px}
+.bar-away{background:var(--red);border-radius:0 3px 3px 0;margin-left:auto}
 
-.scoreBig{
- font-size:60px;
- font-weight:bold;
- text-align:center;
-}
+/* PRŮBĚH ZÁPASU */
+.timeline{padding:0}
+.period-block{border-bottom:1px solid var(--border)}
+.period-block:last-child{border-bottom:none}
+.period-header{padding:9px 16px;background:#f7fafc;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.event-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid #f4f6f9}
+.event-row:last-child{border-bottom:none}
+.event-time{font-size:12px;font-weight:700;color:var(--muted);width:38px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.event-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.event-icon.goal{background:#dcfce7}
+.event-icon.ppg{background:#f3e8ff}
+.event-icon.shg{background:#fef3c7}
+.event-icon.pen{background:#fee2e2}
+.event-body{flex:1}
+.event-player{font-size:13px;font-weight:600;color:var(--text)}
+.event-detail{font-size:11px;color:var(--muted);margin-top:1px}
+.event-score{font-size:12px;font-weight:800;color:var(--navy);background:#eef2f7;padding:2px 8px;border-radius:6px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.event-team-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0}
+.badge-home{background:rgba(11,42,60,.08);color:var(--navy)}
+.badge-away{background:rgba(231,76,60,.08);color:var(--red)}
+.no-events{padding:20px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}
 
-.otLabel{
- text-align:center;
- font-weight:bold;
- margin-top:5px;
- color:#2f9ec9;
-}
+/* HRÁČI TABULKA */
+.player-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.player-tbl th{padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:#f7fafc;white-space:nowrap}
+.player-tbl th.r{text-align:right}
+.player-tbl td{padding:8px 10px;border-bottom:1px solid #f4f6f9;vertical-align:middle;white-space:nowrap}
+.player-tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
+.player-tbl tr:last-child td{border-bottom:none}
+.player-tbl tr:hover td{background:#f7fafc}
+.pname{font-weight:600;font-size:12px}
+.v-g{font-weight:800;color:var(--green)}
+.v-a{font-weight:800;color:var(--blue)}
+.v-p{font-weight:800;color:var(--navy)}
+.v-pos{font-weight:700;color:var(--green)}
+.v-neg{font-weight:700;color:var(--red)}
+.v-zero{color:var(--muted)}
+.v-pim{font-weight:700;color:var(--red)}
+.ppg-badge{display:inline-block;font-size:9px;font-weight:700;background:#f3e8ff;color:#7e22ce;padding:1px 5px;border-radius:3px;margin-left:3px}
+.shg-badge{display:inline-block;font-size:9px;font-weight:700;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;margin-left:3px}
 
-.periodInfo{
- text-align:center;
- margin-bottom:25px;
- opacity:0.9;
-}
+/* BRANKÁŘI */
+.goalie-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.goalie-grid{grid-template-columns:1fr}}
+.goalie-card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.goalie-top{padding:11px 14px;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;justify-content:space-between;align-items:center}
+.goalie-name{font-size:13px;font-weight:700;color:#fff}
+.goalie-result{font-size:20px;font-weight:800}
+.goalie-stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.goalie-stat{text-align:center;padding:12px 6px;border-right:1px solid var(--border)}
+.goalie-stat:last-child{border-right:none}
+.goalie-val{font-size:18px;font-weight:800;color:var(--navy)}
+.goalie-lbl{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.sv-bar{height:4px;background:#e2e8f0;border-radius:2px;margin:8px 14px 10px;overflow:hidden}
+.sv-bar-fill{height:100%;border-radius:2px}
 
-.sectionTitle{
- font-size:22px;
- font-weight:bold;
- margin:30px 0 15px 0;
- border-bottom:2px solid #2f9ec9;
- padding-bottom:6px;
-}
+/* BACK BTN */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:20px}
+.back-link:hover{color:var(--navy)}
 
-.statRow{
- margin-bottom:20px;
-}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
 
-.statLabel{
- text-align:center;
- margin-bottom:6px;
- font-weight:bold;
-}
+.hidden{display:none}
 
-.barWrap{
- display:flex;
- align-items:center;
- gap:10px;
-}
-
-.sideVal{
- width:70px;
- text-align:center;
- font-weight:bold;
-}
-
-.barTrack{
- flex:1;
- height:22px;
- background:#1e3c4f;
- border-radius:12px;
- overflow:hidden;
- display:flex;
-}
-
-.barHome{
- background:#2f9ec9;
-}
-
-.barAway{
- background:#e74c3c;
-}
-
-.backBtn{
- margin-top:40px;
- text-align:center;
-}
-
-.backBtn a{
- background:#2f9ec9;
- padding:10px 18px;
- border-radius:6px;
- text-decoration:none;
- color:white;
- font-weight:bold;
-}
-
-@media(max-width:700px){
- .header{flex-direction:column;}
- .scoreBig{font-size:42px;}
+@media(max-width:600px){
+  .teams-row{gap:8px}
+  .score-main{font-size:42px}
+  .team-name-big{font-size:13px}
+  .team-logo-big{width:52px;height:52px}
 }
 </style>
 </head>
-
 <body>
+<script src="./ticker.js" defer></script>
+<script src="./menu.js" defer></script>
+
+<div class="match-hero">
+  <div class="teams-row">
+    <div class="team-side">
+      <img class="team-logo-big" id="homeLogo" src="">
+      <div class="team-name-big" id="homeName"></div>
+    </div>
+    <div class="score-center">
+      <div class="score-main" id="score">– : –</div>
+      <div id="scoreTag"></div>
+      <div class="score-periods" id="periods"></div>
+    </div>
+    <div class="team-side">
+      <img class="team-logo-big" id="awayLogo" src="">
+      <div class="team-name-big" id="awayName"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab('stats',this)">📊 Statistiky</button>
+  <button class="tab-btn" onclick="showTab('timeline',this)">🏒 Průběh zápasu</button>
+  <button class="tab-btn" onclick="showTab('players',this)">👤 Hráči</button>
+  <button class="tab-btn" onclick="showTab('goalies',this)">🥅 Brankáři</button>
+</div>
 
 <div class="wrapper">
+  <a class="back-link" href="elh.html">← Zpět na rozpis</a>
 
-<div class="header">
- <div id="homeTeam" class="teamBlock"></div>
- <div>
-   <div id="score" class="scoreBig">- : -</div>
-   <div id="otLabel" class="otLabel"></div>
- </div>
- <div id="awayTeam" class="teamBlock"></div>
-</div>
+  <!-- TAB: STATISTIKY -->
+  <div id="tab-stats">
+    <div class="section">
+      <div class="sec-title">Srovnání týmů</div>
+      <div class="card">
+        <div class="stats-compare" id="statsCompare">
+          <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">Načítám...</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div id="periodInfo" class="periodInfo"></div>
+  <!-- TAB: PRŮBĚH -->
+  <div id="tab-timeline" class="hidden">
+    <div class="section">
+      <div class="sec-title">Chronologický průběh</div>
+      <div class="card">
+        <div class="timeline" id="timeline">
+          <div class="no-events">Průběh zápasu není k dispozici.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="sectionTitle">Detailní statistiky zápasu</div>
-<div id="statsContainer"></div>
+  <!-- TAB: HRÁČI -->
+  <div id="tab-players" class="hidden">
+    <div class="section">
+      <div class="two-col" id="playerTables">
+        <div class="card">
+          <div class="card-header"><span class="card-header-title" id="homePlayersTitle">Domácí</span></div>
+          <div style="overflow-x:auto">
+            <table class="player-tbl">
+              <thead><tr><th>Hráč</th><th class="r">TOI</th><th class="r">G</th><th class="r">A</th><th class="r">Body</th><th class="r">+/-</th><th class="r">TM</th><th class="r">Střely</th><th class="r">Hity</th></tr></thead>
+              <tbody id="homePlayers"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-header-title" id="awayPlayersTitle">Hosté</span></div>
+          <div style="overflow-x:auto">
+            <table class="player-tbl">
+              <thead><tr><th>Hráč</th><th class="r">TOI</th><th class="r">G</th><th class="r">A</th><th class="r">Body</th><th class="r">+/-</th><th class="r">TM</th><th class="r">Střely</th><th class="r">Hity</th></tr></thead>
+              <tbody id="awayPlayers"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--white);border-radius:10px;border:1px solid var(--border);padding:12px 14px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px">
+        <span><b style="color:var(--text)">TOI</b> čas na ledě</span>
+        <span><b class="v-g">G</b> góly</span>
+        <span><b class="v-a">A</b> asistence</span>
+        <span><b>+/-</b> plus/minus</span>
+        <span><b class="v-pim">TM</b> trestné minuty</span>
+        <span><span class="ppg-badge">PP</span> přesilovka</span>
+        <span><span class="shg-badge">SH</span> oslabení</span>
+      </div>
+    </div>
+  </div>
 
-<div class="backBtn">
- <a href="elh.html">← Zpět na rozpis</a>
-</div>
-
+  <!-- TAB: BRANKÁŘI -->
+  <div id="tab-goalies" class="hidden">
+    <div class="section">
+      <div class="sec-title">Brankáři</div>
+      <div class="goalie-grid" id="goalieCards">
+        <div style="color:var(--muted);font-size:13px;padding:20px">Načítám...</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="module">
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient("https://qaocbodrflsaerxntfui.supabase.co","sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU")
 
-const supabase = createClient(
-  "https://qaocbodrflsaerxntfui.supabase.co",
-  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-)
-
-function calc(stats){
- let ag = Number(stats[6]) + Number(stats[7]) + Number(stats[8])
- let hg = Number(stats[16]) + Number(stats[17]) + Number(stats[18])
-
- if(stats[9] === "11") ag++
- if(stats[19] === "11") hg++
-
- if(stats[20] === "1") hg++
- if(stats[20] === "2") ag++
-
- return {hg, ag}
+const tabs = ['stats','timeline','players','goalies']
+window.showTab = function(id, btn){
+  tabs.forEach(t => document.getElementById('tab-'+t).classList.toggle('hidden', t!==id))
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
 }
 
-function parsePK(value){
- if(!value || !value.includes("/")) return {ga:0,pk:0}
- const p=value.split("/")
- return {ga:Number(p[0]),pk:Number(p[1])}
+function calcScore(stats){
+  let ag=Number(stats[6])+Number(stats[7])+Number(stats[8])
+  let hg=Number(stats[16])+Number(stats[17])+Number(stats[18])
+  if(stats[9]==="11") hg++
+  if(stats[19]==="11") ag++
+  if(stats[20]==="1") hg++
+  if(stats[20]==="2") ag++
+  return {hg,ag}
 }
 
-function renderBar(label,homeVal,awayVal){
-
- const h = isNaN(homeVal) ? 0 : Number(homeVal)
- const a = isNaN(awayVal) ? 0 : Number(awayVal)
-
- const max=Math.max(h,a,1)
- const homePerc=(h/max)*100
- const awayPerc=(a/max)*100
-
- return `
- <div class="statRow">
-   <div class="statLabel">${label}</div>
-   <div class="barWrap">
-     <div class="sideVal">${homeVal}</div>
-     <div class="barTrack">
-       <div class="barHome" style="width:${homePerc}%"></div>
-       <div class="barAway" style="width:${awayPerc}%"></div>
-     </div>
-     <div class="sideVal">${awayVal}</div>
-   </div>
- </div>
- `
+function parsePK(v){
+  if(!v||!v.includes('/')) return {ga:0,pk:0}
+  const p=v.split('/'); return {ga:Number(p[0]),pk:Number(p[1])}
 }
 
-async function loadMatch(){
-
- const params = new URLSearchParams(window.location.search)
- const matchId = params.get("id")
-
- const { data: match } = await supabase
-  .from("matches")
-  .select("*")
-  .eq("id", matchId)
-  .single()
-
- if(!match || !match.stats){
-  document.getElementById("statsContainer").innerText="Žádná data"
-  return
- }
-
- const { data: teams } = await supabase
-  .from("teams")
-  .select("*")
-
- const home = teams.find(t=>t.id === match.home_team)
- const away = teams.find(t=>t.id === match.away_team)
-
- const stats = JSON.parse(match.stats)
-
- const s = calc(stats)
-
- document.getElementById("homeTeam").innerHTML =
- `<img src="./logos/${home.logo}">${home.name}`
-
- document.getElementById("awayTeam").innerHTML =
- `${away.name}<img src="./logos/${away.logo}">`
-
- document.getElementById("score").innerText =
- `${s.hg} : ${s.ag}`
-
- if(match.result_type){
-   document.getElementById("otLabel").innerText = match.result_type
- }
-
- document.getElementById("periodInfo").innerText =
- `(${stats[16]||0}:${stats[6]||0}, ${stats[17]||0}:${stats[7]||0}, ${stats[18]||0}:${stats[8]||0})`
-
- const homeShots = Number(stats[10])
- const awayShots = Number(stats[0])
-
- const homeHits = Number(stats[11])
- const awayHits = Number(stats[1])
-
- const homeFaceoffs = Number(stats[12])
- const awayFaceoffs = Number(stats[2])
-
- const homePP = Number(stats[14])
- const awayPP = Number(stats[4])
-
- const homePK = parsePK(stats[15])
- const awayPK = parsePK(stats[5])
-
- let html=""
- html+=renderBar("Střely",homeShots,awayShots)
- html+=renderBar("Hity",homeHits,awayHits)
- html+=renderBar("Vhazování",homeFaceoffs,awayFaceoffs)
- html+=renderBar("Přesilovky",homePP,awayPP)
- html+=renderBar("Oslabení (GA/PK)",
-   homePK.ga+"/"+homePK.pk,
-   awayPK.ga+"/"+awayPK.pk
- )
-
- document.getElementById("statsContainer").innerHTML = html
+function renderStatRow(label, hVal, aVal, isText){
+  const h = isText ? 0 : (isNaN(Number(hVal)) ? 0 : Number(hVal))
+  const a = isText ? 0 : (isNaN(Number(aVal)) ? 0 : Number(aVal))
+  const total = h + a || 1
+  const hPct = isText ? 50 : (h/total*100)
+  const aPct = isText ? 50 : (a/total*100)
+  return `
+  <div>
+    <div class="stat-label-center">${label}</div>
+    <div class="stat-row">
+      <div class="stat-val">${hVal}</div>
+      <div class="bar-track">
+        <div class="bar-home" style="width:${hPct}%"></div>
+        <div class="bar-away" style="width:${aPct}%"></div>
+      </div>
+      <div class="stat-val">${aVal}</div>
+    </div>
+  </div>`
 }
 
-loadMatch()
+function pmCell(v){
+  if(v>0) return `<span class="v-pos">+${v}</span>`
+  if(v<0) return `<span class="v-neg">${v}</span>`
+  return `<span class="v-zero">0</span>`
+}
 
+function playerRow(p){
+  const gStr = p.goals>0 ? `<span class="v-g">${p.goals}</span>${p.ppg?'<span class="ppg-badge">PP</span>':''}${p.shg?'<span class="shg-badge">SH</span>':''}` : '0'
+  const aStr = p.assists>0 ? `<span class="v-a">${p.assists}</span>` : '0'
+  const pts = p.goals+p.assists
+  const ptsStr = pts>0 ? `<span class="v-p">${pts}</span>` : '0'
+  const pimStr = p.pim>0 ? `<span class="v-pim">${p.pim}</span>` : `<span class="v-zero">0</span>`
+  return `<tr>
+    <td class="pname">${p.player_name}</td>
+    <td class="r">${p.toi}</td>
+    <td class="r">${gStr}</td>
+    <td class="r">${aStr}</td>
+    <td class="r">${ptsStr}</td>
+    <td class="r">${pmCell(p.plus_minus)}</td>
+    <td class="r">${pimStr}</td>
+    <td class="r">${p.shots}</td>
+    <td class="r">${p.hits}</td>
+  </tr>`
+}
+
+function getEventIcon(type){
+  if(!type) return {cls:'pen',icon:'🚫'}
+  const t = type.toUpperCase()
+  if(t.startsWith('PPG')) return {cls:'ppg',icon:'⚡'}
+  if(t.startsWith('SHG')) return {cls:'shg',icon:'🔥'}
+  if(t.startsWith('GOAL')) return {cls:'goal',icon:'🏒'}
+  if(t.startsWith('PEN')) return {cls:'pen',icon:'🚫'}
+  return {cls:'goal',icon:'🏒'}
+}
+
+async function load(){
+  const params = new URLSearchParams(window.location.search)
+  const matchId = params.get('id')
+  if(!matchId) return
+
+  const [{data:match},{data:teams},{data:events},{data:playerStats}] = await Promise.all([
+    supabase.from('matches').select('*').eq('id',matchId).single(),
+    supabase.from('teams').select('*'),
+    supabase.from('match_events').select('*').eq('match_id',matchId).order('period').order('time'),
+    supabase.from('player_match_stats').select('*').eq('match_id',matchId),
+  ])
+
+  if(!match){ document.getElementById('score').textContent='Chyba'; return }
+
+  const home = teams?.find(t=>t.id===match.home_team)
+  const away = teams?.find(t=>t.id===match.away_team)
+
+  document.getElementById('homeLogo').src = `./logos/${home?.logo}`
+  document.getElementById('awayLogo').src = `./logos/${away?.logo}`
+  document.getElementById('homeName').textContent = home?.name || ''
+  document.getElementById('awayName').textContent = away?.name || ''
+
+  if(match.stats){
+    const stats = JSON.parse(match.stats)
+    const s = calcScore(stats)
+    document.getElementById('score').textContent = `${s.hg} : ${s.ag}`
+    if(match.result_type && match.result_type!=='REG'){
+      document.getElementById('scoreTag').innerHTML = `<span class="score-tag">${match.result_type}</span>`
+    }
+    document.getElementById('periods').textContent =
+      `(${stats[16]||0}:${stats[6]||0}, ${stats[17]||0}:${stats[7]||0}, ${stats[18]||0}:${stats[8]||0})`
+
+    // STATISTIKY TAB
+    const homePK = parsePK(stats[15])
+    const awayPK = parsePK(stats[5])
+    document.getElementById('statsCompare').innerHTML =
+      renderStatRow('Střely', stats[10], stats[0]) +
+      renderStatRow('Hity', stats[11], stats[1]) +
+      renderStatRow('Vhazování', stats[12], stats[2]) +
+      renderStatRow('Čas v útoku', stats[13], stats[3], true) +
+      renderStatRow('Přesilovky', stats[14], stats[4], true) +
+      renderStatRow('Oslabení (góly/pokusy)', `${homePK.ga}/${homePK.pk}`, `${awayPK.ga}/${awayPK.pk}`, true)
+  } else {
+    document.getElementById('score').textContent = `${match.home_score} : ${match.away_score}`
+  }
+
+  // TIMELINE TAB
+  const timelineEl = document.getElementById('timeline')
+  if(events && events.length){
+    const byPeriod = {}
+    events.forEach(e=>{
+      const p = e.period || 0
+      if(!byPeriod[p]) byPeriod[p]=[]
+      byPeriod[p].push(e)
+    })
+    const periodNames = {1:'1. třetina',2:'2. třetina',3:'3. třetina',4:'Prodloužení',5:'Nájezdy',0:'Ostatní'}
+    let html = ''
+    Object.keys(byPeriod).sort().forEach(p=>{
+      html += `<div class="period-block">
+        <div class="period-header">${periodNames[p]||`${p}. třetina`}</div>`
+      byPeriod[p].forEach(e=>{
+        const isHome = e.team_abbr === (home?.short_name||home?.name?.substring(0,3)?.toUpperCase()) ||
+                       (playerStats||[]).some(ps=>ps.player_name===e.player_name&&ps.team_abbr===e.team_abbr&&ps.team_abbr===home?.short_name)
+        const teamAbbr = e.team_abbr || ''
+        const homeAbbrs = (playerStats||[]).filter(ps=>ps.match_id===matchId).find(ps=>ps.player_name===e.player_name)?.team_abbr
+        const isHomeTeam = homeAbbrs ? (home?.name||'').includes(homeAbbrs) || (home?.short_name||'')=== homeAbbrs : false
+        const {cls,icon} = getEventIcon(e.type)
+        const typeLabel = e.type?.startsWith('GOAL')||e.type?.startsWith('PPG')||e.type?.startsWith('SHG')
+          ? (e.type.includes('PPG')?'Gól v přesilovce':e.type.includes('SHG')?'Gól v oslabení':'Gól')
+          : 'Trest'
+        const scoreMatch = e.type?.match(/\((\d+:\d+)\)/)
+        const scoreStr = scoreMatch ? scoreMatch[1] : ''
+        const assistsText = e.note && !e.type?.startsWith('PEN') ? `Asistence: ${e.note}` : (e.note||'')
+        html += `<div class="event-row">
+          <div class="event-time">${e.time||''}</div>
+          <div class="event-icon ${cls}">${icon}</div>
+          <div class="event-body">
+            <div class="event-player">${e.player_name||''}</div>
+            <div class="event-detail">${teamAbbr} · ${typeLabel}${assistsText?` · ${assistsText}`:''}</div>
+          </div>
+          ${scoreStr?`<div class="event-score">${scoreStr}</div>`:''}
+        </div>`
+      })
+      html += '</div>'
+    })
+    timelineEl.innerHTML = html
+  }
+
+  // HRÁČI TAB
+  if(playerStats && playerStats.length){
+    // Určení team_abbr pro domácí/hosté — vezmi první hráče obou týmů
+    const abbrs = [...new Set(playerStats.filter(p=>!p.is_goalie).map(p=>p.team_abbr))]
+
+    // Zjisti který abbr patří domácím — porovnej s názvem týmu
+    let homeAbbr = abbrs[0], awayAbbr = abbrs[1]
+    if(abbrs.length>=2){
+      // Heuristika: home team match
+      const h = home?.name?.toLowerCase()||''
+      const s0 = abbrs[0]?.toLowerCase()||''
+      const s1 = abbrs[1]?.toLowerCase()||''
+      if(h.includes(s1) && !h.includes(s0)){ homeAbbr=abbrs[1]; awayAbbr=abbrs[0] }
+    }
+
+    document.getElementById('homePlayersTitle').textContent = home?.name||homeAbbr
+    document.getElementById('awayPlayersTitle').textContent = away?.name||awayAbbr
+
+    const homePl = playerStats.filter(p=>p.team_abbr===homeAbbr&&!p.is_goalie)
+    const awayPl = playerStats.filter(p=>p.team_abbr===awayAbbr&&!p.is_goalie)
+
+    const sortPl = arr => arr.sort((a,b)=>(b.goals+b.assists)-(a.goals+a.assists)||(b.goals-a.goals))
+
+    document.getElementById('homePlayers').innerHTML = sortPl(homePl).map(playerRow).join('')
+    document.getElementById('awayPlayers').innerHTML = sortPl(awayPl).map(playerRow).join('')
+
+    // BRANKÁŘI TAB
+    const goalies = playerStats.filter(p=>p.is_goalie&&p.toi!=='00:00')
+    const homeGoalies = goalies.filter(p=>p.team_abbr===homeAbbr)
+    const awayGoalies = goalies.filter(p=>p.team_abbr===awayAbbr)
+    const allGoalies = [...homeGoalies, ...awayGoalies]
+
+    if(allGoalies.length){
+      const matchScore = match.stats ? calcScore(JSON.parse(match.stats)) : {hg:match.home_score, ag:match.away_score}
+
+      document.getElementById('goalieCards').innerHTML = allGoalies.map(g=>{
+        const isHome = g.team_abbr===homeAbbr
+        const sa = g.goalie_sa
+        const ga = g.goalie_ga
+        const sv = sa>0 ? sa-ga : 0
+        const svPct = sa>0 ? ((sv/sa)*100).toFixed(1) : '–'
+        const svPctNum = sa>0 ? (sv/sa)*100 : 0
+        // Zjisti výsledek brankáře
+        const teamWon = isHome ? matchScore.hg>matchScore.ag : matchScore.ag>matchScore.hg
+        const resultColor = teamWon ? '#27ae60' : '#e74c3c'
+        const resultLabel = teamWon ? 'W' : 'L'
+        const teamName = isHome ? home?.name : away?.name
+
+        return `<div class="goalie-card">
+          <div class="goalie-top">
+            <div>
+              <div class="goalie-name">${g.player_name}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">${teamName} · ${g.toi}</div>
+            </div>
+            <div class="goalie-result" style="color:${resultColor}">${resultLabel}</div>
+          </div>
+          <div class="goalie-stats">
+            <div class="goalie-stat"><div class="goalie-val">${sa}</div><div class="goalie-lbl">Střel</div></div>
+            <div class="goalie-stat"><div class="goalie-val">${sv}</div><div class="goalie-lbl">Zákroků</div></div>
+            <div class="goalie-stat"><div class="goalie-val">${ga}</div><div class="goalie-lbl">Inkasoval</div></div>
+            <div class="goalie-stat"><div class="goalie-val" style="font-size:14px;color:${svPctNum>=90?'#27ae60':'#1a5276'}">${svPct}%</div><div class="goalie-lbl">SV%</div></div>
+          </div>
+          <div class="sv-bar"><div class="sv-bar-fill" style="width:${svPctNum}%;background:${svPctNum>=90?'#27ae60':'#1a5276'}"></div></div>
+        </div>`
+      }).join('')
+    }
+  } else {
+    document.getElementById('tab-players').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Hráčské statistiky nejsou k dispozici pro tento zápas.</div>'
+    document.getElementById('tab-goalies').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Hráčské statistiky nejsou k dispozici pro tento zápas.</div>'
+  }
+}
+
+load()
 </script>
-
 </body>
 </html>
