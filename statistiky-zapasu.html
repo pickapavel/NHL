@@ -31,19 +31,45 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .score-tag{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px}
 .score-periods{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px}
 
-/* HERO SUMMARY — góly na plnou šířku, pak dvě karty pod ním */
+/* HERO SUMMARY */
 .hero-summary{max-width:900px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px}
 .hero-sum-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px}
 .hero-sum-card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.hero-sum-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.hero-sum-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:5px;line-height:1.4}
-.hero-sum-row:last-child{margin-bottom:0}
-.hero-team-logo{width:16px;height:16px;object-fit:contain;background:#fff;border-radius:3px;flex-shrink:0;margin-top:1px}
-.hero-sum-val{font-weight:700;color:#fff}
+.hero-sum-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
 .hero-sum-muted{color:rgba(255,255,255,.5);font-size:11px}
+.hero-sum-val{font-weight:700;color:#fff}
 .hero-sep{height:1px;background:rgba(255,255,255,.1);margin:8px 0}
 
-.wrapper{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+/* Góly — dvě strany */
+.goals-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.goals-col-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.goal-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;font-size:12px;color:rgba(255,255,255,.85);line-height:1.4}
+.goal-item:last-child{margin-bottom:0}
+.goal-time{font-size:11px;font-weight:800;color:#fff;white-space:nowrap;flex-shrink:0;min-width:32px;font-variant-numeric:tabular-nums}
+.goal-team-logo{width:16px;height:16px;object-fit:contain;background:#fff;border-radius:3px;flex-shrink:0;margin-top:1px}
+.goal-text{}
+.goal-player{font-weight:700;color:#fff}
+.goal-type{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:3px;vertical-align:middle}
+.gt-ppg{background:#f3e8ff;color:#7e22ce}
+.gt-shg{background:#fef3c7;color:#92400e}
+.goal-assist{color:rgba(255,255,255,.5);font-size:11px}
+.no-goals{color:rgba(255,255,255,.35);font-size:12px;font-style:italic;padding:4px 0}
+
+/* Přesilovky + brankáři */
+.pp-row{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:6px}
+.pp-row:last-child{margin-bottom:0}
+.pp-logo{width:16px;height:16px;object-fit:contain;background:#fff;border-radius:3px;flex-shrink:0}
+.gk-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.gk-row:last-child{margin-bottom:0}
+.gk-result{font-size:14px;flex-shrink:0;margin-top:1px}
+.gk-info{}
+.gk-name{font-size:13px;font-weight:700;color:#fff}
+.gk-team{font-size:11px;color:rgba(255,255,255,.45)}
+.gk-stats{font-size:11px;margin-top:3px}
+.gk-sv{font-weight:700;color:#fff}
+.gk-sv-pct{margin-left:6px;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700}
+
+.wrapper{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
 .page-section{margin-bottom:44px;scroll-margin-top:56px}
 .sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -113,8 +139,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .sv-bar{height:4px;background:#e2e8f0;border-radius:2px;margin:8px 14px 10px;overflow:hidden}
 .sv-bar-fill{height:100%;border-radius:2px}
 
-.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:24px}
-.back-link:hover{color:var(--navy)}
+.back-link{display:flex;justify-content:center;margin-top:40px}
+.back-link a{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-size:13px;font-weight:600;text-decoration:none}
+.back-link a:hover{color:var(--navy)}
 .no-data{padding:32px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}
 .legend-row{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:12px 14px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
 
@@ -124,6 +151,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .team-name-big{font-size:13px}
   .team-logo-big{width:52px;height:52px}
   .hero-sum-card-row{grid-template-columns:1fr}
+  .goals-two-col{grid-template-columns:1fr}
   .anchor-btn{padding:10px 14px;font-size:11px}
 }
 </style>
@@ -161,8 +189,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </div>
 
 <div class="wrapper">
-  <a class="back-link" href="elh.html">← Zpět na rozpis</a>
-
   <div class="page-section" id="sec-stats">
     <div class="sec-title">📊 Srovnání týmů</div>
     <div class="card">
@@ -214,6 +240,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="sec-title">🥅 Brankáři</div>
     <div class="goalie-grid" id="goalieCards"><div class="no-data">Načítám...</div></div>
   </div>
+
+  <div class="back-link"><a href="elh.html">← Zpět na rozpis</a></div>
 </div>
 
 <script type="module">
@@ -300,9 +328,11 @@ async function load(){
 
   const home=teams?.find(t=>t.id===match.home_team)
   const away=teams?.find(t=>t.id===match.away_team)
+  const homeLogo=`./logos/${home?.logo}`
+  const awayLogo=`./logos/${away?.logo}`
 
-  document.getElementById('homeLogo').src=`./logos/${home?.logo}`
-  document.getElementById('awayLogo').src=`./logos/${away?.logo}`
+  document.getElementById('homeLogo').src=homeLogo
+  document.getElementById('awayLogo').src=awayLogo
   document.getElementById('homeName').textContent=home?.name||''
   document.getElementById('awayName').textContent=away?.name||''
 
@@ -347,63 +377,84 @@ async function load(){
   const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&Number(p.goalie_sa)>0)
   const homeGoalie=goalies.find(g=>g.team_abbr===homeAbbr)
   const awayGoalie=goalies.find(g=>g.team_abbr===awayAbbr)
-
-  function svStr(g){
-    if(!g||!g.goalie_sa) return '–'
-    const sa=g.goalie_sa,ga=g.goalie_ga,sv=sa-ga
-    return `${sv}/${sa} (${(sv/sa*100).toFixed(1)}%)`
-  }
   function shortName(t){return t?.name?.replace(/\(.\)$/,'').trim()||''}
 
+  // Góly rozdělené na domácí / hosté, seřazené podle času
   const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
+    .sort((a,b)=>{
+      if(a.period!==b.period) return (a.period||0)-(b.period||0)
+      return (a.time||'').localeCompare(b.time||'')
+    })
+  const homeGoals=goalEvents.filter(e=>e.team_abbr===homeAbbr)
+  const awayGoals=goalEvents.filter(e=>e.team_abbr===awayAbbr)
 
-  // Karta 1: Góly — plná šířka, logo týmu místo ikony
-  const homeLogo=`./logos/${home?.logo}`
-  const awayLogo=`./logos/${away?.logo}`
-
-  let goalsCardHtml=goalEvents.length?goalEvents.map(e=>{
-    const isHome=e.team_abbr===homeAbbr
-    const logo=isHome?homeLogo:awayLogo
-    const col=isHome?'var(--blue)':'#f87171'
+  function renderGoalItem(e){
     const {label}=getEventMeta(e.type)
     const scoreMatch=e.type?.match(/\((\d+:\d+)\)/)
-    const scoreStr=scoreMatch?` <span class="hero-sum-muted">${scoreMatch[1]}</span>`:''
-    const assistsStr=e.note?` <span class="hero-sum-muted">↳ ${e.note}</span>`:''
-    return `<div class="hero-sum-row">
-      <img class="hero-team-logo" src="${logo}" onerror="this.style.display='none'">
-      <span><span class="hero-sum-val" style="color:${col}">${e.player_name}</span>${scoreStr} <span class="hero-sum-muted">${e.time||''} · ${label}</span>${assistsStr}</span>
+    const scoreStr=scoreMatch?` <span style="color:rgba(255,255,255,.4);font-size:10px">${scoreMatch[1]}</span>`:''
+    const isPPG=e.type?.toUpperCase().includes('PPG')
+    const isSHG=e.type?.toUpperCase().includes('SHG')
+    const typeBadge=isPPG?'<span class="goal-type gt-ppg">PP</span>':isSHG?'<span class="goal-type gt-shg">SH</span>':''
+    const assistStr=e.note?`<div class="goal-assist">↳ ${e.note}</div>`:''
+    return `<div class="goal-item">
+      <span class="goal-time">${e.time||''}</span>
+      <div class="goal-text">
+        <div><span class="goal-player">${e.player_name||''}</span>${typeBadge}${scoreStr}</div>
+        ${assistStr}
+      </div>
     </div>`
-  }).join(''):'<div class="hero-sum-row"><span class="hero-sum-muted">Průběh není k dispozici</span></div>'
+  }
 
-  // Karta 2: Přesilovky
+  const homeGoalsHtml=homeGoals.length?homeGoals.map(renderGoalItem).join(''):'<div class="no-goals">Žádné góly</div>'
+  const awayGoalsHtml=awayGoals.length?awayGoals.map(renderGoalItem).join(''):'<div class="no-goals">Žádné góly</div>'
+
+  // Přesilovky karta
   const homePPstr=homePP.attempts>0?`${homePP.goals}/${homePP.attempts}`:'0/0'
   const awayPPstr=awayPP.attempts>0?`${awayPP.goals}/${awayPP.attempts}`:'0/0'
   const ppCardHtml=`
-    <div class="hero-sum-row"><img class="hero-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span>${shortName(home)||homeAbbr}: <span class="hero-sum-val">${homePPstr}</span></span></div>
-    <div class="hero-sum-row"><img class="hero-team-logo" src="${awayLogo}" onerror="this.style.display='none'"><span>${shortName(away)||awayAbbr}: <span class="hero-sum-val">${awayPPstr}</span></span></div>
-    ${homeShots||awayShots?`<div class="hero-sep"></div><div class="hero-sum-row"><span style="font-size:12px;width:18px;flex-shrink:0">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
+    <div class="pp-row"><img class="pp-logo" src="${homeLogo}" onerror="this.style.display='none'"><span>${shortName(home)||homeAbbr}: <span class="hero-sum-val">${homePPstr}</span></span></div>
+    <div class="pp-row"><img class="pp-logo" src="${awayLogo}" onerror="this.style.display='none'"><span>${shortName(away)||awayAbbr}: <span class="hero-sum-val">${awayPPstr}</span></span></div>
+    ${homeShots||awayShots?`<div class="hero-sep"></div><div class="pp-row"><span style="font-size:12px;width:18px;flex-shrink:0">🎯</span><span>Střely: <span class="hero-sum-val">${homeShots} : ${awayShots}</span></span></div>`:''}
   `
 
-  // Karta 3: Brankáři
-  let gkCardHtml=''
-  if(homeGoalie){
-    const won=matchScore.hg>matchScore.ag
-    gkCardHtml+=`<div class="hero-sum-row"><span style="font-size:12px">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${homeGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(home)}</span></span></div>
-    <div class="hero-sum-row" style="padding-left:22px"><span class="hero-sum-muted">Zákroky: <span class="hero-sum-val">${svStr(homeGoalie)}</span></span></div>`
+  // Brankáři karta
+  function gkCardItem(g,team,won){
+    if(!g) return ''
+    const sa=g.goalie_sa||0,ga=g.goalie_ga||0,sv=sa-ga
+    const svPct=sa>0?((sv/sa)*100).toFixed(1):null
+    const pctColor=svPct>=90?'#27ae60':svPct>=85?'#f59e0b':'#ef4444'
+    return `<div class="gk-row">
+      <div class="gk-result">${won?'✅':'❌'}</div>
+      <div class="gk-info">
+        <div class="gk-name">${g.player_name} <span class="gk-team">${shortName(team)}</span></div>
+        <div class="gk-stats">
+          <span class="gk-sv">${sv} zákroků / ${ga} inkasoval</span>
+          ${svPct?`<span class="gk-sv-pct" style="background:${pctColor}22;color:${pctColor}">${svPct}% úspěšnost</span>`:''}
+        </div>
+      </div>
+    </div>`
   }
-  if(awayGoalie){
-    const won=matchScore.ag>matchScore.hg
-    gkCardHtml+=`${homeGoalie?'<div class="hero-sep"></div>':''}<div class="hero-sum-row"><span style="font-size:12px">${won?'✅':'❌'}</span><span><span class="hero-sum-val">${awayGoalie.player_name}</span> <span class="hero-sum-muted">${shortName(away)}</span></span></div>
-    <div class="hero-sum-row" style="padding-left:22px"><span class="hero-sum-muted">Zákroky: <span class="hero-sum-val">${svStr(awayGoalie)}</span></span></div>`
-  }
-  if(!homeGoalie&&!awayGoalie) gkCardHtml='<div class="hero-sum-row"><span class="hero-sum-muted">Brankáři nejsou k dispozici</span></div>'
+  const gkHtml=(gkCardItem(homeGoalie,home,matchScore.hg>matchScore.ag)||'')+
+    (homeGoalie&&awayGoalie?'<div class="hero-sep"></div>':'')+
+    (gkCardItem(awayGoalie,away,matchScore.ag>matchScore.hg)||'')
 
-  // Sestavení: góly na plnou šířku, PP + brankáři vedle sebe pod nimi
   document.getElementById('heroSummary').innerHTML=`
-    <div class="hero-sum-card"><div class="hero-sum-title">⚽ Góly</div>${goalsCardHtml}</div>
+    <div class="hero-sum-card">
+      <div class="hero-sum-title">⚽ Góly</div>
+      <div class="goals-two-col">
+        <div>
+          <div class="goals-col-title">${shortName(home)||homeAbbr||'Domácí'}</div>
+          ${homeGoalsHtml}
+        </div>
+        <div>
+          <div class="goals-col-title">${shortName(away)||awayAbbr||'Hosté'}</div>
+          ${awayGoalsHtml}
+        </div>
+      </div>
+    </div>
     <div class="hero-sum-card-row">
       <div class="hero-sum-card"><div class="hero-sum-title">⚡ Přesilovky (góly / pokusy)</div>${ppCardHtml}</div>
-      <div class="hero-sum-card"><div class="hero-sum-title">🥅 Brankáři</div>${gkCardHtml}</div>
+      <div class="hero-sum-card"><div class="hero-sum-title">🥅 Brankáři</div>${gkHtml||'<div class="no-goals">Brankáři nejsou k dispozici</div>'}</div>
     </div>
   `
 
@@ -473,7 +524,7 @@ async function load(){
             <div class="goalie-stat"><div class="goalie-val">${sa}</div><div class="goalie-lbl">Střel</div></div>
             <div class="goalie-stat"><div class="goalie-val">${sv}</div><div class="goalie-lbl">Zákroků</div></div>
             <div class="goalie-stat"><div class="goalie-val">${ga}</div><div class="goalie-lbl">Inkasoval</div></div>
-            <div class="goalie-stat"><div class="goalie-val" style="font-size:14px;color:${svPctNum>=90?'#27ae60':'#1a5276'}">${svPct}%</div><div class="goalie-lbl">SV%</div></div>
+            <div class="goalie-stat"><div class="goalie-val" style="font-size:14px;color:${svPctNum>=90?'#27ae60':'#1a5276'}">${svPct}%</div><div class="goalie-lbl">Úspěšnost</div></div>
           </div>
           <div class="sv-bar"><div class="sv-bar-fill" style="width:${svPctNum}%;background:${svPctNum>=90?'#27ae60':'#1a5276'}"></div></div>
         </div>`
