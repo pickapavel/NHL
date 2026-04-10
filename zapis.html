@@ -48,16 +48,9 @@ tr:hover td{background:#edf2f7;}
 .file-label input{display:none;}
 .file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
  
-/* Upload blok pro CSV soubory */
-.csv-upload-block{display:flex;flex-direction:column;gap:5px;}
-.csv-file-row{display:flex;align-items:center;gap:8px;}
-.csv-file-indicator{width:10px;height:10px;border-radius:50%;background:#e0e0e0;flex-shrink:0;transition:background .2s;}
-.csv-file-indicator.loaded{background:#27ae60;}
-.csv-file-label-small{font-size:11px;font-weight:700;color:#666;width:72px;flex-shrink:0;}
-.file-label-small{display:inline-flex;align-items:center;gap:4px;background:#f0f0f0;border:1px solid #ccc;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;color:#555;transition:background .15s;white-space:nowrap;}
-.file-label-small:hover{background:#e0e8f0;border-color:#2f9ec9;}
-.file-label-small input{display:none;}
-.file-label-small.loaded{background:#e8f8ee;border-color:#27ae60;color:#166534;}
+.file-label.csv-label{background:#e8f4fd;border-color:#2f9ec9;color:#1a5276;}
+.file-label.csv-label:hover{background:#d0eafb;}
+.file-label.csv-loaded{background:#e8f8ee;border-color:#27ae60;color:#166534;}
  
 .btn-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
 .btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;transition:all .15s;white-space:nowrap;}
@@ -310,6 +303,8 @@ function handleCsvFiles(e, matchId){
   const files = Array.from(e.target.files)
   if(!files.length) return
  
+  const loadedNames = []
+ 
   files.forEach(file => {
     const name = file.name.toLowerCase()
     const reader = new FileReader()
@@ -317,20 +312,13 @@ function handleCsvFiles(e, matchId){
       try {
         const rows = parseCsvGeneric(ev.target.result)
         if(!rows.length) return
- 
-        if(name.includes('gamestat')){
-          gamestatMap[matchId] = rows
-          const ind = document.getElementById(`gs-ind-${matchId}`)
-          const lbl = document.getElementById(`gs-lbl-${matchId}`)
-          if(ind) ind.classList.add('loaded')
-          if(lbl){ lbl.classList.add('loaded'); lbl.title = file.name }
-        } else if(name.includes('playerstat')){
-          playerstatMap[matchId] = rows
-          const ind = document.getElementById(`ps-ind-${matchId}`)
-          const lbl = document.getElementById(`ps-lbl-${matchId}`)
-          if(ind) ind.classList.add('loaded')
-          if(lbl){ lbl.classList.add('loaded'); lbl.title = file.name }
-        }
+        if(name.includes('gamestat')) gamestatMap[matchId] = rows
+        else if(name.includes('playerstat')) playerstatMap[matchId] = rows
+        loadedNames.push(file.name)
+        const lbl = document.getElementById(`csvlabel-${matchId}`)
+        const fnameEl = document.getElementById(`csvfname-${matchId}`)
+        if(lbl) lbl.className = 'file-label csv-loaded'
+        if(fnameEl) fnameEl.textContent = loadedNames.join(' + ')
       } catch(err){
         alert('Chyba při čtení CSV: ' + err.message)
       }
@@ -647,22 +635,8 @@ function render(matches, matchesWithPlayers){
       <div class="file-name" id="fname-${m.id}"></div>
      </td>
      <td>
-      <div class="csv-upload-block">
-       <div class="csv-file-row">
-        <div class="csv-file-indicator" id="gs-ind-${m.id}"></div>
-        <span class="csv-file-label-small">GameStat</span>
-        <label class="file-label-small" id="gs-lbl-${m.id}">
-         📊 Nahrát<input type="file" accept=".csv" onchange="handleCsvFiles(event,'${m.id}')">
-        </label>
-       </div>
-       <div class="csv-file-row">
-        <div class="csv-file-indicator" id="ps-ind-${m.id}"></div>
-        <span class="csv-file-label-small">PlayerStat</span>
-        <label class="file-label-small" id="ps-lbl-${m.id}">
-         👤 Nahrát<input type="file" accept=".csv" onchange="handleCsvFiles(event,'${m.id}')">
-        </label>
-       </div>
-      </div>
+      <label class="file-label csv-label" id="csvlabel-${m.id}">📊 Hráčské CSV<input type="file" accept=".csv" multiple onchange="handleCsvFiles(event,'${m.id}')"></label>
+      <div class="file-name" id="csvfname-${m.id}"></div>
      </td>
      <td>
       <div class="btn-wrap">
