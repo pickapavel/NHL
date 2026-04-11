@@ -159,7 +159,6 @@ const MS_COMPETITION_ID = "f0375c91-5b76-475e-afab-3d867b6b02d1"
 
 let allSeasons=[], allStages=[], allTeams={}
 
-// Zkrátí název týmu — odstraní příponu "(K)" / "(P)" a případně zkrátí
 function shortName(name){
   return (name||'').replace(/\s*\((K|P)\)\s*$/,'').trim()
 }
@@ -236,6 +235,15 @@ async function loadSeason(seasonId){
   document.getElementById("mainContent").innerHTML=html
 }
 
+// Pomocná funkce: parsuje stats a vrací {isSN, isOT}
+function parseMatchType(m){
+  let stats=null
+  try{ stats=m.stats?JSON.parse(m.stats):null }catch(e){}
+  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+  return {isSN, isOT}
+}
+
 function renderGroupTable(matches){
   const table={}
   matches.forEach(m=>{
@@ -244,9 +252,7 @@ function renderGroupTable(matches){
     const h=table[m.home_team], a=table[m.away_team]
     const hg=Number(m.home_score), ag=Number(m.away_score)
     h.z++;a.z++; h.gf+=hg;h.ga+=ag; a.gf+=ag;a.ga+=hg
-    let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
-    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
-    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const {isSN,isOT}=parseMatchType(m)
     if(isSN){
       if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1}else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
     } else if(isOT){
@@ -256,10 +262,52 @@ function renderGroupTable(matches){
     }
   })
 
-  const arr=Object.values(table).sort((a,b)=>b.b-a.b||(b.gf-b.ga)-(a.gf-a.ga))
+  const arr=Object.values(table).sort((a,b)=>{
+    // 1. Body
+    if(b.b!==a.b) return b.b-a.b
+
+    // 2. Vzájemný zápas — body
+    const h2h=matches.filter(m=>
+      (m.home_team===a.team&&m.away_team===b.team)||
+      (m.home_team===b.team&&m.away_team===a.team)
+    )
+    let aPtsH2H=0, bPtsH2H=0
+    h2h.forEach(m=>{
+      const hg=Number(m.home_score), ag=Number(m.away_score)
+      const {isSN,isOT}=parseMatchType(m)
+      const aIsHome=m.home_team===a.team
+      const aWon=aIsHome?hg>ag:ag>hg
+      const bWon=aIsHome?ag>hg:hg>ag
+      if(isSN||isOT){
+        if(aWon){aPtsH2H+=2;bPtsH2H+=1}
+        else{bPtsH2H+=2;aPtsH2H+=1}
+      } else {
+        if(aWon) aPtsH2H+=3
+        else if(bWon) bPtsH2H+=3
+      }
+    })
+    if(bPtsH2H!==aPtsH2H) return bPtsH2H-aPtsH2H
+
+    // 3. Gólový rozdíl ve vzájemném zápase
+    let aGdH2H=0, bGdH2H=0
+    h2h.forEach(m=>{
+      const hg=Number(m.home_score), ag=Number(m.away_score)
+      const aIsHome=m.home_team===a.team
+      aGdH2H+=aIsHome?hg-ag:ag-hg
+      bGdH2H+=aIsHome?ag-hg:hg-ag
+    })
+    if(bGdH2H!==aGdH2H) return bGdH2H-aGdH2H
+
+    // 4. Celkový gólový rozdíl
+    if((b.gf-b.ga)!==(a.gf-a.ga)) return (b.gf-b.ga)-(a.gf-a.ga)
+
+    // 5. Celkové vstřelené góly
+    return b.gf-a.gf
+  })
+
   let rows=""
   if(!arr.length){
-    rows=`<tr><td colspan="13" style="text-align:center;padding:16px;color:#bbb;font-size:12px;">Zatím žádné zápasy</td></tr>`
+    rows=`<tr><td colspan="12" style="text-align:center;padding:16px;color:#bbb;font-size:12px;">Zatím žádné zápasy</td></tr>`
   } else {
     arr.forEach((t,i)=>{
       const team=allTeams[t.team]; if(!team) return
@@ -308,9 +356,7 @@ function renderMatchCard(m){
   const played=m.home_score!=null
   let tag=""
   if(played){
-    let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
-    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
-    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const {isSN,isOT}=parseMatchType(m)
     if(isSN) tag=`<span class="score-tag sn">SN</span>`
     else if(isOT) tag=`<span class="score-tag ot">OT</span>`
   }
