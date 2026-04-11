@@ -3,1172 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zápisy zápasů</title>
- 
+<title>Mistrovství světa</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-body{font-family:Arial;background:#f2f2f2;margin:0;}
-.wrapper{max-width:1400px;margin:auto;padding:20px;background:white;}
- 
-h1{color:#0b2a3c;margin-bottom:4px;}
-.subtitle{color:#888;font-size:13px;margin-bottom:20px;}
- 
-.topBar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
-.topBar h1{margin:0;flex:1;}
- 
-.btn-new-season{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#8b5cf6;color:white;}
-.btn-new-season:hover{background:#7c3aed;}
-.btn-recalc{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#e67e22;color:white;}
-.btn-recalc:hover{background:#d35400;}
-.btn-del-season{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#c0392b;color:white;}
-.btn-del-season:hover{background:#a93226;}
- 
-.filterBar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;background:#f7f8fa;padding:14px;border-radius:10px;border:1px solid #e0e0e0;}
-.filterBar label{font-size:13px;font-weight:700;color:#0b2a3c;}
-.filterBar select{padding:8px 12px;border-radius:8px;border:1px solid #ccc;font-size:13px;background:white;cursor:pointer;color:#333;min-width:180px;}
- 
-.btn-add{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#0b2a3c;color:white;margin-left:auto;}
-.btn-add:hover{background:#1a3a5c;}
- 
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th{background:#0b2a3c;color:white;padding:12px 10px;text-align:center;font-size:12px;letter-spacing:.05em;white-space:nowrap;}
-th:nth-child(2),th:nth-child(3){text-align:left;}
-td{padding:10px 10px;border-bottom:1px solid #e8e8e8;text-align:center;vertical-align:middle;font-size:13px;color:#333;}
-td:nth-child(2),td:nth-child(3){text-align:left;}
-tr:nth-child(odd) td{background:#f7f8fa;}
-tr:hover td{background:#edf2f7;}
- 
-.team-cell{display:flex;align-items:center;gap:8px;}
-.team-logo{width:28px;height:28px;object-fit:contain;background:white;border-radius:5px;padding:2px;border:1px solid #e0e0e0;flex-shrink:0;}
-.team-name{font-weight:600;font-size:13px;}
-.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:14px;padding:4px 12px;border-radius:6px;min-width:60px;text-align:center;}
-.score-badge.empty{background:#e0e0e0;color:#999;font-weight:400;font-size:13px;}
-.result-tag{display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle;}
- 
-.file-label{display:inline-flex;align-items:center;gap:6px;background:#f0f0f0;border:1px solid #ccc;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:#555;transition:background .15s;white-space:nowrap;}
-.file-label:hover{background:#e0e8f0;border-color:#2f9ec9;color:#0b2a3c;}
-.file-label input{display:none;}
-.file-name{font-size:11px;color:#2f9ec9;margin-top:3px;}
-.file-label.xls-label{background:#fff3e0;border-color:#f39c12;color:#7d4e00;}
-.file-label.xls-label:hover{background:#ffe0b2;}
-.file-label.xls-loaded{background:#e8f8ee;border-color:#27ae60;color:#166534;}
- 
-.btn-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;align-items:center;}
-.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;transition:all .15s;white-space:nowrap;}
-.btn-save{background:#27ae60;color:white;}
-.btn-save:hover{background:#219a52;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',Arial,sans-serif;background:#f0f4f8;color:#1a2a3c;min-height:100vh;}
 
-/* DROPDOWN AKCE */
-.dropdown-wrap{position:relative;display:inline-block;}
-.btn-actions{background:#6c757d;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;display:inline-flex;align-items:center;gap:4px;}
-.btn-actions:hover{background:#5a6268;}
-.dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:white;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:160px;z-index:50;overflow:hidden;}
-.dropdown-menu.open{display:block;}
-.dropdown-item{display:block;width:100%;padding:9px 14px;font-size:12px;font-weight:600;text-align:left;border:none;background:none;cursor:pointer;white-space:nowrap;}
-.dropdown-item:hover{background:#f7f8fa;}
-.dropdown-item.danger{color:#c0392b;}
-.dropdown-item.danger:hover{background:#fef2f2;}
-.dropdown-item.warning{color:#e67e22;}
-.dropdown-item.warning:hover{background:#fff8f0;}
+.hero{background:linear-gradient(135deg,#1a3a5c 0%,#0b2a3c 60%,#1a2a4c 100%);padding:0 0 0;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#d4af37,transparent);}
 
-.round-badge{display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;min-width:36px;text-align:center;}
-.played-row td{background:#f0fdf4 !important;}
-.played-row:hover td{background:#e0f7e9 !important;}
-.empty-msg{text-align:center;padding:40px;color:#999;font-size:14px;}
-.match-count{font-size:12px;color:#888;margin-bottom:8px;}
-.has-players-badge{display:inline-block;font-size:10px;font-weight:700;background:#e8f8ee;color:#166534;border:1px solid #bbf7d0;padding:2px 7px;border-radius:10px;margin-top:3px;}
- 
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
-.modal-overlay.open{display:flex;}
-.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:620px;box-shadow:0 8px 32px rgba(0,0,0,.2);margin-bottom:40px;}
-.modal h2{color:#0b2a3c;margin-bottom:4px;font-size:18px;}
-.modal-sub{color:#888;font-size:12px;margin-bottom:20px;}
-.modal-section{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:16px;}
-.modal-section-title{font-size:12px;font-weight:700;color:#0b2a3c;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
-.modal-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
-.modal-row:last-child{margin-bottom:0;}
-.modal-row label{font-size:12px;font-weight:700;color:#666;min-width:100px;}
-.modal-row select,.modal-row input[type=text]{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;}
-.match-entries{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.match-entry{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px;position:relative;}
-.match-entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.match-entry-num{font-size:12px;font-weight:700;color:#0b2a3c;}
-.btn-remove-entry{background:#fee2e2;color:#991b1b;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;}
-.btn-remove-entry:hover{background:#fca5a5;}
-.entry-fields{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;align-items:end;}
-.entry-fields select,.entry-fields input{padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;width:100%;}
-.entry-label{font-size:11px;color:#888;margin-bottom:3px;font-weight:600;}
-.btn-add-entry{display:inline-flex;align-items:center;gap:6px;background:#e8f4fd;color:#0b2a3c;border:2px dashed #b8d8f0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:700;font-size:13px;width:100%;justify-content:center;transition:all .15s;}
-.btn-add-entry:hover{background:#d0eafb;border-color:#2f9ec9;}
-.modal-btns{display:flex;gap:8px;margin-top:16px;}
-.modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
-.btn-confirm{background:#27ae60;color:white;}
-.btn-confirm:hover{background:#219a52;}
-.btn-cancel{background:#e0e0e0;color:#333;}
-.btn-cancel:hover{background:#ccc;}
- 
-.wizard-steps{display:flex;gap:0;margin-bottom:20px;}
-.wizard-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#aaa;border-bottom:2px solid #e0e0e0;}
-.wizard-step.active{color:#0b2a3c;border-color:#0b2a3c;}
-.wizard-step.done{color:#27ae60;border-color:#27ae60;}
-.wizard-page{display:none;}
-.wizard-page.active{display:block;}
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding:4px;}
-.team-check{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;}
-.team-check:hover{border-color:#2f9ec9;background:#f0f8ff;}
-.team-check.selected{border-color:#0b2a3c;background:#e8f0f8;}
-.team-check input{display:none;}
-.team-check-logo{width:24px;height:24px;object-fit:contain;border-radius:4px;}
-.team-check-name{font-size:12px;font-weight:700;color:#1a2a3c;flex:1;}
-.team-check-box{width:18px;height:18px;border-radius:4px;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;}
-.team-check.selected .team-check-box{background:#0b2a3c;border-color:#0b2a3c;}
-.structure-options{display:flex;flex-direction:column;gap:8px;}
-.structure-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:2px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;}
-.structure-opt:hover{border-color:#2f9ec9;}
-.structure-opt.selected{border-color:#0b2a3c;background:#e8f0f8;}
-.structure-opt input{display:none;}
-.structure-opt-icon{font-size:20px;flex-shrink:0;}
-.structure-opt-label{font-size:13px;font-weight:700;color:#1a2a3c;}
-.structure-opt-desc{font-size:11px;color:#888;margin-top:2px;}
-.wizard-nav{display:flex;gap:8px;margin-top:20px;}
-.wizard-nav button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:13px;}
-.btn-next{background:#0b2a3c;color:white;}
-.btn-next:hover{background:#1a3a5c;}
-.btn-prev{background:#e0e0e0;color:#333;}
-.btn-prev:hover{background:#ccc;}
-.btn-create{background:#8b5cf6;color:white;}
-.btn-create:hover{background:#7c3aed;}
-.info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
-.season-number-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:4px 12px;border-radius:6px;}
+.hero-inner{max-width:1300px;margin:auto;padding:28px 20px 36px;}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;}
 
-.toi-dialog-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;}
-.toi-dialog-overlay.open{display:flex;}
-.toi-dialog{background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,.25);}
-.toi-dialog h3{color:#0b2a3c;margin:0 0 6px;font-size:17px;}
-.toi-dialog p{color:#888;font-size:12px;margin:0 0 20px;}
-.toi-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.toi-row label{font-size:13px;font-weight:700;color:#0b2a3c;min-width:120px;}
-.toi-row input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font-size:14px;font-weight:600;}
-.toi-hint{font-size:11px;color:#aaa;margin-bottom:20px;}
-.toi-btns{display:flex;gap:8px;}
-.toi-btns button{flex:1;padding:11px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;}
-.toi-ok{background:#27ae60;color:white;}
-.toi-ok:hover{background:#219a52;}
-.toi-skip{background:#e0e0e0;color:#333;}
-.toi-skip:hover{background:#ccc;}
+.hero-logo{display:flex;align-items:center;gap:14px;}
+.hero-logo-icon{width:50px;height:50px;background:linear-gradient(135deg,#d4af37,#f5d97a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(212,175,55,0.35);}
+.hero-logo-text{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:white;letter-spacing:.5px;line-height:1.2;}
+.hero-logo-sub{font-size:11px;color:rgba(212,175,55,0.75);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;}
+
+.season-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.season-tab{padding:7px 18px;border-radius:20px;border:1px solid rgba(212,175,55,0.3);background:transparent;font-size:12px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.6);transition:all .15s;font-family:'Inter',sans-serif;}
+.season-tab:hover{background:rgba(212,175,55,0.1);color:white;}
+.season-tab.active{background:linear-gradient(135deg,#d4af37,#f5d97a);color:#0b2a3c;border-color:transparent;font-weight:700;box-shadow:0 2px 12px rgba(212,175,55,0.4);}
+
+.hero-title{text-align:center;}
+.hero-title h1{font-family:'Rajdhani',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:white;letter-spacing:1px;}
+.hero-title h1 span{color:#d4af37;}
+
+.main{max-width:1300px;margin:auto;padding:36px 20px;}
+
+.section-label{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.section-label h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#0b2a3c;letter-spacing:.5px;}
+.section-label-line{flex:1;height:2px;background:linear-gradient(90deg,#d4af37,transparent);border-radius:2px;}
+.section-label-badge{background:#0b2a3c;color:#d4af37;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* SKUPINA BLOCK */
+.group-block{margin-bottom:40px;}
+.group-block-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #d4af37;}
+.group-block-header h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:#0b2a3c;letter-spacing:.5px;}
+.group-block-inner{display:grid;grid-template-columns:560px 1fr;gap:20px;align-items:start;}
+
+/* TABULKA */
+.group-table-wrap{background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.07);overflow:hidden;border:1px solid #e0e8f0;}
+.group-table{width:100%;border-collapse:collapse;}
+.group-table thead tr{background:#0b2a3c;}
+.group-table thead th{padding:9px 6px;text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+.group-table thead th.th-team{text-align:left;padding-left:10px;}
+.group-table tbody tr{border-bottom:1px solid #f0f4f8;transition:background .12s;}
+.group-table tbody tr:last-child{border-bottom:none;}
+.group-table tbody tr:hover{background:#f7fafd;}
+.group-table tbody td{padding:8px 6px;text-align:center;font-size:12px;color:#333;}
+.group-table tbody td.td-team{text-align:left;padding-left:10px;}
+.gt-rank{font-weight:700;color:#aaa;font-size:11px;width:20px;}
+.gt-team-cell{display:flex;align-items:center;gap:6px;}
+.gt-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;}
+.gt-name{font-weight:600;font-size:12px;color:#1a2a3c;white-space:nowrap;}
+.gt-pts{background:#0b2a3c;color:white;font-weight:700;font-size:12px;padding:2px 7px;border-radius:5px;display:inline-block;min-width:26px;text-align:center;}
+.gt-w{color:#16a34a;font-weight:700;}
+.gt-l{color:#dc2626;font-weight:700;}
+.gt-num{color:#666;font-weight:500;font-size:11px;}
+.gt-pm-pos{color:#16a34a;font-weight:600;font-size:11px;}
+.gt-pm-neg{color:#dc2626;font-weight:600;font-size:11px;}
+.gt-pm-neu{color:#aaa;font-weight:500;font-size:11px;}
+
+/* ZÁPASY */
+.group-matches-wrap{display:flex;flex-direction:column;gap:5px;}
+.match-card{background:white;border:1px solid #e0e8f0;border-radius:9px;padding:8px 12px;display:grid;grid-template-columns:1fr 80px 1fr auto;align-items:center;gap:8px;transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.match-card:hover{border-color:#2f9ec9;box-shadow:0 2px 8px rgba(47,158,201,0.1);}
+.match-card.played{border-left:3px solid #16a34a;}
+.match-team-cell{display:flex;align-items:center;gap:6px;min-width:0;}
+.match-team-cell.away{flex-direction:row-reverse;}
+.match-team-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;}
+.match-team-name{font-weight:600;font-size:12px;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.match-score-cell{text-align:center;}
+.score-pill{background:#0b2a3c;color:white;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block;min-width:54px;text-align:center;}
+.score-pill.empty{background:#f0f4f8;color:#bbb;font-size:12px;font-weight:400;}
+.score-pill.played{background:linear-gradient(135deg,#0b2a3c,#1a4a6c);}
+.score-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;display:block;text-align:center;margin-top:2px;}
+.score-tag.ot{background:#fef3c7;color:#d97706;}
+.score-tag.sn{background:#ede9fe;color:#7c3aed;}
+.match-btns{display:flex;gap:4px;flex-shrink:0;}
+.btn-xs{display:inline-flex;align-items:center;gap:3px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:10px;padding:4px 7px;transition:all .12s;white-space:nowrap;font-family:'Inter',sans-serif;}
+.btn-xs-stat{background:#e8f4fd;color:#1a5276;border:1px solid #b8d8f0;}
+.btn-xs-stat:hover{background:#d0eafb;}
+.btn-xs-bet{background:#e8f8ee;color:#166534;border:1px solid #bbf7d0;}
+.btn-xs-bet:hover{background:#d1fae5;}
+
+/* BRACKET */
+.bracket-section{margin-bottom:40px;}
+.bracket-wrap{overflow-x:auto;padding-bottom:12px;}
+.bracket{display:flex;gap:0;align-items:stretch;min-width:700px;}
+.bracket-round{display:flex;flex-direction:column;flex:1;}
+.bracket-round-title{text-align:center;font-size:11px;font-weight:700;color:#0b2a3c;letter-spacing:.08em;text-transform:uppercase;padding:0 8px 14px;font-family:'Rajdhani',sans-serif;opacity:.6;}
+.bracket-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;gap:8px;padding:0 6px;}
+.bracket-match{background:white;border:1px solid #e0e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:all .12s;}
+.bracket-match:hover{border-color:#2f9ec9;}
+.bracket-match.played{border-left:3px solid #16a34a;}
+.bm-team{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f0f4f8;}
+.bm-team:last-child{border-bottom:none;}
+.bm-team.winner{background:#f0fdf4;}
+.bm-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0;}
+.bm-name{font-size:12px;font-weight:600;color:#333;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bm-name.winner{color:#15803d;font-weight:700;}
+.bm-score{font-size:13px;font-weight:700;color:#aaa;}
+.bm-score.winner{color:#0b2a3c;}
+.bracket-connector{display:flex;flex-direction:column;justify-content:space-around;width:16px;flex-shrink:0;}
+.bc-line{flex:1;border-right:2px solid #d4af37;opacity:.3;}
+
+.loading-state{text-align:center;padding:80px 20px;color:#aaa;}
+.loading-state .spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:#0b2a3c;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.no-season{text-align:center;padding:80px 20px;color:#aaa;font-size:14px;}
+.no-season .icon{font-size:48px;margin-bottom:12px;}
+
+@media(max-width:1000px){
+  .group-block-inner{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .match-card{grid-template-columns:1fr 70px 1fr;}
+  .match-btns{display:none;}
+}
 </style>
 </head>
- 
 <body>
 <script src="./ticker.js" defer></script>
 <script src="./menu.js" defer></script>
- 
-<div class="wrapper">
-<div class="topBar">
- <h1>Zápisy zápasů</h1>
- <button class="btn-recalc" onclick="recalcBtn()">🔄 Přepočítat ratingy</button>
- <button class="btn-del-season" onclick="deleteSeason()">🗑 Smazat sezónu</button>
- <button class="btn-new-season" onclick="openNewSeasonModal()">🏒 Nová sezóna</button>
-</div>
-<p class="subtitle">Nahraj textový soubor pro zápis výsledku. Volitelně přidej gamestat a playerstat (XLS) pro automatický výpočet výsledku a hráčské statistiky.</p>
- 
-<div class="filterBar">
- <label>Sezóna:</label>
- <select id="seasonFilter" onchange="onSeasonFilterChange()"><option value="">-- Načítám... --</option></select>
- <label>Stage:</label>
- <select id="stageFilter" onchange="loadMatches()"><option value="">-- Vyber stage --</option></select>
- <label>Tým:</label>
- <select id="teamFilter" onchange="applyTeamFilter()"><option value="">Všechny týmy</option></select>
- <button class="btn-add" onclick="openModal()">➕ Přidat zápasy</button>
-</div>
- 
-<div class="match-count" id="matchCount"></div>
- 
-<table>
-<thead>
- <tr>
-  <th>Kolo</th>
-  <th>Domácí</th>
-  <th>Hosté</th>
-  <th>Skóre</th>
-  <th>Textový soubor</th>
-  <th>Gamestat + Playerstat</th>
-  <th>Akce</th>
- </tr>
-</thead>
-<tbody id="matchesTable">
- <tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>
-</tbody>
-</table>
-</div>
 
-<!-- DIALOG ČAS V ÚTOKU -->
-<div class="toi-dialog-overlay" id="toiDialogOverlay">
- <div class="toi-dialog">
-  <h3>⏱ Čas v útoku</h3>
-  <p>Zadej čas v útoku pro oba týmy (ve formátu MM:SS). Klikni "Přeskočit" pokud nechceš zadat.</p>
-  <div class="toi-row">
-   <label id="toiHomeLabel">Domácí:</label>
-   <input type="text" id="toiHome" placeholder="např. 12:34" maxlength="5">
-  </div>
-  <div class="toi-row">
-   <label id="toiAwayLabel">Hosté:</label>
-   <input type="text" id="toiAway" placeholder="např. 7:26" maxlength="5">
-  </div>
-  <p class="toi-hint">Formát: M:SS nebo MM:SS (např. 9:34 nebo 12:05)</p>
-  <div class="toi-btns">
-   <button class="toi-skip" onclick="toiSkip()">Přeskočit</button>
-   <button class="toi-ok" onclick="toiConfirm()">✅ Potvrdit a uložit</button>
-  </div>
- </div>
-</div>
-
-<!-- MODAL PŘIDAT ZÁPASY -->
-<div class="modal-overlay" id="modalOverlay">
- <div class="modal">
-  <h2>➕ Přidat zápasy</h2>
-  <p class="modal-sub">Nastav sezónu, soutěž a přidej jeden nebo více zápasů najednou.</p>
-  <div class="modal-section">
-   <div class="modal-section-title">Kam zápasy přidat</div>
-   <div class="modal-row"><label>Sezóna:</label><select id="m-season" onchange="onModalSeasonChange()"><option value="">-- Vyber sezónu --</option></select></div>
-   <div class="modal-row"><label>Stage:</label><select id="m-stage"><option value="">-- Vyber stage --</option></select></div>
-  </div>
-  <div class="modal-section-title" style="font-size:12px;font-weight:700;color:#0b2a3c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Zápasy</div>
-  <div class="match-entries" id="matchEntries"></div>
-  <button class="btn-add-entry" onclick="addEntry()">➕ Přidat další zápas</button>
-  <div class="modal-btns">
-   <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
-   <button class="btn-confirm" onclick="saveAllMatches()">✅ Uložit vše</button>
-  </div>
- </div>
-</div>
-
-<!-- MODAL NOVÁ SEZÓNA -->
-<div class="modal-overlay" id="newSeasonOverlay">
- <div class="modal">
-  <h2>🏒 Nová sezóna</h2>
-  <p class="modal-sub">Průvodce vytvořením nové sezóny v databázi.</p>
-  <div class="wizard-steps">
-   <div class="wizard-step active" id="ws-1">1. Info</div>
-   <div class="wizard-step" id="ws-2">2. Týmy</div>
-   <div class="wizard-step" id="ws-3">3. Základní část</div>
-   <div class="wizard-step" id="ws-4">4. Playoff</div>
-   <div class="wizard-step" id="ws-5">5. Souhrn</div>
-  </div>
-
-  <div class="wizard-page active" id="wp-1">
-   <div class="modal-section">
-    <div class="modal-section-title">Soutěž a název</div>
-    <div class="modal-row"><label>Soutěž:</label><select id="ns-competition" onchange="onNsCompetitionChange()"><option value="">-- Načítám... --</option></select></div>
-    <div class="modal-row"><label>Název:</label><input type="text" id="ns-name" placeholder="např. Extraliga"></div>
-    <div class="modal-row"><label>Číslo sezóny:</label><span id="ns-season-number" style="font-size:13px;color:#888;">— vyber nejdřív soutěž</span></div>
-   </div>
-   <div class="wizard-nav">
-    <button class="btn-cancel" onclick="closeNewSeasonModal()">Zrušit</button>
-    <button class="btn-next" onclick="wizardNext(1)">Další →</button>
-   </div>
-  </div>
-
-  <div class="wizard-page" id="wp-2">
-   <div class="modal-section">
-    <div class="modal-section-title">Vyber týmy do sezóny</div>
-    <div class="info-box">Klikni na tým pro výběr/zrušení výběru.</div>
-    <div class="teams-grid" id="ns-teams-grid"></div>
-   </div>
-   <div id="ns-teams-count" style="font-size:12px;color:#888;margin-top:8px;"></div>
-   <div class="wizard-nav">
-    <button class="btn-prev" onclick="wizardPrev(2)">← Zpět</button>
-    <button class="btn-next" onclick="wizardNext(2)">Další →</button>
-   </div>
-  </div>
-
-  <div class="wizard-page" id="wp-3">
-   <div class="modal-section">
-    <div class="modal-section-title">Základní část — skupiny</div>
-    <div class="modal-row">
-     <label>Počet skupin:</label>
-     <select id="ns-group-count">
-      <option value="1">1 — jedna základní část</option>
-      <option value="2">2 — Skupina A, B</option>
-      <option value="3">3 — Skupina A, B, C</option>
-      <option value="4">4 — Skupina A, B, C, D</option>
-      <option value="5">5 skupin</option>
-      <option value="6">6 skupin</option>
-      <option value="7">7 skupin</option>
-      <option value="8">8 skupin</option>
-      <option value="9">9 skupin</option>
-      <option value="10">10 skupin</option>
-     </select>
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-logo">
+        <div class="hero-logo-icon">🏒</div>
+        <div>
+          <div class="hero-logo-text">Mistrovství světa</div>
+          <div class="hero-logo-sub">World Championship</div>
+        </div>
+      </div>
+      <div class="season-tabs" id="seasonTabs"></div>
     </div>
-   </div>
-   <div class="wizard-nav">
-    <button class="btn-prev" onclick="wizardPrev(3)">← Zpět</button>
-    <button class="btn-next" onclick="wizardNext(3)">Další →</button>
-   </div>
-  </div>
-
-  <div class="wizard-page" id="wp-4">
-   <div class="modal-section">
-    <div class="modal-section-title">Playoff struktura</div>
-    <div class="structure-options">
-     <div class="structure-opt selected" onclick="selectStructure('none')" id="struct-none"><input type="radio" name="structure" value="none" checked><span class="structure-opt-icon">📋</span><div><div class="structure-opt-label">Žádný playoff</div><div class="structure-opt-desc">Jen základní část / skupiny</div></div></div>
-     <div class="structure-opt" onclick="selectStructure('final')" id="struct-final"><input type="radio" name="structure" value="final"><span class="structure-opt-icon">🏆</span><div><div class="structure-opt-label">Finále</div><div class="structure-opt-desc">O 3. místo + Finále</div></div></div>
-     <div class="structure-opt" onclick="selectStructure('sf')" id="struct-sf"><input type="radio" name="structure" value="sf"><span class="structure-opt-icon">⚔️</span><div><div class="structure-opt-label">Semifinále + Finále</div><div class="structure-opt-desc">SF1, SF2, O 3. místo, Finále</div></div></div>
-     <div class="structure-opt" onclick="selectStructure('qf')" id="struct-qf"><input type="radio" name="structure" value="qf"><span class="structure-opt-icon">🥊</span><div><div class="structure-opt-label">Čtvrtfinále + Semifinále + Finále</div><div class="structure-opt-desc">ČF1–4, SF1, SF2, O 3. místo, Finále</div></div></div>
+    <div class="hero-title">
+      <h1>MS &nbsp;<span id="heroSeasonName">—</span></h1>
     </div>
-   </div>
-   <div class="wizard-nav">
-    <button class="btn-prev" onclick="wizardPrev(4)">← Zpět</button>
-    <button class="btn-next" onclick="wizardNext(4)">Další →</button>
-   </div>
   </div>
-
-  <div class="wizard-page" id="wp-5">
-   <div class="modal-section">
-    <div class="modal-section-title">Souhrn – co se vytvoří</div>
-    <div id="ns-summary"></div>
-   </div>
-   <div class="wizard-nav">
-    <button class="btn-prev" onclick="wizardPrev(5)">← Zpět</button>
-    <button class="btn-create" onclick="createSeason()">🏒 Vytvořit sezónu</button>
-   </div>
-  </div>
- </div>
 </div>
- 
-<script>
-const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
-const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
-const CURRENT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
-const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script>
 
-const { createClient } = supabase
-const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+<div class="main">
+  <div id="mainContent">
+    <div class="loading-state"><div class="spinner"></div><div>Načítám data...</div></div>
+  </div>
+</div>
 
-let teamsMap={}, filesMap={}, allTeams=[], allStages=[], allSeasons=[], allCompetitions=[], allMatches=[]
-let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
-let nsSelectedTeams=new Set(), nsSelectedStructure="none", nsGroupCount=1
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient("https://qaocbodrflsaerxntfui.supabase.co","sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU")
+const MS_COMPETITION_ID = "f0375c91-5b76-475e-afab-3d867b6b02d1"
 
-const gamestatMap = {}
-const playerstatMap = {}
-const teamstatMap = {}
+let allSeasons=[], allStages=[], allTeams={}
 
-let _toiPendingMatchId = null
-let _toiPendingData = null
-let _toiHomeTeamName = ''
-let _toiAwayTeamName = ''
-
-const R_START=1000, R_K_ELO=80, R_K_FORM=120
-
-// Zavři všechny dropdowny při kliknutí jinam
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dropdown-wrap')) {
-    document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'))
-  }
-})
-
-function toggleDropdown(matchId){
-  const menu = document.getElementById(`dd-${matchId}`)
-  document.querySelectorAll('.dropdown-menu.open').forEach(m => { if(m!==menu) m.classList.remove('open') })
-  menu.classList.toggle('open')
-}
-
-// =====================================================
-// PARSOVÁNÍ PROPRIETÁRNÍHO XLS FORMÁTU
-// =====================================================
-
-function parseProprietaryXls(buffer) {
-  const data = new Uint8Array(buffer)
-  const cells = {}
-  function readU16(arr, pos){ return arr[pos] | (arr[pos+1] << 8) }
-  let i = 0
-  while (i < data.length - 1) { if (data[i] === 0x04 && data[i+1] === 0x02) break; i++ }
-  if (i >= data.length - 1) return cells
-  while (i < data.length - 4) {
-    if (data[i] !== 0x04 || data[i+1] !== 0x02) { i++; continue }
-    const recLen = readU16(data, i+2)
-    if (recLen === 0 || i + 4 + recLen > data.length) { i += 2; continue }
-    const rec = data.slice(i+4, i+4+recLen)
-    if (rec.length < 6) { i += 4 + recLen; continue }
-    const col = readU16(rec, 0)
-    const row = readU16(rec, 2)
-    const payload = rec.slice(6)
-    let val = null
-    for (const [offset, width] of [[0,1],[0,2]]) {
-      if (offset + width > payload.length) continue
-      let slen = width === 1 ? payload[offset] : (payload[offset] | (payload[offset+1] << 8))
-      if (slen > 0 && slen <= 200 && offset + width + slen <= payload.length) {
-        const raw = payload.slice(offset+width, offset+width+slen)
-        try {
-          const dec = new TextDecoder('windows-1250').decode(raw)
-          if ([...dec].every(c => c.charCodeAt(0) >= 32 || c.charCodeAt(0) > 127)) { val = dec; break }
-        } catch(e) {}
-      }
-    }
-    if (val !== null) cells[`${row},${col}`] = val
-    i += 4 + recLen
-  }
-  return cells
-}
-
-function xlsCellsToRows(cells) {
-  if (!Object.keys(cells).length) return []
-  let maxRow = 0, maxCol = 0
-  for (const key of Object.keys(cells)) { const [r,c] = key.split(',').map(Number); if (r > maxRow) maxRow = r; if (c > maxCol) maxCol = c }
-  const rows = []
-  for (let r = 0; r <= maxRow; r++) { const row = []; for (let c = 0; c <= maxCol; c++) row.push(cells[`${r},${c}`] || ''); rows.push(row) }
-  return rows
-}
-
-function parseGamestatEvents(rows) {
-  if (!rows.length || rows[0].length < 2) return []
-  const events = []
-  for (let c = 1; c < rows[0].length; c++) {
-    const ev = { period: rows[0]?.[c]||'', time: rows[1]?.[c]||'', type: rows[2]?.[c]||'', team: rows[3]?.[c]||'', player: rows[4]?.[c]||'', note: rows[5]?.[c]||'' }
-    if (ev.type) events.push(ev)
-  }
-  return events
-}
-
-function parsePlayerstatPlayers(rows) {
-  if (rows.length < 2 || rows[0].length < 2) return []
-  const headers = rows.map(r => r[0] || '')
-  const players = []
-  for (let p = 1; p < rows[0].length; p++) {
-    const obj = {}
-    headers.forEach((h, ri) => { obj[h] = rows[ri]?.[p] || '' })
-    players.push(obj)
-  }
-  return players
-}
-
-function parseTeamstatData(rows) {
-  const result = {}
-  for (const row of rows) { if (row[0]) result[row[0].trim()] = { home: row[1] || '', away: row[2] || '' } }
-  return result
-}
-
-function calcScoreFromGamestat(events, homeAbbr, awayAbbr) {
-  let hg1=0, hg2=0, hg3=0, ag1=0, ag2=0, ag3=0
-  let hasOT=false, hasSN=false, snWinnerIsHome=false
-  for (const ev of events) {
-    const t = ev.type || ''
-    const isGoal = t.includes('GOAL') || t.includes('PPG') || t.includes('SHG') || t.includes('ENG')
-    if (!isGoal) continue
-    const isHome = ev.team === homeAbbr
-    const p = (ev.period || '').trim()
-    if (p === 'Shootout' || p === 'SO') { hasSN = true; snWinnerIsHome = isHome }
-    else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime') { hasOT = true; if (isHome) hg3++; else ag3++ }
-    else if (p === '1') { if (isHome) hg1++; else ag1++ }
-    else if (p === '2') { if (isHome) hg2++; else ag2++ }
-    else if (p === '3') { if (isHome) hg3++; else ag3++ }
-  }
-  if (hasSN) { if (snWinnerIsHome) hg3++; else ag3++ }
-  const hgTotal = hg1 + hg2 + hg3
-  const agTotal = ag1 + ag2 + ag3
-  const hg3clean = hg3 - (hasSN && snWinnerIsHome ? 1 : 0) - (hasOT && !hasSN && hgTotal > agTotal ? 1 : 0)
-  const ag3clean = ag3 - (hasSN && !snWinnerIsHome ? 1 : 0) - (hasOT && !hasSN && agTotal > hgTotal ? 1 : 0)
-  const lines = new Array(21).fill('0')
-  lines[6]=String(ag1); lines[7]=String(ag2); lines[8]=String(ag3clean)
-  lines[9]=(hasOT && !hasSN && agTotal > hgTotal) ? '11' : (hasOT && !hasSN ? '1' : '0')
-  lines[16]=String(hg1); lines[17]=String(hg2); lines[18]=String(hg3clean)
-  lines[19]=(hasOT && !hasSN && hgTotal > agTotal) ? '11' : (hasOT && !hasSN ? '1' : '0')
-  lines[20]=hasSN ? (snWinnerIsHome ? '1' : '2') : '0'
-  return { hgTotal, agTotal, resultType: hasSN ? 'SN' : hasOT ? 'OT' : 'REG', lines }
-}
-
-function detectTeamAbbrs(teamstatData) {
-  return { homeAbbr: (teamstatData['Team']||{}).home?.trim()||'', awayAbbr: (teamstatData['Team']||{}).away?.trim()||'' }
-}
-
-function handleXlsFiles(e, matchId) {
-  const files = Array.from(e.target.files)
-  if (!files.length) return
-  const loadedNames = []
-  files.forEach(file => {
-    const name = file.name.toLowerCase()
-    const reader = new FileReader()
-    reader.onload = ev => {
-      try {
-        const cells = parseProprietaryXls(ev.target.result)
-        const rows = xlsCellsToRows(cells)
-        if (name.includes('gamestat')) gamestatMap[matchId] = parseGamestatEvents(rows)
-        else if (name.includes('playerstat')) playerstatMap[matchId] = parsePlayerstatPlayers(rows)
-        else if (name.includes('teamstat')) teamstatMap[matchId] = parseTeamstatData(rows)
-        loadedNames.push(file.name)
-        const lbl = document.getElementById(`xlslabel-${matchId}`)
-        const fnameEl = document.getElementById(`xlsfname-${matchId}`)
-        if (lbl) lbl.className = 'file-label xls-loaded'
-        if (fnameEl) fnameEl.textContent = loadedNames.join(' · ')
-      } catch(err) { alert('Chyba při čtení XLS: ' + err.message) }
-    }
-    reader.readAsArrayBuffer(file)
-  })
-}
-
-async function savePlayerStats(matchId, gamestatRows, playerstatRows){
-  await db.from('match_events').delete().eq('match_id', matchId)
-  await db.from('player_match_stats').delete().eq('match_id', matchId)
-  if(gamestatRows && gamestatRows.length){
-    const events = gamestatRows.map(r => ({
-      match_id: matchId,
-      period: r['period'] !== undefined ? (Number(r['period']) || null) : (Number(r['Period']) || null),
-      time: r['time'] || r['Time'] || null,
-      type: r['type'] || r['Goal/Penalty'] || null,
-      team_abbr: r['team'] || r['Team'] || null,
-      player_name: r['player'] || r['Player Name'] || null,
-      note: r['note'] || r['Note'] || null,
-    }))
-    if(events.length){ const {error} = await db.from('match_events').insert(events); if(error) console.error('match_events insert error:', error) }
-  }
-  if(playerstatRows && playerstatRows.length){
-    const playerUpserts = playerstatRows
-      .filter(r => (r['Player ID']||r['player_id']) && !isNaN(Number(r['Player ID']||r['player_id'])))
-      .map(r => ({ id: Number(r['Player ID']||r['player_id']), name: r['Player Name']||r['player_name']||'' }))
-    if(playerUpserts.length) await db.from('hockey_players').upsert(playerUpserts, {onConflict:'id', ignoreDuplicates:false})
-    const statsRows = playerstatRows.map(r => {
-      const pos = r['Pos']||r['pos']||''
-      const isGoalie = pos === 'Goalie'
-      const playerId = (r['Player ID']||r['player_id']) && !isNaN(Number(r['Player ID']||r['player_id'])) ? Number(r['Player ID']||r['player_id']) : null
-      return {
-        match_id: matchId, player_id: playerId, player_name: r['Player Name']||r['player_name']||'',
-        team_abbr: r['Team']||r['team_abbr']||'', pos, toi: r['Time']||r['toi']||'00:00',
-        goals: isGoalie ? 0 : Number(r['Goal']||r['goals'])||0,
-        assists: Number(r['Asst']||r['assists'])||0,
-        points: isGoalie ? 0 : (Number(r['Goal']||r['goals'])||0)+(Number(r['Asst']||r['assists'])||0),
-        plus_minus: isGoalie ? 0 : Number(r['+/-']||r['plus_minus'])||0,
-        pim: Number(r['PIMS']||r['pim'])||0, ppg: Number(r['PPG/GA']||r['ppg'])||0,
-        shg: Number(r['SHG/ENG']||r['shg'])||0, shots: isGoalie ? 0 : Number(r['Shoot/SA']||r['shots'])||0,
-        hits: isGoalie ? 0 : Number(r['Hits']||r['hits'])||0, is_goalie: isGoalie,
-        goalie_sa: isGoalie ? Number(r['Shoot/SA']||r['goalie_sa'])||0 : 0,
-        goalie_ga: isGoalie ? Number(r['PPG/GA']||r['goalie_ga'])||0 : 0,
-      }
-    })
-    if(statsRows.length){ const {error} = await db.from('player_match_stats').insert(statsRows); if(error) console.error('player_match_stats insert error:', error) }
-  }
-}
-
-function rGetScore(match, teamId){
-  const hg=Number(match.home_score), ag=Number(match.away_score)
-  let stats=null
-  try{stats=match.stats?JSON.parse(match.stats):null}catch(e){}
-  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
-  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
-  const isHome=match.home_team===teamId
-  const tg=isHome?hg:ag, og=isHome?ag:hg
-  if(tg>og) return (isSN||isOT)?0.75:1
-  return (isSN||isOT)?0.25:0
-}
-
-async function recalculateAllRatings(){
-  const {data:seasons}=await db.from("seasons").select("*").order("created_at",{ascending:true})
-  const seasonOrder={}
-  ;(seasons||[]).forEach((s,i)=>seasonOrder[s.id]=i)
-  const {data:stages}=await db.from("stages").select("id").eq("name","Základní část")
-  const zakladniStageIds=new Set((stages||[]).map(s=>s.id))
-  const {data:matches}=await db.from("matches").select("*").not("home_score","is",null).not("away_score","is",null)
-  if(!matches||!matches.length) return
-  matches.sort((a,b)=>{ const sA=seasonOrder[a.season_id]??999, sB=seasonOrder[b.season_id]??999; if(sA!==sB) return sA-sB; return Number(a.round)-Number(b.round) })
-  const {data:teams}=await db.from("teams").select("*")
-  if(!teams) return
-  const eloRatings={}, formRatings={}, formHistory={}
-  teams.forEach(t=>{ eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[] })
-  matches.filter(m=>zakladniStageIds.has(m.stage_id)).forEach(m=>{
-    const h=m.home_team, a=m.away_team
-    if(eloRatings[h]===undefined||eloRatings[a]===undefined) return
-    const sH=rGetScore(m,h), sA=rGetScore(m,a)
-    const rH=eloRatings[h], rA=eloRatings[a]
-    const eH=1/(1+Math.pow(10,(rA-rH)/400)), eA=1/(1+Math.pow(10,(rH-rA)/400))
-    eloRatings[h]=Math.round(rH+R_K_ELO*(sH-eH)); eloRatings[a]=Math.round(rA+R_K_ELO*(sA-eA))
-  })
-  matches.forEach(m=>{
-    const h=m.home_team, a=m.away_team
-    if(formRatings[h]===undefined||formRatings[a]===undefined) return
-    const sH=rGetScore(m,h), sA=rGetScore(m,a)
-    function updateForm(teamId, opponentId, score){
-      const cur=formRatings[teamId], opp=formRatings[opponentId]
-      const exp=1/(1+Math.pow(10,(opp-cur)/400))
-      const ch=R_K_FORM*(score-exp)
-      formHistory[teamId].push(ch)
-      if(formHistory[teamId].length>5) formHistory[teamId].shift()
-      formRatings[teamId]=Math.round(R_START+formHistory[teamId].reduce((a,b)=>a+Math.round(b),0))
-    }
-    updateForm(h,a,sH); updateForm(a,h,sA)
-  })
-  const extraSeasons=(seasons||[]).filter(s=>s.competition_id===EXTRALIGA_COMPETITION_ID)
-  const lastExtraSeason=extraSeasons[extraSeasons.length-1]
-  const newPositionMap={}
-  if(lastExtraSeason){
-    const {data:lastStage}=await db.from("stages").select("id").eq("season_id",lastExtraSeason.id).eq("name","Základní část").single()
-    if(lastStage){
-      const {data:lastMatches}=await db.from("matches").select("*").eq("season_id",lastExtraSeason.id).eq("stage_id",lastStage.id).not("home_score","is",null)
-      const points={}, gd={}
-      ;(lastMatches||[]).forEach(m=>{
-        if(!points[m.home_team]){points[m.home_team]=0;gd[m.home_team]=0}
-        if(!points[m.away_team]){points[m.away_team]=0;gd[m.away_team]=0}
-        const hg=Number(m.home_score), ag=Number(m.away_score)
-        gd[m.home_team]+=hg-ag; gd[m.away_team]+=ag-hg
-        let stats=null
-        try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
-        const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
-        const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
-        if(isSN||isOT){ if(hg>ag){points[m.home_team]+=2;points[m.away_team]+=1} else{points[m.away_team]+=2;points[m.home_team]+=1} }
-        else{ if(hg>ag) points[m.home_team]+=3; else points[m.away_team]+=3 }
-      })
-      const sorted=Object.keys(points).sort((a,b)=>{ if(points[b]!==points[a]) return points[b]-points[a]; return gd[b]-gd[a] })
-      sorted.forEach((teamId,i)=>newPositionMap[teamId]=i+1)
-    }
-  }
-  for(const team of teams){
-    const newPos=newPositionMap[team.id]||0, oldPos=team.table_position||0
-    await db.from("teams").update({ rating_overall:eloRatings[team.id]||R_START, rating_form:formRatings[team.id]||R_START, table_position:newPos, table_position_prev:oldPos }).eq("id",team.id)
-  }
-}
-
-function recalcBtn(){
-  const btn=document.querySelector(".btn-recalc")
-  btn.textContent="⏳ Přepočítávám..."; btn.disabled=true
-  recalculateAllRatings().then(()=>{ btn.textContent="🔄 Přepočítat ratingy"; btn.disabled=false; alert("✅ Ratingy a pozice přepočítány!") })
-  .catch(e=>{ btn.textContent="🔄 Přepočítat ratingy"; btn.disabled=false; alert("❌ Chyba: "+e.message) })
-}
-
-async function deleteSeason(){
-  const seasonId = document.getElementById("seasonFilter").value
-  if(!seasonId){ alert("Nejdřív vyber sezónu kterou chceš smazat."); return }
-  const season = allSeasons.find(s=>s.id===seasonId)
-  if(!confirm(`Opravdu smazat sezónu "${season?.name}"?\n\nSmaže se vše: zápasy, sázky, hráčské statistiky, stages.`)) return
-  const {data:matches} = await db.from("matches").select("id").eq("season_id", seasonId)
-  const matchIds = (matches||[]).map(m=>m.id)
-  if(matchIds.length){
-    for(const mid of matchIds){
-      const {data:bets} = await db.from("bets").select("*").eq("match_id", mid)
-      for(const bet of bets||[]){
-        if(bet.status==="won"){
-          const {data:player} = await db.from("players").select("*").eq("id",bet.player_id).single()
-          if(player) await db.from("players").update({credit:Number(player.credit)-Number(bet.potential_win)}).eq("id",player.id)
-        }
-      }
-      await db.from("bets").delete().eq("match_id", mid)
-      await db.from("match_events").delete().eq("match_id", mid)
-      await db.from("player_match_stats").delete().eq("match_id", mid)
-    }
-    await db.from("matches").delete().eq("season_id", seasonId)
-  }
-  await db.from("season_teams").delete().eq("season_id", seasonId)
-  await db.from("stages").delete().eq("season_id", seasonId)
-  await db.from("seasons").delete().eq("id", seasonId)
-  await recalculateAllRatings()
-  const {data:newSeasons} = await db.from("seasons").select("*").order("created_at",{ascending:false})
-  allSeasons = newSeasons||[]
-  const {data:newStages} = await db.from("stages").select("*").order("order",{ascending:true})
-  allStages = newStages||[]
-  const seasonSel = document.getElementById("seasonFilter")
-  seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
-  const mSeason = document.getElementById("m-season")
-  mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
-  currentSeasonId=""
-  document.getElementById("stageFilter").innerHTML='<option value="">-- Vyber stage --</option>'
-  document.getElementById("matchesTable").innerHTML=`<tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>`
-  document.getElementById("matchCount").textContent=""
-  alert("✅ Sezóna smazána.")
+// Zkrátí název týmu — odstraní příponu "(K)" / "(P)" a případně zkrátí
+function shortName(name){
+  return (name||'').replace(/\s*\((K|P)\)\s*$/,'').trim()
 }
 
 async function init(){
-  const [seasonsRes,stagesRes,teamsRes,compRes]=await Promise.all([
-    db.from("seasons").select("*").order("created_at",{ascending:false}),
-    db.from("stages").select("*").order("order",{ascending:true}),
-    db.from("teams").select("*").order("name"),
-    db.from("competitions").select("*").order("name"),
+  const [sRes,stRes,tRes] = await Promise.all([
+    supabase.from("seasons").select("*").eq("competition_id",MS_COMPETITION_ID).order("created_at",{ascending:true}),
+    supabase.from("stages").select("*").order("order",{ascending:true}),
+    supabase.from("teams").select("*"),
   ])
-  allSeasons=seasonsRes.data||[]; allStages=stagesRes.data||[]
-  allTeams=(teamsRes.data||[]).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
-  allCompetitions=(compRes.data||[]).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
-  allTeams.forEach(t=>teamsMap[t.id]=t)
-  const seasonSel=document.getElementById("seasonFilter")
-  seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
-  const mSeason=document.getElementById("m-season")
-  mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
-  const nsComp=document.getElementById("ns-competition")
-  nsComp.innerHTML='<option value="">-- Vyber soutěž --</option>'
-  allCompetitions.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; nsComp.appendChild(o) })
-  const found=allSeasons.find(s=>s.id===CURRENT_SEASON_ID)
-  seasonSel.value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
-  onSeasonFilterChange()
+  allSeasons=sRes.data||[]
+  allStages=stRes.data||[]
+  ;(tRes.data||[]).forEach(t=>allTeams[t.id]=t)
+
+  const tabs=document.getElementById("seasonTabs")
+  tabs.innerHTML=""
+
+  if(!allSeasons.length){
+    document.getElementById("mainContent").innerHTML=`<div class="no-season"><div class="icon">🏒</div><p>Zatím žádná sezóna MS.<br>Vytvoř ji v Zápisech.</p></div>`
+    return
+  }
+
+  allSeasons.forEach((s,i)=>{
+    const btn=document.createElement("button")
+    btn.className="season-tab"+(i===allSeasons.length-1?" active":"")
+    btn.textContent=s.name
+    btn.onclick=()=>{ tabs.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); loadSeason(s.id) }
+    tabs.appendChild(btn)
+  })
+
+  loadSeason(allSeasons[allSeasons.length-1].id)
 }
 
-function onSeasonFilterChange(){
-  currentSeasonId=document.getElementById("seasonFilter").value
-  if(!currentSeasonId) return
-  const stageSel=document.getElementById("stageFilter")
-  stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
-  const seasonStages=allStages.filter(s=>s.season_id===currentSeasonId)
-  seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
-  const zakladni=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]
-  if(zakladni){ stageSel.value=zakladni.id; loadMatches() }
+async function loadSeason(seasonId){
+  const season=allSeasons.find(s=>s.id===seasonId)
+  document.getElementById("heroSeasonName").textContent=season?.name||""
+  document.getElementById("mainContent").innerHTML=`<div class="loading-state"><div class="spinner"></div><div>Načítám...</div></div>`
+
+  const stages=allStages.filter(s=>s.season_id===seasonId)
+  const {data:matches}=await supabase.from("matches").select("*").eq("season_id",seasonId)
+  const allM=matches||[]
+
+  const groupStages=stages.filter(s=>!s.parent_stage_id&&(s.name.startsWith("Skupina")||s.name==="Základní část"))
+  const playoffParent=stages.find(s=>s.name==="Playoff"&&!s.parent_stage_id)
+  const playoffStages=playoffParent?stages.filter(s=>s.parent_stage_id===playoffParent.id):[]
+  const qfStages=playoffStages.filter(s=>s.name.startsWith("Čtvrtfinále"))
+  const sfStages=playoffStages.filter(s=>s.name.startsWith("Semifinále"))
+  const thirdStage=playoffStages.find(s=>s.name==="O 3. místo")
+  const finalStage=playoffStages.find(s=>s.name==="Finále")
+
+  let html=""
+
+  if(groupStages.length){
+    html+=`<div class="section-label"><h2>Základní část</h2><div class="section-label-line"></div><span class="section-label-badge">Skupiny</span></div>`
+    for(const gs of groupStages){
+      const gMatchesPlayed=allM.filter(m=>m.stage_id===gs.id&&m.home_score!=null)
+      const gMatchesAll=allM.filter(m=>m.stage_id===gs.id).sort((a,b)=>Number(a.round)-Number(b.round))
+      html+=`<div class="group-block">`
+      html+=`<div class="group-block-header"><h3>🏒 ${gs.name}</h3></div>`
+      html+=`<div class="group-block-inner">`
+      html+=renderGroupTable(gMatchesPlayed)
+      html+=`<div class="group-matches-wrap">${gMatchesAll.map(m=>renderMatchCard(m)).join('')}</div>`
+      html+=`</div></div>`
+    }
+  }
+
+  if(playoffParent&&(qfStages.length||sfStages.length||finalStage)){
+    html+=`<div class="bracket-section">`
+    html+=`<div class="section-label"><h2>Playoff</h2><div class="section-label-line"></div><span class="section-label-badge">Pavouk</span></div>`
+    html+=renderBracket(allM,qfStages,sfStages,thirdStage,finalStage)
+    html+=`</div>`
+  }
+
+  document.getElementById("mainContent").innerHTML=html
 }
 
-async function loadMatches(){
-  currentStageId=document.getElementById("stageFilter").value
-  if(!currentStageId||!currentSeasonId) return
-  const {data:matches}=await db.from("matches").select("*").eq("season_id",currentSeasonId).eq("stage_id",currentStageId).order("round",{ascending:true})
-  allMatches=matches||[]
-  const matchIds=allMatches.map(m=>m.id)
-  let matchesWithPlayers=new Set()
-  if(matchIds.length){ const {data:pms}=await db.from('player_match_stats').select('match_id').in('match_id',matchIds); (pms||[]).forEach(r=>matchesWithPlayers.add(r.match_id)) }
-  updateTeamFilter(); applyTeamFilter(matchesWithPlayers)
-}
-
-function updateTeamFilter(){
-  const teamIds=new Set()
-  allMatches.forEach(m=>{ teamIds.add(m.home_team); teamIds.add(m.away_team) })
-  const sel=document.getElementById("teamFilter")
-  const prev=sel.value
-  sel.innerHTML='<option value="">Všechny týmy</option>'
-  const sorted=[...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
-  sorted.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o) })
-  sel.value=([...teamIds].includes(prev))?prev:""; currentTeamFilter=sel.value
-}
-
-function applyTeamFilter(matchesWithPlayers){
-  currentTeamFilter=document.getElementById("teamFilter").value
-  let filtered=allMatches
-  if(currentTeamFilter) filtered=allMatches.filter(m=>m.home_team===currentTeamFilter||m.away_team===currentTeamFilter)
-  document.getElementById("matchCount").textContent=`Zobrazeno ${filtered.length} z ${allMatches.length} zápasů`
-  render(filtered, matchesWithPlayers||new Set())
-}
-
-function render(matches, matchesWithPlayers){
-  const cont=document.getElementById("matchesTable")
-  cont.innerHTML=""
-  if(!matches.length){ cont.innerHTML=`<tr><td colspan="7" class="empty-msg">Žádné zápasy.</td></tr>`; return }
+function renderGroupTable(matches){
+  const table={}
   matches.forEach(m=>{
-    const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
-    if(!home||!away) return
-    const played=m.home_score!=null
-    const hasPlayers=matchesWithPlayers.has(m.id)
-    let suffix=m.result_type==="SN"?"SN":m.result_type==="OT"?"OT":""
-    const scoreHtml=played
-      ?`<span class="score-badge">${m.home_score} : ${m.away_score}</span>${suffix?`<span class="result-tag">${suffix}</span>`:""}`
-      :`<span class="score-badge empty">- : -</span>`
-    cont.innerHTML+=`
-    <tr class="${played?"played-row":""}">
-     <td><span class="round-badge">${m.round}</span></td>
-     <td><div class="team-cell"><img class="team-logo" src="./logos/${home.logo}"><span class="team-name">${home.name}</span></div></td>
-     <td><div class="team-cell"><img class="team-logo" src="./logos/${away.logo}"><span class="team-name">${away.name}</span></div></td>
-     <td>${scoreHtml}${hasPlayers?'<br><span class="has-players-badge">👤 Hráči</span>':''}</td>
-     <td>
-      <label class="file-label" id="label-${m.id}">📂 Textový soubor<input type="file" onchange="handleFile(event,'${m.id}')"></label>
-      <div class="file-name" id="fname-${m.id}"></div>
-     </td>
-     <td>
-      <label class="file-label xls-label" id="xlslabel-${m.id}">📊 Gamestat + Playerstat<input type="file" accept=".xls,.csv" multiple onchange="handleXlsFiles(event,'${m.id}')"></label>
-      <div class="file-name" id="xlsfname-${m.id}"></div>
-     </td>
-     <td>
-      <div class="btn-wrap">
-       <button class="btn btn-save" onclick="saveMatch('${m.id}','${home.name.replace(/'/g,"\\'")}','${away.name.replace(/'/g,"\\'")}')">✅ Uložit</button>
-       <div class="dropdown-wrap">
-        <button class="btn-actions" onclick="toggleDropdown('${m.id}')">⚙️ ▾</button>
-        <div class="dropdown-menu" id="dd-${m.id}">
-         ${played?`<button class="dropdown-item warning" onclick="clearResult('${m.id}')">🗑 Smazat výsledek</button>`:''}
-         <button class="dropdown-item danger" onclick="resetMatch('${m.id}')">❌ Smazat zápas</button>
-        </div>
-       </div>
-      </div>
-     </td>
-    </tr>`
+    if(!table[m.home_team]) table[m.home_team]={b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0,team:m.home_team}
+    if(!table[m.away_team]) table[m.away_team]={b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0,team:m.away_team}
+    const h=table[m.home_team], a=table[m.away_team]
+    const hg=Number(m.home_score), ag=Number(m.away_score)
+    h.z++;a.z++; h.gf+=hg;h.ga+=ag; a.gf+=ag;a.ga+=hg
+    let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    if(isSN){
+      if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1}else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
+    } else if(isOT){
+      if(hg>ag){h.vp++;h.b+=2;a.pp++;a.b+=1}else{a.vp++;a.b+=2;h.pp++;h.b+=1}
+    } else {
+      if(hg>ag){h.v++;h.b+=3;a.p++}else{a.v++;a.b+=3;h.p++}
+    }
   })
-}
 
-function openModal(){
-  entryCount=0; document.getElementById("matchEntries").innerHTML=""
-  document.getElementById("m-season").value=currentSeasonId||""
-  onModalSeasonChange(); addEntry()
-  document.getElementById("modalOverlay").classList.add("open")
-}
-function closeModal(){ document.getElementById("modalOverlay").classList.remove("open") }
-
-function onModalSeasonChange(){
-  const seasonId=document.getElementById("m-season").value
-  const stageSel=document.getElementById("m-stage")
-  stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
-  if(!seasonId) return
-  const seasonStages=allStages.filter(s=>s.season_id===seasonId)
-  seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
-  if(currentStageId){ const f=seasonStages.find(s=>s.id===currentStageId); if(f) stageSel.value=currentStageId }
-  else{ const z=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]; if(z) stageSel.value=z.id }
-}
-
-function addEntry(){
-  entryCount++
-  const id=entryCount
-  const cont=document.getElementById("matchEntries")
-  const nextRound=allMatches.length+cont.querySelectorAll(".match-entry").length+1
-  const teamOptions=allTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
-  const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
-  div.innerHTML=`
-   <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
-   <div class="entry-fields">
-    <div><div class="entry-label">Domácí tým</div><select id="e-home-${id}">${teamOptions}</select></div>
-    <div><div class="entry-label">Hosté tým</div><select id="e-away-${id}">${teamOptions}</select></div>
-    <div><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
-   </div>`
-  cont.appendChild(div)
-  if(allTeams.length>=2) document.getElementById(`e-away-${id}`).value=allTeams[1].id
-}
-
-function removeEntry(id){
-  const cont=document.getElementById("matchEntries")
-  if(cont.querySelectorAll(".match-entry").length<=1){ alert("Musí zůstat alespoň jeden zápas!"); return }
-  document.getElementById(`entry-${id}`)?.remove()
-}
-
-async function saveAllMatches(){
-  const seasonId=document.getElementById("m-season").value
-  const stageId=document.getElementById("m-stage").value
-  if(!seasonId){ alert("Vyber sezónu!"); return }
-  if(!stageId){ alert("Vyber stage!"); return }
-  const entries=document.querySelectorAll(".match-entry")
-  const toInsert=[]; let valid=true
-  entries.forEach(entry=>{
-    const id=entry.id.replace("entry-","")
-    const homeId=document.getElementById(`e-home-${id}`)?.value
-    const awayId=document.getElementById(`e-away-${id}`)?.value
-    const round=Number(document.getElementById(`e-round-${id}`)?.value)
-    if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
-    if(!round||round<1){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
-    toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
-  })
-  if(!valid) return
-  const {error}=await db.from("matches").insert(toInsert)
-  if(error){ alert("❌ "+error.message); return }
-  closeModal()
-  document.getElementById("seasonFilter").value=seasonId
-  onSeasonFilterChange()
-  setTimeout(()=>{ document.getElementById("stageFilter").value=stageId; loadMatches() },100)
-  alert(`✅ Přidáno ${toInsert.length} zápas${toInsert.length===1?'':'ů'}!`)
-}
-
-function handleFile(e, matchId){
-  const file=e.target.files[0]; if(!file) return
-  const reader=new FileReader()
-  reader.onload=ev=>{
-    filesMap[matchId]=ev.target.result.split(/\r?\n/)
-    const fname=document.getElementById(`fname-${matchId}`); if(fname) fname.textContent=file.name
-    const lbl=document.getElementById(`label-${matchId}`); if(lbl) lbl.style.borderColor="#27ae60"
-  }
-  reader.readAsText(file)
-}
-
-function calculateScore(lines){
-  let ag=Number(lines[6]||0)+Number(lines[7]||0)+Number(lines[8]||0)
-  let hg=Number(lines[16]||0)+Number(lines[17]||0)+Number(lines[18]||0)
-  if(lines[9]==="11") hg++; if(lines[19]==="11") ag++
-  if(lines[20]==="1") hg++; if(lines[20]==="2") ag++
-  return {hg,ag}
-}
-
-function getResultType(lines){
-  const isSN=lines[20]==="1"||lines[20]==="2"
-  const isOT=!isSN&&(lines[9]==="11"||lines[19]==="11")
-  return isSN?"SN":isOT?"OT":"REG"
-}
-
-function checkSingleTip(match, tip){
-  const type=match.result_type, hg=Number(match.home_score), ag=Number(match.away_score)
-  const hw=hg>ag, aw=ag>hg
-  const isOTorSN=(type==="OT"||type==="SN")
-  switch(tip){
-    case "1": return hw && type==="REG"
-    case "0": return isOTorSN
-    case "2": return aw && type==="REG"
-    case "11": return!(aw && type==="REG")
-    case "no_draw": return type==="REG"
-    case "22": return!(hw && type==="REG")
-    case "vdr_home": return hw
-    case "vdr_away": return aw
-    case "10": return hw && isOTorSN
-    case "02": return aw && isOTorSN
-  }
-  return false
-}
-
-function isWinningBet(match,tip){ return tip.includes(",")?tip.split(",").every(t=>checkSingleTip(match,t)):checkSingleTip(match,tip) }
-
-async function evaluateBets(match){
-  const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
-  if(!bets) return
-  for(const bet of bets){
-    const win=isWinningBet(match,bet.tip)
-    await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
-    if(win){
-      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
-      if(player) await db.from("players").update({credit:Number(player.credit)+Number(bet.potential_win)}).eq("id",player.id)
-    }
-  }
-}
-
-async function revertBets(matchId){
-  const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
-  for(const bet of bets||[]){
-    if(bet.status==="won"){
-      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
-      if(player) await db.from("players").update({credit:Number(player.credit)-Number(bet.potential_win)}).eq("id",player.id)
-    }
-    await db.from("bets").update({status:"pending"}).eq("id",bet.id)
-  }
-}
-
-async function clearResult(matchId){
-  if(!confirm("Smazat výsledek? Zápas zůstane v rozpisu.")) return
-  await revertBets(matchId)
-  await db.from("matches").update({home_score:null,away_score:null,played:false,stats:null,result_type:null}).eq("id",matchId)
-  await db.from('match_events').delete().eq('match_id', matchId)
-  await db.from('player_match_stats').delete().eq('match_id', matchId)
-  await recalculateAllRatings()
-  alert("Výsledek smazán 👍"); loadMatches()
-}
-
-async function resetMatch(matchId){
-  if(!confirm("Opravdu smazat celý zápas včetně sázek?")) return
-  await revertBets(matchId)
-  await db.from('match_events').delete().eq('match_id', matchId)
-  await db.from('player_match_stats').delete().eq('match_id', matchId)
-  await db.from("matches").delete().eq("id",matchId)
-  await recalculateAllRatings()
-  alert("Zápas smazán 👍"); loadMatches()
-}
-
-function openToiDialog(matchId, homeTeamName, awayTeamName) {
-  _toiPendingMatchId = matchId; _toiHomeTeamName = homeTeamName; _toiAwayTeamName = awayTeamName
-  document.getElementById('toiHomeLabel').textContent = homeTeamName + ':'
-  document.getElementById('toiAwayLabel').textContent = awayTeamName + ':'
-  document.getElementById('toiHome').value = ''
-  document.getElementById('toiAway').value = ''
-  document.getElementById('toiDialogOverlay').classList.add('open')
-}
-
-function closeToiDialog() {
-  document.getElementById('toiDialogOverlay').classList.remove('open')
-  _toiPendingMatchId = null; _toiPendingData = null
-}
-
-async function toiConfirm() {
-  const toiHome = document.getElementById('toiHome').value.trim() || '0'
-  const toiAway = document.getElementById('toiAway').value.trim() || '0'
-  const d = _toiPendingData
-  closeToiDialog()
-  if (d) { d.lines[3] = toiAway; d.lines[13] = toiHome; await doSaveMatchFromXls(d.matchId, d.lines, d.hg, d.ag, d.resultType, d.gamestatEvents, d.playerstatPlayers) }
-}
-
-async function toiSkip() {
-  const d = _toiPendingData
-  closeToiDialog()
-  if (d) { await doSaveMatchFromXls(d.matchId, d.lines, d.hg, d.ag, d.resultType, d.gamestatEvents, d.playerstatPlayers) }
-}
-
-async function saveMatch(matchId, homeTeamName, awayTeamName){
-  const hasXls = gamestatMap[matchId] && gamestatMap[matchId].length > 0
-  const hasTxtFile = !!filesMap[matchId]
-  if (hasXls) {
-    const events = gamestatMap[matchId]
-    const tsData = teamstatMap[matchId] || null
-    let homeAbbr = '', awayAbbr = ''
-    if (tsData) { const abbrs = detectTeamAbbrs(tsData); homeAbbr = abbrs.homeAbbr; awayAbbr = abbrs.awayAbbr }
-    else { const abbrs = [...new Set(events.map(e => e.team).filter(Boolean))]; homeAbbr = abbrs[0]||''; awayAbbr = abbrs[1]||'' }
-    if (!homeAbbr || !awayAbbr) { alert('❌ Nepodařilo se detekovat zkratky týmů.'); return }
-    const { hgTotal, agTotal, resultType, lines } = calcScoreFromGamestat(events, homeAbbr, awayAbbr)
-    if (tsData) {
-      lines[0]  = (tsData['Shot']||{}).away||'0'
-      lines[10] = (tsData['Shot']||{}).home||'0'
-      lines[5]  = (tsData['PP']||{}).away||'0'
-      lines[15] = (tsData['PP']||{}).home||'0'
-      lines[2]  = String(parseInt((tsData['Faceoff']||{}).away||'0'))
-      lines[12] = String(parseInt((tsData['Faceoff']||{}).home||'0'))
-    }
-    _toiPendingData = { matchId, lines, hg: hgTotal, ag: agTotal, resultType, gamestatEvents: events, playerstatPlayers: playerstatMap[matchId]||null }
-    openToiDialog(matchId, homeTeamName, awayTeamName)
-  } else if (hasTxtFile) {
-    const lines = filesMap[matchId]
-    const score = calculateScore(lines)
-    const resultType = getResultType(lines)
-    await db.from("matches").update({ home_score:score.hg, away_score:score.ag, played:true, stats:JSON.stringify(lines), result_type:resultType, played_at:new Date().toISOString() }).eq("id",matchId)
-    const {data:fullMatch} = await db.from("matches").select("*").eq("id",matchId).single()
-    await evaluateBets(fullMatch); await recalculateAllRatings()
-    const gs=gamestatMap[matchId], ps=playerstatMap[matchId]
-    if(gs||ps){ await savePlayerStats(matchId,gs,ps); alert("Uloženo ✅\nVčetně hráčských statistik 👤") } else { alert("Uloženo ✅") }
-    loadMatches()
+  const arr=Object.values(table).sort((a,b)=>b.b-a.b||(b.gf-b.ga)-(a.gf-a.ga))
+  let rows=""
+  if(!arr.length){
+    rows=`<tr><td colspan="13" style="text-align:center;padding:16px;color:#bbb;font-size:12px;">Zatím žádné zápasy</td></tr>`
   } else {
-    alert("Nahraj textový soubor nebo gamestat + playerstat XLS soubory.")
+    arr.forEach((t,i)=>{
+      const team=allTeams[t.team]; if(!team) return
+      const pm=t.gf-t.ga
+      rows+=`<tr>
+        <td class="gt-rank">${i+1}</td>
+        <td class="td-team"><div class="gt-team-cell"><img class="gt-logo" src="./logos/${team.logo}" onerror="this.style.display='none'"><span class="gt-name">${shortName(team.name)}</span></div></td>
+        <td><span class="gt-pts">${t.b}</span></td>
+        <td class="gt-num">${t.gf}:${t.ga}</td>
+        <td class="${pm>0?'gt-pm-pos':pm<0?'gt-pm-neg':'gt-pm-neu'}">${pm>0?'+'+pm:pm}</td>
+        <td class="gt-num">${t.z}</td>
+        <td class="gt-w">${t.v}</td>
+        <td class="gt-l">${t.p}</td>
+        <td class="gt-num">${t.vp}</td>
+        <td class="gt-num">${t.pp}</td>
+        <td class="gt-num">${t.vsn}</td>
+        <td class="gt-num">${t.psn}</td>
+      </tr>`
+    })
   }
+
+  return `<div class="group-table-wrap">
+    <table class="group-table">
+      <thead><tr>
+        <th style="width:20px">#</th>
+        <th class="th-team">Tým</th>
+        <th>Body</th>
+        <th>Skóre</th>
+        <th>+/-</th>
+        <th title="Zápasy">Z</th>
+        <th title="Výhry">V</th>
+        <th title="Prohry">P</th>
+        <th title="Výhra po prodloužení">VP</th>
+        <th title="Prohra po prodloužení">PP</th>
+        <th title="Výhra po nájezdech">VSN</th>
+        <th title="Prohra po nájezdech">PSN</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`
 }
 
-async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEvents, playerstatPlayers) {
-  await db.from("matches").update({ home_score:hg, away_score:ag, played:true, stats:JSON.stringify(lines), result_type:resultType, played_at:new Date().toISOString() }).eq("id",matchId)
-  const {data:fullMatch} = await db.from("matches").select("*").eq("id",matchId).single()
-  await evaluateBets(fullMatch); await recalculateAllRatings()
-  if (gamestatEvents || playerstatPlayers) {
-    await savePlayerStats(matchId, gamestatEvents, playerstatPlayers)
-    alert(`Uloženo ✅\nVýsledek: ${hg}:${ag} (${resultType})\nVčetně hráčských statistik 👤`)
-  } else {
-    alert(`Uloženo ✅\nVýsledek: ${hg}:${ag} (${resultType})`)
+function renderMatchCard(m){
+  const home=allTeams[m.home_team], away=allTeams[m.away_team]
+  if(!home||!away) return ""
+  const played=m.home_score!=null
+  let tag=""
+  if(played){
+    let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    if(isSN) tag=`<span class="score-tag sn">SN</span>`
+    else if(isOT) tag=`<span class="score-tag ot">OT</span>`
   }
-  loadMatches()
+  const scoreHtml=played
+    ?`<span class="score-pill played">${m.home_score} : ${m.away_score}</span>${tag}`
+    :`<span class="score-pill empty">- : -</span>`
+
+  return `<div class="match-card ${played?'played':''}">
+    <div class="match-team-cell">
+      <img class="match-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+      <span class="match-team-name">${shortName(home.name)}</span>
+    </div>
+    <div class="match-score-cell">${scoreHtml}</div>
+    <div class="match-team-cell away">
+      <img class="match-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+      <span class="match-team-name">${shortName(away.name)}</span>
+    </div>
+    <div class="match-btns">
+      <button class="btn-xs btn-xs-stat" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Stat</button>
+      <button class="btn-xs btn-xs-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Bet</button>
+    </div>
+  </div>`
 }
 
-function openNewSeasonModal(){
-  nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1; wizardGoTo(1)
-  const grid=document.getElementById("ns-teams-grid"); grid.innerHTML=""
-  allTeams.forEach(t=>{
-    const div=document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
-    div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
-    grid.appendChild(div)
-  })
-  updateTeamsCount(); selectStructure("none")
-  document.getElementById("ns-name").value=""
-  document.getElementById("ns-season-number").textContent="— vyber nejdřív soutěž"
-  document.getElementById("ns-group-count").value="1"
-  document.getElementById("newSeasonOverlay").classList.add("open")
+function renderBracketMatch(m){
+  if(!m) return `<div class="bracket-match">
+    <div class="bm-team"><span class="bm-name" style="color:#ccc;">TBD</span><span class="bm-score">—</span></div>
+    <div class="bm-team"><span class="bm-name" style="color:#ccc;">TBD</span><span class="bm-score">—</span></div>
+  </div>`
+  const home=allTeams[m.home_team], away=allTeams[m.away_team]
+  if(!home||!away) return ""
+  const played=m.home_score!=null
+  const hg=played?Number(m.home_score):null, ag=played?Number(m.away_score):null
+  const hWin=played&&hg>ag, aWin=played&&ag>hg
+  return `<div class="bracket-match ${played?'played':''}">
+    <div class="bm-team ${hWin?'winner':''}">
+      <img class="bm-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
+      <span class="bm-name ${hWin?'winner':''}">${shortName(home.name)}</span>
+      <span class="bm-score ${hWin?'winner':''}">${played?hg:'—'}</span>
+    </div>
+    <div class="bm-team ${aWin?'winner':''}">
+      <img class="bm-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
+      <span class="bm-name ${aWin?'winner':''}">${shortName(away.name)}</span>
+      <span class="bm-score ${aWin?'winner':''}">${played?ag:'—'}</span>
+    </div>
+  </div>`
 }
-function closeNewSeasonModal(){ document.getElementById("newSeasonOverlay").classList.remove("open") }
 
-async function onNsCompetitionChange(){
-  const compId = document.getElementById("ns-competition").value
-  if (!compId) { document.getElementById("ns-season-number").textContent = "— vyber nejdřív soutěž"; return }
-  const {data:existing} = await db.from("seasons").select("id").eq("competition_id", compId)
-  const num = (existing||[]).length + 1
-  document.getElementById("ns-season-number").innerHTML = `<span class="season-number-badge">${num}. sezóna</span>`
-}
+function renderBracket(allM,qfStages,sfStages,thirdStage,finalStage){
+  const getMatch=s=>s?allM.find(m=>m.stage_id===s.id)||null:null
+  let html=`<div class="bracket-wrap"><div class="bracket">`
 
-function wizardGoTo(step){
-  for(let i=1;i<=5;i++){
-    document.getElementById(`wp-${i}`).classList.toggle("active",i===step)
-    const ws=document.getElementById(`ws-${i}`); ws.classList.remove("active","done")
-    if(i===step) ws.classList.add("active"); else if(i<step) ws.classList.add("done")
+  if(qfStages.length){
+    html+=`<div class="bracket-round"><div class="bracket-round-title">Čtvrtfinále</div><div class="bracket-matches">`
+    qfStages.map(s=>getMatch(s)).forEach(m=>{ html+=renderBracketMatch(m) })
+    html+=`</div></div>`
+    html+=`<div class="bracket-connector">${qfStages.map(()=>`<div class="bc-line"></div>`).join('')}</div>`
   }
-}
 
-function wizardNext(current){
-  if(current===1){
-    if(!document.getElementById("ns-competition").value){ alert("Vyber soutěž!"); return }
-    if(!document.getElementById("ns-name").value.trim()){ alert("Zadej název!"); return }
-    wizardGoTo(2)
-  } else if(current===2){
-    if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
-    wizardGoTo(3)
-  } else if(current===3){
-    nsGroupCount = parseInt(document.getElementById("ns-group-count").value) || 1
-    wizardGoTo(4)
-  } else if(current===4){
-    buildSummary(); wizardGoTo(5)
+  if(sfStages.length){
+    html+=`<div class="bracket-round"><div class="bracket-round-title">Semifinále</div><div class="bracket-matches">`
+    sfStages.map(s=>getMatch(s)).forEach(m=>{ html+=renderBracketMatch(m) })
+    html+=`</div></div>`
+    html+=`<div class="bracket-connector">${sfStages.map(()=>`<div class="bc-line"></div>`).join('')}</div>`
   }
-}
-function wizardPrev(current){ wizardGoTo(current-1) }
 
-function toggleTeam(teamId){
-  const div=document.getElementById(`tc-${teamId}`), box=document.getElementById(`tcb-${teamId}`)
-  if(nsSelectedTeams.has(teamId)){ nsSelectedTeams.delete(teamId); div.classList.remove("selected"); box.textContent="" }
-  else{ nsSelectedTeams.add(teamId); div.classList.add("selected"); box.textContent="✓" }
-  updateTeamsCount()
-}
-function updateTeamsCount(){ document.getElementById("ns-teams-count").textContent=`Vybráno ${nsSelectedTeams.size} týmů` }
-
-function selectStructure(val){
-  nsSelectedStructure=val
-  ;["none","final","sf","qf"].forEach(v=>document.getElementById(`struct-${v}`).classList.toggle("selected",v===val))
-}
-
-function getStagesForStructure(groupCount, playoffStructure){
-  const stages = []
-  const groupLabels = ['A','B','C','D','E','F','G','H','I','J']
-  let order = 1
-  if (groupCount === 1) {
-    stages.push({name:"Základní část", order:order++, parent:null})
-  } else {
-    for (let g=0; g<groupCount; g++) {
-      stages.push({name:`Skupina ${groupLabels[g]}`, order:order++, parent:null})
-    }
+  html+=`<div class="bracket-round"><div class="bracket-round-title">Finále</div><div class="bracket-matches">`
+  if(thirdStage){
+    html+=`<div style="text-align:center;font-size:10px;font-weight:700;color:#7c3aed;letter-spacing:.08em;margin-bottom:5px;text-transform:uppercase;">O 3. místo</div>`
+    html+=renderBracketMatch(getMatch(thirdStage))
+    html+=`<div style="height:14px;"></div>`
   }
-  if (playoffStructure === 'none') return stages
-  stages.push({name:"Playoff", order:order++, parent:null})
-  if (playoffStructure === 'final'){
-    stages.push({name:"O 3. místo", order:order++, parent:"Playoff"})
-    stages.push({name:"Finále", order:order++, parent:"Playoff"})
-  } else if (playoffStructure === 'sf'){
-    stages.push({name:"Semifinále 1", order:order++, parent:"Playoff"})
-    stages.push({name:"Semifinále 2", order:order++, parent:"Playoff"})
-    stages.push({name:"O 3. místo", order:order++, parent:"Playoff"})
-    stages.push({name:"Finále", order:order++, parent:"Playoff"})
-  } else if (playoffStructure === 'qf'){
-    stages.push({name:"Čtvrtfinále 1", order:order++, parent:"Playoff"})
-    stages.push({name:"Čtvrtfinále 2", order:order++, parent:"Playoff"})
-    stages.push({name:"Čtvrtfinále 3", order:order++, parent:"Playoff"})
-    stages.push({name:"Čtvrtfinále 4", order:order++, parent:"Playoff"})
-    stages.push({name:"Semifinále 1", order:order++, parent:"Playoff"})
-    stages.push({name:"Semifinále 2", order:order++, parent:"Playoff"})
-    stages.push({name:"O 3. místo", order:order++, parent:"Playoff"})
-    stages.push({name:"Finále", order:order++, parent:"Playoff"})
-  }
-  return stages
-}
+  html+=`<div style="text-align:center;font-size:10px;font-weight:700;color:#d4af37;letter-spacing:.08em;margin-bottom:5px;text-transform:uppercase;">🏆 Finále</div>`
+  html+=renderBracketMatch(getMatch(finalStage))
+  html+=`</div></div>`
 
-function buildSummary(){
-  const compId=document.getElementById("ns-competition").value
-  const name=document.getElementById("ns-name").value.trim()
-  const comp=allCompetitions.find(c=>c.id===compId)
-  const stages=getStagesForStructure(nsGroupCount, nsSelectedStructure)
-  const teams=[...nsSelectedTeams].map(id=>teamsMap[id]?.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'))
-  const structLabels={none:"Žádný",final:"Finále + O 3. místo",sf:"SF + Finále + O 3. místo",qf:"ČF + SF + Finále + O 3. místo"}
-  const groupLabel = nsGroupCount === 1 ? "Jedna základní část" : `${nsGroupCount} skupiny/skupin (${['A','B','C','D','E','F','G','H','I','J'].slice(0,nsGroupCount).join(', ')})`
-  document.getElementById("ns-summary").innerHTML=`
-   <table style="width:100%;font-size:13px;border-collapse:collapse;">
-    <tr><td style="padding:6px 0;color:#666;width:130px;">Soutěž:</td><td style="font-weight:700;">${comp?.name||"?"}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;">Název:</td><td style="font-weight:700;">${name}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;">Základní část:</td><td style="font-weight:700;">${groupLabel}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;">Playoff:</td><td style="font-weight:700;">${structLabels[nsSelectedStructure]}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Stages:</td><td style="font-weight:700;">${stages.map(s=>s.name).join(", ")}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Týmy (${teams.length}):</td><td style="font-weight:700;">${teams.join(", ")}</td></tr>
-   </table>`
-}
-
-async function createSeason(){
-  const compId=document.getElementById("ns-competition").value
-  const name=document.getElementById("ns-name").value.trim()
-  const {data:existingSeasons}=await db.from("seasons").select("id").eq("competition_id",compId)
-  const seasonNumber=(existingSeasons||[]).length+1
-  const fullName=`${name} - ${seasonNumber}. sezóna`
-  const {data:season,error:e1}=await db.from("seasons").insert({name:fullName,competition_id:compId}).select().single()
-  if(e1){ alert("❌ "+e1.message); return }
-  const seasonId=season.id
-  const stageDefs=getStagesForStructure(nsGroupCount, nsSelectedStructure)
-  const stageIdMap={}
-  for(const s of stageDefs){
-    const parentId=s.parent?stageIdMap[s.parent]:null
-    const {data:stage,error:e2}=await db.from("stages").insert({name:s.name,order:s.order,season_id:seasonId,parent_stage_id:parentId}).select().single()
-    if(e2){ alert("❌ "+e2.message); return }
-    stageIdMap[s.name]=stage.id
-  }
-  const teamInserts=[...nsSelectedTeams].map(teamId=>({season_id:seasonId,team_id:teamId}))
-  if(teamInserts.length>0){ const {error:e3}=await db.from("season_teams").insert(teamInserts); if(e3){ alert("❌ "+e3.message); return } }
-  const {data:newSeasons}=await db.from("seasons").select("*").order("created_at",{ascending:false})
-  allSeasons=newSeasons||[]
-  const {data:newStages}=await db.from("stages").select("*").order("order",{ascending:true})
-  allStages=newStages||[]
-  const seasonSel=document.getElementById("seasonFilter")
-  seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
-  const mSeason=document.getElementById("m-season")
-  mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
-  closeNewSeasonModal(); seasonSel.value=seasonId; onSeasonFilterChange()
-  alert(`✅ Sezóna "${fullName}" vytvořena!`)
+  html+=`</div></div>`
+  return html
 }
 
 init()
