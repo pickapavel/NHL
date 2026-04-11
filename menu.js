@@ -277,6 +277,17 @@ const items = [
     pages: ['olympiada.html']
   },
   {
+    type: 'dropdown-with-link',
+    icon: '🌍',
+    label: 'Mistrovství světa',
+    href: 'ms.html',
+    pages: ['ms.html', 'msstatistiky.html'],
+    children: [
+      { icon: '🏒', label: 'Sezóna – 01', href: 'ms.html',           pages: ['ms.html'] },
+      { icon: '📊', label: 'Statistiky MS', href: 'msstatistiky.html', pages: ['msstatistiky.html'] },
+    ]
+  },
+  {
     type: 'link',
     icon: '⭐',
     label: 'Rating',
@@ -336,6 +347,30 @@ items.forEach(item => {
     a.href = item.href
     a.innerHTML = `<span>${item.icon}</span><span>${item.label}</span>`
     wrap.appendChild(a)
+
+  } else if(item.type === 'dropdown-with-link'){
+    // Klik na label = přejdi na stránku, šipka = otevři dropdown
+    const btn = document.createElement('button')
+    btn.className = 'nav-link ' + isActive(item.pages)
+    btn.innerHTML = `<span>${item.icon}</span><a href="${item.href}" style="color:inherit;text-decoration:none;" onclick="event.stopPropagation()">${item.label}</a><span class="nav-arrow">▼</span>`
+    btn.onclick = (e) => {
+      e.stopPropagation()
+      const isOpen = wrap.classList.contains('open')
+      document.querySelectorAll('.nav-item.open').forEach(el => el.classList.remove('open'))
+      if(!isOpen) wrap.classList.add('open')
+    }
+    const dropdown = document.createElement('div')
+    dropdown.className = 'nav-dropdown'
+    item.children.forEach(child => {
+      const a = document.createElement('a')
+      a.href = child.href
+      a.className = isActive(child.pages)
+      a.innerHTML = `<span>${child.icon}</span><span>${child.label}</span>`
+      dropdown.appendChild(a)
+    })
+    wrap.appendChild(btn)
+    wrap.appendChild(dropdown)
+
   } else if(item.type === 'dropdown'){
     const btn = document.createElement('button')
     btn.className = 'nav-link ' + isActive(item.pages)
@@ -397,7 +432,8 @@ items.forEach((item) => {
     a.innerHTML = `<span>${item.icon}</span><span>${item.label}</span>`
     a.onclick = closeMobileMenu
     mobileItems.appendChild(a)
-  } else if(item.type === 'dropdown'){
+
+  } else if(item.type === 'dropdown-with-link' || item.type === 'dropdown'){
     const sep = document.createElement('div')
     sep.className = 'nav-mobile-sep'
     mobileItems.appendChild(sep)
@@ -407,8 +443,14 @@ items.forEach((item) => {
 
     const groupBtn = document.createElement('button')
     groupBtn.className = 'nav-mobile-group-btn ' + isActive(item.pages)
-    groupBtn.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="nav-mobile-group-arrow">▼</span>`
-    groupBtn.onclick = () => { group.classList.toggle('open') }
+
+    if(item.type === 'dropdown-with-link'){
+      groupBtn.innerHTML = `<span>${item.icon}</span><a href="${item.href}" style="color:inherit;text-decoration:none;flex:1;" onclick="closeMobileMenu()">${item.label}</a><span class="nav-mobile-group-arrow">▼</span>`
+      groupBtn.onclick = () => { group.classList.toggle('open') }
+    } else {
+      groupBtn.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="nav-mobile-group-arrow">▼</span>`
+      groupBtn.onclick = () => { group.classList.toggle('open') }
+    }
 
     const children = document.createElement('div')
     children.className = 'nav-mobile-group-children'
@@ -467,12 +509,10 @@ function insertNav(){
 }
 
 function tryInsert(attempts){
-  // Pokud je stránka připravená, vlož hned
   if(document.body){
     insertNav()
     return
   }
-  // Jinak zkus znovu, max 20x po 50ms
   if(attempts > 0){
     setTimeout(() => tryInsert(attempts - 1), 50)
   }
