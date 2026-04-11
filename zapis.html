@@ -567,8 +567,6 @@ async function recalculateAllRatings(){
   const {data:seasons}=await db.from("seasons").select("*").order("created_at",{ascending:true})
   const seasonOrder={}
   ;(seasons||[]).forEach((s,i)=>seasonOrder[s.id]=i)
-  const {data:stages}=await db.from("stages").select("id").eq("name","Základní část")
-  const zakladniStageIds=new Set((stages||[]).map(s=>s.id))
   const {data:matches}=await db.from("matches").select("*").not("home_score","is",null).not("away_score","is",null)
   if(!matches||!matches.length) return
   matches.sort((a,b)=>{ const sA=seasonOrder[a.season_id]??999, sB=seasonOrder[b.season_id]??999; if(sA!==sB) return sA-sB; return Number(a.round)-Number(b.round) })
@@ -576,7 +574,7 @@ async function recalculateAllRatings(){
   if(!teams) return
   const eloRatings={}, formRatings={}, formHistory={}
   teams.forEach(t=>{ eloRatings[t.id]=R_START; formRatings[t.id]=R_START; formHistory[t.id]=[] })
-  matches.filter(m=>zakladniStageIds.has(m.stage_id)).forEach(m=>{
+  matches.forEach(m=>{
     const h=m.home_team, a=m.away_team
     if(eloRatings[h]===undefined||eloRatings[a]===undefined) return
     const sH=rGetScore(m,h), sA=rGetScore(m,a)
