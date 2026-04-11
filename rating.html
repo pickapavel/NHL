@@ -109,6 +109,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 <div class="filter-bar">
  <button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
  <button class="filter-btn" onclick="setFilter('reprezentace',this)">Reprezentace</button>
+ <button class="filter-btn" onclick="setFilter('ms',this)">Mistrovství světa</button>
  <button class="filter-btn" onclick="setFilter('olympiada',this)">Olympiáda</button>
  <button class="filter-btn" onclick="setFilter('all',this)">Všechny</button>
  <div class="team-filter-wrap">
@@ -227,7 +228,6 @@ async function load(){
 
 function buildTeamSelect(){
  const sel = document.getElementById("teamFilterSelect")
- // Zachovej první option
  sel.innerHTML = '<option value="">— Filtrovat tým —</option>'
  const sorted = [...allTeams].sort((a,b)=>a.name.localeCompare(b.name))
  sorted.forEach(t=>{
@@ -262,7 +262,6 @@ window.clearTeamFilter = function(){
 }
 
 window.showAllMatches = function(teamId){
- // Přerenderuj jen tento tým se všemi zápasy
  const card = document.getElementById("card-"+teamId)
  if(!card) return
  const team = teamMap[teamId]
@@ -271,7 +270,6 @@ window.showAllMatches = function(teamId){
  const lastFiveIds = new Set((historyMap[teamId]||[]).slice(-FORM_WINDOW).map(h=>h.match.id))
  const tbody = card.querySelector("tbody")
  tbody.innerHTML = buildMatchRows(teamId, teamHistory, lastFiveIds, true)
- // Skryj tlačítko "zobrazit vše"
  const showRow = card.querySelector(".show-all-row")
  if(showRow) showRow.remove()
 }
@@ -333,20 +331,25 @@ function render(){
  const cont = document.getElementById("content")
  cont.innerHTML = ""
 
- // Filtr podle soutěže
  let filtered = allTeams
  if(currentTeamId){
-  // Jeden tým — ignoruj soutěžní filtr
   filtered = allTeams.filter(t=>t.id===currentTeamId)
  } else {
-  if(currentFilter==="extraliga")     filtered=allTeams.filter(t=>t.in_extraliga)
+  if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
   else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace)
+  else if(currentFilter==="ms")           filtered=allTeams.filter(t=>t.in_reprezentace) // MS týmy jsou označeny in_reprezentace — uprav pokud máš in_ms
   else if(currentFilter==="olympiada")    filtered=allTeams.filter(t=>t.in_olympiada)
  }
 
  const sorted = filtered
   .map(t=>({...t, elo:t.rating_overall||START_RATING, form:t.rating_form||START_RATING}))
-  .sort((a,b)=>b.elo-a.elo)
+  .sort((a,b)=>{
+   const aMatches=(historyMap[a.id]||[]).length
+   const bMatches=(historyMap[b.id]||[]).length
+   if(aMatches===0&&bMatches>0) return 1
+   if(bMatches===0&&aMatches>0) return -1
+   return b.elo-a.elo
+  })
 
  const singleTeam = !!currentTeamId
 
