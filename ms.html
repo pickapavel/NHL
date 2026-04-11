@@ -36,54 +36,53 @@ body{font-family:'Inter',Arial,sans-serif;background:#f0f4f8;color:#1a2a3c;min-h
 .section-label-line{flex:1;height:2px;background:linear-gradient(90deg,#d4af37,transparent);border-radius:2px;}
 .section-label-badge{background:#0b2a3c;color:#d4af37;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;}
 
-/* SKUPINY — tabulka + zápasy vedle sebe */
+/* SKUPINA BLOCK */
 .group-block{margin-bottom:40px;}
 .group-block-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #d4af37;}
 .group-block-header h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:#0b2a3c;letter-spacing:.5px;}
-.group-block-inner{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start;}
+.group-block-inner{display:grid;grid-template-columns:560px 1fr;gap:20px;align-items:start;}
 
 /* TABULKA */
 .group-table-wrap{background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.07);overflow:hidden;border:1px solid #e0e8f0;}
 .group-table{width:100%;border-collapse:collapse;}
 .group-table thead tr{background:#0b2a3c;}
-.group-table thead th{padding:10px 10px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.08em;text-transform:uppercase;}
-.group-table thead th.th-team{text-align:left;padding-left:14px;}
+.group-table thead th{padding:9px 6px;text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+.group-table thead th.th-team{text-align:left;padding-left:10px;}
 .group-table tbody tr{border-bottom:1px solid #f0f4f8;transition:background .12s;}
 .group-table tbody tr:last-child{border-bottom:none;}
 .group-table tbody tr:hover{background:#f7fafd;}
-.group-table tbody td{padding:9px 10px;text-align:center;font-size:13px;color:#333;}
-.group-table tbody td.td-team{text-align:left;padding-left:14px;}
-.gt-rank{font-weight:700;color:#aaa;font-size:12px;width:24px;}
-.gt-team-cell{display:flex;align-items:center;gap:8px;}
-.gt-logo{width:24px;height:24px;object-fit:contain;flex-shrink:0;}
-.gt-name{font-weight:600;font-size:13px;color:#1a2a3c;}
-.gt-pts{background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:2px 9px;border-radius:5px;display:inline-block;min-width:28px;text-align:center;}
+.group-table tbody td{padding:8px 6px;text-align:center;font-size:12px;color:#333;}
+.group-table tbody td.td-team{text-align:left;padding-left:10px;}
+.gt-rank{font-weight:700;color:#aaa;font-size:11px;width:20px;}
+.gt-team-cell{display:flex;align-items:center;gap:6px;}
+.gt-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;}
+.gt-name{font-weight:600;font-size:12px;color:#1a2a3c;white-space:nowrap;}
+.gt-pts{background:#0b2a3c;color:white;font-weight:700;font-size:12px;padding:2px 7px;border-radius:5px;display:inline-block;min-width:26px;text-align:center;}
 .gt-w{color:#16a34a;font-weight:700;}
 .gt-l{color:#dc2626;font-weight:700;}
-.gt-num{color:#666;font-weight:500;}
-.gt-pm-pos{color:#16a34a;font-weight:600;}
-.gt-pm-neg{color:#dc2626;font-weight:600;}
-.gt-pm-neu{color:#aaa;font-weight:500;}
+.gt-num{color:#666;font-weight:500;font-size:11px;}
+.gt-pm-pos{color:#16a34a;font-weight:600;font-size:11px;}
+.gt-pm-neg{color:#dc2626;font-weight:600;font-size:11px;}
+.gt-pm-neu{color:#aaa;font-weight:500;font-size:11px;}
 
-/* ZÁPASY VE SKUPINĚ */
-.group-matches-wrap{display:flex;flex-direction:column;gap:6px;}
-.match-card{background:white;border:1px solid #e0e8f0;border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:32px 1fr 90px 1fr auto;align-items:center;gap:8px;transition:all .12s;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-.match-card:hover{border-color:#2f9ec9;box-shadow:0 2px 10px rgba(47,158,201,0.12);}
+/* ZÁPASY */
+.group-matches-wrap{display:flex;flex-direction:column;gap:5px;}
+.match-card{background:white;border:1px solid #e0e8f0;border-radius:9px;padding:8px 12px;display:grid;grid-template-columns:1fr 80px 1fr auto;align-items:center;gap:8px;transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.match-card:hover{border-color:#2f9ec9;box-shadow:0 2px 8px rgba(47,158,201,0.1);}
 .match-card.played{border-left:3px solid #16a34a;}
-.match-round-badge{background:#f0f4f8;color:#0b2a3c;font-size:11px;font-weight:700;padding:3px 6px;border-radius:6px;text-align:center;font-family:'Rajdhani',sans-serif;}
-.match-team-cell{display:flex;align-items:center;gap:7px;min-width:0;}
+.match-team-cell{display:flex;align-items:center;gap:6px;min-width:0;}
 .match-team-cell.away{flex-direction:row-reverse;}
-.match-team-logo{width:24px;height:24px;object-fit:contain;flex-shrink:0;}
+.match-team-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;}
 .match-team-name{font-weight:600;font-size:12px;color:#1a2a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .match-score-cell{text-align:center;}
-.score-pill{background:#0b2a3c;color:white;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-block;min-width:58px;text-align:center;}
-.score-pill.empty{background:#f0f4f8;color:#bbb;font-size:13px;font-weight:400;}
+.score-pill{background:#0b2a3c;color:white;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block;min-width:54px;text-align:center;}
+.score-pill.empty{background:#f0f4f8;color:#bbb;font-size:12px;font-weight:400;}
 .score-pill.played{background:linear-gradient(135deg,#0b2a3c,#1a4a6c);}
 .score-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;display:block;text-align:center;margin-top:2px;}
 .score-tag.ot{background:#fef3c7;color:#d97706;}
 .score-tag.sn{background:#ede9fe;color:#7c3aed;}
-.match-btns{display:flex;gap:5px;flex-shrink:0;}
-.btn-xs{display:inline-flex;align-items:center;gap:3px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:10px;padding:5px 8px;transition:all .12s;white-space:nowrap;font-family:'Inter',sans-serif;}
+.match-btns{display:flex;gap:4px;flex-shrink:0;}
+.btn-xs{display:inline-flex;align-items:center;gap:3px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:10px;padding:4px 7px;transition:all .12s;white-space:nowrap;font-family:'Inter',sans-serif;}
 .btn-xs-stat{background:#e8f4fd;color:#1a5276;border:1px solid #b8d8f0;}
 .btn-xs-stat:hover{background:#d0eafb;}
 .btn-xs-bet{background:#e8f8ee;color:#166534;border:1px solid #bbf7d0;}
@@ -113,15 +112,14 @@ body{font-family:'Inter',Arial,sans-serif;background:#f0f4f8;color:#1a2a3c;min-h
 .loading-state{text-align:center;padding:80px 20px;color:#aaa;}
 .loading-state .spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:#0b2a3c;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 .no-season{text-align:center;padding:80px 20px;color:#aaa;font-size:14px;}
 .no-season .icon{font-size:48px;margin-bottom:12px;}
 
-@media(max-width:900px){
+@media(max-width:1000px){
   .group-block-inner{grid-template-columns:1fr;}
 }
 @media(max-width:600px){
-  .match-card{grid-template-columns:28px 1fr 80px 1fr;}
+  .match-card{grid-template-columns:1fr 70px 1fr;}
   .match-btns{display:none;}
 }
 </style>
@@ -160,6 +158,11 @@ const supabase = createClient("https://qaocbodrflsaerxntfui.supabase.co","sb_pub
 const MS_COMPETITION_ID = "f0375c91-5b76-475e-afab-3d867b6b02d1"
 
 let allSeasons=[], allStages=[], allTeams={}
+
+// Zkrátí název týmu — odstraní příponu "(K)" / "(P)" a případně zkrátí
+function shortName(name){
+  return (name||'').replace(/\s*\((K|P)\)\s*$/,'').trim()
+}
 
 async function init(){
   const [sRes,stRes,tRes] = await Promise.all([
@@ -209,7 +212,6 @@ async function loadSeason(seasonId){
 
   let html=""
 
-  // ZÁKLADNÍ ČÁST — každá skupina má tabulku + zápasy vedle sebe
   if(groupStages.length){
     html+=`<div class="section-label"><h2>Základní část</h2><div class="section-label-line"></div><span class="section-label-badge">Skupiny</span></div>`
     for(const gs of groupStages){
@@ -218,13 +220,12 @@ async function loadSeason(seasonId){
       html+=`<div class="group-block">`
       html+=`<div class="group-block-header"><h3>🏒 ${gs.name}</h3></div>`
       html+=`<div class="group-block-inner">`
-      html+=renderGroupTable(gs, gMatchesPlayed)
+      html+=renderGroupTable(gMatchesPlayed)
       html+=`<div class="group-matches-wrap">${gMatchesAll.map(m=>renderMatchCard(m)).join('')}</div>`
       html+=`</div></div>`
     }
   }
 
-  // PLAYOFF BRACKET
   if(playoffParent&&(qfStages.length||sfStages.length||finalStage)){
     html+=`<div class="bracket-section">`
     html+=`<div class="section-label"><h2>Playoff</h2><div class="section-label-line"></div><span class="section-label-badge">Pavouk</span></div>`
@@ -235,20 +236,22 @@ async function loadSeason(seasonId){
   document.getElementById("mainContent").innerHTML=html
 }
 
-function renderGroupTable(stage, matches){
+function renderGroupTable(matches){
   const table={}
   matches.forEach(m=>{
-    if(!table[m.home_team]) table[m.home_team]={b:0,z:0,v:0,p:0,vsn:0,psn:0,gf:0,ga:0,team:m.home_team}
-    if(!table[m.away_team]) table[m.away_team]={b:0,z:0,v:0,p:0,vsn:0,psn:0,gf:0,ga:0,team:m.away_team}
+    if(!table[m.home_team]) table[m.home_team]={b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0,team:m.home_team}
+    if(!table[m.away_team]) table[m.away_team]={b:0,z:0,v:0,p:0,vp:0,pp:0,vsn:0,psn:0,gf:0,ga:0,team:m.away_team}
     const h=table[m.home_team], a=table[m.away_team]
     const hg=Number(m.home_score), ag=Number(m.away_score)
     h.z++;a.z++; h.gf+=hg;h.ga+=ag; a.gf+=ag;a.ga+=hg
     let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
     const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
     const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
-    if(isSN||isOT){
+    if(isSN){
       if(hg>ag){h.vsn++;h.b+=2;a.psn++;a.b+=1}else{a.vsn++;a.b+=2;h.psn++;h.b+=1}
-    }else{
+    } else if(isOT){
+      if(hg>ag){h.vp++;h.b+=2;a.pp++;a.b+=1}else{a.vp++;a.b+=2;h.pp++;h.b+=1}
+    } else {
       if(hg>ag){h.v++;h.b+=3;a.p++}else{a.v++;a.b+=3;h.p++}
     }
   })
@@ -256,20 +259,24 @@ function renderGroupTable(stage, matches){
   const arr=Object.values(table).sort((a,b)=>b.b-a.b||(b.gf-b.ga)-(a.gf-a.ga))
   let rows=""
   if(!arr.length){
-    rows=`<tr><td colspan="8" style="text-align:center;padding:18px;color:#bbb;font-size:13px;">Zatím žádné zápasy</td></tr>`
+    rows=`<tr><td colspan="13" style="text-align:center;padding:16px;color:#bbb;font-size:12px;">Zatím žádné zápasy</td></tr>`
   } else {
     arr.forEach((t,i)=>{
       const team=allTeams[t.team]; if(!team) return
       const pm=t.gf-t.ga
       rows+=`<tr>
         <td class="gt-rank">${i+1}</td>
-        <td class="td-team"><div class="gt-team-cell"><img class="gt-logo" src="./logos/${team.logo}" onerror="this.style.display='none'"><span class="gt-name">${team.name}</span></div></td>
+        <td class="td-team"><div class="gt-team-cell"><img class="gt-logo" src="./logos/${team.logo}" onerror="this.style.display='none'"><span class="gt-name">${shortName(team.name)}</span></div></td>
         <td><span class="gt-pts">${t.b}</span></td>
+        <td class="gt-num">${t.gf}:${t.ga}</td>
+        <td class="${pm>0?'gt-pm-pos':pm<0?'gt-pm-neg':'gt-pm-neu'}">${pm>0?'+'+pm:pm}</td>
         <td class="gt-num">${t.z}</td>
         <td class="gt-w">${t.v}</td>
         <td class="gt-l">${t.p}</td>
-        <td class="gt-num">${t.gf}:${t.ga}</td>
-        <td class="${pm>0?'gt-pm-pos':pm<0?'gt-pm-neg':'gt-pm-neu'}">${pm>0?'+'+pm:pm}</td>
+        <td class="gt-num">${t.vp}</td>
+        <td class="gt-num">${t.pp}</td>
+        <td class="gt-num">${t.vsn}</td>
+        <td class="gt-num">${t.psn}</td>
       </tr>`
     })
   }
@@ -277,9 +284,18 @@ function renderGroupTable(stage, matches){
   return `<div class="group-table-wrap">
     <table class="group-table">
       <thead><tr>
-        <th style="width:24px">#</th>
+        <th style="width:20px">#</th>
         <th class="th-team">Tým</th>
-        <th>Body</th><th>Z</th><th>V</th><th>P</th><th>Skóre</th><th>+/-</th>
+        <th>Body</th>
+        <th>Skóre</th>
+        <th>+/-</th>
+        <th title="Zápasy">Z</th>
+        <th title="Výhry">V</th>
+        <th title="Prohry">P</th>
+        <th title="Výhra po prodloužení">VP</th>
+        <th title="Prohra po prodloužení">PP</th>
+        <th title="Výhra po nájezdech">VSN</th>
+        <th title="Prohra po nájezdech">PSN</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -303,19 +319,18 @@ function renderMatchCard(m){
     :`<span class="score-pill empty">- : -</span>`
 
   return `<div class="match-card ${played?'played':''}">
-    <span class="match-round-badge">${m.round}</span>
     <div class="match-team-cell">
       <img class="match-team-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-      <span class="match-team-name">${home.name}</span>
+      <span class="match-team-name">${shortName(home.name)}</span>
     </div>
     <div class="match-score-cell">${scoreHtml}</div>
     <div class="match-team-cell away">
       <img class="match-team-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-      <span class="match-team-name">${away.name}</span>
+      <span class="match-team-name">${shortName(away.name)}</span>
     </div>
     <div class="match-btns">
-      <button class="btn-xs btn-xs-stat" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>
-      <button class="btn-xs btn-xs-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>
+      <button class="btn-xs btn-xs-stat" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Stat</button>
+      <button class="btn-xs btn-xs-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Bet</button>
     </div>
   </div>`
 }
@@ -333,12 +348,12 @@ function renderBracketMatch(m){
   return `<div class="bracket-match ${played?'played':''}">
     <div class="bm-team ${hWin?'winner':''}">
       <img class="bm-logo" src="./logos/${home.logo}" onerror="this.style.display='none'">
-      <span class="bm-name ${hWin?'winner':''}">${home.name}</span>
+      <span class="bm-name ${hWin?'winner':''}">${shortName(home.name)}</span>
       <span class="bm-score ${hWin?'winner':''}">${played?hg:'—'}</span>
     </div>
     <div class="bm-team ${aWin?'winner':''}">
       <img class="bm-logo" src="./logos/${away.logo}" onerror="this.style.display='none'">
-      <span class="bm-name ${aWin?'winner':''}">${away.name}</span>
+      <span class="bm-name ${aWin?'winner':''}">${shortName(away.name)}</span>
       <span class="bm-score ${aWin?'winner':''}">${played?ag:'—'}</span>
     </div>
   </div>`
