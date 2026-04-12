@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pohár</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
+
+.header{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);padding:20px 30px;display:flex;align-items:center;gap:16px;margin-bottom:32px;}
+.header-logo{width:56px;height:56px;object-fit:contain;mix-blend-mode:lighten;}
+.header-title{font-size:22px;font-weight:800;color:white;letter-spacing:-.3px;}
+.header-sub{font-size:12px;color:#7ab0cc;font-weight:500;margin-top:3px;text-transform:uppercase;letter-spacing:.06em;}
+
+.wrapper{max-width:100%;margin:0 auto;padding:0 20px 60px;}
+
+.top-bar{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+.season-select{padding:9px 16px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;min-width:220px;}
+.season-select:focus{outline:none;border-color:#2f9ec9;}
+.phase-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.phase-tab{padding:7px 16px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
+.phase-tab:hover{background:#dce8f5;border-color:#2f9ec9;}
+.phase-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+.phase-tab.completed{border-color:#22c55e;color:#166534;}
+.phase-tab.completed.active{background:#166534;color:white;}
+
+.bracket-wrap{overflow-x:auto;padding-bottom:20px;}
+.bracket{display:flex;gap:0;align-items:stretch;min-width:max-content;}
+
+.round-col{display:flex;flex-direction:column;min-width:200px;}
+.round-header{text-align:center;padding:10px 8px;font-size:11px;font-weight:800;color:#3a6a9c;text-transform:uppercase;letter-spacing:.08em;background:#f0f6fc;border-bottom:2px solid #e0ecf8;border-right:1px solid #e0ecf8;white-space:nowrap;}
+.round-matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;padding:12px 0;}
+
+.match-slot{display:flex;flex-direction:column;margin:6px 8px;position:relative;}
+.match-slot::after{content:'';position:absolute;right:-9px;top:50%;width:9px;height:2px;background:#c8d8e8;}
+.match-slot:last-child::after{display:none;}
+
+.match-card{background:white;border-radius:10px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 2px 6px rgba(26,58,92,.06);min-width:184px;}
+.match-card.played{border-color:#b8d8e8;}
+.match-card.tbd{opacity:.5;}
+
+.match-team{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #f0f0f0;position:relative;}
+.match-team:last-child{border-bottom:none;}
+.match-team.winner{background:#f0fdf4;}
+.match-team.loser{background:#fafafa;}
+.match-team-logo{width:22px;height:22px;object-fit:contain;border-radius:4px;flex-shrink:0;}
+.match-team-logo-ph{width:22px;height:22px;border-radius:4px;background:#e8f0f8;flex-shrink:0;}
+.match-team-name{font-size:12px;font-weight:700;color:#1a2a3c;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}
+.match-team-name.tbd{color:#aaa;font-weight:400;font-style:italic;}
+.match-team-score{font-size:13px;font-weight:800;color:#0b2a3c;min-width:20px;text-align:right;}
+.match-team-score.winner{color:#166534;}
+.match-team.winner .match-team-name{color:#166534;}
+
+.match-meta{padding:3px 10px;background:#f7fbff;border-top:1px solid #f0f0f0;font-size:10px;color:#7ab0cc;font-weight:700;display:flex;justify-content:space-between;}
+
+.connector-col{width:20px;display:flex;flex-direction:column;flex:1;}
+
+.loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
+.empty{padding:40px;text-align:center;color:#aaa;font-size:14px;}
+
+.legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;font-size:12px;color:#6b7a8d;}
+.legend-item{display:flex;align-items:center;gap:6px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+.legend-dot-win{background:#22c55e;}
+.legend-dot-pending{background:#c8d8e8;}
+
+.stats-bar{display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;}
+.stat-box{background:white;border-radius:12px;border:1px solid #c8d8e8;padding:12px 20px;text-align:center;box-shadow:0 2px 6px rgba(26,58,92,.06);}
+.stat-val{font-size:22px;font-weight:800;color:#0b2a3c;}
+.stat-label{font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* Pohled podle fáze */
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.phase-match-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 2px 8px rgba(26,58,92,.07);}
+.phase-match-header{background:#0b2a3c;padding:8px 12px;font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;}
+.phase-match-body{padding:10px 12px;}
+.phase-team-row{display:flex;align-items:center;gap:8px;padding:5px 0;}
+.phase-team-row:first-child{border-bottom:1px solid #f0f0f0;padding-bottom:8px;margin-bottom:3px;}
+.phase-team-logo{width:24px;height:24px;object-fit:contain;border-radius:4px;}
+.phase-team-name{font-size:13px;font-weight:700;color:#1a2a3c;flex:1;}
+.phase-team-name.tbd{color:#aaa;font-style:italic;font-weight:400;}
+.phase-team-score{font-size:15px;font-weight:800;color:#0b2a3c;}
+.phase-team-row.winner .phase-team-name{color:#166534;}
+.phase-team-row.winner .phase-team-score{color:#166534;}
+.phase-result-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:4px;}
+.badge-played{background:#dcfce7;color:#166534;}
+.badge-pending{background:#e8f0f8;color:#1a5276;}
+.round-badge-small{display:inline-block;background:#e8f0f8;color:#1a5276;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="header">
+ <img class="header-logo" src="./logos/lokomotiva.png" alt="">
+ <div>
+  <div class="header-title">Extraliga U dvou Blbounů</div>
+  <div class="header-sub">Pohár — pavouk</div>
+ </div>
+</div>
+
+<div class="wrapper">
+ <div class="top-bar">
+  <select class="season-select" id="seasonSelect" onchange="onSeasonChange()">
+   <option value="">-- Načítám... --</option>
+  </select>
+  <div class="phase-tabs" id="phaseTabs"></div>
+ </div>
+
+ <div class="stats-bar" id="statsBar"></div>
+ <div class="legend">
+  <div class="legend-item"><div class="legend-dot legend-dot-win"></div> Vítěz / postoupil</div>
+  <div class="legend-item"><div class="legend-dot legend-dot-pending"></div> Čeká na odehrání</div>
+ </div>
+
+ <div id="content"><div class="loading">Načítám...</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const { createClient } = supabase
+const db = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const POHAR_COMPETITION_ID = "254d4b5e-cb32-4c44-8b00-3010f895359c"
+
+let allSeasons = []
+let allTeams = {}
+let currentSeasonId = ""
+let currentPhase = 0  // 0 = všechny fáze (bracket), 1+ = konkrétní fáze
+let phases = []       // [{label, roundFrom, roundTo, zapasu, tymu}]
+let allMatches = []
+
+async function init(){
+  const [seasonsRes, teamsRes] = await Promise.all([
+    db.from("seasons").select("*, competitions(id,name)").eq("competition_id", POHAR_COMPETITION_ID).order("created_at", {ascending:false}),
+    db.from("teams").select("*")
+  ])
+  allSeasons = seasonsRes.data || []
+  ;(teamsRes.data||[]).forEach(t => allTeams[t.id] = t)
+
+  const sel = document.getElementById("seasonSelect")
+  sel.innerHTML = ""
+  if(!allSeasons.length){
+    sel.innerHTML = '<option value="">Žádná sezóna pohár</option>'
+    document.getElementById("content").innerHTML = '<div class="empty">Žádná pohárová sezóna.</div>'
+    return
+  }
+  allSeasons.forEach(s => {
+    const o = document.createElement("option")
+    o.value = s.id
+    o.textContent = s.name
+    sel.appendChild(o)
+  })
+  currentSeasonId = allSeasons[0].id
+  sel.value = currentSeasonId
+  await loadSeason()
+}
+
+async function onSeasonChange(){
+  currentSeasonId = document.getElementById("seasonSelect").value
+  currentPhase = 0
+  await loadSeason()
+}
+
+async function loadSeason(){
+  document.getElementById("content").innerHTML = '<div class="loading">Načítám...</div>'
+  document.getElementById("phaseTabs").innerHTML = ""
+  document.getElementById("statsBar").innerHTML = ""
+
+  const { data: matches } = await db
+    .from("matches")
+    .select("*")
+    .eq("season_id", currentSeasonId)
+    .order("round", {ascending: true})
+
+  allMatches = matches || []
+
+  if(!allMatches.length){
+    document.getElementById("content").innerHTML = '<div class="empty">Žádné zápasy v této sezóně.</div>'
+    return
+  }
+
+  // Zjisti počet týmů ze season_teams
+  const { data: seasonTeams } = await db
+    .from("season_teams")
+    .select("team_id")
+    .eq("season_id", currentSeasonId)
+
+  const teamCount = (seasonTeams||[]).length
+  buildPhases(teamCount)
+  buildPhaseTabs()
+  buildStatsBar()
+  render()
+}
+
+function buildPhases(teamCount){
+  phases = []
+  let tymu = teamCount
+  let kolo = 1
+  let phaseIdx = 1
+  while(tymu >= 2){
+    const zapasu = Math.floor(tymu / 2)
+    const koloOd = kolo
+    const koloDo = kolo + zapasu - 1
+    const phaseMatches = allMatches.filter(m => m.round >= koloOd && m.round <= koloDo)
+    const playedCount = phaseMatches.filter(m => m.home_score != null).length
+    phases.push({
+      label: phaseIdx === 1 ? `1. kolo` :
+             tymu === 4 ? "Semifinále" :
+             tymu === 2 ? "Finále" :
+             `${phaseIdx}. kolo`,
+      roundFrom: koloOd,
+      roundTo: koloDo,
+      zapasu,
+      tymu,
+      played: playedCount,
+      total: phaseMatches.length,
+      completed: playedCount === zapasu && zapasu > 0
+    })
+    kolo += zapasu
+    tymu = zapasu
+    phaseIdx++
+  }
+}
+
+function buildPhaseTabs(){
+  const bar = document.getElementById("phaseTabs")
+  bar.innerHTML = ""
+
+  // Tab "Vše" (bracket)
+  const all = document.createElement("button")
+  all.className = "phase-tab" + (currentPhase === 0 ? " active" : "")
+  all.textContent = "🏆 Celý pavouk"
+  all.onclick = () => { currentPhase = 0; updateTabs(); render() }
+  bar.appendChild(all)
+
+  phases.forEach((p, i) => {
+    const btn = document.createElement("button")
+    btn.className = "phase-tab" + (p.completed ? " completed" : "") + (currentPhase === i+1 ? " active" : "")
+    btn.textContent = (p.completed ? "✓ " : "") + p.label + ` (${p.played}/${p.total})`
+    btn.onclick = () => { currentPhase = i+1; updateTabs(); render() }
+    bar.appendChild(btn)
+  })
+}
+
+function updateTabs(){
+  const tabs = document.querySelectorAll(".phase-tab")
+  tabs.forEach((tab, i) => {
+    tab.classList.remove("active")
+    if(i === currentPhase) tab.classList.add("active")
+  })
+}
+
+function buildStatsBar(){
+  const totalPlayed = allMatches.filter(m => m.home_score != null).length
+  const totalMatches = allMatches.length
+  const completedPhases = phases.filter(p => p.completed).length
+  const currentPhaseName = phases.find(p => !p.completed)?.label || "Dokončeno"
+
+  document.getElementById("statsBar").innerHTML = `
+   <div class="stat-box"><div class="stat-val">${totalPlayed}/${totalMatches}</div><div class="stat-label">Odehráno zápasů</div></div>
+   <div class="stat-box"><div class="stat-val">${completedPhases}/${phases.length}</div><div class="stat-label">Dokončené fáze</div></div>
+   <div class="stat-box"><div class="stat-val">${currentPhaseName}</div><div class="stat-label">Aktuální fáze</div></div>
+  `
+}
+
+function getWinner(match){
+  if(match.home_score == null) return null
+  return Number(match.home_score) > Number(match.away_score) ? match.home_team : match.away_team
+}
+
+function teamHtml(teamId, score, isWinner, isLoser){
+  const t = allTeams[teamId]
+  const cls = isWinner ? "winner" : isLoser ? "loser" : ""
+  const logoHtml = t?.logo
+    ? `<img class="match-team-logo" src="./logos/${t.logo}" onerror="this.style.display='none'">`
+    : `<div class="match-team-logo-ph"></div>`
+  return `
+   <div class="match-team ${cls}">
+    ${logoHtml}
+    <span class="match-team-name">${t?.name || "?"}</span>
+    ${score != null ? `<span class="match-team-score ${isWinner?"winner":""}">${score}</span>` : ""}
+   </div>`
+}
+
+function tbdHtml(){
+  return `<div class="match-team"><div class="match-team-logo-ph"></div><span class="match-team-name tbd">— TBD —</span></div>`
+}
+
+function render(){
+  if(currentPhase === 0){
+    renderBracket()
+  } else {
+    renderPhase(phases[currentPhase - 1])
+  }
+}
+
+function renderBracket(){
+  const cont = document.getElementById("content")
+
+  // Pro velké počty (32+ zápasů v 1. kole) zobraz fázový pohled místo brackets
+  if(phases.length > 0 && phases[0].zapasu > 16){
+    cont.innerHTML = `<div class="empty" style="padding:30px;color:#1a5276;background:#e8f4fd;border-radius:12px;border:1px solid #b8d8f0;">
+      🏆 Pavouk má ${phases[0].tymu} týmů — zobrazení po fázích je přehlednější.<br>
+      <span style="font-size:12px;color:#7ab0cc;margin-top:6px;display:block;">Vyber konkrétní fázi v záložkách nahoře.</span>
+    </div>`
+    // Automaticky vyber první nedokončenou fázi
+    const firstUnfinished = phases.findIndex(p => !p.completed)
+    if(firstUnfinished >= 0){
+      currentPhase = firstUnfinished + 1
+      updateTabs()
+      renderPhase(phases[firstUnfinished])
+    } else {
+      currentPhase = phases.length
+      updateTabs()
+      renderPhase(phases[phases.length - 1])
+    }
+    return
+  }
+
+  // Bracket vizualizace pro menší turnaje
+  const bracketDiv = document.createElement("div")
+  bracketDiv.className = "bracket-wrap"
+  const bracket = document.createElement("div")
+  bracket.className = "bracket"
+
+  phases.forEach((phase, pi) => {
+    const col = document.createElement("div")
+    col.className = "round-col"
+
+    const header = document.createElement("div")
+    header.className = "round-header"
+    header.textContent = phase.label
+    col.appendChild(header)
+
+    const matchesDiv = document.createElement("div")
+    matchesDiv.className = "round-matches"
+
+    const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
+
+    // Doplň prázdné sloty pokud zápasy ještě nejsou přidané
+    for(let i = 0; i < phase.zapasu; i++){
+      const m = phaseMatches[i]
+      const slot = document.createElement("div")
+      slot.className = "match-slot"
+
+      if(!m){
+        slot.innerHTML = `<div class="match-card tbd">${tbdHtml()}${tbdHtml()}</div>`
+      } else {
+        const winner = getWinner(m)
+        const played = m.home_score != null
+        const suffix = m.result_type === "SN" ? " SN" : m.result_type === "OT" ? " OT" : ""
+        slot.innerHTML = `
+         <div class="match-card ${played?"played":""}">
+          ${teamHtml(m.home_team, played ? m.home_score : null, winner===m.home_team, winner===m.away_team)}
+          ${teamHtml(m.away_team, played ? m.away_score : null, winner===m.away_team, winner===m.home_team)}
+          <div class="match-meta">
+           <span>Kolo ${m.round}</span>
+           ${played ? `<span>${suffix||"REG"}</span>` : "<span>Čeká</span>"}
+          </div>
+         </div>`
+      }
+      matchesDiv.appendChild(slot)
+    }
+
+    col.appendChild(matchesDiv)
+    bracket.appendChild(col)
+
+    // Connector
+    if(pi < phases.length - 1){
+      const conn = document.createElement("div")
+      conn.className = "connector-col"
+      bracket.appendChild(conn)
+    }
+  })
+
+  bracketDiv.appendChild(bracket)
+  cont.innerHTML = ""
+  cont.appendChild(bracketDiv)
+}
+
+function renderPhase(phase){
+  const cont = document.getElementById("content")
+  const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
+
+  let html = `<div style="font-size:14px;font-weight:700;color:#0b2a3c;margin-bottom:16px;">
+    ${phase.label} &nbsp;·&nbsp; <span style="color:#7ab0cc;font-weight:600;">kola ${phase.roundFrom}–${phase.roundTo}</span>
+    &nbsp;·&nbsp; <span style="color:#7ab0cc;font-weight:600;">${phase.played}/${phase.total} odehráno</span>
+  </div>`
+
+  html += '<div class="phase-grid">'
+
+  // Zobraz zapasu slotů (i prázdné pokud zápasy ještě nebyly přidány)
+  for(let i = 0; i < phase.zapasu; i++){
+    const m = phaseMatches[i]
+    const roundNum = phase.roundFrom + i
+
+    if(!m){
+      html += `
+       <div class="phase-match-card">
+        <div class="phase-match-header">Kolo ${roundNum}</div>
+        <div class="phase-match-body">
+         <div class="phase-team-row">${tbdPhaseHtml()}</div>
+         <div class="phase-team-row">${tbdPhaseHtml()}</div>
+         <span class="phase-result-badge badge-pending">Čeká</span>
+        </div>
+       </div>`
+      continue
+    }
+
+    const winner = getWinner(m)
+    const played = m.home_score != null
+    const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
+    const homeT = allTeams[m.home_team]
+    const awayT = allTeams[m.away_team]
+
+    html += `
+     <div class="phase-match-card">
+      <div class="phase-match-header" style="display:flex;justify-content:space-between;align-items:center;">
+       <span>${phase.label}</span>
+       <span class="round-badge-small">Kolo ${m.round}</span>
+      </div>
+      <div class="phase-match-body">
+       <div class="phase-team-row ${played && winner===m.home_team?"winner":""}">
+        ${homeT?.logo ? `<img class="phase-team-logo" src="./logos/${homeT.logo}">` : '<div class="phase-team-logo" style="background:#e8f0f8;border-radius:4px;"></div>'}
+        <span class="phase-team-name">${homeT?.name||"?"}</span>
+        ${played ? `<span class="phase-team-score">${m.home_score}</span>` : ""}
+       </div>
+       <div class="phase-team-row ${played && winner===m.away_team?"winner":""}">
+        ${awayT?.logo ? `<img class="phase-team-logo" src="./logos/${awayT.logo}">` : '<div class="phase-team-logo" style="background:#e8f0f8;border-radius:4px;"></div>'}
+        <span class="phase-team-name">${awayT?.name||"?"}</span>
+        ${played ? `<span class="phase-team-score">${m.away_score}</span>` : ""}
+       </div>
+       <span class="phase-result-badge ${played?"badge-played":"badge-pending"}">${played?suffix:"Čeká na odehrání"}</span>
+      </div>
+     </div>`
+  }
+
+  html += '</div>'
+  cont.innerHTML = html
+}
+
+function tbdPhaseHtml(){
+  return `<span class="phase-team-name tbd">— TBD —</span>`
+}
+
+init()
+</script>
+</body>
+</html>
