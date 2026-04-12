@@ -128,7 +128,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
  <div class="filter-divider"></div>
 
- <select class="filter-sort-select" id="sortSelect" onchange="render()">
+<select class="filter-sort-select" id="sortSelect" onchange="window.render()">
   <option value="elo">Řadit: ELO ↓</option>
   <option value="form">Řadit: Forma ↓</option>
  </select>
@@ -373,7 +373,7 @@ function buildMatchRows(teamId, history, lastFiveIds, showAll){
  return html
 }
 
-function render(){
+window.render = function(){
  const cont = document.getElementById("content")
  cont.innerHTML = ""
 
