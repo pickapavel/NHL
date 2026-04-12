@@ -71,7 +71,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .stat-val{font-size:22px;font-weight:800;color:#0b2a3c;}
 .stat-label{font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 
-/* Pohled podle fáze */
 .phase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
 .phase-match-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 2px 8px rgba(26,58,92,.07);}
 .phase-match-header{background:#0b2a3c;padding:8px 12px;font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;}
@@ -88,6 +87,9 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .badge-played{background:#dcfce7;color:#166534;}
 .badge-pending{background:#e8f0f8;color:#1a5276;}
 .round-badge-small{display:inline-block;background:#e8f0f8;color:#1a5276;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+.section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:32px 0 16px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 </style>
 </head>
 <body>
@@ -117,6 +119,9 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  </div>
 
  <div id="content"><div class="loading">Načítám...</div></div>
+
+ <div class="section-title">Rozpis zápasů</div>
+ <div id="matchList"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -132,8 +137,8 @@ const POHAR_COMPETITION_ID = "254d4b5e-cb32-4c44-8b00-3010f895359c"
 let allSeasons = []
 let allTeams = {}
 let currentSeasonId = ""
-let currentPhase = 0  // 0 = všechny fáze (bracket), 1+ = konkrétní fáze
-let phases = []       // [{label, roundFrom, roundTo, zapasu, tymu}]
+let currentPhase = 0
+let phases = []
 let allMatches = []
 
 async function init(){
@@ -170,6 +175,7 @@ async function onSeasonChange(){
 
 async function loadSeason(){
   document.getElementById("content").innerHTML = '<div class="loading">Načítám...</div>'
+  document.getElementById("matchList").innerHTML = ""
   document.getElementById("phaseTabs").innerHTML = ""
   document.getElementById("statsBar").innerHTML = ""
 
@@ -186,7 +192,6 @@ async function loadSeason(){
     return
   }
 
-  // Zjisti počet týmů ze season_teams
   const { data: seasonTeams } = await db
     .from("season_teams")
     .select("team_id")
@@ -233,7 +238,6 @@ function buildPhaseTabs(){
   const bar = document.getElementById("phaseTabs")
   bar.innerHTML = ""
 
-  // Tab "Vše" (bracket)
   const all = document.createElement("button")
   all.className = "phase-tab" + (currentPhase === 0 ? " active" : "")
   all.textContent = "🏆 Celý pavouk"
@@ -299,6 +303,7 @@ function render(){
   } else {
     renderPhase(phases[currentPhase - 1])
   }
+  renderMatchList()
 }
 
 function renderBracket(){
@@ -383,6 +388,7 @@ function renderBracket(){
   cont.innerHTML = ""
   cont.appendChild(bracketDiv)
 }
+
 function renderPhase(phase){
   const cont = document.getElementById("content")
   const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
@@ -459,8 +465,90 @@ function renderPhase(phase){
   html += '</div>'
   cont.innerHTML = html
 }
-function tbdPhaseHtml(){
-  return `<span class="phase-team-name tbd">— TBD —</span>`
+
+function renderMatchList(){
+  const cont = document.getElementById("matchList")
+  if(!cont) return
+  if(!allMatches.length){ cont.innerHTML = '<div class="empty">Žádné zápasy.</div>'; return }
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+   <thead>
+    <tr style="background:#0b2a3c;color:white;">
+     <th style="padding:10px 8px;text-align:center;font-size:11px;width:60px;">Kolo</th>
+     <th style="padding:10px 8px;text-align:center;font-size:11px;width:120px;">Fáze</th>
+     <th style="padding:10px 8px;text-align:left;font-size:11px;">Domácí</th>
+     <th style="padding:10px 8px;text-align:left;font-size:11px;">Hosté</th>
+     <th style="padding:10px 8px;text-align:center;font-size:11px;width:140px;">Skóre</th>
+     <th style="padding:10px 8px;text-align:center;font-size:11px;width:200px;">Akce</th>
+    </tr>
+   </thead>
+   <tbody>`
+
+  allMatches.forEach(m => {
+    const homeT = allTeams[m.home_team]
+    const awayT = allTeams[m.away_team]
+    if(!homeT || !awayT) return
+
+    const played = m.home_score != null
+    const winner = getWinner(m)
+    const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : ""
+    const phase = phases.find(p => m.round >= p.roundFrom && m.round <= p.roundTo)
+    const phaseLabel = phase?.label || "—"
+
+    let stats = null
+    try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+    let periods = ""
+    if(stats){
+      const h1=Number(stats[16]||0),h2=Number(stats[17]||0),h3=Number(stats[18]||0)
+      const a1=Number(stats[6]||0),a2=Number(stats[7]||0),a3=Number(stats[8]||0)
+      periods = `<div style="font-size:11px;color:#888;margin-top:2px;">${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}</div>`
+    }
+
+    const rowBg = played ? "#f0fdf4" : "white"
+
+    html += `
+     <tr style="background:${rowBg};border-bottom:1px solid #e8e8e8;" onmouseover="this.style.background='#edf2f7'" onmouseout="this.style.background='${rowBg}'">
+      <td style="padding:10px 8px;text-align:center;">
+       <span style="display:inline-block;background:#e9ecef;color:#0b2a3c;font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;">${m.round}</span>
+      </td>
+      <td style="padding:10px 8px;text-align:center;">
+       <span style="display:inline-block;background:#e8f0f8;color:#1a5276;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;">${phaseLabel}</span>
+      </td>
+      <td style="padding:10px 8px;">
+       <div style="display:flex;align-items:center;gap:8px;">
+        ${homeT.logo ? `<img src="./logos/${homeT.logo}" style="width:26px;height:26px;object-fit:contain;border-radius:5px;background:white;padding:2px;border:1px solid #e0e0e0;">` : ""}
+        <span style="font-weight:${played && winner===m.home_team?"800":"600"};color:${played && winner===m.home_team?"#166534":"#1a2a3c"};font-size:13px;">${homeT.name}</span>
+       </div>
+      </td>
+      <td style="padding:10px 8px;">
+       <div style="display:flex;align-items:center;gap:8px;">
+        ${awayT.logo ? `<img src="./logos/${awayT.logo}" style="width:26px;height:26px;object-fit:contain;border-radius:5px;background:white;padding:2px;border:1px solid #e0e0e0;">` : ""}
+        <span style="font-weight:${played && winner===m.away_team?"800":"600"};color:${played && winner===m.away_team?"#166534":"#1a2a3c"};font-size:13px;">${awayT.name}</span>
+       </div>
+      </td>
+      <td style="padding:10px 8px;text-align:center;">
+       ${played
+         ? `<div>
+             <span style="display:inline-block;background:#0b2a3c;color:white;font-weight:800;font-size:14px;padding:4px 12px;border-radius:6px;">${m.home_score} : ${m.away_score}</span>
+             ${suffix ? `<span style="display:inline-block;font-size:10px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;margin-left:4px;">${suffix}</span>` : ""}
+             ${periods}
+            </div>`
+         : `<span style="display:inline-block;background:#e0e0e0;color:#999;font-size:13px;padding:4px 12px;border-radius:6px;">- : -</span>`
+       }
+      </td>
+      <td style="padding:10px 8px;text-align:center;">
+       <div style="display:flex;gap:6px;justify-content:center;">
+        ${played
+          ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 12px;background:#1a5276;color:white;">📊 Statistiky</button>`
+          : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 12px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
+        }
+       </div>
+      </td>
+     </tr>`
+  })
+
+  html += `</tbody></table>`
+  cont.innerHTML = html
 }
 
 init()
