@@ -58,7 +58,6 @@ tr:hover td{background:#edf2f7;}
 .btn-save{background:#27ae60;color:white;}
 .btn-save:hover{background:#219a52;}
 
-/* DROPDOWN AKCE */
 .dropdown-wrap{position:relative;display:inline-block;}
 .btn-actions{background:#6c757d;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;padding:7px 10px;display:inline-flex;align-items:center;gap:4px;}
 .btn-actions:hover{background:#5a6268;}
@@ -107,13 +106,15 @@ tr:hover td{background:#edf2f7;}
 .btn-cancel{background:#e0e0e0;color:#333;}
 .btn-cancel:hover{background:#ccc;}
  
+/* WIZARD */
 .wizard-steps{display:flex;gap:0;margin-bottom:20px;}
 .wizard-step{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#aaa;border-bottom:2px solid #e0e0e0;}
 .wizard-step.active{color:#0b2a3c;border-color:#0b2a3c;}
 .wizard-step.done{color:#27ae60;border-color:#27ae60;}
 .wizard-page{display:none;}
 .wizard-page.active{display:block;}
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding:4px;}
+
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:300px;overflow-y:auto;padding:4px;}
 .team-check{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;}
 .team-check:hover{border-color:#2f9ec9;background:#f0f8ff;}
 .team-check.selected{border-color:#0b2a3c;background:#e8f0f8;}
@@ -122,6 +123,13 @@ tr:hover td{background:#edf2f7;}
 .team-check-name{font-size:12px;font-weight:700;color:#1a2a3c;flex:1;}
 .team-check-box{width:18px;height:18px;border-radius:4px;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;}
 .team-check.selected .team-check-box{background:#0b2a3c;border-color:#0b2a3c;}
+
+.select-all-bar{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.btn-select-all{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:12px;padding:6px 12px;background:#0b2a3c;color:white;}
+.btn-select-all:hover{background:#1a3a5c;}
+.btn-deselect-all{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:12px;padding:6px 12px;background:#e0e0e0;color:#333;}
+.btn-deselect-all:hover{background:#ccc;}
+
 .structure-options{display:flex;flex-direction:column;gap:8px;}
 .structure-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:2px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;}
 .structure-opt:hover{border-color:#2f9ec9;}
@@ -140,6 +148,9 @@ tr:hover td{background:#edf2f7;}
 .btn-create:hover{background:#7c3aed;}
 .info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
 .season-number-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:4px 12px;border-radius:6px;}
+
+/* Pohár info box */
+.pohar-info{background:#fff8e1;border:1px solid #f0d060;border-radius:8px;padding:10px 14px;font-size:12px;color:#7a5200;margin-bottom:12px;}
 
 .toi-dialog-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;}
 .toi-dialog-overlay.open{display:flex;}
@@ -232,6 +243,11 @@ tr:hover td{background:#edf2f7;}
    <div class="modal-section-title">Kam zápasy přidat</div>
    <div class="modal-row"><label>Sezóna:</label><select id="m-season" onchange="onModalSeasonChange()"><option value="">-- Vyber sezónu --</option></select></div>
    <div class="modal-row"><label>Stage:</label><select id="m-stage"><option value="">-- Vyber stage --</option></select></div>
+   <div class="modal-row" id="m-round-row" style="display:none;">
+    <label>Kolo pohár:</label>
+    <input type="number" id="m-pohar-round" min="1" value="1" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;">
+    <span style="font-size:11px;color:#888;margin-left:6px;" id="m-round-hint"></span>
+   </div>
   </div>
   <div class="modal-section-title" style="font-size:12px;font-weight:700;color:#0b2a3c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Zápasy</div>
   <div class="match-entries" id="matchEntries"></div>
@@ -248,14 +264,11 @@ tr:hover td{background:#edf2f7;}
  <div class="modal">
   <h2>🏒 Nová sezóna</h2>
   <p class="modal-sub">Průvodce vytvořením nové sezóny v databázi.</p>
-  <div class="wizard-steps">
-   <div class="wizard-step active" id="ws-1">1. Info</div>
-   <div class="wizard-step" id="ws-2">2. Týmy</div>
-   <div class="wizard-step" id="ws-3">3. Základní část</div>
-   <div class="wizard-step" id="ws-4">4. Playoff</div>
-   <div class="wizard-step" id="ws-5">5. Souhrn</div>
-  </div>
 
+  <!-- Kroky wizardu — pohár má jen 3 kroky, ostatní 5 -->
+  <div class="wizard-steps" id="wizardStepsBar"></div>
+
+  <!-- Krok 1: Info -->
   <div class="wizard-page active" id="wp-1">
    <div class="modal-section">
     <div class="modal-section-title">Soutěž a název</div>
@@ -269,10 +282,15 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
+  <!-- Krok 2: Týmy -->
   <div class="wizard-page" id="wp-2">
    <div class="modal-section">
     <div class="modal-section-title">Vyber týmy do sezóny</div>
-    <div class="info-box">Klikni na tým pro výběr/zrušení výběru.</div>
+    <div class="info-box" id="wp2-infobox">Klikni na tým pro výběr/zrušení výběru.</div>
+    <div class="select-all-bar">
+     <button class="btn-select-all" onclick="selectAllTeams()">☑ Vybrat vše</button>
+     <button class="btn-deselect-all" onclick="deselectAllTeams()">☐ Zrušit vše</button>
+    </div>
     <div class="teams-grid" id="ns-teams-grid"></div>
    </div>
    <div id="ns-teams-count" style="font-size:12px;color:#888;margin-top:8px;"></div>
@@ -282,6 +300,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
+  <!-- Krok 3: Základní část (jen pro ne-pohár) -->
   <div class="wizard-page" id="wp-3">
    <div class="modal-section">
     <div class="modal-section-title">Základní část — skupiny</div>
@@ -307,6 +326,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
+  <!-- Krok 4: Playoff (jen pro ne-pohár) -->
   <div class="wizard-page" id="wp-4">
    <div class="modal-section">
     <div class="modal-section-title">Playoff struktura</div>
@@ -323,16 +343,18 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
+  <!-- Krok 5 / Pohár krok 3: Souhrn -->
   <div class="wizard-page" id="wp-5">
    <div class="modal-section">
     <div class="modal-section-title">Souhrn – co se vytvoří</div>
     <div id="ns-summary"></div>
    </div>
    <div class="wizard-nav">
-    <button class="btn-prev" onclick="wizardPrev(5)">← Zpět</button>
+    <button class="btn-prev" onclick="wizardPrevSummary()">← Zpět</button>
     <button class="btn-create" onclick="createSeason()">🏒 Vytvořit sezónu</button>
    </div>
   </div>
+
  </div>
 </div>
  
@@ -341,6 +363,7 @@ const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 const CURRENT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+const POHAR_COMPETITION_ID = "254d4b5e-cb32-4c44-8b00-3010f895359c"
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -351,6 +374,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 let teamsMap={}, filesMap={}, allTeams=[], allStages=[], allSeasons=[], allCompetitions=[], allMatches=[]
 let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
 let nsSelectedTeams=new Set(), nsSelectedStructure="none", nsGroupCount=1
+let isPoharWizard = false
 
 const gamestatMap = {}
 const playerstatMap = {}
@@ -363,7 +387,6 @@ let _toiAwayTeamName = ''
 
 const R_START=1000, R_K_ELO=80, R_K_FORM=120
 
-// Zavři všechny dropdowny při kliknutí jinam
 document.addEventListener('click', e => {
   if (!e.target.closest('.dropdown-wrap')) {
     document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'))
@@ -377,9 +400,8 @@ function toggleDropdown(matchId){
 }
 
 // =====================================================
-// PARSOVÁNÍ PROPRIETÁRNÍHO XLS FORMÁTU
+// PARSOVÁNÍ XLS
 // =====================================================
-
 function parseProprietaryXls(buffer) {
   const data = new Uint8Array(buffer)
   const cells = {}
@@ -663,17 +685,21 @@ async function deleteSeason(){
   allSeasons = newSeasons||[]
   const {data:newStages} = await db.from("stages").select("*").order("order",{ascending:true})
   allStages = newStages||[]
+  refreshSeasonSelects()
+  currentSeasonId=""
+  document.getElementById("stageFilter").innerHTML='<option value="">-- Vyber stage --</option>'
+  document.getElementById("matchesTable").innerHTML=`<tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>`
+  document.getElementById("matchCount").textContent=""
+  alert("✅ Sezóna smazána.")
+}
+
+function refreshSeasonSelects(){
   const seasonSel = document.getElementById("seasonFilter")
   seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
   allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
   const mSeason = document.getElementById("m-season")
   mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
   allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
-  currentSeasonId=""
-  document.getElementById("stageFilter").innerHTML='<option value="">-- Vyber stage --</option>'
-  document.getElementById("matchesTable").innerHTML=`<tr><td colspan="7" class="empty-msg">Vyberte sezónu a stage.</td></tr>`
-  document.getElementById("matchCount").textContent=""
-  alert("✅ Sezóna smazána.")
 }
 
 async function init(){
@@ -687,17 +713,12 @@ async function init(){
   allTeams=(teamsRes.data||[]).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
   allCompetitions=(compRes.data||[]).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
   allTeams.forEach(t=>teamsMap[t.id]=t)
-  const seasonSel=document.getElementById("seasonFilter")
-  seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
-  const mSeason=document.getElementById("m-season")
-  mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
+  refreshSeasonSelects()
   const nsComp=document.getElementById("ns-competition")
   nsComp.innerHTML='<option value="">-- Vyber soutěž --</option>'
   allCompetitions.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; nsComp.appendChild(o) })
   const found=allSeasons.find(s=>s.id===CURRENT_SEASON_ID)
-  seasonSel.value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
+  document.getElementById("seasonFilter").value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
   onSeasonFilterChange()
 }
 
@@ -785,6 +806,15 @@ function render(matches, matchesWithPlayers){
   })
 }
 
+// =====================================================
+// MODAL PŘIDAT ZÁPASY — detekce pohár sezóny
+// =====================================================
+
+function isPoharSeason(seasonId){
+  const season = allSeasons.find(s=>s.id===seasonId)
+  return season?.competition_id === POHAR_COMPETITION_ID
+}
+
 function openModal(){
   entryCount=0; document.getElementById("matchEntries").innerHTML=""
   document.getElementById("m-season").value=currentSeasonId||""
@@ -802,6 +832,25 @@ function onModalSeasonChange(){
   seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
   if(currentStageId){ const f=seasonStages.find(s=>s.id===currentStageId); if(f) stageSel.value=currentStageId }
   else{ const z=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]; if(z) stageSel.value=z.id }
+
+  // Pohárové kolo — zobraz/skryj pole a aktualizuj nápovědu
+  const isPohar = isPoharSeason(seasonId)
+  const roundRow = document.getElementById("m-round-row")
+  roundRow.style.display = isPohar ? "flex" : "none"
+  if(isPohar) updatePoharRoundHint()
+
+  // Skryj/zobraz kolo v jednotlivých entries
+  document.querySelectorAll(".entry-round-wrap").forEach(el=>{
+    el.style.display = isPohar ? "none" : "block"
+  })
+}
+
+function updatePoharRoundHint(){
+  const round = parseInt(document.getElementById("m-pohar-round").value) || 1
+  const hint = document.getElementById("m-round-hint")
+  // Automaticky spočítej fázi podle čísla kola
+  // Závisí na počtu týmů — zobrazíme jen číslo kola
+  hint.textContent = `→ Zápas bude zapsán jako kolo č. ${round}`
 }
 
 function addEntry(){
@@ -810,13 +859,15 @@ function addEntry(){
   const cont=document.getElementById("matchEntries")
   const nextRound=allMatches.length+cont.querySelectorAll(".match-entry").length+1
   const teamOptions=allTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+  const seasonId = document.getElementById("m-season").value
+  const isPohar = isPoharSeason(seasonId)
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
   div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
-   <div class="entry-fields">
+   <div class="entry-fields" style="grid-template-columns:${isPohar?'1fr 1fr':'1fr 1fr 80px'}">
     <div><div class="entry-label">Domácí tým</div><select id="e-home-${id}">${teamOptions}</select></div>
     <div><div class="entry-label">Hosté tým</div><select id="e-away-${id}">${teamOptions}</select></div>
-    <div><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
+    <div class="entry-round-wrap" style="display:${isPohar?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
    </div>`
   cont.appendChild(div)
   if(allTeams.length>=2) document.getElementById(`e-away-${id}`).value=allTeams[1].id
@@ -833,16 +884,22 @@ async function saveAllMatches(){
   const stageId=document.getElementById("m-stage").value
   if(!seasonId){ alert("Vyber sezónu!"); return }
   if(!stageId){ alert("Vyber stage!"); return }
+
+  const isPohar = isPoharSeason(seasonId)
+  const poharRound = isPohar ? (parseInt(document.getElementById("m-pohar-round").value)||1) : null
+
   const entries=document.querySelectorAll(".match-entry")
-  const toInsert=[]; let valid=true
+  const toInsert=[]; let valid=true; let entryIdx=0
   entries.forEach(entry=>{
     const id=entry.id.replace("entry-","")
     const homeId=document.getElementById(`e-home-${id}`)?.value
     const awayId=document.getElementById(`e-away-${id}`)?.value
-    const round=Number(document.getElementById(`e-round-${id}`)?.value)
     if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
-    if(!round||round<1){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
+    // Pro pohár: všechny zápasy v tomto přidání dostanou stejné kolo (jedno kolo = jedna fáze pavouka)
+    const round = isPohar ? (poharRound + entryIdx) : Number(document.getElementById(`e-round-${id}`)?.value)
+    if(!isPohar && (!round||round<1)){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
     toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
+    entryIdx++
   })
   if(!valid) return
   const {error}=await db.from("matches").insert(toInsert)
@@ -1021,8 +1078,39 @@ async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEv
   loadMatches()
 }
 
+// =====================================================
+// WIZARD — Nová sezóna
+// =====================================================
+
+function renderWizardSteps(){
+  const bar = document.getElementById("wizardStepsBar")
+  bar.innerHTML = ""
+  const steps = isPoharWizard
+    ? ["1. Info", "2. Týmy", "3. Souhrn"]
+    : ["1. Info", "2. Týmy", "3. Základní část", "4. Playoff", "5. Souhrn"]
+  steps.forEach((label, i) => {
+    const div = document.createElement("div")
+    div.className = "wizard-step"
+    div.id = `ws-${i+1}`
+    div.textContent = label
+    bar.appendChild(div)
+  })
+}
+
+function updateWizardStepIndicators(currentStep){
+  const totalSteps = isPoharWizard ? 3 : 5
+  for(let i=1; i<=5; i++){
+    const el = document.getElementById(`ws-${i}`)
+    if(!el) continue
+    el.classList.remove("active","done")
+    if(i === currentStep) el.classList.add("active")
+    else if(i < currentStep) el.classList.add("done")
+  }
+}
+
 function openNewSeasonModal(){
-  nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1; wizardGoTo(1)
+  nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1; isPoharWizard=false
+  renderWizardSteps()
   const grid=document.getElementById("ns-teams-grid"); grid.innerHTML=""
   allTeams.forEach(t=>{
     const div=document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
@@ -1033,24 +1121,49 @@ function openNewSeasonModal(){
   document.getElementById("ns-name").value=""
   document.getElementById("ns-season-number").textContent="— vyber nejdřív soutěž"
   document.getElementById("ns-group-count").value="1"
+  wizardGoTo(1)
   document.getElementById("newSeasonOverlay").classList.add("open")
 }
 function closeNewSeasonModal(){ document.getElementById("newSeasonOverlay").classList.remove("open") }
 
 async function onNsCompetitionChange(){
   const compId = document.getElementById("ns-competition").value
-  if (!compId) { document.getElementById("ns-season-number").textContent = "— vyber nejdřív soutěž"; return }
+  if (!compId) {
+    document.getElementById("ns-season-number").textContent = "— vyber nejdřív soutěž"
+    isPoharWizard = false
+    renderWizardSteps()
+    return
+  }
+  isPoharWizard = (compId === POHAR_COMPETITION_ID)
+  renderWizardSteps()
+  updateWizardStepIndicators(1)
+
   const {data:existing} = await db.from("seasons").select("id").eq("competition_id", compId)
   const num = (existing||[]).length + 1
   document.getElementById("ns-season-number").innerHTML = `<span class="season-number-badge">${num}. sezóna</span>`
+
+  // Aktualizuj info box na kroku 2
+  const infoBox = document.getElementById("wp2-infobox")
+  if(isPoharWizard){
+    infoBox.className = "pohar-info"
+    infoBox.innerHTML = "🏆 <b>Pohár</b> — vyber všechny účastníky. Kola se generují automaticky podle toho, jak budeš přidávat zápasy."
+  } else {
+    infoBox.className = "info-box"
+    infoBox.textContent = "Klikni na tým pro výběr/zrušení výběru."
+  }
 }
 
 function wizardGoTo(step){
+  // Pohár přeskakuje kroky 3 a 4
+  const visiblePages = isPoharWizard ? [1,2,5] : [1,2,3,4,5]
   for(let i=1;i<=5;i++){
-    document.getElementById(`wp-${i}`).classList.toggle("active",i===step)
-    const ws=document.getElementById(`ws-${i}`); ws.classList.remove("active","done")
-    if(i===step) ws.classList.add("active"); else if(i<step) ws.classList.add("done")
+    document.getElementById(`wp-${i}`).classList.toggle("active", i===step)
   }
+  // Spočítej vizuální číslo kroku pro indikátor
+  const visualStep = isPoharWizard
+    ? ([1,2,5].indexOf(step)+1)
+    : step
+  updateWizardStepIndicators(visualStep)
 }
 
 function wizardNext(current){
@@ -1060,7 +1173,12 @@ function wizardNext(current){
     wizardGoTo(2)
   } else if(current===2){
     if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
-    wizardGoTo(3)
+    if(isPoharWizard){
+      // Pohár — přeskočit na souhrn
+      buildSummary(); wizardGoTo(5)
+    } else {
+      wizardGoTo(3)
+    }
   } else if(current===3){
     nsGroupCount = parseInt(document.getElementById("ns-group-count").value) || 1
     wizardGoTo(4)
@@ -1068,7 +1186,18 @@ function wizardNext(current){
     buildSummary(); wizardGoTo(5)
   }
 }
-function wizardPrev(current){ wizardGoTo(current-1) }
+
+function wizardPrev(current){
+  if(current===3) wizardGoTo(2)
+  else if(current===4) wizardGoTo(3)
+  else wizardGoTo(current-1)
+}
+
+function wizardPrevSummary(){
+  // Z souhrnu zpět
+  if(isPoharWizard) wizardGoTo(2)
+  else wizardGoTo(4)
+}
 
 function toggleTeam(teamId){
   const div=document.getElementById(`tc-${teamId}`), box=document.getElementById(`tcb-${teamId}`)
@@ -1076,6 +1205,25 @@ function toggleTeam(teamId){
   else{ nsSelectedTeams.add(teamId); div.classList.add("selected"); box.textContent="✓" }
   updateTeamsCount()
 }
+
+function selectAllTeams(){
+  allTeams.forEach(t=>{
+    nsSelectedTeams.add(t.id)
+    document.getElementById(`tc-${t.id}`)?.classList.add("selected")
+    const box = document.getElementById(`tcb-${t.id}`); if(box) box.textContent="✓"
+  })
+  updateTeamsCount()
+}
+
+function deselectAllTeams(){
+  allTeams.forEach(t=>{
+    nsSelectedTeams.delete(t.id)
+    document.getElementById(`tc-${t.id}`)?.classList.remove("selected")
+    const box = document.getElementById(`tcb-${t.id}`); if(box) box.textContent=""
+  })
+  updateTeamsCount()
+}
+
 function updateTeamsCount(){ document.getElementById("ns-teams-count").textContent=`Vybráno ${nsSelectedTeams.size} týmů` }
 
 function selectStructure(val){
@@ -1083,7 +1231,11 @@ function selectStructure(val){
   ;["none","final","sf","qf"].forEach(v=>document.getElementById(`struct-${v}`).classList.toggle("selected",v===val))
 }
 
-function getStagesForStructure(groupCount, playoffStructure){
+function getStagesForStructure(groupCount, playoffStructure, isPohar){
+  if(isPohar){
+    // Pohár má jen jednu stage
+    return [{name:"Pohár", order:1, parent:null}]
+  }
   const stages = []
   const groupLabels = ['A','B','C','D','E','F','G','H','I','J']
   let order = 1
@@ -1121,16 +1273,35 @@ function buildSummary(){
   const compId=document.getElementById("ns-competition").value
   const name=document.getElementById("ns-name").value.trim()
   const comp=allCompetitions.find(c=>c.id===compId)
-  const stages=getStagesForStructure(nsGroupCount, nsSelectedStructure)
+  const stages=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard)
   const teams=[...nsSelectedTeams].map(id=>teamsMap[id]?.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'))
   const structLabels={none:"Žádný",final:"Finále + O 3. místo",sf:"SF + Finále + O 3. místo",qf:"ČF + SF + Finále + O 3. místo"}
-  const groupLabel = nsGroupCount === 1 ? "Jedna základní část" : `${nsGroupCount} skupiny/skupin (${['A','B','C','D','E','F','G','H','I','J'].slice(0,nsGroupCount).join(', ')})`
+
+  let structureRow = ""
+  if(isPoharWizard){
+    // Automaticky odhadni fáze podle počtu týmů
+    const n = nsSelectedTeams.size
+    const phases = []
+    let zapasu = Math.floor(n/2)
+    let kolo = 1
+    while(zapasu >= 1){
+      phases.push(`Kola ${kolo}–${kolo+zapasu-1} (${zapasu} zápasů, ${zapasu*2} týmů)`)
+      kolo += zapasu
+      zapasu = Math.floor(zapasu/2)
+    }
+    structureRow = `<tr><td style="padding:6px 0;color:#666;vertical-align:top;">Struktura pavouka:</td><td style="font-weight:700;">${phases.join("<br>")}</td></tr>`
+  } else {
+    const groupLabel = nsGroupCount === 1 ? "Jedna základní část" : `${nsGroupCount} skupiny/skupin (${['A','B','C','D','E','F','G','H','I','J'].slice(0,nsGroupCount).join(', ')})`
+    structureRow = `
+     <tr><td style="padding:6px 0;color:#666;">Základní část:</td><td style="font-weight:700;">${groupLabel}</td></tr>
+     <tr><td style="padding:6px 0;color:#666;">Playoff:</td><td style="font-weight:700;">${structLabels[nsSelectedStructure]}</td></tr>`
+  }
+
   document.getElementById("ns-summary").innerHTML=`
    <table style="width:100%;font-size:13px;border-collapse:collapse;">
-    <tr><td style="padding:6px 0;color:#666;width:130px;">Soutěž:</td><td style="font-weight:700;">${comp?.name||"?"}</td></tr>
+    <tr><td style="padding:6px 0;color:#666;width:140px;">Soutěž:</td><td style="font-weight:700;">${comp?.name||"?"}</td></tr>
     <tr><td style="padding:6px 0;color:#666;">Název:</td><td style="font-weight:700;">${name}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;">Základní část:</td><td style="font-weight:700;">${groupLabel}</td></tr>
-    <tr><td style="padding:6px 0;color:#666;">Playoff:</td><td style="font-weight:700;">${structLabels[nsSelectedStructure]}</td></tr>
+    ${structureRow}
     <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Stages:</td><td style="font-weight:700;">${stages.map(s=>s.name).join(", ")}</td></tr>
     <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Týmy (${teams.length}):</td><td style="font-weight:700;">${teams.join(", ")}</td></tr>
    </table>`
@@ -1145,7 +1316,7 @@ async function createSeason(){
   const {data:season,error:e1}=await db.from("seasons").insert({name:fullName,competition_id:compId}).select().single()
   if(e1){ alert("❌ "+e1.message); return }
   const seasonId=season.id
-  const stageDefs=getStagesForStructure(nsGroupCount, nsSelectedStructure)
+  const stageDefs=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard)
   const stageIdMap={}
   for(const s of stageDefs){
     const parentId=s.parent?stageIdMap[s.parent]:null
@@ -1159,13 +1330,10 @@ async function createSeason(){
   allSeasons=newSeasons||[]
   const {data:newStages}=await db.from("stages").select("*").order("order",{ascending:true})
   allStages=newStages||[]
-  const seasonSel=document.getElementById("seasonFilter")
-  seasonSel.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; seasonSel.appendChild(o) })
-  const mSeason=document.getElementById("m-season")
-  mSeason.innerHTML='<option value="">-- Vyber sezónu --</option>'
-  allSeasons.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.name; mSeason.appendChild(o) })
-  closeNewSeasonModal(); seasonSel.value=seasonId; onSeasonFilterChange()
+  refreshSeasonSelects()
+  closeNewSeasonModal()
+  document.getElementById("seasonFilter").value=seasonId
+  onSeasonFilterChange()
   alert(`✅ Sezóna "${fullName}" vytvořena!`)
 }
 
