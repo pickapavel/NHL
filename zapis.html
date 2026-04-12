@@ -810,6 +810,16 @@ function render(matches, matchesWithPlayers){
 // MODAL PŘIDAT ZÁPASY — detekce pohár sezóny
 // =====================================================
 
+ function getTeamsForSeason(seasonId){
+  const season = allSeasons.find(s => s.id === seasonId)
+  const compId = season?.competition_id || ""
+  return allTeams.filter(t => {
+    if(compId === EXTRALIGA_COMPETITION_ID) return t.in_extraliga
+    if(compId === POHAR_COMPETITION_ID)     return t.in_extraliga || t.in_reprezentace || t.in_olympiada
+    // Reprezentace, MS, Olympiáda, Exhibice
+    return t.in_reprezentace || t.in_olympiada
+  })
+}
 function isPoharSeason(seasonId){
   const season = allSeasons.find(s=>s.id===seasonId)
   return season?.competition_id === POHAR_COMPETITION_ID
@@ -843,6 +853,16 @@ function onModalSeasonChange(){
   document.querySelectorAll(".entry-round-wrap").forEach(el=>{
     el.style.display = isPohar ? "none" : "block"
   })
+ // Přegeneruj týmy ve všech existujících entries po změně sezóny
+  const refiltered = getTeamsForSeason(seasonId)
+  const reOpts = refiltered.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+  document.querySelectorAll(".match-entry").forEach(entry => {
+    const eid = entry.id.replace("entry-","")
+    const homeEl = document.getElementById(`e-home-${eid}`)
+    const awayEl = document.getElementById(`e-away-${eid}`)
+    if(homeEl) homeEl.innerHTML = reOpts
+    if(awayEl){ awayEl.innerHTML = reOpts; if(refiltered.length>=2) awayEl.value = refiltered[1].id }
+  })
 }
 
 function updatePoharRoundHint(){
@@ -858,9 +878,10 @@ function addEntry(){
   const id=entryCount
   const cont=document.getElementById("matchEntries")
   const nextRound=allMatches.length+cont.querySelectorAll(".match-entry").length+1
-  const teamOptions=allTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
   const seasonId = document.getElementById("m-season").value
   const isPohar = isPoharSeason(seasonId)
+  const filteredTeams = getTeamsForSeason(seasonId)
+  const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
   div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
@@ -870,7 +891,7 @@ function addEntry(){
     <div class="entry-round-wrap" style="display:${isPohar?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
    </div>`
   cont.appendChild(div)
-  if(allTeams.length>=2) document.getElementById(`e-away-${id}`).value=allTeams[1].id
+  if(filteredTeams.length>=2) document.getElementById(`e-away-${id}`).value=filteredTeams[1].id
 }
 
 function removeEntry(id){
