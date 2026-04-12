@@ -335,7 +335,7 @@ function render(){
   filtered = allTeams.filter(t=>t.id===currentTeamId)
  } else {
   if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
-  else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace)
+  else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace||t.in_olympiada)
   // "all" = žádný filtr, zobrazí všechny týmy
  }
 
