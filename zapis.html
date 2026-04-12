@@ -1279,17 +1279,20 @@ function buildSummary(){
 
   let structureRow = ""
   if(isPoharWizard){
-    // Automaticky odhadni fáze podle počtu týmů
     const n = nsSelectedTeams.size
     const phases = []
-    let zapasu = Math.floor(n/2)
+    let tymu = n
     let kolo = 1
-    while(zapasu >= 1){
-      phases.push(`Kola ${kolo}–${kolo+zapasu-1} (${zapasu} zápasů, ${zapasu*2} týmů)`)
+    while(tymu >= 2){
+      const zapasu = Math.floor(tymu / 2)
+      const koloOd = kolo
+      const koloDo = kolo + zapasu - 1
+      phases.push(`Fáze ${phases.length+1}: ${zapasu} zápasů → kola <b>${koloOd}–${koloDo}</b> (${tymu} týmů)`)
       kolo += zapasu
-      zapasu = Math.floor(zapasu/2)
+      tymu = zapasu  // vítězové postupují
     }
-    structureRow = `<tr><td style="padding:6px 0;color:#666;vertical-align:top;">Struktura pavouka:</td><td style="font-weight:700;">${phases.join("<br>")}</td></tr>`
+    structureRow = `<tr><td style="padding:6px 0;color:#666;vertical-align:top;">Struktura pavouka:</td><td style="font-weight:700;line-height:1.8;">${phases.join("<br>")}</td></tr>
+    <tr><td style="padding:6px 0;color:#666;">Celkem zápasů:</td><td style="font-weight:700;">${kolo-1}</td></tr>`
   } else {
     const groupLabel = nsGroupCount === 1 ? "Jedna základní část" : `${nsGroupCount} skupiny/skupin (${['A','B','C','D','E','F','G','H','I','J'].slice(0,nsGroupCount).join(', ')})`
     structureRow = `
