@@ -23,6 +23,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .filter-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
 .filter-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
+.filter-divider{width:2px;background:#dde6ef;border-radius:2px;align-self:stretch;margin:0 4px;}
+
 .team-filter-wrap{display:flex;align-items:center;gap:10px;margin-left:auto;}
 .team-filter-select{
   padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;
@@ -30,6 +32,19 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   color:#1a3a5c;cursor:pointer;transition:all .15s;min-width:200px;
 }
 .team-filter-select:focus{outline:none;border-color:#2f9ec9;}
+.filter-input{
+  padding:8px 12px;border-radius:20px;border:2px solid #c8d8e8;
+  background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+  color:#1a3a5c;transition:all .15s;width:100px;
+}
+.filter-input:focus{outline:none;border-color:#2f9ec9;}
+.filter-input::placeholder{color:#aab8c8;font-weight:500;}
+.filter-sort-select{
+  padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;
+  background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+  color:#1a3a5c;cursor:pointer;transition:all .15s;
+}
+.filter-sort-select:focus{outline:none;border-color:#2f9ec9;}
 .btn-clear-team{
   padding:7px 14px;border-radius:20px;border:2px solid #e0e0e0;
   background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;
@@ -110,6 +125,19 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  <button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
  <button class="filter-btn" onclick="setFilter('reprezentace',this)">Reprezentace</button>
  <button class="filter-btn" onclick="setFilter('all',this)">Všechny</button>
+
+ <div class="filter-divider"></div>
+
+ <select class="filter-sort-select" id="sortSelect" onchange="render()">
+  <option value="elo">Řadit: ELO ↓</option>
+  <option value="form">Řadit: Forma ↓</option>
+ </select>
+
+ <input class="filter-input" id="minElo" type="number" placeholder="Min ELO" oninput="render()">
+ <input class="filter-input" id="maxElo" type="number" placeholder="Max ELO" oninput="render()">
+ <input class="filter-input" id="minForm" type="number" placeholder="Min Forma" oninput="render()">
+ <input class="filter-input" id="maxForm" type="number" placeholder="Max Forma" oninput="render()">
+
  <div class="team-filter-wrap">
   <select class="team-filter-select" id="teamFilterSelect" onchange="onTeamFilterChange()">
    <option value="">— Filtrovat tým —</option>
@@ -263,8 +291,6 @@ window.clearTeamFilter = function(){
 window.showAllMatches = function(teamId){
  const card = document.getElementById("card-"+teamId)
  if(!card) return
- const team = teamMap[teamId]
- if(!team) return
  const teamHistory = (historyMap[teamId]||[]).slice().reverse()
  const lastFiveIds = new Set((historyMap[teamId]||[]).slice(-FORM_WINDOW).map(h=>h.match.id))
  const tbody = card.querySelector("tbody")
@@ -275,10 +301,8 @@ window.showAllMatches = function(teamId){
 
 function buildMatchRows(teamId, history, lastFiveIds, showAll){
  if(!history.length) return `<tr><td colspan="6" class="no-matches">Žádné odehrané zápasy</td></tr>`
-
  const rows = showAll ? history : history.slice(0, PREVIEW_COUNT)
  let html = ""
-
  rows.forEach(h=>{
   const m=h.match
   const home=teamMap[m.home_team], away=teamMap[m.away_team]
@@ -322,7 +346,6 @@ function buildMatchRows(teamId, history, lastFiveIds, showAll){
     <td style="text-align:center;">${formDots}</td>
    </tr>`
  })
-
  return html
 }
 
@@ -330,23 +353,35 @@ function render(){
  const cont = document.getElementById("content")
  cont.innerHTML = ""
 
+ const sortBy  = document.getElementById("sortSelect")?.value || "elo"
+ const minElo  = Number(document.getElementById("minElo")?.value)  || null
+ const maxElo  = Number(document.getElementById("maxElo")?.value)  || null
+ const minForm = Number(document.getElementById("minForm")?.value) || null
+ const maxForm = Number(document.getElementById("maxForm")?.value) || null
+
  let filtered = allTeams
  if(currentTeamId){
   filtered = allTeams.filter(t=>t.id===currentTeamId)
  } else {
   if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
   else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace||t.in_olympiada)
-  // "all" = žádný filtr, zobrazí všechny týmy
  }
 
  const sorted = filtered
   .map(t=>({...t, elo:t.rating_overall||START_RATING, form:t.rating_form||START_RATING}))
+  .filter(t=>{
+   if(minElo  && t.elo  < minElo)  return false
+   if(maxElo  && t.elo  > maxElo)  return false
+   if(minForm && t.form < minForm) return false
+   if(maxForm && t.form > maxForm) return false
+   return true
+  })
   .sort((a,b)=>{
-   const aMatches=(historyMap[a.id]||[]).length
-   const bMatches=(historyMap[b.id]||[]).length
-   if(aMatches===0&&bMatches>0) return 1
-   if(bMatches===0&&aMatches>0) return -1
-   return b.elo-a.elo
+   const aM=(historyMap[a.id]||[]).length
+   const bM=(historyMap[b.id]||[]).length
+   if(aM===0&&bM>0) return 1
+   if(bM===0&&aM>0) return -1
+   return sortBy==="form" ? b.form-a.form : b.elo-a.elo
   })
 
  const singleTeam = !!currentTeamId
@@ -356,9 +391,7 @@ function render(){
   const lastFiveIds = new Set((historyMap[team.id]||[]).slice(-FORM_WINDOW).map(h=>h.match.id))
   const showAll = singleTeam
   const hasMore = !showAll && teamHistory.length > PREVIEW_COUNT
-
   const matchRowsHtml = buildMatchRows(team.id, teamHistory, lastFiveIds, showAll)
-
   const showAllRowHtml = hasMore ? `
    <tr class="show-all-row">
     <td colspan="6">
