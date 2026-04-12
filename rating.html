@@ -109,8 +109,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 <div class="filter-bar">
  <button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
  <button class="filter-btn" onclick="setFilter('reprezentace',this)">Reprezentace</button>
- <button class="filter-btn" onclick="setFilter('ms',this)">Mistrovství světa</button>
- <button class="filter-btn" onclick="setFilter('olympiada',this)">Olympiáda</button>
  <button class="filter-btn" onclick="setFilter('all',this)">Všechny</button>
  <div class="team-filter-wrap">
   <select class="team-filter-select" id="teamFilterSelect" onchange="onTeamFilterChange()">
@@ -192,6 +190,7 @@ async function load(){
  const formHistory = {}
  allTeams.forEach(t=>{ formRatings[t.id]=START_RATING; formHistory[t.id]=[] })
 
+ // ELO se počítá ze VŠECH zápasů bez ohledu na soutěž
  matches.forEach(m=>{
   const h=m.home_team, a=m.away_team
   if(formRatings[h]===undefined||formRatings[a]===undefined) return
@@ -337,8 +336,7 @@ function render(){
  } else {
   if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
   else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace)
-  else if(currentFilter==="ms")           filtered=allTeams.filter(t=>t.in_reprezentace) // MS týmy jsou označeny in_reprezentace — uprav pokud máš in_ms
-  else if(currentFilter==="olympiada")    filtered=allTeams.filter(t=>t.in_olympiada)
+  // "all" = žádný filtr, zobrazí všechny týmy
  }
 
  const sorted = filtered
