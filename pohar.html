@@ -304,13 +304,11 @@ function render(){
 function renderBracket(){
   const cont = document.getElementById("content")
 
-  // Pro velké počty (32+ zápasů v 1. kole) zobraz fázový pohled místo brackets
   if(phases.length > 0 && phases[0].zapasu > 16){
     cont.innerHTML = `<div class="empty" style="padding:30px;color:#1a5276;background:#e8f4fd;border-radius:12px;border:1px solid #b8d8f0;">
       🏆 Pavouk má ${phases[0].tymu} týmů — zobrazení po fázích je přehlednější.<br>
       <span style="font-size:12px;color:#7ab0cc;margin-top:6px;display:block;">Vyber konkrétní fázi v záložkách nahoře.</span>
     </div>`
-    // Automaticky vyber první nedokončenou fázi
     const firstUnfinished = phases.findIndex(p => !p.completed)
     if(firstUnfinished >= 0){
       currentPhase = firstUnfinished + 1
@@ -324,7 +322,6 @@ function renderBracket(){
     return
   }
 
-  // Bracket vizualizace pro menší turnaje
   const bracketDiv = document.createElement("div")
   bracketDiv.className = "bracket-wrap"
   const bracket = document.createElement("div")
@@ -344,7 +341,6 @@ function renderBracket(){
 
     const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
 
-    // Doplň prázdné sloty pokud zápasy ještě nejsou přidané
     for(let i = 0; i < phase.zapasu; i++){
       const m = phaseMatches[i]
       const slot = document.createElement("div")
@@ -355,15 +351,19 @@ function renderBracket(){
       } else {
         const winner = getWinner(m)
         const played = m.home_score != null
-        const suffix = m.result_type === "SN" ? " SN" : m.result_type === "OT" ? " OT" : ""
+        const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
+        const btnHtml = played
+          ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
+          : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
         slot.innerHTML = `
          <div class="match-card ${played?"played":""}">
           ${teamHtml(m.home_team, played ? m.home_score : null, winner===m.home_team, winner===m.away_team)}
           ${teamHtml(m.away_team, played ? m.away_score : null, winner===m.away_team, winner===m.home_team)}
           <div class="match-meta">
            <span>Kolo ${m.round}</span>
-           ${played ? `<span>${suffix||"REG"}</span>` : "<span>Čeká</span>"}
+           ${played ? `<span>${suffix}</span>` : "<span>Čeká</span>"}
           </div>
+          ${btnHtml}
          </div>`
       }
       matchesDiv.appendChild(slot)
@@ -372,7 +372,6 @@ function renderBracket(){
     col.appendChild(matchesDiv)
     bracket.appendChild(col)
 
-    // Connector
     if(pi < phases.length - 1){
       const conn = document.createElement("div")
       conn.className = "connector-col"
@@ -384,7 +383,6 @@ function renderBracket(){
   cont.innerHTML = ""
   cont.appendChild(bracketDiv)
 }
-
 function renderPhase(phase){
   const cont = document.getElementById("content")
   const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
@@ -396,7 +394,6 @@ function renderPhase(phase){
 
   html += '<div class="phase-grid">'
 
-  // Zobraz zapasu slotů (i prázdné pokud zápasy ještě nebyly přidány)
   for(let i = 0; i < phase.zapasu; i++){
     const m = phaseMatches[i]
     const roundNum = phase.roundFrom + i
@@ -406,8 +403,8 @@ function renderPhase(phase){
        <div class="phase-match-card">
         <div class="phase-match-header">Kolo ${roundNum}</div>
         <div class="phase-match-body">
-         <div class="phase-team-row">${tbdPhaseHtml()}</div>
-         <div class="phase-team-row">${tbdPhaseHtml()}</div>
+         <div class="phase-team-row"><span class="phase-team-name tbd">— TBD —</span></div>
+         <div class="phase-team-row"><span class="phase-team-name tbd">— TBD —</span></div>
          <span class="phase-result-badge badge-pending">Čeká</span>
         </div>
        </div>`
@@ -419,6 +416,15 @@ function renderPhase(phase){
     const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
     const homeT = allTeams[m.home_team]
     const awayT = allTeams[m.away_team]
+
+    let stats = null
+    try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+    let periods = ""
+    if(stats){
+      const h1=Number(stats[16]||0),h2=Number(stats[17]||0),h3=Number(stats[18]||0)
+      const a1=Number(stats[6]||0),a2=Number(stats[7]||0),a3=Number(stats[8]||0)
+      periods = `${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
+    }
 
     html += `
      <div class="phase-match-card">
@@ -437,7 +443,15 @@ function renderPhase(phase){
         <span class="phase-team-name">${awayT?.name||"?"}</span>
         ${played ? `<span class="phase-team-score">${m.away_score}</span>` : ""}
        </div>
-       <span class="phase-result-badge ${played?"badge-played":"badge-pending"}">${played?suffix:"Čeká na odehrání"}</span>
+       ${played && periods ? `<div style="font-size:11px;color:#aaa;margin-top:4px;">${periods}</div>` : ""}
+       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        ${played
+          ? `<span class="phase-result-badge badge-played">${suffix}</span>
+             <button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:4px 10px;background:#1a5276;color:white;">📊 Statistiky</button>`
+          : `<span class="phase-result-badge badge-pending">Čeká na odehrání</span>
+             <button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;padding:4px 10px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
+        }
+       </div>
       </div>
      </div>`
   }
@@ -445,7 +459,6 @@ function renderPhase(phase){
   html += '</div>'
   cont.innerHTML = html
 }
-
 function tbdPhaseHtml(){
   return `<span class="phase-team-name tbd">— TBD —</span>`
 }
