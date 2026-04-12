@@ -483,7 +483,7 @@ function calcScoreFromGamestat(events, homeAbbr, awayAbbr) {
     const isHome = ev.team === homeAbbr
     const p = (ev.period || '').trim()
     if (p === 'Shootout' || p === 'SO') { hasSN = true; snWinnerIsHome = isHome }
-    else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime') { hasOT = true; if (isHome) hg3++; else ag3++ }
+else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime' || /^[0-9]*ot$/i.test(p)) { hasOT = true; if (isHome) hg3++; else ag3++ }
     else if (p === '1') { if (isHome) hg1++; else ag1++ }
     else if (p === '2') { if (isHome) hg2++; else ag2++ }
     else if (p === '3') { if (isHome) hg3++; else ag3++ }
