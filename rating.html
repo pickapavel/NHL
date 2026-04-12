@@ -249,6 +249,10 @@ async function load(){
   })
  })
 
+ allTeams.forEach(t=>{
+  t.rating_form = formRatings[t.id] ?? START_RATING
+ })
+
  buildTeamSelect()
  render()
 }
