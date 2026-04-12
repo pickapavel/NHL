@@ -158,6 +158,7 @@ const supabase = createClient(
 )
 
 const START_RATING = 1000
+const K_ELO = 32
 const K_FORM = 120
 const FORM_WINDOW = 5
 const PREVIEW_COUNT = 5
@@ -214,15 +215,26 @@ async function load(){
   return Number(a.round)-Number(b.round)
  })
 
+ const eloRatings = {}
  const formRatings = {}
  const formHistory = {}
- allTeams.forEach(t=>{ formRatings[t.id]=START_RATING; formHistory[t.id]=[] })
+ allTeams.forEach(t=>{
+  eloRatings[t.id]  = START_RATING
+  formRatings[t.id] = START_RATING
+  formHistory[t.id] = []
+ })
 
- // ELO se počítá ze VŠECH zápasů bez ohledu na soutěž
  matches.forEach(m=>{
   const h=m.home_team, a=m.away_team
-  if(formRatings[h]===undefined||formRatings[a]===undefined) return
+  if(eloRatings[h]===undefined||eloRatings[a]===undefined) return
   const sH=getScore(m,h), sA=getScore(m,a)
+
+  function updateElo(teamId, opponentId, score){
+   const cur=eloRatings[teamId], opp=eloRatings[opponentId]
+   const exp=1/(1+Math.pow(10,(opp-cur)/400))
+   const change=Math.round(K_ELO*(score-exp))
+   eloRatings[teamId]=cur+change
+  }
 
   function updateForm(teamId, opponentId, score){
    const cur=formRatings[teamId], opp=formRatings[opponentId]
@@ -235,6 +247,13 @@ async function load(){
    formRatings[teamId]=newForm
    return {before, after:newForm, change:Math.round(ch)}
   }
+
+  // ELO se musí číst PŘED updatem obou týmů, jinak by druhý tým viděl již změněné ELO prvního
+  const eloH=eloRatings[h], eloA=eloRatings[a]
+  const expH=1/(1+Math.pow(10,(eloA-eloH)/400))
+  const expA=1/(1+Math.pow(10,(eloH-eloA)/400))
+  eloRatings[h]=eloH+Math.round(K_ELO*(sH-expH))
+  eloRatings[a]=eloA+Math.round(K_ELO*(sA-expA))
 
   const fH=updateForm(h,a,sH)
   const fA=updateForm(a,h,sA)
@@ -250,7 +269,8 @@ async function load(){
  })
 
  allTeams.forEach(t=>{
-  t.rating_form = formRatings[t.id] ?? START_RATING
+  t.rating_overall = eloRatings[t.id]  ?? START_RATING
+  t.rating_form    = formRatings[t.id] ?? START_RATING
  })
 
  buildTeamSelect()
