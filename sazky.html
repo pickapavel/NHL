@@ -664,11 +664,21 @@ window.placeMGABet=async function(matchId,category,playerKey){
   const awayId=document.getElementById(`mga-body-${matchId}-${category}`)?.dataset.away
   const goalsO=calcMatchGoalsOdds(homeId,awayId)
   const o=goalsO[category]?.[sel]?.odds||1
-  await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-  await supabase.from("bets_special").insert({
+  const label=goalsO[category]?.[sel]?.label||sel
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({
     match_id:matchId,player_id:player.id,
     type:`match_goals_${category}`,target_id:sel,
     odds:o,amount,potential_win:amount*o,status:"pending"
+  }).select().single()
+  const homeTeam=teams.find(t=>t.id===homeId)
+  const awayTeam=teams.find(t=>t.id===awayId)
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka na góly (${category}) — ${homeTeam?.name||"?"} vs ${awayTeam?.name||"?"} — tip: ${label}`,
+    amount:-amount,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets_special"
   })
   load()
 }
@@ -824,8 +834,16 @@ window.bet=async function(playerName,teamId,odds,type){
   const val=Number(document.getElementById(`a_${playerName}_${teamId}_${type}`)?.value)
   if(!val||val<=0) return alert("Zadej částku")
   if(player.credit<val) return alert("Nedostatek kreditu")
-  await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
-  await supabase.from("bets_special").insert({player_id:player.id,type,target_id:teamId,odds,amount:val,potential_win:val*odds,status:"pending"})
+  const newCredit=player.credit-val
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type,target_id:teamId,odds,amount:val,potential_win:val*odds,status:"pending"}).select().single()
+  const team=teams.find(t=>t.id===teamId)
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka: ${type} — ${team?.name||teamId}`,
+    amount:-val,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets_special"
+  })
   load()
 }
 window.selectGoal=function(playerName,teamId,thr){
@@ -858,8 +876,16 @@ window.betGoals=async function(playerName,teamId){
   if(player.credit<val) return alert("Nedostatek kreditu")
   const odds=goalsOddsMap[teamId]
   const o=odds[sel]
-  await supabase.from("players").update({credit:player.credit-val}).eq("id",player.id)
-  await supabase.from("bets_special").insert({player_id:player.id,type:`goals_${sel}_regular_season`,target_id:teamId,odds:o,amount:val,potential_win:val*o,status:"pending"})
+  const newCredit=player.credit-val
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type:`goals_${sel}_regular_season`,target_id:teamId,odds:o,amount:val,potential_win:val*o,status:"pending"}).select().single()
+  const team=teams.find(t=>t.id===teamId)
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka na góly ${sel}+ — ${team?.name||teamId}`,
+    amount:-val,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets_special"
+  })
   load()
 }
 
@@ -894,8 +920,16 @@ window.placeWinnerBet=async function(stageId,playerKey){
   if(!amount||amount<=0) return alert("Zadej částku")
   if(player.credit<amount) return alert("Nedostatek kreditu")
   const o=odds[sel]||1
-  await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-  await supabase.from("bets_special").insert({player_id:player.id,type:`serie_winner_${stageId}`,target_id:sel,odds:o,amount,potential_win:amount*o,status:"pending"})
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type:`serie_winner_${stageId}`,target_id:sel,odds:o,amount,potential_win:amount*o,status:"pending"}).select().single()
+  const team=teams.find(t=>t.id===sel)
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka na postup v sérii — ${team?.name||sel}`,
+    amount:-amount,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets_special"
+  })
   load()
 }
 
@@ -930,8 +964,15 @@ window.placeGamesBet=async function(stageId,playerKey){
   if(!amount||amount<=0) return alert("Zadej částku")
   if(player.credit<amount) return alert("Nedostatek kreditu")
   const o=odds[sel]||1
-  await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-  await supabase.from("bets_special").insert({player_id:player.id,type:`serie_games_${stageId}`,target_id:stageId,odds:o,amount,potential_win:amount*o,status:"pending"})
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type:`serie_games_${stageId}`,target_id:stageId,odds:o,amount,potential_win:amount*o,status:"pending"}).select().single()
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka na počet zápasů v sérii — ${sel} zápasů`,
+    amount:-amount,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets_special"
+  })
   load()
 }
 
@@ -972,8 +1013,15 @@ window.placeMatchBet=async function(matchId,playerKey){
   if(player.credit<amount) return alert("Nedostatek kreditu")
   let combinedOdds=1
   sel.forEach(t=>{if(oddsMap[t])combinedOdds*=oddsMap[t]})
-  await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-  await supabase.from("bets").insert({match_id:matchId,player_id:player.id,tip:sel.join(","),amount,odds:combinedOdds,potential_win:amount*combinedOdds,status:"pending"})
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets").insert({match_id:matchId,player_id:player.id,tip:sel.join(","),amount,odds:combinedOdds,potential_win:amount*combinedOdds,status:"pending"}).select().single()
+  await supabase.from("credit_history").insert({
+    player_id:player.id,type:"bet",
+    description:`Sázka na zápas — tip: ${sel.join(" + ")}`,
+    amount:-amount,credit_before:player.credit,credit_after:newCredit,
+    bet_id:betData?.id||null,source:"bets"
+  })
   load()
 }
 
