@@ -425,7 +425,8 @@ function buildAggregated(){
   if(r.is_goalie) p.is_goalie=true
 
   // Výhry/prohry brankáře
-  if(r.is_goalie && r.match_obj && r.match_obj.home_score!=null){
+// Výhry/prohry brankáře — jen pokud skutečně chytal (TOI > 0)
+  if(r.is_goalie && r.match_obj && r.match_obj.home_score!=null && toiToSec(r.toi) > 0){
    const m = r.match_obj
    const hg = Number(m.home_score), ag = Number(m.away_score)
    const homeTeam = allTeamsDb.find(t=>t.id===m.home_team)
@@ -693,8 +694,9 @@ function renderRecords(){
   const normName = (r.player_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
   const key = r.player_id ? String(r.player_id) : normName
   if(!map[key]) map[key]={name:r.player_name,team:r.team_abbr,gp:0,goals:0,assists:0,points:0,pim:0,hits:0,shots:0,ppg:0,plus_minus:0,player_id:r.player_id}
-  const p=map[key]
-  p.gp++;p.goals+=r.goals||0;p.assists+=r.assists||0;p.points+=r.points||0
+ const p=map[key]
+  // Pro brankáře počítej zápas jen pokud skutečně chytal (TOI > 0)
+  if(!r.is_goalie || toiToSec(r.toi) > 0) p.gp++;p.goals+=r.goals||0;p.assists+=r.assists||0;p.points+=r.points||0
   p.pim+=r.pim||0;p.hits+=r.hits||0;p.shots+=r.shots||0;p.ppg+=r.ppg||0
   p.plus_minus+=r.plus_minus||0;p.team=r.team_abbr||p.team
 
