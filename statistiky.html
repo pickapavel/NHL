@@ -296,12 +296,38 @@ async function init(){
  ;(stagesRaw.data||[]).forEach(s=>{ stageMap[s.id]=s })
 
  // Obohať každý stat řádek o competition_id a stage info
+const teamOwnerById = {}
+ allTeamsDb.forEach(t=>{ teamOwnerById[t.id]=t.owner_id })
+
  rawStats = (statsRaw||[]).map(r=>{
   const match = allMatches.find(m=>m.id===r.match_id)
   const compId = match ? (seasonCompMap[match.season_id]||'') : ''
   const stage = match ? stageMap[match.stage_id] : null
-  const isPlayoff = stage ? (stage.name?.toLowerCase().includes('play')||stage.name?.toLowerCase().includes('final')||stage.name?.toLowerCase().includes('semifin')||stage.name?.toLowerCase().includes('čtvrt')) : false
-  return { ...r, competition_id:compId, is_playoff:isPlayoff, match_obj:match }
+  const isPlayoff = stage ? (
+   stage.name?.toLowerCase().includes('play')||
+   stage.name?.toLowerCase().includes('final')||
+   stage.name?.toLowerCase().includes('semifin')||
+   stage.name?.toLowerCase().includes('čtvrt')
+  ) : false
+
+  let owner_id = null
+  if(match){
+   const homeTeam = allTeamsDb.find(t=>t.id===match.home_team)
+   const awayTeam = allTeamsDb.find(t=>t.id===match.away_team)
+   const abbr = (r.team_abbr||'').toUpperCase()
+   const homeMatch = homeTeam && (
+    homeTeam.name.toUpperCase().includes(abbr) ||
+    (homeTeam.short_name||'').toUpperCase().includes(abbr)
+   )
+   const awayMatch = awayTeam && (
+    awayTeam.name.toUpperCase().includes(abbr) ||
+    (awayTeam.short_name||'').toUpperCase().includes(abbr)
+   )
+   if(homeMatch) owner_id = teamOwnerById[match.home_team]||null
+   else if(awayMatch) owner_id = teamOwnerById[match.away_team]||null
+  }
+
+  return { ...r, competition_id:compId, is_playoff:isPlayoff, match_obj:match, owner_id }
  })
 
  // Sestav mapu tým → owner
@@ -357,18 +383,9 @@ function buildAggregated(){
    }
   }
   // Filtr vlastníka přes (K)/(P) suffix v team_abbr nebo jménu
-  if(ownerFilter!=='all'){
-   // Zkusíme najít tým v DB podle zkratky
-   const teamDbEntry = allTeamsDb.find(t=>{
-    // Porovnej zkratku s názvem
-    const abbr=(r.team_abbr||'').toUpperCase()
-    const nm=(t.name||'').toUpperCase()
-    const sn=(t.short_name||'').toUpperCase()
-    return nm.includes(abbr)||sn.includes(abbr)||abbr===nm.slice(0,abbr.length)
-   })
-   const ownerId = teamDbEntry?.owner_id || null
-   if(ownerFilter==='kubele'&&ownerId!==PLAYER_IDS.kubele) return false
-   if(ownerFilter==='pici'  &&ownerId!==PLAYER_IDS.pici)   return false
+if(ownerFilter!=='all'){
+   const targetId = PLAYER_IDS[ownerFilter]
+   if(r.owner_id !== targetId) return false
   }
   return true
  })
