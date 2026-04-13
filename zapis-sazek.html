@@ -24,6 +24,7 @@ h1{margin-bottom:5px;}
 .btnLost{background:#e74c3c;color:white;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:13px;}
 .btnWon:hover{background:#219a52;}
 .btnLost:hover{background:#c0392b;}
+.btnWon:disabled,.btnLost:disabled{opacity:.5;cursor:not-allowed;}
 .resolved{color:#999;font-size:13px;font-style:italic;}
 .section{margin-bottom:30px;}
 .sectionHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
@@ -128,15 +129,57 @@ function getTypLabel(type){
 function getPlayerName(id){ return players[id]?.name||id }
 function getTeamName(id){ return teams[id]?.name||id }
 
+// ── OPRAVENÁ FUNKCE resolve ──
+// Místo player.credit z cache načteme vždy čerstvý kredit přímo z DB,
+// aby souběžné nebo rychlé vyhodnocení dvou sázek nepřepsalo předchozí změnu.
 window.resolve = async function(betId, result){
- const bet = bets.find(b=>b.id===betId)
+ // Zamez dvojkliku — deaktivuj tlačítka
+ document.querySelectorAll(`[data-bet-id="${betId}"]`).forEach(btn => btn.disabled = true)
+
+ const bet = bets.find(b => b.id === betId)
  if(!bet) return
- await supabase.from("bets_special").update({status:result==="won"?"won":"lost"}).eq("id",betId)
- if(result==="won"){
-  const player = players[bet.player_id]
-  if(player) await supabase.from("players").update({credit:player.credit+bet.potential_win}).eq("id",player.id)
+
+ // 1) Aktualizuj status sázky
+ const { error: betError } = await supabase
+  .from("bets_special")
+  .update({ status: result === "won" ? "won" : "lost" })
+  .eq("id", betId)
+
+ if(betError){
+  showToast("❌ Chyba při ukládání statusu!")
+  load()
+  return
  }
- showToast(result==="won"?"✅ Výhra připsána!":"❌ Sázka označena jako prohra.")
+
+ // 2) Pokud výhra — načti kredit čerstvě z DB a přičti výhru
+ if(result === "won"){
+  const { data: freshPlayer, error: playerError } = await supabase
+   .from("players")
+   .select("credit")
+   .eq("id", bet.player_id)
+   .single()
+
+  if(playerError || !freshPlayer){
+   showToast("❌ Chyba při načítání hráče!")
+   load()
+   return
+  }
+
+  const newCredit = freshPlayer.credit + bet.potential_win
+
+  const { error: creditError } = await supabase
+   .from("players")
+   .update({ credit: newCredit })
+   .eq("id", bet.player_id)
+
+  if(creditError){
+   showToast("❌ Chyba při připsání kreditu!")
+   load()
+   return
+  }
+ }
+
+ showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
  load()
 }
 
@@ -191,8 +234,8 @@ function renderSection(title, type, filteredBets){
   teamBets.forEach(b=>{
    const statusBadge=`<span class="badge badge-${b.status}">${b.status==="pending"?"Čeká":b.status==="won"?"Výhra":"Prohra"}</span>`
    const akce=b.status==="pending"
-    ?`<button class="btnWon" onclick="resolve('${b.id}','won')">Výhra</button>
-      <button class="btnLost" onclick="resolve('${b.id}','lost')">Prohra</button>`
+    ?`<button class="btnWon" data-bet-id="${b.id}" onclick="resolve('${b.id}','won')">Výhra</button>
+      <button class="btnLost" data-bet-id="${b.id}" onclick="resolve('${b.id}','lost')">Prohra</button>`
     :`<span class="resolved">Vyhodnoceno</span>`
    html+=`<div class="betRow">
     <div>${getPlayerName(b.player_id)}</div>
