@@ -675,32 +675,55 @@ async function loadExistingBets(match){
   })
 }
 
-window.placeBet=async function(playerKey, category){
-  const player=players[playerKey]
-  if(category==="result"){
-    const amount=Number(document.getElementById("amount_"+playerKey).value)
-    const selected=state[playerKey].result.selected
-    if(!amount||!selected.length){ alert("Vyber tip a zadej částku"); return }
-    if(player.credit<amount){ alert("Nedostatek kreditu"); return }
-    let combinedOdds=1
-    selected.forEach(t=>combinedOdds*=oddsGlobal[t])
-    await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-    await supabase.from("bets").insert({
-      match_id:matchId, player_id:player.id,
-      tip:selected.join(","), amount, odds:combinedOdds,
-      potential_win:amount*combinedOdds, status:"pending"
+window.placeBet = async function(playerKey, category) {
+  const player = players[playerKey]
+  if(category === "result") {
+    const amount = Number(document.getElementById("amount_" + playerKey).value)
+    const selected = state[playerKey].result.selected
+    if(!amount || !selected.length) { alert("Vyber tip a zadej částku"); return }
+    if(player.credit < amount) { alert("Nedostatek kreditu"); return }
+    let combinedOdds = 1
+    selected.forEach(t => combinedOdds *= oddsGlobal[t])
+    const newCredit = player.credit - amount
+    await supabase.from("players").update({ credit: newCredit }).eq("id", player.id)
+    const { data: betData } = await supabase.from("bets").insert({
+      match_id: matchId, player_id: player.id,
+      tip: selected.join(","), amount, odds: combinedOdds,
+      potential_win: amount * combinedOdds, status: "pending"
+    }).select().single()
+    await supabase.from("credit_history").insert({
+      player_id: player.id,
+      type: "bet",
+      description: `Sázka na zápas: ${homeName} vs ${awayName} — tip: ${selected.join(" + ")}`,
+      amount: -amount,
+      credit_before: player.credit,
+      credit_after: newCredit,
+      bet_id: betData?.id || null,
+      source: "bets"
     })
   } else {
-    const amount=Number(document.getElementById(`amount_${category}_${playerKey}`).value)
-    const sel=state[playerKey][category].selected
-    if(!amount||!sel){ alert("Vyber tip a zadej částku"); return }
-    if(player.credit<amount){ alert("Nedostatek kreditu"); return }
-    const o=goalsOdds[category][sel]?.odds||1
-    await supabase.from("players").update({credit:player.credit-amount}).eq("id",player.id)
-    await supabase.from("bets_special").insert({
-      match_id:matchId, player_id:player.id,
-      type:"goals_"+category, target_id:sel,
-      odds:o, amount, potential_win:amount*o, status:"pending"
+    const amount = Number(document.getElementById(`amount_${category}_${playerKey}`).value)
+    const sel = state[playerKey][category].selected
+    if(!amount || !sel) { alert("Vyber tip a zadej částku"); return }
+    if(player.credit < amount) { alert("Nedostatek kreditu"); return }
+    const o = goalsOdds[category][sel]?.odds || 1
+    const label = goalsOdds[category][sel]?.label || sel
+    const newCredit = player.credit - amount
+    await supabase.from("players").update({ credit: newCredit }).eq("id", player.id)
+    const { data: betData } = await supabase.from("bets_special").insert({
+      match_id: matchId, player_id: player.id,
+      type: "goals_" + category, target_id: sel,
+      odds: o, amount, potential_win: amount * o, status: "pending"
+    }).select().single()
+    await supabase.from("credit_history").insert({
+      player_id: player.id,
+      type: "bet",
+      description: `Sázka na góly (${category}) — ${homeName} vs ${awayName} — tip: ${label}`,
+      amount: -amount,
+      credit_before: player.credit,
+      credit_after: newCredit,
+      bet_id: betData?.id || null,
+      source: "bets_special"
     })
   }
   location.reload()
