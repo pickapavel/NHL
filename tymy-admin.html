@@ -495,8 +495,9 @@ function openEdit(teamId){
   })
   selectOwner(selectedOwner)
   selectedTeamType=t.team_type||null
-  document.getElementById("tt-klub").className="owner-btn"+(selectedTeamType==="klub"?" selected-klub":"")
-  document.getElementById("tt-reprezentace").className="owner-btn"+(selectedTeamType==="reprezentace"?" selected-reprezentace":"")  document.getElementById("modalOverlay").classList.add("open")
+document.getElementById("tt-klub").className="owner-btn"+(selectedTeamType==="klub"?" selected-klub":"")
+  document.getElementById("tt-reprezentace").className="owner-btn"+(selectedTeamType==="reprezentace"?" selected-reprezentace":"")
+  document.getElementById("modalOverlay").classList.add("open")
 }
 
 function closeModal(){
