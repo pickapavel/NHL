@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vývoj kreditu</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1a2a3c;min-height:100vh}
+.wrapper{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
+h1{font-size:22px;font-weight:800;color:#0b2a3c;margin-bottom:6px}
+.subtitle{font-size:13px;color:#6b7a8d;margin-bottom:24px}
+
+.credits-bar{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.credit-card{background:white;border-radius:14px;border:1px solid #e2e8f0;padding:18px 22px;box-shadow:0 2px 8px rgba(11,42,60,.07)}
+.credit-card-name{font-size:13px;font-weight:700;color:#6b7a8d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.credit-card-value{font-size:28px;font-weight:800;color:#0b2a3c}
+.credit-card-start{font-size:12px;color:#6b7a8d;margin-top:4px}
+.credit-card-diff{font-size:13px;font-weight:700;margin-top:4px}
+.diff-pos{color:#27ae60}
+.diff-neg{color:#e74c3c}
+
+.player-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:8px 18px;border-radius:20px;border:2px solid #ddd;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#666;transition:all .15s}
+.tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c}
+
+.table-wrap{background:white;border-radius:12px;box-shadow:0 2px 8px rgba(11,42,60,.07);overflow:hidden;overflow-x:auto;margin-bottom:28px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:650px}
+thead th{background:#0b2a3c;color:white;padding:11px 14px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0f4f8;transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f7fafc}
+tbody td{padding:10px 14px;vertical-align:middle}
+
+.type-bet{color:#e67e22;font-weight:700}
+.type-won{color:#27ae60;font-weight:700}
+.type-lost{color:#e74c3c;font-weight:700}
+.amount-neg{color:#e74c3c;font-weight:700}
+.amount-pos{color:#27ae60;font-weight:700}
+.credit-val{font-weight:700;color:#0b2a3c}
+
+.badge-bet{background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-won{background:#d1e7dd;color:#155724;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-lost{background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+
+.empty{padding:40px;text-align:center;color:#aaa;font-size:14px}
+.count{font-size:13px;color:#888;margin-bottom:10px}
+
+@media(max-width:600px){
+  .credits-bar{grid-template-columns:1fr}
+  h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="wrapper">
+  <h1>📈 Vývoj kreditu</h1>
+  <p class="subtitle">Přehled všech pohybů kreditu od spuštění sledování</p>
+
+  <div class="credits-bar" id="creditsBar">Načítám...</div>
+
+  <div class="player-tabs" id="playerTabs"></div>
+
+  <div class="count" id="count"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Hráč</th>
+          <th>Typ</th>
+          <th>Popis</th>
+          <th>Pohyb</th>
+          <th>Kredit před</th>
+          <th>Kredit po</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">Žádné záznamy.</div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const START_CREDIT = 10000
+let history = []
+let players = {}
+let activePlayer = ""
+
+function formatDate(str){
+  if(!str) return "—"
+  const d = new Date(str)
+  return d.toLocaleDateString("cs-CZ",{day:"2-digit",month:"2-digit",year:"numeric"})
+    + " " + d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"})
+}
+
+function typeBadge(type){
+  if(type === "bet")  return `<span class="badge-bet">Sázka</span>`
+  if(type === "won")  return `<span class="badge-won">Výhra</span>`
+  if(type === "lost") return `<span class="badge-lost">Prohra</span>`
+  return `<span class="badge-bet">${type}</span>`
+}
+
+async function load(){
+  const { data: p } = await supabase.from("players").select("*")
+  ;(p||[]).forEach(pl => players[pl.id] = pl)
+
+  const { data: h } = await supabase
+    .from("credit_history")
+    .select("*")
+    .order("created_at", {ascending: false})
+
+  history = h || []
+
+  buildPlayerTabs()
+  renderCreditsBar()
+  renderTable()
+}
+
+function buildPlayerTabs(){
+  const el = document.getElementById("playerTabs")
+  el.innerHTML = ""
+  const all = document.createElement("button")
+  all.className = "tab active"
+  all.textContent = "Všichni hráči"
+  all.onclick = () => setPlayer("")
+  el.appendChild(all)
+  Object.values(players).forEach(pl => {
+    const btn = document.createElement("button")
+    btn.className = "tab"
+    btn.textContent = pl.name
+    btn.id = `tab-${pl.id}`
+    btn.onclick = () => setPlayer(pl.id)
+    el.appendChild(btn)
+  })
+}
+
+function setPlayer(id){
+  activePlayer = id
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
+  if(id === ""){
+    document.querySelector(".tab").classList.add("active")
+  } else {
+    document.getElementById(`tab-${id}`)?.classList.add("active")
+  }
+  renderTable()
+}
+
+function renderCreditsBar(){
+  const el = document.getElementById("creditsBar")
+  el.innerHTML = Object.values(players).map(pl => {
+    const diff = pl.credit - START_CREDIT
+    const diffStr = (diff >= 0 ? "+" : "") + Math.round(diff).toLocaleString("cs-CZ") + " Kč"
+    const diffClass = diff >= 0 ? "diff-pos" : "diff-neg"
+    return `<div class="credit-card">
+      <div class="credit-card-name">${pl.name}</div>
+      <div class="credit-card-value">${Math.round(pl.credit).toLocaleString("cs-CZ")} Kč</div>
+      <div class="credit-card-start">Startovní kredit: ${START_CREDIT.toLocaleString("cs-CZ")} Kč</div>
+      <div class="credit-card-diff ${diffClass}">${diffStr}</div>
+    </div>`
+  }).join("")
+}
+
+function renderTable(){
+  const tbody = document.getElementById("tbody")
+  const empty = document.getElementById("empty")
+  const count = document.getElementById("count")
+
+  const filtered = activePlayer
+    ? history.filter(h => h.player_id === activePlayer)
+    : history
+
+  count.textContent = `Zobrazeno ${filtered.length} záznamů`
+
+  if(!filtered.length){
+    tbody.innerHTML = ""
+    empty.style.display = "block"
+    return
+  }
+  empty.style.display = "none"
+
+  tbody.innerHTML = filtered.map(h => {
+    const player = players[h.player_id]?.name || "—"
+    const amount = Number(h.amount)
+    const amountStr = (amount >= 0 ? "+" : "") + Math.round(amount).toLocaleString("cs-CZ") + " Kč"
+    const amountClass = amount >= 0 ? "amount-pos" : "amount-neg"
+    return `<tr>
+      <td style="white-space:nowrap;color:#6b7a8d">${formatDate(h.created_at)}</td>
+      <td><b>${player}</b></td>
+      <td>${typeBadge(h.type)}</td>
+      <td style="max-width:300px">${h.description || "—"}</td>
+      <td class="${amountClass}">${amountStr}</td>
+      <td class="credit-val">${Math.round(h.credit_before).toLocaleString("cs-CZ")} Kč</td>
+      <td class="credit-val">${Math.round(h.credit_after).toLocaleString("cs-CZ")} Kč</td>
+    </tr>`
+  }).join("")
+}
+
+load()
+</script>
+</body>
+</html>
