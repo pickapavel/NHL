@@ -165,7 +165,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 .owner-btn.selected-kubele{border-color:#0b5394;background:#e8f4fd;color:#0b5394;}
 .owner-btn.selected-pici{border-color:#7c1a5a;background:#fce8f4;color:#7c1a5a;}
 .owner-btn.selected-none{border-color:#888;background:#f0f0f0;color:#888;}
-
+.owner-btn.selected-klub{border-color:#0b5394;background:#e8f4fd;color:#0b5394;}
+.owner-btn.selected-reprezentace{border-color:#166534;background:#dcfce7;color:#166534;}
 .logo-preview-wrap{display:flex;align-items:center;gap:12px;margin-top:8px;}
 .logo-preview{
   width:52px;height:52px;object-fit:contain;background:#f7f9fb;
@@ -261,8 +262,16 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
       </div>
     </div>
 
+<div class="form-group">
+      <label class="form-label">Typ týmu *</label>
+      <div class="owner-btns">
+        <div class="owner-btn" id="tt-klub" onclick="selectTeamType('klub')">🏒 Klubový</div>
+        <div class="owner-btn" id="tt-reprezentace" onclick="selectTeamType('reprezentace')">🌍 Reprezentace</div>
+      </div>
+    </div>
+
     <div class="form-group">
-      <label class="form-label">Soutěže * (lze vybrat více)</label>
+      <label class="form-label">Soutěže (lze vybrat více)</label>
       <div class="comp-checkboxes">
         <div class="comp-check" id="cc-extraliga" onclick="toggleComp('extraliga')">
           <span class="comp-check-label">🏒 Extraliga</span>
@@ -313,7 +322,7 @@ let allTeams=[]
 let editingId=null
 let selectedComps=new Set()
 let selectedOwner=null
-
+let selectedTeamType=null
 async function load(){
   const {data,error}=await db.from("teams").select("*").order("name")
   if(error){ showToast("❌ Chyba: "+error.message); return }
@@ -404,6 +413,10 @@ function render(){
             <div>${abbrBadgeHtml(t)}</div>
           </div>
           <div class="team-info-row">
+            <span class="team-info-label">Typ týmu</span>
+            <span class="team-info-val">${t.team_type==='klub'?'🏒 Klubový':t.team_type==='reprezentace'?'🌍 Reprezentace':'—'}</span>
+          </div>
+          <div class="team-info-row">
             <span class="team-info-label">Logo</span>
             <span class="team-info-val">${t.logo||"—"}</span>
           </div>
@@ -436,6 +449,12 @@ function selectOwner(val){
   document.getElementById("ob-pici").className="owner-btn"+(val==="pici"?" selected-pici":"")
 }
 
+function selectTeamType(val){
+  selectedTeamType=val
+  document.getElementById("tt-klub").className="owner-btn"+(val==="klub"?" selected-klub":"")
+  document.getElementById("tt-reprezentace").className="owner-btn"+(val==="reprezentace"?" selected-reprezentace":"")
+}
+
 function openModal(){
   editingId=null
   selectedComps=new Set()
@@ -452,6 +471,9 @@ function openModal(){
     document.getElementById("cc-"+c).classList.remove("selected")
   )
   selectOwner(null)
+  selectedTeamType=null
+  document.getElementById("tt-klub").className="owner-btn"
+  document.getElementById("tt-reprezentace").className="owner-btn"
   document.getElementById("modalOverlay").classList.add("open")
 }
 
@@ -472,7 +494,9 @@ function openEdit(teamId){
     document.getElementById("cc-"+c).classList.toggle("selected", selectedComps.has(c))
   })
   selectOwner(selectedOwner)
-  document.getElementById("modalOverlay").classList.add("open")
+  selectedTeamType=t.team_type||null
+  document.getElementById("tt-klub").className="owner-btn"+(selectedTeamType==="klub"?" selected-klub":"")
+  document.getElementById("tt-reprezentace").className="owner-btn"+(selectedTeamType==="reprezentace"?" selected-reprezentace":"")  document.getElementById("modalOverlay").classList.add("open")
 }
 
 function closeModal(){
@@ -522,7 +546,7 @@ async function saveTeam(){
 
   if(!name){ alert("Zadej název týmu!"); return }
   if(!abbr){ alert("Zadej zkratku týmu! Např. SPA (K) nebo FIN (P)"); return }
-  if(!selectedComps.size){ alert("Vyber alespoň jednu soutěž!"); return }
+  if(!selectedTeamType){ alert("Vyber typ týmu (Klubový nebo Reprezentace)!"); return }
 
   // Zkontroluj unikátnost zkratky
   const duplicate = allTeams.find(t=>
@@ -532,11 +556,12 @@ async function saveTeam(){
 
   const ownerId = selectedOwner ? PLAYER_IDS[selectedOwner] : null
 
-  const payload={
+const payload={
     name,
     short_name:  short||null,
     team_abbr:   abbr,
     logo:        logo||null,
+    team_type:   selectedTeamType,
     in_extraliga:    selectedComps.has("extraliga"),
     in_reprezentace: selectedComps.has("reprezentace"),
     in_olympiada:    selectedComps.has("olympiada"),
