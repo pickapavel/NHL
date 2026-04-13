@@ -299,11 +299,9 @@ async function init(){
   const match = matchById[r.match_id]
   const compId = match ? (seasonCompMap[match.season_id]||'') : ''
   const stage = match ? stageMap[match.stage_id] : null
-  const isPlayoff = stage ? (
-   stage.name?.toLowerCase().includes('play')||
-   stage.name?.toLowerCase().includes('final')||
-   stage.name?.toLowerCase().includes('semifin')||
-   stage.name?.toLowerCase().includes('čtvrt')
+const isPlayoff = stage ? (
+   stage.parent_stage_id !== null ||
+   stage.name?.toLowerCase() === 'playoff'
   ) : false
 
   // owner_id: přes team_abbr → TEAM_MAP → owner_id
