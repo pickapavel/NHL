@@ -283,8 +283,8 @@ const items = [
     href: 'ms.html',
     pages: ['ms.html', 'msstatistiky.html'],
     children: [
-      { icon: '🏒', label: 'Sezóna – 01', href: 'ms.html',           pages: ['ms.html'] },
-      { icon: '📊', label: 'Statistiky MS', href: 'msstatistiky.html', pages: ['msstatistiky.html'] },
+      { icon: '🏒', label: 'Sezóna – 01',   href: 'ms.html',            pages: ['ms.html'] },
+      { icon: '📊', label: 'Statistiky MS', href: 'msstatistiky.html',  pages: ['msstatistiky.html'] },
     ]
   },
   {
@@ -296,21 +296,22 @@ const items = [
   },
   {
     type: 'link',
-    icon: '📋',
-    label: 'Sázky – přehled',
-    href: 'prehledsazek.html',
-    pages: ['prehledsazek.html']
+    icon: '📈',
+    label: 'Statistiky',
+    href: 'statistiky.html',
+    pages: ['statistiky.html']
   },
   {
     type: 'dropdown',
     icon: '🎲',
     label: 'Sázky',
-    pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html'],
+    pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html', 'prehledsazek.html'],
     children: [
-      { icon: '🏒', label: 'Extraliga',         href: 'sazky.html',      pages: ['sazky.html'] },
-      { icon: '🥇', label: 'Olympiáda',         href: 'sazkyoh.html',    pages: ['sazkyoh.html'] },
-      { icon: '🌍', label: 'Mistrovství světa', href: 'sazkyms.html',    pages: ['sazkyms.html'] },
-      { icon: '🤪', label: 'Blbounský pohár',   href: 'sazkypohár.html', pages: ['sazkypohár.html'] },
+      { icon: '📋', label: 'Přehled sázek',     href: 'prehledsazek.html', pages: ['prehledsazek.html'] },
+      { icon: '🏒', label: 'Extraliga',          href: 'sazky.html',        pages: ['sazky.html'] },
+      { icon: '🥇', label: 'Olympiáda',          href: 'sazkyoh.html',      pages: ['sazkyoh.html'] },
+      { icon: '🌍', label: 'Mistrovství světa',  href: 'sazkyms.html',      pages: ['sazkyms.html'] },
+      { icon: '🤪', label: 'Blbounský pohár',    href: 'sazkypohár.html',   pages: ['sazkypohár.html'] },
     ]
   },
   {
@@ -349,7 +350,6 @@ items.forEach(item => {
     wrap.appendChild(a)
 
   } else if(item.type === 'dropdown-with-link'){
-    // Klik na label = přejdi na stránku, šipka = otevři dropdown
     const btn = document.createElement('button')
     btn.className = 'nav-link ' + isActive(item.pages)
     btn.innerHTML = `<span>${item.icon}</span><a href="${item.href}" style="color:inherit;text-decoration:none;" onclick="event.stopPropagation()">${item.label}</a><span class="nav-arrow">▼</span>`
