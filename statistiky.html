@@ -14,8 +14,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .header-title{font-size:22px;font-weight:800;color:white;letter-spacing:-.3px;}
 .header-sub{font-size:12px;color:#7ab0cc;font-weight:500;margin-top:3px;text-transform:uppercase;letter-spacing:.06em;}
 
-.nav-tabs{background:#0b2a3c;padding:0 30px;display:flex;gap:0;border-bottom:2px solid #1a3a5c;}
-.nav-tab{padding:14px 20px;font-size:13px;font-weight:700;color:#7ab0cc;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
+.nav-tabs{background:#0b2a3c;padding:0 30px;display:flex;gap:0;border-bottom:2px solid #1a3a5c;justify-content:center;}
+.nav-tab{padding:14px 24px;font-size:13px;font-weight:700;color:#7ab0cc;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
 .nav-tab:hover{color:white;}
 .nav-tab.active{color:white;border-bottom-color:#f0c040;}
 
@@ -24,12 +24,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .section{display:none;}
 .section.active{display:block;}
 
-.controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
-.filter-select{padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;}
+.controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;justify-content:center;}
+.filter-select{padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;min-width:200px;}
 .filter-select:focus{outline:none;border-color:#2f9ec9;}
-.search-input{padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;color:#1a3a5c;min-width:200px;}
+.search-input{padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;color:#1a3a5c;min-width:220px;}
 .search-input:focus{outline:none;border-color:#2f9ec9;}
-.pos-btn{padding:7px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
+.pos-btn{padding:7px 16px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
 .pos-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
 .pos-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
@@ -59,22 +59,13 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 .team-badge{display:inline-block;background:#e8f0f8;color:#1a5276;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
 .pos-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;}
 .pos-F{background:#dcfce7;color:#166534;}
-.pos-D{background:#dbeafe;color:#1e40af;}
 .pos-G{background:#fef9c3;color:#854d0e;}
 
 .loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
 .empty{padding:40px;text-align:center;color:#aaa;font-size:14px;}
 
-.stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
-.stat-card{background:white;border-radius:12px;border:1px solid #c8d8e8;padding:16px 20px;box-shadow:0 2px 8px rgba(26,58,92,.06);}
-.stat-card-val{font-size:28px;font-weight:800;color:#0b2a3c;}
-.stat-card-label{font-size:12px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
-.stat-card-sub{font-size:12px;color:#888;margin-top:2px;}
-
 .section-title{font-size:17px;font-weight:700;color:#0b2a3c;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
 .section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
-
-.toi-bar{display:inline-block;height:6px;border-radius:3px;background:linear-gradient(90deg,#2f9ec9,#0b2a3c);vertical-align:middle;margin-right:6px;}
 </style>
 </head>
 <body>
@@ -90,15 +81,14 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 </div>
 
 <div class="nav-tabs">
- <div class="nav-tab active" onclick="switchTab('players')">👤 Hráčské statistiky</div>
- <div class="nav-tab" onclick="switchTab('teams')">🏒 Týmové statistiky</div>
- <div class="nav-tab" onclick="switchTab('records')">🏆 Rekordy</div>
- <div class="nav-tab" onclick="switchTab('betting')">🎲 Statistiky tipování</div>
+ <div class="nav-tab active" onclick="switchTab('players',this)">👤 Hráčské statistiky</div>
+ <div class="nav-tab" onclick="switchTab('teams',this)">🏒 Týmové statistiky</div>
+ <div class="nav-tab" onclick="switchTab('records',this)">🏆 Rekordy</div>
+ <div class="nav-tab" onclick="switchTab('betting',this)">🎲 Statistiky tipování</div>
 </div>
 
 <div class="wrapper">
 
- <!-- HRÁČSKÉ STATISTIKY -->
  <div class="section active" id="section-players">
   <div class="controls">
    <button class="pos-btn active" onclick="setPosFilter('all',this)">Všichni</button>
@@ -113,14 +103,14 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
    <table id="playersTable">
     <thead>
      <tr>
-      <th class="th-left" onclick="sortPlayers('rank')">#</th>
+      <th class="th-left">#</th>
       <th class="th-left" onclick="sortPlayers('player_name')">Hráč</th>
       <th onclick="sortPlayers('team_abbr')">Tým</th>
       <th onclick="sortPlayers('pos')">Pos</th>
       <th onclick="sortPlayers('gp')">Z</th>
       <th onclick="sortPlayers('goals')">G</th>
       <th onclick="sortPlayers('assists')">A</th>
-      <th class="sort-desc" onclick="sortPlayers('points')">B</th>
+      <th class="sort-desc" onclick="sortPlayers('points')">B ↓</th>
       <th onclick="sortPlayers('plus_minus')">+/-</th>
       <th onclick="sortPlayers('ppg')">PP</th>
       <th onclick="sortPlayers('shg')">SHG</th>
@@ -135,19 +125,16 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
   </div>
  </div>
 
- <!-- TÝMOVÉ STATISTIKY -->
  <div class="section" id="section-teams">
   <div class="loading" id="teamsLoading">Načítám...</div>
   <div id="teamsContent" style="display:none"></div>
  </div>
 
- <!-- REKORDY -->
  <div class="section" id="section-records">
   <div class="loading" id="recordsLoading">Načítám...</div>
   <div id="recordsContent" style="display:none"></div>
  </div>
 
- <!-- STATISTIKY TIPOVÁNÍ -->
  <div class="section" id="section-betting">
   <div class="loading" id="bettingLoading">Načítám...</div>
   <div id="bettingContent" style="display:none"></div>
@@ -163,21 +150,41 @@ const db = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-let allStats = []       // agregované hráčské stats
-let allTeamStats = []   // týmové stats
+// Mapování zkratek na plné názvy — doplň nové týmy sem
+const TEAM_NAMES = {
+  CAN: "Kanada (K)",
+  CEB: "HC Motor České Budějovice (K)",
+  CZE: "Česká Republika (K)",
+  FIN: "Finsko (P)",
+  FRA: "Francie (P)",
+  GBR: "Velká Británie (K)",
+  JPN: "Japonsko (P)",
+  KLA: "HC Rytíři Kladno (P)",
+  KVA: "HC Energie Karlovy Vary (P)",
+  LIB: "HC Bílý Tygři Liberec (K)",
+  LIT: "HC Chemopetrol Litvínov (P)",
+  PCE: "HC Dynamo Pardubice (K)",
+  RUS: "Rusko (P)",
+  SPA: "HC Sparta Praha (P)",
+  TRI: "HC Oceláři Třinec (K)",
+  USA: "USA (K)",
+  ZNO: "HC Rytíři Kladno (P)",
+}
+
+let allStats = []
 let playersSortCol = 'points'
 let playersSortDir = 'desc'
 let posFilter = 'all'
-let loadedSections = new Set()
+let loadedSections = new Set(['players'])
 
-function switchTab(tab){
+function switchTab(tab, el){
  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'))
  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'))
- event.target.classList.add('active')
+ el.classList.add('active')
  document.getElementById('section-'+tab).classList.add('active')
  if(!loadedSections.has(tab)){
   loadedSections.add(tab)
-  if(tab==='teams') loadTeams()
+  if(tab==='teams')   loadTeams()
   if(tab==='records') loadRecords()
   if(tab==='betting') loadBetting()
  }
@@ -205,13 +212,12 @@ function secToToi(sec){
 // HRÁČSKÉ STATISTIKY
 // =====================================================
 async function loadPlayers(){
- const { data, error } = await db
-  .from('player_match_stats')
-  .select('*')
+ const { data, error } = await db.from('player_match_stats').select('*')
+ if(error || !data){
+  document.getElementById('playersBody').innerHTML=`<tr><td colspan="15" class="empty">Chyba načítání.</td></tr>`
+  return
+ }
 
- if(error || !data){ document.getElementById('playersBody').innerHTML=`<tr><td colspan="15" class="empty">Chyba načítání.</td></tr>`; return }
-
- // Agregace per hráč
  const map = {}
  data.forEach(r => {
   const key = r.player_id ? String(r.player_id) : r.player_name
@@ -220,38 +226,44 @@ async function loadPlayers(){
     player_id: r.player_id,
     player_name: r.player_name,
     team_abbr: r.team_abbr,
-    pos: r.is_goalie ? 'Goalie' : (r.pos || 'Player'),
-    gp: 0, goals: 0, assists: 0, points: 0,
-    plus_minus: 0, ppg: 0, shg: 0, shots: 0,
-    pim: 0, hits: 0, toi_sec: 0,
-    goalie_sa: 0, goalie_ga: 0,
+    pos: r.is_goalie ? 'Goalie' : 'Player',
+    gp:0, goals:0, assists:0, points:0,
+    plus_minus:0, ppg:0, shg:0, shots:0,
+    pim:0, hits:0, toi_sec:0,
+    goalie_sa:0, goalie_ga:0,
    }
   }
   const p = map[key]
   p.gp++
-  p.goals      += r.goals || 0
-  p.assists    += r.assists || 0
-  p.points     += r.points || 0
-  p.plus_minus += r.plus_minus || 0
-  p.ppg        += r.ppg || 0
-  p.shg        += r.shg || 0
-  p.shots      += r.shots || 0
-  p.pim        += r.pim || 0
-  p.hits       += r.hits || 0
-  p.toi_sec    += toiToSec(r.toi)
-  p.goalie_sa  += r.goalie_sa || 0
-  p.goalie_ga  += r.goalie_ga || 0
-  // Vždy aktualizuj team_abbr na poslední
-  p.team_abbr = r.team_abbr || p.team_abbr
+  p.goals       += r.goals || 0
+  p.assists     += r.assists || 0
+  p.points      += r.points || 0
+  p.plus_minus  += r.plus_minus || 0
+  p.ppg         += r.ppg || 0
+  p.shg         += r.shg || 0
+  p.shots       += r.shots || 0
+  p.pim         += r.pim || 0
+  p.hits        += r.hits || 0
+  p.toi_sec     += toiToSec(r.toi)
+  p.goalie_sa   += r.goalie_sa || 0
+  p.goalie_ga   += r.goalie_ga || 0
+  p.team_abbr    = r.team_abbr || p.team_abbr
+  // Zachovej goalie status pokud je aspoň jednou goalie
+  if(r.is_goalie) p.pos = 'Goalie'
  })
 
  allStats = Object.values(map)
 
- // Naplň filtr týmů
+ // Naplň dropdown týmů — dynamicky ze skutečných dat
  const teams = [...new Set(allStats.map(p=>p.team_abbr).filter(Boolean))].sort()
  const sel = document.getElementById('teamFilterPlayers')
  sel.innerHTML = '<option value="">Všechny týmy</option>'
- teams.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o) })
+ teams.forEach(t => {
+  const o = document.createElement('option')
+  o.value = t
+  o.textContent = TEAM_NAMES[t] || t  // Plný název nebo zkratka pokud není v mapě
+  sel.appendChild(o)
+ })
 
  renderPlayers()
 }
@@ -262,16 +274,6 @@ function sortPlayers(col){
  } else {
   playersSortCol = col
   playersSortDir = 'desc'
- }
- // Update header indicators
- document.querySelectorAll('#playersTable thead th').forEach(th=>{
-  th.classList.remove('sort-asc','sort-desc')
- })
- const cols = ['rank','player_name','team_abbr','pos','gp','goals','assists','points','plus_minus','ppg','shg','shots','pim','hits','toi_sec']
- const idx = cols.indexOf(col)
- if(idx>=0){
-  const th = document.querySelectorAll('#playersTable thead th')[idx]
-  th?.classList.add(playersSortDir === 'desc' ? 'sort-desc' : 'sort-asc')
  }
  renderPlayers()
 }
@@ -288,59 +290,91 @@ function renderPlayers(){
   return true
  })
 
- // Sort
  data.sort((a,b) => {
   let av = a[playersSortCol] ?? 0
   let bv = b[playersSortCol] ?? 0
-  if(playersSortCol === 'player_name' || playersSortCol === 'team_abbr' || playersSortCol === 'pos'){
-   av = String(av); bv = String(bv)
+  if(typeof av === 'string'){
    return playersSortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
   }
   return playersSortDir === 'asc' ? av - bv : bv - av
  })
 
- const tbody = document.getElementById('playersBody')
- if(!data.length){ tbody.innerHTML=`<tr><td colspan="15" class="empty">Žádní hráči.</td></tr>`; return }
-
  const isGoalieView = posFilter === 'Goalie'
+ const thead = document.querySelector('#playersTable thead tr')
+
+ if(isGoalieView){
+  thead.innerHTML = `
+   <th class="th-left">#</th>
+   <th class="th-left" onclick="sortPlayers('player_name')">Hráč</th>
+   <th onclick="sortPlayers('team_abbr')">Tým</th>
+   <th>Pos</th>
+   <th onclick="sortPlayers('gp')">Z</th>
+   <th onclick="sortPlayers('goalie_sa')">Zákroky</th>
+   <th onclick="sortPlayers('goalie_ga')">GA</th>
+   <th onclick="sortPlayers('gaa')">GAA</th>
+   <th onclick="sortPlayers('sv_pct')">SV%</th>
+   <th onclick="sortPlayers('pim')">TM</th>
+   <th onclick="sortPlayers('toi_sec')">TOI/Z</th>`
+ } else {
+  thead.innerHTML = `
+   <th class="th-left">#</th>
+   <th class="th-left" onclick="sortPlayers('player_name')">Hráč</th>
+   <th onclick="sortPlayers('team_abbr')">Tým</th>
+   <th>Pos</th>
+   <th onclick="sortPlayers('gp')">Z</th>
+   <th onclick="sortPlayers('goals')">G</th>
+   <th onclick="sortPlayers('assists')">A</th>
+   <th onclick="sortPlayers('points')">B ↓</th>
+   <th onclick="sortPlayers('plus_minus')">+/-</th>
+   <th onclick="sortPlayers('ppg')">PP</th>
+   <th onclick="sortPlayers('shg')">SHG</th>
+   <th onclick="sortPlayers('shots')">ST</th>
+   <th onclick="sortPlayers('pim')">TM</th>
+   <th onclick="sortPlayers('hits')">HIT</th>
+   <th onclick="sortPlayers('toi_sec')">TOI/Z</th>`
+ }
+
+ const tbody = document.getElementById('playersBody')
+ if(!data.length){
+  tbody.innerHTML=`<tr><td colspan="15" class="empty">Žádní hráči.</td></tr>`
+  return
+ }
 
  tbody.innerHTML = data.map((p, i) => {
   const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''
-  const posClass = p.pos==='Goalie'?'pos-G':p.pos==='Player'||p.pos==='Forward'?'pos-F':'pos-D'
-  const posLabel = p.pos==='Goalie'?'B':p.pos==='Player'?'Ú':'O'
   const toi = p.gp > 0 ? secToToi(Math.round(p.toi_sec / p.gp)) : '0:00'
-  const toiTotal = secToToi(p.toi_sec)
+  const teamName = TEAM_NAMES[p.team_abbr] || p.team_abbr || '—'
 
   if(isGoalieView){
    const sv = p.goalie_sa - p.goalie_ga
-   const svpct = p.goalie_sa > 0 ? ((sv / p.goalie_sa)*100).toFixed(1) : '—'
-   const gaa = p.gp > 0 ? (p.goalie_ga / p.gp).toFixed(2) : '—'
+   const svpct = p.goalie_sa > 0 ? ((sv/p.goalie_sa)*100).toFixed(1)+'%' : '—'
+   const gaa = p.gp > 0 ? (p.goalie_ga/p.gp).toFixed(2) : '—'
    return `<tr class="${rankClass}">
     <td class="td-rank td-left">${i+1}</td>
     <td class="td-name td-left">${p.player_name}</td>
-    <td><span class="team-badge">${p.team_abbr||'—'}</span></td>
+    <td><span class="team-badge" title="${teamName}">${p.team_abbr||'—'}</span></td>
     <td><span class="pos-badge pos-G">B</span></td>
     <td>${p.gp}</td>
-    <td class="td-highlight">${svpct}%</td>
     <td>${sv} / ${p.goalie_sa}</td>
     <td>${p.goalie_ga}</td>
     <td>${gaa}</td>
+    <td class="td-highlight">${svpct}</td>
     <td>${p.pim}</td>
-    <td>${toiTotal}</td>
-    <td>${toi}</td>
+    <td style="font-size:12px;color:#666;">${toi}</td>
    </tr>`
   }
 
+  const pmColor = p.plus_minus>0?'#16a34a':p.plus_minus<0?'#dc2626':'#888'
   return `<tr class="${rankClass}">
    <td class="td-rank td-left">${i+1}</td>
    <td class="td-name td-left">${p.player_name}</td>
-   <td><span class="team-badge">${p.team_abbr||'—'}</span></td>
-   <td><span class="pos-badge ${posClass}">${posLabel}</span></td>
+   <td><span class="team-badge" title="${teamName}">${p.team_abbr||'—'}</span></td>
+   <td><span class="pos-badge pos-F">Ú</span></td>
    <td>${p.gp}</td>
    <td>${p.goals}</td>
    <td>${p.assists}</td>
    <td class="td-highlight">${p.points}</td>
-   <td style="color:${p.plus_minus>0?'#16a34a':p.plus_minus<0?'#dc2626':'#888'};font-weight:700;">${p.plus_minus>0?'+':''}${p.plus_minus}</td>
+   <td style="color:${pmColor};font-weight:700;">${p.plus_minus>0?'+':''}${p.plus_minus}</td>
    <td>${p.ppg}</td>
    <td>${p.shg}</td>
    <td>${p.shots}</td>
@@ -349,43 +383,6 @@ function renderPlayers(){
    <td style="font-size:12px;color:#666;">${toi}</td>
   </tr>`
  }).join('')
-
- // Přepni hlavičku pro brankáře
- const thead = document.querySelector('#playersTable thead tr')
- if(isGoalieView){
-  thead.innerHTML = `
-   <th class="th-left" onclick="sortPlayers('rank')">#</th>
-   <th class="th-left" onclick="sortPlayers('player_name')">Hráč</th>
-   <th onclick="sortPlayers('team_abbr')">Tým</th>
-   <th>Pos</th>
-   <th onclick="sortPlayers('gp')">Z</th>
-   <th class="sort-desc" onclick="sortPlayers('sv_pct')">SV%</th>
-   <th onclick="sortPlayers('goalie_sa')">Zákroky/Střely</th>
-   <th onclick="sortPlayers('goalie_ga')">GA</th>
-   <th onclick="sortPlayers('gaa')">GAA</th>
-   <th onclick="sortPlayers('pim')">TM</th>
-   <th onclick="sortPlayers('toi_total')">TOI celkem</th>
-   <th onclick="sortPlayers('toi_sec')">TOI/Z</th>
-  `
- } else {
-  thead.innerHTML = `
-   <th class="th-left" onclick="sortPlayers('rank')">#</th>
-   <th class="th-left" onclick="sortPlayers('player_name')">Hráč</th>
-   <th onclick="sortPlayers('team_abbr')">Tým</th>
-   <th onclick="sortPlayers('pos')">Pos</th>
-   <th onclick="sortPlayers('gp')">Z</th>
-   <th onclick="sortPlayers('goals')">G</th>
-   <th onclick="sortPlayers('assists')">A</th>
-   <th class="sort-desc" onclick="sortPlayers('points')">B</th>
-   <th onclick="sortPlayers('plus_minus')">+/-</th>
-   <th onclick="sortPlayers('ppg')">PP</th>
-   <th onclick="sortPlayers('shg')">SHG</th>
-   <th onclick="sortPlayers('shots')">ST</th>
-   <th onclick="sortPlayers('pim')">TM</th>
-   <th onclick="sortPlayers('hits')">HIT</th>
-   <th onclick="sortPlayers('toi_sec')">TOI/Z</th>
-  `
- }
 }
 
 // =====================================================
@@ -398,12 +395,10 @@ async function loadTeams(){
  const map = {}
  data.forEach(r => {
   const t = r.team_abbr || '?'
-  if(!map[t]) map[t] = { team:t, gp:new Set(), goals:0, assists:0, points:0, shots:0, hits:0, pim:0, ppg:0, players:new Set() }
+  if(!map[t]) map[t] = { team:t, matches:new Set(), goals:0, shots:0, hits:0, pim:0, ppg:0, players:new Set() }
   const m = map[t]
-  m.gp.add(r.match_id)
+  m.matches.add(r.match_id)
   m.goals  += r.goals || 0
-  m.assists+= r.assists || 0
-  m.points += r.points || 0
   m.shots  += r.shots || 0
   m.hits   += r.hits || 0
   m.pim    += r.pim || 0
@@ -413,10 +408,11 @@ async function loadTeams(){
 
  const teams = Object.values(map).map(t=>({
   ...t,
-  gp: t.gp.size,
+  gp: t.matches.size,
   players: t.players.size,
-  gpg: t.gp.size > 0 ? (t.goals/t.gp.size).toFixed(2) : '—',
-  spg: t.gp.size > 0 ? (t.shots/t.gp.size).toFixed(1) : '—',
+  gpg: t.matches.size>0 ? (t.goals/t.matches.size).toFixed(2) : '—',
+  spg: t.matches.size>0 ? (t.shots/t.matches.size).toFixed(1) : '—',
+  fullName: TEAM_NAMES[t.team] || t.team,
  })).sort((a,b)=>b.goals-a.goals)
 
  document.getElementById('teamsLoading').style.display='none'
@@ -426,26 +422,24 @@ async function loadTeams(){
   <div class="section-title">Týmové statistiky</div>
   <div class="table-wrap">
    <table>
-    <thead>
-     <tr>
-      <th class="th-left">#</th>
-      <th class="th-left">Tým</th>
-      <th>Zápasy</th>
-      <th>Góly</th>
-      <th>G/Z</th>
-      <th>Střely</th>
-      <th>Str/Z</th>
-      <th>PP góly</th>
-      <th>Hity</th>
-      <th>TM</th>
-      <th>Hráčů</th>
-     </tr>
-    </thead>
+    <thead><tr>
+     <th class="th-left">#</th>
+     <th class="th-left">Tým</th>
+     <th>Zápasy</th>
+     <th>Góly</th>
+     <th>G/Z</th>
+     <th>Střely</th>
+     <th>Str/Z</th>
+     <th>PP góly</th>
+     <th>Hity</th>
+     <th>TM</th>
+     <th>Hráčů</th>
+    </tr></thead>
     <tbody>
      ${teams.map((t,i)=>`
       <tr>
        <td class="td-rank td-left">${i+1}</td>
-       <td class="td-name td-left"><span class="team-badge">${t.team}</span></td>
+       <td class="td-name td-left">${t.fullName} <span class="team-badge">${t.team}</span></td>
        <td>${t.gp}</td>
        <td class="td-highlight">${t.goals}</td>
        <td>${t.gpg}</td>
@@ -468,11 +462,10 @@ async function loadRecords(){
  const { data } = await db.from('player_match_stats').select('*')
  if(!data){ document.getElementById('recordsLoading').textContent='Chyba.'; return }
 
- // Agregace
  const map = {}
  data.forEach(r => {
   const key = r.player_id ? String(r.player_id) : r.player_name
-  if(!map[key]) map[key] = { name: r.player_name, team: r.team_abbr, gp:0, goals:0, assists:0, points:0, pim:0, hits:0, shots:0, ppg:0, plus_minus:0 }
+  if(!map[key]) map[key]={ name:r.player_name, team:r.team_abbr, gp:0, goals:0, assists:0, points:0, pim:0, hits:0, shots:0, ppg:0, plus_minus:0 }
   const p = map[key]
   p.gp++; p.goals+=r.goals||0; p.assists+=r.assists||0; p.points+=r.points||0
   p.pim+=r.pim||0; p.hits+=r.hits||0; p.shots+=r.shots||0; p.ppg+=r.ppg||0
@@ -481,7 +474,6 @@ async function loadRecords(){
 
  const players = Object.values(map).filter(p=>p.gp>0)
 
- // Rekordy v jednom zápase
  const perGame = {}
  data.forEach(r=>{
   const key = r.player_id ? String(r.player_id) : r.player_name
@@ -493,27 +485,27 @@ async function loadRecords(){
   p.max_hits    = Math.max(p.max_hits,    r.hits||0)
   p.max_pim     = Math.max(p.max_pim,     r.pim||0)
  })
-
  const pg = Object.values(perGame)
 
- function top3(arr, field, label){
-  const sorted = [...arr].sort((a,b)=>b[field]-a[field]).slice(0,3)
+ function top3(arr, field, label, icon){
+  const sorted = [...arr].filter(p=>p[field]>0).sort((a,b)=>b[field]-a[field]).slice(0,3)
+  if(!sorted.length) return ''
   return `
-   <div class="section-title">${label}</div>
+   <div class="section-title">${icon} ${label}</div>
    <div class="table-wrap" style="margin-bottom:24px;">
     <table>
      <thead><tr>
       <th class="th-left">#</th>
       <th class="th-left">Hráč</th>
       <th>Tým</th>
-      <th>${label.replace(/.*— /,'')}</th>
+      <th>${label}</th>
      </tr></thead>
      <tbody>
       ${sorted.map((p,i)=>`
        <tr class="${i===0?'rank-1':i===1?'rank-2':'rank-3'}">
         <td class="td-rank td-left">${i===0?'🥇':i===1?'🥈':'🥉'}</td>
         <td class="td-name td-left">${p.name}</td>
-        <td><span class="team-badge">${p.team||'—'}</span></td>
+        <td><span class="team-badge" title="${TEAM_NAMES[p.team]||p.team}">${p.team||'—'}</span></td>
         <td class="td-highlight">${p[field]}</td>
        </tr>`).join('')}
      </tbody>
@@ -525,23 +517,24 @@ async function loadRecords(){
  const cont = document.getElementById('recordsContent')
  cont.style.display='block'
  cont.innerHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
    <div>
-    <div class="section-title" style="margin-bottom:16px;">📊 Kariérní rekordy</div>
-    ${top3(players,'points','🏅 Kanadské body — B')}
-    ${top3(players,'goals','⚽ Góly — G')}
-    ${top3(players,'assists','🎯 Asistence — A')}
-    ${top3(players,'ppg','⚡ Přesilovkové góly — PP')}
-    ${top3(players,'hits','💪 Hity — HIT')}
-    ${top3(players,'pim','🟥 Trestné minuty — TM')}
+    <div class="section-title" style="margin-bottom:20px;">📊 Kariérní rekordy</div>
+    ${top3(players,'points','Kanadské body','🏅')}
+    ${top3(players,'goals','Góly','⚽')}
+    ${top3(players,'assists','Asistence','🎯')}
+    ${top3(players,'ppg','PP góly','⚡')}
+    ${top3(players,'shots','Střely','🎯')}
+    ${top3(players,'hits','Hity','💪')}
+    ${top3(players,'pim','Trestné minuty','🟥')}
    </div>
    <div>
-    <div class="section-title" style="margin-bottom:16px;">⚡ Rekordy v jednom zápase</div>
-    ${top3(pg,'max_goals','⚽ Góly v zápase — G')}
-    ${top3(pg,'max_assists','🎯 Asistence v zápase — A')}
-    ${top3(pg,'max_points','🏅 Body v zápase — B')}
-    ${top3(pg,'max_hits','💪 Hity v zápase — HIT')}
-    ${top3(pg,'max_pim','🟥 TM v zápase — TM')}
+    <div class="section-title" style="margin-bottom:20px;">⚡ Rekordy v jednom zápase</div>
+    ${top3(pg,'max_goals','Góly v zápase','⚽')}
+    ${top3(pg,'max_assists','Asistence v zápase','🎯')}
+    ${top3(pg,'max_points','Body v zápase','🏅')}
+    ${top3(pg,'max_hits','Hity v zápase','💪')}
+    ${top3(pg,'max_pim','TM v zápase','🟥')}
    </div>
   </div>`
 }
@@ -579,7 +572,7 @@ async function loadBetting(){
  })
 
  const stats = Object.values(map).filter(p=>p.bets>0)
-  .map(p=>({ ...p, profit: p.total_won - p.total_bet, winrate: p.bets>0?((p.won/p.bets)*100).toFixed(1):0 }))
+  .map(p=>({...p, profit:p.total_won-p.total_bet, winrate:p.bets>0?((p.won/p.bets)*100).toFixed(1):0}))
   .sort((a,b)=>b.profit-a.profit)
 
  document.getElementById('bettingLoading').style.display='none'
@@ -589,21 +582,19 @@ async function loadBetting(){
   <div class="section-title">Statistiky tipování</div>
   <div class="table-wrap">
    <table>
-    <thead>
-     <tr>
-      <th class="th-left">#</th>
-      <th class="th-left">Hráč</th>
-      <th>Kredit</th>
-      <th>Sázek</th>
-      <th>Výher</th>
-      <th>Proher</th>
-      <th>Čekající</th>
-      <th>Vsazeno</th>
-      <th>Vyhráno</th>
-      <th>Zisk/Ztráta</th>
-      <th>Win%</th>
-     </tr>
-    </thead>
+    <thead><tr>
+     <th class="th-left">#</th>
+     <th class="th-left">Hráč</th>
+     <th>Kredit</th>
+     <th>Sázek</th>
+     <th>Výher</th>
+     <th>Proher</th>
+     <th>Čekající</th>
+     <th>Vsazeno</th>
+     <th>Vyhráno</th>
+     <th>Zisk/Ztráta</th>
+     <th>Win%</th>
+    </tr></thead>
     <tbody>
      ${stats.map((p,i)=>`
       <tr class="${i===0?'rank-1':i===1?'rank-2':''}">
@@ -624,11 +615,7 @@ async function loadBetting(){
   </div>`
 }
 
-// =====================================================
-// INIT
-// =====================================================
 loadPlayers()
-loadedSections.add('players')
 </script>
 </body>
 </html>
