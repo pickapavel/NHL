@@ -531,6 +531,33 @@ function handleXlsFiles(e, matchId) {
   })
 }
 
+ // Přeloží zkratku z gamestatu na správnou DB zkratku
+// Hledá match → home_team/away_team → teams.team_abbr
+function resolveTeamAbbr(matchId, rawAbbr){
+  // Najdi zápas v allMatches
+  const match = allMatches.find(m => m.id === matchId)
+  if(!match) return rawAbbr
+
+  const homeTeam = teamsMap[match.home_team]
+  const awayTeam = teamsMap[match.away_team]
+
+  if(!homeTeam || !awayTeam) return rawAbbr
+
+  const homeDbAbbr = homeTeam.team_abbr || ''
+  const awayDbAbbr = awayTeam.team_abbr || ''
+
+  // Porovnej rawAbbr s DB zkratkami — vezmi základ bez suffixu
+  // např. rawAbbr = "SPA", homeDbAbbr = "SPA (P)" → match
+  const raw = rawAbbr.trim().toUpperCase()
+  const homeBase = homeDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
+  const awayBase = awayDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
+
+  if(raw === homeBase) return homeDbAbbr
+  if(raw === awayBase) return awayDbAbbr
+
+  // Fallback — vrať původní zkratku
+  return rawAbbr
+}
 async function savePlayerStats(matchId, gamestatRows, playerstatRows){
   await db.from('match_events').delete().eq('match_id', matchId)
   await db.from('player_match_stats').delete().eq('match_id', matchId)
@@ -557,8 +584,7 @@ async function savePlayerStats(matchId, gamestatRows, playerstatRows){
       const playerId = (r['Player ID']||r['player_id']) && !isNaN(Number(r['Player ID']||r['player_id'])) ? Number(r['Player ID']||r['player_id']) : null
       return {
         match_id: matchId, player_id: playerId, player_name: r['Player Name']||r['player_name']||'',
-        team_abbr: r['Team']||r['team_abbr']||'', pos, toi: r['Time']||r['toi']||'00:00',
-        goals: isGoalie ? 0 : Number(r['Goal']||r['goals'])||0,
+team_abbr: resolveTeamAbbr(matchId, r['Team']||r['team_abbr']||''), pos, toi: r['Time']||r['toi']||'00:00',        goals: isGoalie ? 0 : Number(r['Goal']||r['goals'])||0,
         assists: Number(r['Asst']||r['assists'])||0,
         points: isGoalie ? 0 : (Number(r['Goal']||r['goals'])||0)+(Number(r['Asst']||r['assists'])||0),
         plus_minus: isGoalie ? 0 : Number(r['+/-']||r['plus_minus'])||0,
