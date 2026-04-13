@@ -23,8 +23,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .section{display:none;}
 .section.active{display:block;}
 
-.filter-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;justify-content:center;}
-.filter-row-2{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;justify-content:center;}
+.filter-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+.filter-row-2{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.table-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.table-header-logo{width:28px;height:28px;object-fit:contain;}
+.table-header-title{font-size:15px;font-weight:800;color:#0b2a3c;}
 
 .filter-select{padding:8px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;min-width:200px;}
 .filter-select:focus{outline:none;border-color:#2f9ec9;}
@@ -103,7 +106,11 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 
 <div class="wrapper">
 
- <div class="section active" id="section-players">
+<div class="section active" id="section-players">
+  <div class="table-header">
+   <img class="table-header-logo" src="./logos/lokomotiva.png">
+   <span class="table-header-title">Extraliga U dvou Blbounů</span>
+  </div>
   <div class="filter-row">
    <select class="filter-select" id="compFilter" onchange="onFilterChange()">
     <option value="">Všechny soutěže</option>
@@ -124,6 +131,10 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
    <button class="seg-btn" onclick="setPosFilter('Player',this)">Hráči</button>
    <button class="seg-btn" onclick="setPosFilter('Goalie',this)">Brankáři</button>
    <div class="filter-divider"></div>
+   <button class="seg-btn active" id="tt-all"   onclick="setTeamType('all',this)">Všechny týmy</button>
+   <button class="seg-btn" id="tt-klub"  onclick="setTeamType('klub',this)">🏒 Jen klubové</button>
+   <button class="seg-btn" id="tt-repre" onclick="setTeamType('repre',this)">🌍 Jen reprezentace</button>
+   <div class="filter-divider"></div>
    <select class="filter-select" id="teamFilterPlayers" onchange="renderPlayers()">
     <option value="">Všechny týmy</option>
    </select>
@@ -137,7 +148,6 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
   </div>
   <div class="legend" id="playersLegend"></div>
  </div>
-
  <div class="section" id="section-teams">
   <div id="teamsContent"><div class="loading">Načítám...</div></div>
  </div>
@@ -192,8 +202,8 @@ let playersSortCol = 'points'
 let playersSortDir = 'desc'
 let posFilter = 'all'
 let ownerFilter = 'all'
+let teamTypeFilter = 'all'
 let loadedSections = new Set(['players'])
-
 function switchTab(tab, el){
  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'))
  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'))
@@ -209,7 +219,18 @@ function switchTab(tab, el){
 
 function setPosFilter(val, btn){
  posFilter = val
- document.querySelectorAll('.filter-row-2 .seg-btn').forEach(b=>b.classList.remove('active'))
+ // Odeber active jen z první skupiny (Všichni/Hráči/Brankáři)
+ const posGroup = ['všichni','hráči','brankáři']
+ document.querySelectorAll('.filter-row-2 .seg-btn').forEach(b=>{
+  if(posGroup.includes(b.textContent.toLowerCase().trim())) b.classList.remove('active')
+ })
+ btn.classList.add('active')
+ renderPlayers()
+}
+
+function setTeamType(val, btn){
+ teamTypeFilter = val
+ document.querySelectorAll('#tt-all,#tt-klub,#tt-repre').forEach(b=>b.classList.remove('active'))
  btn.classList.add('active')
  renderPlayers()
 }
@@ -262,8 +283,7 @@ async function init(){
  allTeamsDb = teamsRaw.data || []
  allMatches = matchesRaw.data || []
 
- // Sestav dynamickou TEAM_MAP z DB — klíč je team_abbr z tabulky teams
- TEAM_MAP = {}
+TEAM_MAP = {}
  allTeamsDb.forEach(t=>{
   if(t.team_abbr){
    TEAM_MAP[t.team_abbr] = {
@@ -271,6 +291,8 @@ async function init(){
     logo:     t.logo,
     owner_id: t.owner_id,
     id:       t.id,
+    is_klub:  t.in_extraliga || false,
+    is_repre: (t.in_reprezentace || t.in_olympiada) || false,
    }
   }
  })
@@ -334,7 +356,7 @@ function buildAggregated(){
  const teamF      = document.getElementById('teamFilterPlayers').value
  const search     = document.getElementById('searchPlayers').value.toLowerCase()
 
- let filtered = rawStats.filter(r=>{
+let filtered = rawStats.filter(r=>{
   // Filtr soutěže
   if(compFilter){
    if(compFilter==='extraliga-playoff'){
@@ -345,10 +367,16 @@ function buildAggregated(){
     if(r.competition_id!==compFilter) return false
    }
   }
-  // Filtr vlastníka — přímé porovnání owner_id
+  // Filtr vlastníka
   if(ownerFilter!=='all'){
    const targetId = PLAYER_IDS[ownerFilter]
    if(r.owner_id !== targetId) return false
+  }
+  // Filtr typ týmu (klub / reprezentace)
+  if(teamTypeFilter!=='all'){
+   const tm = TEAM_MAP[r.team_abbr]
+   if(teamTypeFilter==='klub' && !tm?.is_klub) return false
+   if(teamTypeFilter==='repre' && !tm?.is_repre) return false
   }
   return true
  })
@@ -414,15 +442,19 @@ function renderPlayers(){
   gaa:    p.gp>0?p.goalie_ga/p.gp:0,
  }))
 
- if(isGoalieView){
+if(isGoalieView){
   data.sort((a,b)=>{
+   // Brankáři bez zákroků vždy dolů
    if(a.goalie_sa===0&&b.goalie_sa>0) return 1
    if(b.goalie_sa===0&&a.goalie_sa>0) return -1
-   const av=a[playersSortCol]??0, bv=b[playersSortCol]??0
+   if(a.goalie_sa===0&&b.goalie_sa===0) return 0
+   // Řadit podle zvoleného sloupce, default SV%
+   const sortCol = playersSortCol==='points'?'sv_pct':playersSortCol
+   const av=a[sortCol]??0, bv=b[sortCol]??0
    if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av)
    return playersSortDir==='asc'?av-bv:bv-av
   })
- } else {
+ }} else {
   data.sort((a,b)=>{
    let av=a[playersSortCol]??0, bv=b[playersSortCol]??0
    if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av)
