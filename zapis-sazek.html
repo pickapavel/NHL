@@ -151,7 +151,7 @@ window.resolve = async function(betId, result){
   return
  }
 
- // 2) Pokud výhra — načti kredit čerstvě z DB a přičti výhru
+// 2) Pokud výhra — načti kredit čerstvě z DB a přičti výhru
  if(result === "won"){
   const { data: freshPlayer, error: playerError } = await supabase
    .from("players")
@@ -177,6 +177,17 @@ window.resolve = async function(betId, result){
    load()
    return
   }
+
+  await supabase.from("credit_history").insert({
+   player_id: bet.player_id,
+   type: "won",
+   description: `Výhra sázky: ${getTypLabel(bet.type)} — ${getTeamName(bet.target_id)}`,
+   amount: bet.potential_win,
+   credit_before: freshPlayer.credit,
+   credit_after: newCredit,
+   bet_id: bet.id,
+   source: "bets_special"
+  })
  }
 
  showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
