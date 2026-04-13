@@ -107,11 +107,7 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 <div class="wrapper">
 
 <div class="section active" id="section-players">
-  <div class="table-header">
-   <img class="table-header-logo" src="./logos/lokomotiva.png">
-   <span class="table-header-title">Extraliga U dvou Blbounů</span>
-  </div>
-  <div class="filter-row">
+<div class="filter-row">
    <select class="filter-select" id="compFilter" onchange="onFilterChange()">
     <option value="">Všechny soutěže</option>
     <option value="5cc76adb-b3e0-404b-9095-7dd4a41edb4e">🏒 Extraliga</option>
@@ -291,7 +287,7 @@ TEAM_MAP = {}
     logo:     t.logo,
     owner_id: t.owner_id,
     id:       t.id,
-    is_klub:  t.in_extraliga || false,
+    is_klub:  (!t.in_reprezentace && !t.in_olympiada) || false,
     is_repre: (t.in_reprezentace || t.in_olympiada) || false,
    }
   }
