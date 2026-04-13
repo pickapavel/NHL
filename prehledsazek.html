@@ -49,6 +49,8 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
 .tab{padding:8px 18px;border-radius:20px;border:2px solid #ddd;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#666;transition:all .15s;}
 .tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 
+.summary-row td{background:#f0f4f8;font-weight:700;border-top:2px solid #c8d8e8 !important;}
+
 @media(max-width:600px){
  .stats{grid-template-columns:repeat(2,1fr);}
  h1{font-size:20px;}
@@ -313,6 +315,11 @@ function renderTable(bets){
   return
  }
  empty.style.display="none"
+
+ const totalAmount = bets.reduce((s,b)=>s+Number(b.amount),0)
+ const totalPotWin = bets.reduce((s,b)=>s+Number(b.potential_win),0)
+ const totalWon    = bets.filter(b=>b.status==="won").reduce((s,b)=>s+Number(b.potential_win),0)
+
  tbody.innerHTML = bets.map(b=>{
   const player = players[b.player_id]?.name || "—"
   const date   = formatDate(b.created_at)
@@ -335,7 +342,14 @@ function renderTable(bets){
     <td>${badge}</td>
    </tr>
   `
- }).join("")
+ }).join("") + `
+  <tr class="summary-row">
+   <td colspan="5" style="padding:11px 14px;color:#0b2a3c;">Součet (${bets.length} sázek)</td>
+   <td style="padding:11px 14px;color:#0b2a3c;">${Math.round(totalAmount).toLocaleString("cs-CZ")} Kč</td>
+   <td style="padding:11px 14px;color:#e67e22;">${Math.round(totalPotWin).toLocaleString("cs-CZ")} Kč</td>
+   <td style="padding:11px 14px;color:#27ae60;">Výhry: ${Math.round(totalWon).toLocaleString("cs-CZ")} Kč</td>
+  </tr>
+ `
 }
 
 load()
