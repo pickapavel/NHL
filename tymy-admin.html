@@ -76,6 +76,14 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 .comp-reprezentace{background:#fde8f0;color:#7c1a3a;border:1px solid #f0b8d0;}
 .comp-olympiada{background:#fdf8e8;color:#7a5200;border:1px solid #f0d890;}
 
+.owner-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 10px;
+  border-radius:20px;font-size:11px;font-weight:700;
+}
+.owner-kubele{background:#e8f4fd;color:#0b5394;border:1px solid #a8d0f0;}
+.owner-pici{background:#fce8f4;color:#7c1a5a;border:1px solid #f0a8d8;}
+.owner-none{background:#f0f0f0;color:#888;border:1px solid #ddd;}
+
 .team-card-footer{
   padding:10px 14px;border-top:1px solid #f0f0f0;
   display:flex;gap:6px;justify-content:flex-end;
@@ -97,7 +105,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 }
 .loading{padding:40px;text-align:center;color:#7ab0cc;font-size:14px;grid-column:1/-1;}
 
-/* MODAL */
 .modal-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
   z-index:500;align-items:flex-start;justify-content:center;
@@ -134,6 +141,18 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 .comp-check input{display:none;}
 .comp-check-label{font-size:13px;font-weight:700;color:#1a2a3c;}
 .comp-check.selected .comp-check-label{color:#0b2a3c;}
+
+.owner-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.owner-btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:8px;border:2px solid #dde6ef;background:white;
+  cursor:pointer;transition:all .15s;user-select:none;font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:700;color:#1a2a3c;
+}
+.owner-btn:hover{border-color:#2f9ec9;}
+.owner-btn.selected-kubele{border-color:#0b5394;background:#e8f4fd;color:#0b5394;}
+.owner-btn.selected-pici{border-color:#7c1a5a;background:#fce8f4;color:#7c1a5a;}
+.owner-btn.selected-none{border-color:#888;background:#f0f0f0;color:#888;}
 
 .logo-preview-wrap{display:flex;align-items:center;gap:12px;margin-top:8px;}
 .logo-preview{
@@ -235,6 +254,21 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
       </div>
     </div>
 
+    <div class="form-group">
+      <label class="form-label">Vlastník týmu</label>
+      <div class="owner-btns">
+        <div class="owner-btn" id="ob-none" onclick="selectOwner(null)">
+          ⚪ Bez vlastníka
+        </div>
+        <div class="owner-btn" id="ob-kubele" onclick="selectOwner('kubele')">
+          🔵 Kubele
+        </div>
+        <div class="owner-btn" id="ob-pici" onclick="selectOwner('pici')">
+          🟣 Pici
+        </div>
+      </div>
+    </div>
+
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
       <button class="btn-confirm" id="btnConfirm" onclick="saveTeam()">✅ Uložit tým</button>
@@ -248,6 +282,11 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 const SUPABASE_URL="https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY="sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 const LOGOS="./logos/"
+
+const PLAYER_IDS = {
+  kubele: "a5b84a2d-58e6-4bf6-877f-be814a993db6",
+  pici:   "38dd6159-1b85-4e87-9176-6a494597216f",
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -257,6 +296,7 @@ const db=createClient(SUPABASE_URL,SUPABASE_KEY)
 let allTeams=[]
 let editingId=null
 let selectedComps=new Set()
+let selectedOwner=null  // null | 'kubele' | 'pici'
 
 async function load(){
   const {data,error}=await db.from("teams").select("*").order("name")
@@ -267,10 +307,23 @@ async function load(){
 
 function getTeamComps(t){
   const comps=[]
-  if(t.in_extraliga)   comps.push("extraliga")
+  if(t.in_extraliga)    comps.push("extraliga")
   if(t.in_reprezentace) comps.push("reprezentace")
-  if(t.in_olympiada)   comps.push("olympiada")
+  if(t.in_olympiada)    comps.push("olympiada")
   return comps
+}
+
+function getOwnerKey(t){
+  if(t.owner_id===PLAYER_IDS.kubele) return 'kubele'
+  if(t.owner_id===PLAYER_IDS.pici)   return 'pici'
+  return null
+}
+
+function ownerBadgeHtml(t){
+  const key=getOwnerKey(t)
+  if(key==='kubele') return `<span class="owner-badge owner-kubele">🔵 Kubele</span>`
+  if(key==='pici')   return `<span class="owner-badge owner-pici">🟣 Pici</span>`
+  return `<span class="owner-badge owner-none">⚪ Bez vlastníka</span>`
 }
 
 function render(){
@@ -283,16 +336,15 @@ function render(){
   }
 
   const groups={
-    "extraliga":  {label:"🏒 Extraliga",    teams:[]},
+    "extraliga":   {label:"🏒 Extraliga",    teams:[]},
     "reprezentace":{label:"🌍 Reprezentace", teams:[]},
-    "olympiada":  {label:"🏅 Olympiáda",    teams:[]},
-    "ostatni":    {label:"📁 Ostatní",       teams:[]},
+    "olympiada":   {label:"🏅 Olympiáda",    teams:[]},
+    "ostatni":     {label:"📁 Ostatní",       teams:[]},
   }
 
   allTeams.forEach(t=>{
     const comps=getTeamComps(t)
     if(!comps.length){ groups.ostatni.teams.push(t); return }
-    // Tým se zobrazí v každé sekci kde je zapsán
     comps.forEach(c=>{ if(groups[c]) groups[c].teams.push(t) })
   })
 
@@ -335,6 +387,10 @@ function render(){
             <div class="comp-badges">${badgesHtml}</div>
           </div>
           <div class="team-info-row">
+            <span class="team-info-label">Vlastník</span>
+            <div>${ownerBadgeHtml(t)}</div>
+          </div>
+          <div class="team-info-row">
             <span class="team-info-label">ELO / Forma</span>
             <span class="team-info-val">⭐ ${t.rating_overall||1000} / 🔥 ${t.rating_form||1000}</span>
           </div>
@@ -348,9 +404,17 @@ function render(){
   })
 }
 
+function selectOwner(val){
+  selectedOwner=val
+  document.getElementById("ob-none").className="owner-btn"+(val===null?" selected-none":"")
+  document.getElementById("ob-kubele").className="owner-btn"+(val==="kubele"?" selected-kubele":"")
+  document.getElementById("ob-pici").className="owner-btn"+(val==="pici"?" selected-pici":"")
+}
+
 function openModal(){
   editingId=null
   selectedComps=new Set()
+  selectedOwner=null
   document.getElementById("modalTitle").textContent="➕ Přidat tým"
   document.getElementById("modalSub").textContent="Vyplň údaje o týmu a ulož do databáze."
   document.getElementById("btnConfirm").textContent="✅ Uložit tým"
@@ -361,6 +425,7 @@ function openModal(){
   ;["extraliga","reprezentace","olympiada"].forEach(c=>
     document.getElementById("cc-"+c).classList.remove("selected")
   )
+  selectOwner(null)
   document.getElementById("modalOverlay").classList.add("open")
 }
 
@@ -368,6 +433,7 @@ function openEdit(teamId){
   const t=allTeams.find(t=>t.id===teamId); if(!t) return
   editingId=teamId
   selectedComps=new Set(getTeamComps(t))
+  selectedOwner=getOwnerKey(t)
   document.getElementById("modalTitle").textContent="✏️ Upravit tým"
   document.getElementById("modalSub").textContent="Uprav údaje týmu."
   document.getElementById("btnConfirm").textContent="✅ Uložit změny"
@@ -375,13 +441,10 @@ function openEdit(teamId){
   document.getElementById("f-short").value=t.short_name||""
   document.getElementById("f-logo").value=t.logo||""
   previewLogo()
-  ;["extraliga","reprezent ace","olympiada"].forEach(c=>{
-    document.getElementById("cc-"+c)?.classList.toggle("selected", selectedComps.has(c))
-  })
-  // oprava překlep výše
   ;["extraliga","reprezentace","olympiada"].forEach(c=>{
     document.getElementById("cc-"+c).classList.toggle("selected", selectedComps.has(c))
   })
+  selectOwner(selectedOwner)
   document.getElementById("modalOverlay").classList.add("open")
 }
 
@@ -432,6 +495,8 @@ async function saveTeam(){
   if(!name){ alert("Zadej název týmu!"); return }
   if(!selectedComps.size){ alert("Vyber alespoň jednu soutěž!"); return }
 
+  const ownerId = selectedOwner ? PLAYER_IDS[selectedOwner] : null
+
   const payload={
     name,
     short_name: short||null,
@@ -439,8 +504,8 @@ async function saveTeam(){
     in_extraliga:    selectedComps.has("extraliga"),
     in_reprezentace: selectedComps.has("reprezentace"),
     in_olympiada:    selectedComps.has("olympiada"),
-    // zachovej competition pro zpětnou kompatibilitu (první vybraná)
     competition: [...selectedComps][0]||null,
+    owner_id: ownerId,
   }
 
   if(editingId){
