@@ -270,8 +270,7 @@ async function fetchAll(table){
 async function init(){
  const [statsRaw, teamsRaw, seasonsRaw, stagesRaw, matchesRaw] = await Promise.all([
   fetchAll('player_match_stats'),
-  db.from('teams').select('id,name,short_name,logo,owner_id,team_abbr'),
-  db.from('seasons').select('id,competition_id'),
+  db.from('teams').select('id,name,short_name,logo,owner_id,team_abbr,team_type'),  db.from('seasons').select('id,competition_id'),
   db.from('stages').select('id,season_id,name,parent_stage_id'),
   db.from('matches').select('id,season_id,stage_id,home_team,away_team,home_score,away_score,result_type'),
  ])
@@ -287,8 +286,8 @@ TEAM_MAP = {}
     logo:     t.logo,
     owner_id: t.owner_id,
     id:       t.id,
-    is_klub:  (!t.in_reprezentace && !t.in_olympiada) || false,
-    is_repre: (t.in_reprezentace || t.in_olympiada) || false,
+    is_klub:  t.team_type === 'klub',
+    is_repre: t.team_type === 'reprezentace',
    }
   }
  })
