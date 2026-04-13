@@ -84,6 +84,16 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
 .owner-pici{background:#fce8f4;color:#7c1a5a;border:1px solid #f0a8d8;}
 .owner-none{background:#f0f0f0;color:#888;border:1px solid #ddd;}
 
+.abbr-badge{
+  display:inline-block;background:#0b2a3c;color:#f0c040;
+  font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;
+  font-family:'Rajdhani',sans-serif;letter-spacing:.05em;
+}
+.abbr-missing{
+  display:inline-block;background:#fee2e2;color:#991b1b;
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;
+}
+
 .team-card-footer{
   padding:10px 14px;border-top:1px solid #f0f0f0;
   display:flex;gap:6px;justify-content:flex-end;
@@ -129,6 +139,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
   transition:border .15s;
 }
 .form-input:focus{outline:none;border-color:#2f9ec9;}
+.form-hint{font-size:11px;color:#6b7a8d;margin-top:5px;line-height:1.5;}
+.form-hint b{color:#1a2a3c;}
 
 .comp-checkboxes{display:flex;flex-wrap:wrap;gap:8px;}
 .comp-check{
@@ -227,6 +239,16 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
     </div>
 
     <div class="form-group">
+      <label class="form-label">Zkratka týmu *</label>
+      <input class="form-input" id="f-abbr" type="text" placeholder="např. SPA (K)" oninput="this.value=this.value.toUpperCase()">
+      <p class="form-hint">
+        Tato zkratka se používá v gamestat souborech a ve statistikách.<br>
+        Formát: <b>ZKRATKA (K)</b> pro Kubele nebo <b>ZKRATKA (P)</b> pro Pici.<br>
+        Příklady: <b>SPA (K)</b>, <b>FIN (P)</b>, <b>KAN (K)</b>
+      </p>
+    </div>
+
+    <div class="form-group">
       <label class="form-label">Název souboru loga</label>
       <input class="form-input" id="f-logo" type="text" placeholder="např. sparta.png" oninput="previewLogo()">
       <div class="logo-preview-wrap">
@@ -257,15 +279,9 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f7;min-height:100vh;color:
     <div class="form-group">
       <label class="form-label">Vlastník týmu</label>
       <div class="owner-btns">
-        <div class="owner-btn" id="ob-none" onclick="selectOwner(null)">
-          ⚪ Bez vlastníka
-        </div>
-        <div class="owner-btn" id="ob-kubele" onclick="selectOwner('kubele')">
-          🔵 Kubele
-        </div>
-        <div class="owner-btn" id="ob-pici" onclick="selectOwner('pici')">
-          🟣 Pici
-        </div>
+        <div class="owner-btn" id="ob-none" onclick="selectOwner(null)">⚪ Bez vlastníka</div>
+        <div class="owner-btn" id="ob-kubele" onclick="selectOwner('kubele')">🔵 Kubele</div>
+        <div class="owner-btn" id="ob-pici" onclick="selectOwner('pici')">🟣 Pici</div>
       </div>
     </div>
 
@@ -296,7 +312,7 @@ const db=createClient(SUPABASE_URL,SUPABASE_KEY)
 let allTeams=[]
 let editingId=null
 let selectedComps=new Set()
-let selectedOwner=null  // null | 'kubele' | 'pici'
+let selectedOwner=null
 
 async function load(){
   const {data,error}=await db.from("teams").select("*").order("name")
@@ -324,6 +340,11 @@ function ownerBadgeHtml(t){
   if(key==='kubele') return `<span class="owner-badge owner-kubele">🔵 Kubele</span>`
   if(key==='pici')   return `<span class="owner-badge owner-pici">🟣 Pici</span>`
   return `<span class="owner-badge owner-none">⚪ Bez vlastníka</span>`
+}
+
+function abbrBadgeHtml(t){
+  if(t.team_abbr) return `<span class="abbr-badge">${t.team_abbr}</span>`
+  return `<span class="abbr-missing">⚠ bez zkratky</span>`
 }
 
 function render(){
@@ -379,6 +400,10 @@ function render(){
             <span class="team-info-val">${t.short_name||"—"}</span>
           </div>
           <div class="team-info-row">
+            <span class="team-info-label">Zkratka (gamestat)</span>
+            <div>${abbrBadgeHtml(t)}</div>
+          </div>
+          <div class="team-info-row">
             <span class="team-info-label">Logo</span>
             <span class="team-info-val">${t.logo||"—"}</span>
           </div>
@@ -420,6 +445,7 @@ function openModal(){
   document.getElementById("btnConfirm").textContent="✅ Uložit tým"
   document.getElementById("f-name").value=""
   document.getElementById("f-short").value=""
+  document.getElementById("f-abbr").value=""
   document.getElementById("f-logo").value=""
   resetLogoPreview()
   ;["extraliga","reprezentace","olympiada"].forEach(c=>
@@ -439,6 +465,7 @@ function openEdit(teamId){
   document.getElementById("btnConfirm").textContent="✅ Uložit změny"
   document.getElementById("f-name").value=t.name||""
   document.getElementById("f-short").value=t.short_name||""
+  document.getElementById("f-abbr").value=t.team_abbr||""
   document.getElementById("f-logo").value=t.logo||""
   previewLogo()
   ;["extraliga","reprezentace","olympiada"].forEach(c=>{
@@ -488,24 +515,33 @@ function resetLogoPreview(){
 }
 
 async function saveTeam(){
-  const name=document.getElementById("f-name").value.trim()
-  const short=document.getElementById("f-short").value.trim()
-  const logo=document.getElementById("f-logo").value.trim()
+  const name  = document.getElementById("f-name").value.trim()
+  const short = document.getElementById("f-short").value.trim()
+  const abbr  = document.getElementById("f-abbr").value.trim().toUpperCase()
+  const logo  = document.getElementById("f-logo").value.trim()
 
   if(!name){ alert("Zadej název týmu!"); return }
+  if(!abbr){ alert("Zadej zkratku týmu! Např. SPA (K) nebo FIN (P)"); return }
   if(!selectedComps.size){ alert("Vyber alespoň jednu soutěž!"); return }
+
+  // Zkontroluj unikátnost zkratky
+  const duplicate = allTeams.find(t=>
+    t.team_abbr===abbr && t.id!==editingId
+  )
+  if(duplicate){ alert(`Zkratka "${abbr}" už existuje pro tým "${duplicate.name}"!`); return }
 
   const ownerId = selectedOwner ? PLAYER_IDS[selectedOwner] : null
 
   const payload={
     name,
-    short_name: short||null,
-    logo: logo||null,
+    short_name:  short||null,
+    team_abbr:   abbr,
+    logo:        logo||null,
     in_extraliga:    selectedComps.has("extraliga"),
     in_reprezentace: selectedComps.has("reprezentace"),
     in_olympiada:    selectedComps.has("olympiada"),
     competition: [...selectedComps][0]||null,
-    owner_id: ownerId,
+    owner_id:    ownerId,
   }
 
   if(editingId){
