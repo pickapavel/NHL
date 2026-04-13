@@ -444,17 +444,15 @@ function renderPlayers(){
 
 if(isGoalieView){
   data.sort((a,b)=>{
-   // Brankáři bez zákroků vždy dolů
    if(a.goalie_sa===0&&b.goalie_sa>0) return 1
    if(b.goalie_sa===0&&a.goalie_sa>0) return -1
    if(a.goalie_sa===0&&b.goalie_sa===0) return 0
-   // Řadit podle zvoleného sloupce, default SV%
    const sortCol = playersSortCol==='points'?'sv_pct':playersSortCol
    const av=a[sortCol]??0, bv=b[sortCol]??0
    if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av)
    return playersSortDir==='asc'?av-bv:bv-av
   })
- }} else {
+ } else {
   data.sort((a,b)=>{
    let av=a[playersSortCol]??0, bv=b[playersSortCol]??0
    if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av)
