@@ -312,6 +312,8 @@ window.deleteBet = async function(betId, source, playerId, amount) {
  const { data: freshPlayer } = await supabase.from("players").select("credit").eq("id", playerId).single()
  if (!freshPlayer) { alert("Hráč nenalezen."); return }
 
+ console.log("KREDIT PRED:", freshPlayer.credit, "AMOUNT:", amount, "TYP AMOUNT:", typeof amount, "NOVY KREDIT:", parseFloat(freshPlayer.credit) + parseFloat(amount))
+
  const newCredit = parseFloat(freshPlayer.credit) + parseFloat(amount)
 
  await supabase.from("players").update({ credit: newCredit }).eq("id", playerId)
