@@ -622,8 +622,8 @@ document.getElementById("amount_pici").oninput=()=>updateResultSummary("pici")
 
 async function loadExistingBets(match){
   const{data:bets}=await supabase.from("bets").select("*").eq("match_id",matchId)
-  const{data:goalsBets}=await supabase.from("bets_special").select("*")
-    .eq("match_id",matchId).in("type",["goals_total","goals_home","goals_away","goals_diff","match_goals_total","match_goals_home","match_goals_away","match_goals_diff"])
+const{data:goalsBets}=await supabase.from("bets_special").select("*")
+    .eq("match_id",matchId).in("type",["match_goals_total","match_goals_home","match_goals_away","match_goals_diff"])
 
   ;(bets||[]).forEach(bet=>{
     const playerKey=bet.player_id===players.kubele.id?"kubele":"pici"
@@ -650,11 +650,11 @@ async function loadExistingBets(match){
 
   ;(goalsBets||[]).forEach(bet=>{
     const playerKey=bet.player_id===players.kubele.id?"kubele":"pici"
-    const category=bet.type.replace("match_goals_","").replace("goals_","")
-    state[playerKey][category].selected=bet.target_id    
+ const category=bet.type.replace("match_goals_","")
+    state[playerKey][category].selected=bet.tip_key
     const cont=document.getElementById(`goals_${category}_${playerKey}`)
     if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{
-      if(btn.dataset.key===bet.target_id){ btn.classList.add("active"); btn.style.pointerEvents="none" }
+      if(btn.dataset.key===bet.tip_key){ btn.classList.add("active"); btn.style.pointerEvents="none" }
     })
     document.getElementById(`amount_${category}_${playerKey}`).value=bet.amount
     document.getElementById(`amount_${category}_${playerKey}`).disabled=true
@@ -712,7 +712,7 @@ window.placeBet = async function(playerKey, category) {
     await supabase.from("players").update({ credit: newCredit }).eq("id", player.id)
     const { data: betData } = await supabase.from("bets_special").insert({
       match_id: matchId, player_id: player.id,
-      type: "goals_" + category, target_id: sel,
+      type: "match_goals_" + category, tip_key: sel,
       odds: o, amount, potential_win: amount * o, status: "pending"
     }).select().single()
     await supabase.from("credit_history").insert({
