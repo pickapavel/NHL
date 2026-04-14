@@ -650,7 +650,8 @@ async function loadExistingBets(match){
 
   ;(goalsBets||[]).forEach(bet=>{
     const playerKey=bet.player_id===players.kubele.id?"kubele":"pici"
-    const category=bet.type.replace("match_goals_","").replace("goals_","")    state[playerKey][category].selected=bet.target_id
+    const category=bet.type.replace("match_goals_","").replace("goals_","")
+    state[playerKey][category].selected=bet.target_id    
     const cont=document.getElementById(`goals_${category}_${playerKey}`)
     if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{
       if(btn.dataset.key===bet.target_id){ btn.classList.add("active"); btn.style.pointerEvents="none" }
