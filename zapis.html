@@ -1133,6 +1133,22 @@ async function revertBets(matchId){
         })
       }
     }
+if(bet.status==="won"){
+      // Vrať vsazenou částku ručně (trigger to udělá jen pro pending)
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        const newCredit=Number(player.credit)+Number(bet.amount)
+        await db.from("players").update({credit:newCredit}).eq("id",player.id)
+        await db.from("credit_history").insert({
+          player_id:bet.player_id,
+          type:"adjustment",
+          description:"Smazání výsledku — vrácení vsazené částky",
+          amount:Number(bet.amount),
+          credit_before:Number(player.credit),
+          credit_after:newCredit,
+        })
+      }
+    }
     await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
   }
 }
