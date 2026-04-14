@@ -304,6 +304,17 @@ function renderStats(bets){
  `
 }
 
+async function deleteBet(betId, source, playerId, amount) {
+ if (!confirm("Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči.")) return
+ const { data: player } = await supabase.from("players").select("*").eq("id", playerId).single()
+ if (player) {
+  await supabase.from("players").update({ credit: Number(player.credit) + Number(amount) }).eq("id", player.id)
+ }
+ const table = source === "special" ? "bets_special" : "bets"
+ await supabase.from(table).delete().eq("id", betId)
+ load()
+}
+
 function renderTable(bets){
  const tbody = document.getElementById("tbody")
  const empty = document.getElementById("empty")
@@ -330,6 +341,13 @@ function renderTable(bets){
   const srcBadge = b._source==="match"
    ? `<span class="source-badge source-match">Zápas</span>`
    : `<span class="source-badge source-special">Speciální</span>`
+  const deleteBtn = b.status === "pending"
+   ? `<button onclick="deleteBet('${b.id}','${b._source}','${b.player_id}',${b.amount})"
+        style="margin-left:8px;background:#fee2e2;color:#991b1b;border:none;border-radius:6px;
+               padding:3px 8px;cursor:pointer;font-size:11px;font-weight:700;">
+        🗑 Smazat
+      </button>`
+   : ''
   return `
    <tr>
     <td><b>${player}</b></td>
@@ -339,7 +357,7 @@ function renderTable(bets){
     <td>${odds}</td>
     <td>${amount}</td>
     <td>${potWin}</td>
-    <td>${badge}</td>
+    <td>${badge}${deleteBtn}</td>
    </tr>
   `
  }).join("") + `
