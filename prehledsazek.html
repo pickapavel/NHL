@@ -304,7 +304,7 @@ function renderStats(bets){
  `
 }
 
-async function deleteBet(betId, source, playerId, amount) {
+window.deleteBet = async function(betId, source, playerId, amount) {
  if (!confirm("Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči.")) return
  const { data: player } = await supabase.from("players").select("*").eq("id", playerId).single()
  if (player) {
