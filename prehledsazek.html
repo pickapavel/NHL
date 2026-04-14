@@ -305,8 +305,9 @@ function renderStats(bets){
 }
 
 window.deleteBet = async function(betId, source, playerId, amount) {
- const { data: player } = await supabase.from("players").select("credit").eq("id", playerId).single()
- console.log("Kredit před:", player.credit, "Amount:", amount, "Nový kredit bude:", parseFloat(player.credit) + parseFloat(amount))
+const { data: debugPlayer } = await supabase.from("players").select("credit").eq("id", playerId).single()
+ console.log("Kredit před:", debugPlayer.credit, "Amount:", amount, "Nový kredit bude:", parseFloat(debugPlayer.credit) + parseFloat(amount))
+ return
  return
  if (!confirm("Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči.")) return
 
