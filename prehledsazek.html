@@ -309,17 +309,6 @@ window.deleteBet = async function(betId, source, playerId, amount) {
  if (!confirm("Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči.")) return
 
  const table = source === "special" ? "bets_special" : "bets"
-
-const { data: freshPlayer } = await supabase.from("players").select("credit").eq("id", playerId).eq("id", playerId).single()
- console.log("FRESH Z DB:", freshPlayer)
- 
- if (!freshPlayer) { alert("Hráč nenalezen."); return }
-
- console.log("KREDIT PRED:", freshPlayer.credit, "AMOUNT:", amount, "TYP AMOUNT:", typeof amount, "NOVY KREDIT:", parseFloat(freshPlayer.credit) + parseFloat(amount))
-
- const newCredit = parseFloat(freshPlayer.credit) + parseFloat(amount)
-
- await supabase.from("players").update({ credit: newCredit }).eq("id", playerId)
  await supabase.from(table).delete().eq("id", betId)
 
  load()
