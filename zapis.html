@@ -1133,9 +1133,9 @@ for(const bet of bets||[]){
         })
       }
     }
-    await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
+ await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
   }
-  // Gólové sázky
+}
 
 async function clearResult(matchId){
   if(!confirm("Smazat výsledek? Zápas zůstane v rozpisu.")) return
