@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -309,8 +310,8 @@ window.deleteBet = async function(betId, source, playerId, amount) {
 
  const table = source === "special" ? "bets_special" : "bets"
 
-const { data: freshPlayer } = await supabase.from("players").select("credit").eq("id", playerId).eq("id", playerId).single()
- console.log("FRESH Z DB:", freshPlayer) if (!freshPlayer) { alert("Hráč nenalezen."); return }
+ const { data: freshPlayer } = await supabase.from("players").select("credit").eq("id", playerId).single()
+ if (!freshPlayer) { alert("Hráč nenalezen."); return }
 
  console.log("KREDIT PRED:", freshPlayer.credit, "AMOUNT:", amount, "TYP AMOUNT:", typeof amount, "NOVY KREDIT:", parseFloat(freshPlayer.credit) + parseFloat(amount))
 
