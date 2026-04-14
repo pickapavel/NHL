@@ -306,12 +306,20 @@ function renderStats(bets){
 
 window.deleteBet = async function(betId, source, playerId, amount) {
  if (!confirm("Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči.")) return
- const { data: player } = await supabase.from("players").select("*").eq("id", playerId).single()
- if (player) {
-  await supabase.from("players").update({ credit: Number(player.credit) + Number(amount) }).eq("id", player.id)
- }
+
  const table = source === "special" ? "bets_special" : "bets"
+
+ // Nejdřív načti aktuální kredit hráče
+ const { data: player } = await supabase.from("players").select("credit").eq("id", playerId).single()
+ if (!player) { alert("Hráč nenalezen."); return }
+
+ const parsedAmount = parseFloat(amount)
+ const newCredit = parseFloat(player.credit) + parsedAmount
+
+ // Vrať kredit a smaž sázku
+ await supabase.from("players").update({ credit: newCredit }).eq("id", playerId)
  await supabase.from(table).delete().eq("id", betId)
+
  load()
 }
 
