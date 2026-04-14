@@ -1064,6 +1064,36 @@ function checkGoalsBet(match, type, tipKey){
   return false
 }
 
+function checkGoalsBet(match, type, tipKey){
+  const hg=Number(match.home_score), ag=Number(match.away_score)
+  const total=hg+ag, diff=hg-ag
+  const category=type.replace("match_goals_","")
+  if(category==="total"){
+    const n=Number(tipKey.split("_")[1])
+    return tipKey.startsWith("over_")?total>n:total<=n
+  }
+  if(category==="home"){
+    if(tipKey==="4p") return hg>=4
+    return hg===Number(tipKey)
+  }
+  if(category==="away"){
+    if(tipKey==="4p") return ag>=4
+    return ag===Number(tipKey)
+  }
+  if(category==="diff"){
+    switch(tipKey){
+      case "home_3p": return diff>=3
+      case "home_2":  return diff===2
+      case "home_1":  return diff===1
+      case "draw":    return diff===0
+      case "away_1":  return diff===-1
+      case "away_2":  return diff===-2
+      case "away_3p": return diff<=-3
+    }
+  }
+  return false
+}
+
 async function evaluateBets(match){
   // Výsledkové sázky
   const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
@@ -1077,6 +1107,21 @@ async function evaluateBets(match){
       }
     }
   }
+  // Gólové sázky
+  const {data:goalsBets}=await db.from("bets_special").select("*")
+    .eq("match_id",match.id)
+    .like("type","match_goals_%")
+  if(goalsBets){
+    for(const bet of goalsBets){
+      const win=checkGoalsBet(match, bet.type, bet.tip_key)
+      await db.from("bets_special").update({status:win?"won":"lost"}).eq("id",bet.id)
+      if(win){
+        const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+        if(player) await db.from("players").update({credit:Number(player.credit)+Number(bet.potential_win)}).eq("id",player.id)
+      }
+    }
+  }
+}
 
   // Gólové sázky
   const {data:goalsBets}=await db.from("bets_special").select("*")
