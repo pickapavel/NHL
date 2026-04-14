@@ -202,12 +202,11 @@ async function load(){
 const normalizedSpecial = (betsSpecial||[]).map(b=>{
   let target = "—"
   if(b.type?.startsWith("match_goals_")){
-   // Sázka na góly v konkrétním zápase
-   const match = matches[b.match_id]
+   const match = b.match_id ? matches[b.match_id] : null
    if(match){
     const home = teams[match.home_team]?.name || "?"
     const away = teams[match.away_team]?.name || "?"
-    target = `${home} vs ${away}`
+    target = `${home} vs ${away} — tip: ${b.tip_key||b.target_id||"?"}`
    }
   } else if(b.type?.startsWith("serie_winner_") || b.type?.startsWith("serie_games_")){
    target = teams[b.target_id]?.name || "—"
