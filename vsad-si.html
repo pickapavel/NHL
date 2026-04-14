@@ -661,8 +661,8 @@ const{data:goalsBets}=await supabase.from("bets_special").select("*")
     document.getElementById(`amount_${category}_${playerKey}`).value=bet.amount
     document.getElementById(`amount_${category}_${playerKey}`).disabled=true
     const summaryEl=document.getElementById(`summary_${category}_${playerKey}`)
-    if(match.played){
-      const won=checkGoalsTip(match, category, bet.target_id)
+ if(match.played){
+      const won=bet.status==="won"
       summaryEl.innerHTML=won
         ?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč!</span>`
         :`<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>`
