@@ -156,6 +156,14 @@ function specialTypeLabel(type){
  if(type === "winner_regular_season")    return "Vítěz základní části"
  if(type === "nonwinner_regular_season") return "Nevítěz základní části"
  if(type === "last_regular_season")      return "Poslední celek"
+ if(type === "match_goals_total")  return "Góly v zápase — celkem"
+ if(type === "match_goals_home")   return "Góly v zápase — domácí"
+ if(type === "match_goals_away")   return "Góly v zápase — hosté"
+ if(type === "match_goals_diff")   return "Góly v zápase — rozdíl"
+ if(type === "serie_winner")       return "Vítěz série"
+ if(type === "serie_games")        return "Počet zápasů v sérii"
+ if(type?.startsWith("serie_winner_")) return "Vítěz série"
+ if(type?.startsWith("serie_games_"))  return "Počet zápasů v sérii"
  if(type?.startsWith("goals_")){
   const thr = type.split("_")[1]
   return `Góly ${thr}+`
@@ -191,12 +199,28 @@ async function load(){
  const { data: betsMatch } = await supabase
   .from("bets").select("*").order("created_at",{ascending:false})
 
- const normalizedSpecial = (betsSpecial||[]).map(b=>({
-  ...b,
-  _source: "special",
-  _typeLabel: specialTypeLabel(b.type),
-  _target: teams[b.target_id]?.name || "—",
- }))
+const normalizedSpecial = (betsSpecial||[]).map(b=>{
+  let target = "—"
+  if(b.type?.startsWith("match_goals_")){
+   // Sázka na góly v konkrétním zápase
+   const match = matches[b.match_id]
+   if(match){
+    const home = teams[match.home_team]?.name || "?"
+    const away = teams[match.away_team]?.name || "?"
+    target = `${home} vs ${away}`
+   }
+  } else if(b.type?.startsWith("serie_winner_") || b.type?.startsWith("serie_games_")){
+   target = teams[b.target_id]?.name || "—"
+  } else {
+   target = teams[b.target_id]?.name || "—"
+  }
+  return {
+   ...b,
+   _source: "special",
+   _typeLabel: specialTypeLabel(b.type),
+   _target: target,
+  }
+ })
 
  const normalizedMatch = (betsMatch||[]).map(b=>{
   const match = matches[b.match_id]
