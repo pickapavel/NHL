@@ -106,9 +106,10 @@ function formatDate(str){
 }
 
 function typeBadge(type){
-  if(type === "bet")  return `<span class="badge-bet">Sázka</span>`
-  if(type === "won")  return `<span class="badge-won">Výhra</span>`
-  if(type === "lost") return `<span class="badge-lost">Prohra</span>`
+  if(type === "bet")        return `<span class="badge-bet">Sázka</span>`
+  if(type === "won")        return `<span class="badge-won">Výhra</span>`
+  if(type === "lost")       return `<span class="badge-lost">Prohra</span>`
+  if(type === "adjustment") return `<span class="badge-bet" style="background:#e8f4fd;color:#1a5276;">Úprava</span>`
   return `<span class="badge-bet">${type}</span>`
 }
 
