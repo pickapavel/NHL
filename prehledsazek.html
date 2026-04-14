@@ -68,45 +68,34 @@ tbody td{padding:11px 14px;color:#333;vertical-align:middle;}
 
 <div class="player-tabs" id="playerTabs"></div>
 
-<div class="filters">
- <label>Zdroj:</label>
- <select id="filterSource" onchange="applyFilters()">
-  <option value="">Vše</option>
-  <option value="match">Výsledky zápasů</option>
-  <option value="special">Speciální sázky</option>
- </select>
+<style>
+.filter-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;}
+.filter-group-label{font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-right:4px;}
+.filter-btn{padding:7px 14px;border-radius:20px;border:2px solid #ddd;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#666;transition:all .15s;}
+.filter-btn:hover{border-color:#0b2a3c;color:#0b2a3c;}
+.filter-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+.filter-btn.active-pending{background:#e67e22;color:white;border-color:#e67e22;}
+.filter-btn.active-won{background:#27ae60;color:white;border-color:#27ae60;}
+.filter-btn.active-lost{background:#e74c3c;color:white;border-color:#e74c3c;}
+.filter-btn.active-match{background:#1a5276;color:white;border-color:#1a5276;}
+.filter-btn.active-special{background:#6c3483;color:white;border-color:#6c3483;}
+.filters-wrap{margin-bottom:20px;}
+</style>
 
- <label>Typ sázky:</label>
- <select id="filterType" onchange="applyFilters()">
-  <option value="">Všechny typy</option>
-  <optgroup label="Výsledky zápasů">
-   <option value="1">Výhra domácí (REG)</option>
-   <option value="0">Remíza / OT / SN</option>
-   <option value="2">Výhra hostí (REG)</option>
-   <option value="11">Neprohra domácí</option>
-   <option value="no_draw">Nebude remíza</option>
-   <option value="22">Neprohra hostí</option>
-   <option value="vdr_home">Výhra do rozhodnutí domácí</option>
-   <option value="vdr_away">Výhra do rozhodnutí hosté</option>
-  </optgroup>
-  <optgroup label="Speciální sázky">
-   <option value="winner_regular_season">Vítěz základní části</option>
-   <option value="nonwinner_regular_season">Nevítěz základní části</option>
-   <option value="last_regular_season">Poslední celek</option>
-   <option value="goals_25_regular_season">Góly 25+</option>
-   <option value="goals_30_regular_season">Góly 30+</option>
-   <option value="goals_35_regular_season">Góly 35+</option>
-  </optgroup>
- </select>
-
- <label>Status:</label>
- <select id="filterStatus" onchange="applyFilters()">
-  <option value="">Všechny</option>
-  <option value="pending">Čeká</option>
-  <option value="won">Výhra</option>
-  <option value="lost">Prohra</option>
- </select>
-
+<div class="filters-wrap">
+ <div class="filter-group">
+  <span class="filter-group-label">Zdroj:</span>
+  <button class="filter-btn active" onclick="setSource('',this)">Vše</button>
+  <button class="filter-btn" onclick="setSource('match',this)">Výsledky zápasů</button>
+  <button class="filter-btn" onclick="setSource('special',this)">Speciální sázky</button>
+ </div>
+ <div class="filter-group">
+  <span class="filter-group-label">Status:</span>
+  <button class="filter-btn active" onclick="setStatus('',this)">Všechny</button>
+  <button class="filter-btn" onclick="setStatus('pending',this)">⏳ Čeká</button>
+  <button class="filter-btn" onclick="setStatus('won',this)">✅ Výhra</button>
+  <button class="filter-btn" onclick="setStatus('lost',this)">❌ Prohra</button>
+ </div>
  <button class="reset-btn" onclick="resetFilters()">Resetovat filtry</button>
 </div>
 
