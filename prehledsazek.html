@@ -249,15 +249,28 @@ function setPlayer(id){
  applyFilters()
 }
 
+let activeSource = ""
+let activeStatus = ""
+
+window.setSource = function(val, btn){
+ activeSource = val
+ document.querySelectorAll(".filter-group:nth-child(1) .filter-btn").forEach(b=>b.classList.remove("active","active-match","active-special"))
+ btn.classList.add("active", val==="match"?"active-match":val==="special"?"active-special":"")
+ applyFilters()
+}
+
+window.setStatus = function(val, btn){
+ activeStatus = val
+ document.querySelectorAll(".filter-group:nth-child(2) .filter-btn").forEach(b=>b.classList.remove("active","active-pending","active-won","active-lost"))
+ btn.classList.add("active", val==="pending"?"active-pending":val==="won"?"active-won":val==="lost"?"active-lost":"")
+ applyFilters()
+}
+
 function getFiltered(){
- const source = document.getElementById("filterSource").value
- const type   = document.getElementById("filterType").value
- const status = document.getElementById("filterStatus").value
  return allBets.filter(b=>{
   if(activePlayer && b.player_id !== activePlayer) return false
-  if(source && b._source !== source) return false
-  if(type   && b.type    !== type)   return false
-  if(status && b.status  !== status) return false
+  if(activeSource && b._source !== activeSource) return false
+  if(activeStatus && b.status  !== activeStatus) return false
   return true
  })
 }
@@ -269,9 +282,10 @@ window.applyFilters = function(){
 }
 
 window.resetFilters = function(){
- document.getElementById("filterSource").value = ""
- document.getElementById("filterType").value   = ""
- document.getElementById("filterStatus").value = ""
+ activeSource = ""
+ activeStatus = ""
+ document.querySelectorAll(".filter-group:nth-child(1) .filter-btn").forEach((b,i)=>{ b.classList.remove("active","active-match","active-special"); if(i===0) b.classList.add("active") })
+ document.querySelectorAll(".filter-group:nth-child(2) .filter-btn").forEach((b,i)=>{ b.classList.remove("active","active-pending","active-won","active-lost"); if(i===0) b.classList.add("active") })
  applyFilters()
 }
 
