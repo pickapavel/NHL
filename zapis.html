@@ -1098,16 +1098,16 @@ async function revertBets(matchId){
   const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
   for(const bet of bets||[]){
     if(bet.status==="won"){
-      // Trigger vrátí amount automaticky, jen odečteme potential_win
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
-        const newCredit=Number(player.credit)-Number(bet.potential_win)
+        // Odečti výhru a vrať vsazenou částku (trigger NEvrací amount při update, jen při delete)
+        const newCredit=Number(player.credit)-Number(bet.potential_win)+Number(bet.amount)
         await db.from("players").update({credit:newCredit}).eq("id",player.id)
         await db.from("credit_history").insert({
           player_id:bet.player_id,
           type:"adjustment",
-          description:"Smazání výsledku — odečtení výhry",
-          amount:-Number(bet.potential_win),
+          description:"Smazání výsledku — odečtení výhry, vrácení sázky",
+          amount:Number(bet.amount)-Number(bet.potential_win),
           credit_before:Number(player.credit),
           credit_after:newCredit,
         })
@@ -1120,16 +1120,15 @@ async function revertBets(matchId){
     .eq("match_id",matchId).like("type","match_goals_%")
   for(const bet of goalsBets||[]){
     if(bet.status==="won"){
-      // Trigger vrátí amount automaticky, jen odečteme potential_win
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
-        const newCredit=Number(player.credit)-Number(bet.potential_win)
+        const newCredit=Number(player.credit)-Number(bet.potential_win)+Number(bet.amount)
         await db.from("players").update({credit:newCredit}).eq("id",player.id)
         await db.from("credit_history").insert({
           player_id:bet.player_id,
           type:"adjustment",
-          description:"Smazání výsledku — odečtení výhry na góly",
-          amount:-Number(bet.potential_win),
+          description:"Smazání výsledku — odečtení výhry, vrácení sázky na góly",
+          amount:Number(bet.amount)-Number(bet.potential_win),
           credit_before:Number(player.credit),
           credit_after:newCredit,
         })
@@ -1138,10 +1137,8 @@ async function revertBets(matchId){
     await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
   }
 }
-
 async function clearResult(matchId){
   if(!confirm("Smazat výsledek? Zápas zůstane v rozpisu.")) return
-  alert("⚠️ Nezapomeň ručně vrátit hráčům kredit ve výši jejich vsazených částek!")
   await revertBets(matchId)
   await db.from("matches").update({home_score:null,away_score:null,played:false,stats:null,result_type:null}).eq("id",matchId)
   await db.from('match_events').delete().eq('match_id', matchId)
