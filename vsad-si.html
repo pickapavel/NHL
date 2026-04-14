@@ -701,11 +701,21 @@ window.placeBet = async function(playerKey, category) {
       bet_id: betData?.id || null,
       source: "bets"
     })
-  } else {
+} else {
     const amount = Number(document.getElementById(`amount_${category}_${playerKey}`).value)
     const sel = state[playerKey][category].selected
     if(!amount || !sel) { alert("Vyber tip a zadej částku"); return }
     if(player.credit < amount) { alert("Nedostatek kreditu"); return }
+
+    // Zkontroluj jestli sázka už existuje
+    const { data: existing } = await supabase.from("bets_special")
+      .select("id")
+      .eq("match_id", matchId)
+      .eq("player_id", player.id)
+      .eq("type", "match_goals_" + category)
+      .single()
+    if(existing) { alert("Na tuto kategorii už máš vsazeno!"); return }
+
     const o = goalsOdds[category][sel]?.odds || 1
     const label = goalsOdds[category][sel]?.label || sel
     const newCredit = player.credit - amount
