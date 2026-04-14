@@ -337,23 +337,6 @@ window.deleteBet = async function(betId, source, playerId, amount, potentialWin,
   : "Opravdu smazat tuto sázku? Vsazená částka bude vrácena hráči."
  if (!confirm(msg)) return
 
- // Pokud je sázka vyhrána, odečti výhru z kreditu (trigger vrátí vsazenou částku)
- if(status === "won"){
-  const { data: player } = await supabase.from("players").select("credit").eq("id", playerId).single()
-  if(player){
-   const newCredit = parseFloat(player.credit) - parseFloat(potentialWin)
-   await supabase.from("players").update({ credit: newCredit }).eq("id", playerId)
-   await supabase.from("credit_history").insert({
-    player_id: playerId,
-    type: "adjustment",
-    description: "Smazání vyhrané sázky — odečtení výhry",
-    amount: -parseFloat(potentialWin),
-    credit_before: parseFloat(player.credit),
-    credit_after: newCredit,
-   })
-  }
- }
-
  const table = source === "special" ? "bets_special" : "bets"
  await supabase.from(table).delete().eq("id", betId)
 
