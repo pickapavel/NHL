@@ -1094,13 +1094,46 @@ if(goalsBets){
 
 
 async function revertBets(matchId){
+  // Výsledkové sázky
   const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
   for(const bet of bets||[]){
     if(bet.status==="won"){
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
-      if(player) await db.from("players").update({credit:Number(player.credit)-Number(bet.potential_win)}).eq("id",player.id)
+      if(player){
+        const newCredit=Number(player.credit)-Number(bet.potential_win)
+        await db.from("players").update({credit:newCredit}).eq("id",player.id)
+        await db.from("credit_history").insert({
+          player_id:bet.player_id,
+          type:"adjustment",
+          description:"Smazání výsledku — odečtení výhry",
+          amount:-Number(bet.potential_win),
+          credit_before:Number(player.credit),
+          credit_after:newCredit,
+        })
+      }
     }
     await db.from("bets").update({status:"pending"}).eq("id",bet.id)
+  }
+  // Gólové sázky
+  const {data:goalsBets}=await db.from("bets_special").select("*")
+    .eq("match_id",matchId).like("type","match_goals_%")
+  for(const bet of goalsBets||[]){
+    if(bet.status==="won"){
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        const newCredit=Number(player.credit)-Number(bet.potential_win)
+        await db.from("players").update({credit:newCredit}).eq("id",player.id)
+        await db.from("credit_history").insert({
+          player_id:bet.player_id,
+          type:"adjustment",
+          description:"Smazání výsledku — odečtení výhry na góly",
+          amount:-Number(bet.potential_win),
+          credit_before:Number(player.credit),
+          credit_after:newCredit,
+        })
+      }
+    }
+    await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
   }
 }
 
