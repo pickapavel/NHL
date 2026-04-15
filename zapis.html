@@ -1041,11 +1041,11 @@ async function evaluateBets(match){
   const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
 if(bets){
     for(const bet of bets){
-      const win=isWinningBet(match,bet.tip)
+   const win=isWinningBet(match,bet.tip)
       await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
-      if(win){
-        const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
-        if(player){
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        if(win){
           const newCredit=Number(player.credit)+Number(bet.potential_win)
           await db.from("players").update({credit:newCredit}).eq("id",player.id)
           await db.from("credit_history").insert({
@@ -1055,6 +1055,17 @@ if(bets){
             amount:Number(bet.potential_win),
             credit_before:Number(player.credit),
             credit_after:newCredit,
+            bet_id:bet.id,
+            source:"bets"
+          })
+        } else {
+          await db.from("credit_history").insert({
+            player_id:bet.player_id,
+            type:"lost",
+            description:`Prohra sázky na zápas — tip: ${bet.tip}`,
+            amount:0,
+            credit_before:Number(player.credit),
+            credit_after:Number(player.credit),
             bet_id:bet.id,
             source:"bets"
           })
@@ -1068,11 +1079,11 @@ if(bets){
     .like("type","match_goals_%")
 if(goalsBets){
     for(const bet of goalsBets){
-      const win=checkGoalsBet(match, bet.type, bet.tip_key)
+const win=checkGoalsBet(match, bet.type, bet.tip_key)
       await db.from("bets_special").update({status:win?"won":"lost"}).eq("id",bet.id)
-      if(win){
-        const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
-        if(player){
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        if(win){
           const newCredit=Number(player.credit)+Number(bet.potential_win)
           await db.from("players").update({credit:newCredit}).eq("id",player.id)
           await db.from("credit_history").insert({
@@ -1082,6 +1093,17 @@ if(goalsBets){
             amount:Number(bet.potential_win),
             credit_before:Number(player.credit),
             credit_after:newCredit,
+            bet_id:bet.id,
+            source:"bets_special"
+          })
+        } else {
+          await db.from("credit_history").insert({
+            player_id:bet.player_id,
+            type:"lost",
+            description:`Prohra sázky na góly — tip: ${bet.tip_key}`,
+            amount:0,
+            credit_before:Number(player.credit),
+            credit_after:Number(player.credit),
             bet_id:bet.id,
             source:"bets_special"
           })
