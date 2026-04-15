@@ -4,353 +4,111 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detail hráče</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0a0f1a;
-  --surface: #111827;
-  --surface2: #1a2234;
-  --border: #1e2d45;
-  --accent: #3b82f6;
-  --accent2: #f59e0b;
-  --green: #22c55e;
-  --red: #ef4444;
-  --text: #e2e8f0;
-  --muted: #64748b;
-  --heading-font: 'Barlow Condensed', sans-serif;
-  --body-font: 'Barlow', sans-serif;
-}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+.hero{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);padding:20px 30px;display:flex;align-items:center;gap:16px;}
+.hero-avatar{width:56px;height:56px;background:rgba(255,255,255,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.hero-name{font-size:24px;font-weight:800;color:white;letter-spacing:-.3px;}
+.hero-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+.hero-badge{background:rgba(255,255,255,.12);color:#7ab0cc;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;}
+.hero-badge.pos{background:rgba(47,158,201,.25);color:#7ab0cc;}
+.hero-team-logo{width:24px;height:24px;object-fit:contain;background:white;border-radius:4px;padding:2px;}
+.back-btn{margin-left:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:all .15s;text-decoration:none;}
+.back-btn:hover{background:rgba(255,255,255,.2);}
 
-body {
-  font-family: var(--body-font);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
+.wrapper{max-width:1200px;margin:0 auto;padding:28px 20px 60px;}
 
-/* ── Hero ── */
-.hero {
-  background: linear-gradient(160deg, #0f1f3d 0%, #0a0f1a 60%);
-  border-bottom: 1px solid var(--border);
-  padding: 32px 24px 28px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(59,130,246,.15) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-.hero-avatar {
-  width: 80px; height: 80px;
-  background: var(--surface2);
-  border-radius: 14px;
-  border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px;
-  flex-shrink: 0;
-}
-.hero-info { flex: 1; }
-.hero-name {
-  font-family: var(--heading-font);
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: .01em;
-  line-height: 1;
-  color: white;
-}
-.hero-meta {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.hero-badge {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.hero-badge.pos {
-  background: rgba(59,130,246,.15);
-  border-color: rgba(59,130,246,.3);
-  color: var(--accent);
-}
-.hero-team-logo {
-  width: 28px; height: 28px;
-  object-fit: contain;
-  background: white;
-  border-radius: 5px;
-  padding: 2px;
-}
-.back-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: var(--body-font);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all .15s;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.back-btn:hover { background: var(--border); color: var(--text); }
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px;}
+.stat-card{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);padding:14px;text-align:center;}
+.stat-card-val{font-size:30px;font-weight:800;color:#0b2a3c;line-height:1;}
+.stat-card-val.blue{color:#1a5276;}
+.stat-card-val.green{color:#16a34a;}
+.stat-card-val.amber{color:#d97706;}
+.stat-card-val.red{color:#dc2626;}
+.stat-card-label{font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.06em;margin-top:5px;}
 
-/* ── Layout ── */
-.wrapper {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px 24px 60px;
-}
+.section{margin-bottom:28px;}
+.section-title{font-size:15px;font-weight:700;color:#0b2a3c;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
 
-/* ── Stat cards row ── */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 32px;
-}
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 14px;
-  text-align: center;
-  transition: border-color .15s;
-}
-.stat-card:hover { border-color: var(--accent); }
-.stat-card-val {
-  font-family: var(--heading-font);
-  font-size: 36px;
-  font-weight: 800;
-  color: white;
-  line-height: 1;
-}
-.stat-card-val.accent { color: var(--accent); }
-.stat-card-val.green { color: var(--green); }
-.stat-card-val.amber { color: var(--accent2); }
-.stat-card-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-top: 6px;
-}
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.split-card{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);padding:16px;}
+.split-card-title{font-size:12px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.split-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:10px;}
+.split-stat-val{font-size:26px;font-weight:800;color:#0b2a3c;line-height:1;}
+.split-stat-label{font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
 
-/* ── Section ── */
-.section {
-  margin-bottom: 32px;
-}
-.section-title {
-  font-family: var(--heading-font);
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: white;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.section-icon { font-size: 18px; }
+.table-wrap{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+thead th{background:#0b2a3c;color:#7ab0cc;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+thead th.num{text-align:center;}
+tbody tr{border-bottom:1px solid #f0f4f8;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#f0f6fc;}
+tbody tr:nth-child(even){background:#f7fbff;}
+tbody tr:nth-child(even):hover{background:#e8f2fb;}
+tbody td{padding:10px 12px;vertical-align:middle;color:#1a2a3c;font-size:14px;}
+tbody td.num{text-align:center;}
+tbody td.bold{font-weight:700;color:#0b2a3c;}
 
-/* ── Table ── */
-.table-wrap {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  overflow-x: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 500px;
-}
-thead th {
-  background: var(--surface2);
-  color: var(--muted);
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border);
-}
-thead th.num { text-align: center; }
-tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,.04);
-  transition: background .1s;
-}
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: rgba(255,255,255,.03); }
-tbody td {
-  padding: 10px 14px;
-  vertical-align: middle;
-  color: var(--text);
-}
-tbody td.num { text-align: center; }
-tbody td.bold { font-weight: 700; color: white; }
-.td-match { font-size: 12px; color: var(--muted); }
-.td-match strong { color: var(--text); font-weight: 600; }
+.match-name{font-weight:700;color:#0b2a3c;font-size:14px;}
+.match-score{font-size:14px;font-weight:800;color:#0b2a3c;background:#e8f0f8;padding:2px 8px;border-radius:6px;margin-left:6px;}
+.match-stage{font-size:11px;color:#7ab0cc;margin-left:6px;}
 
-/* ── Bar ── */
-.bar-wrap {
-  background: var(--border);
-  border-radius: 3px;
-  height: 6px;
-  width: 80px;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 8px;
-}
-.bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--accent);
-}
-.bar-fill.green { background: var(--green); }
-.bar-fill.amber { background: var(--accent2); }
+.bar-wrap{background:#e0ecf8;border-radius:3px;height:6px;width:70px;display:inline-block;vertical-align:middle;margin-left:8px;}
+.bar-fill{height:100%;border-radius:3px;background:#2f9ec9;}
+.bar-fill.green{background:#16a34a;}
+.bar-fill.amber{background:#d97706;}
 
-/* ── Split cards (playoff vs zakladni) ── */
-.split-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-.split-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-}
-.split-card-title {
-  font-family: var(--heading-font);
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--muted);
-  margin-bottom: 14px;
-}
-.split-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  gap: 10px;
-}
-.split-stat-val {
-  font-family: var(--heading-font);
-  font-size: 28px;
-  font-weight: 800;
-  color: white;
-  line-height: 1;
-}
-.split-stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-top: 3px;
-}
+.pct-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:13px;font-weight:700;}
+.pct-badge.high{background:#dcfce7;color:#16a34a;}
+.pct-badge.mid{background:#fef9c3;color:#854d0e;}
+.pct-badge.low{background:#fee2e2;color:#dc2626;}
 
-/* ── Loading ── */
-.loading {
-  text-align: center;
-  padding: 60px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.loading-spinner {
-  width: 36px; height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-  margin: 0 auto 16px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.row-best{background:#fffbeb !important;}
+.row-shutout{background:#f0fdf4 !important;}
+.row-zero{background:#fff7f7 !important;}
 
-.empty-row td {
-  text-align: center;
-  color: var(--muted);
-  padding: 28px;
-  font-style: italic;
-}
+.legend-box{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);padding:16px;margin-bottom:28px;}
+.legend-title{font-size:13px;font-weight:700;color:#0b2a3c;margin-bottom:10px;}
+.legend-grid{display:flex;flex-wrap:wrap;gap:10px 24px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#1a2a3c;}
+.legend-color{width:16px;height:16px;border-radius:4px;flex-shrink:0;}
+.legend-color.amber{background:#fffbeb;border:2px solid #d97706;}
+.legend-color.green{background:#f0fdf4;border:2px solid #16a34a;}
+.legend-color.red{background:#fff7f7;border:2px solid #dc2626;}
 
-/* ── Pct badge ── */
-.pct-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.pct-badge.high { background: rgba(34,197,94,.15); color: var(--green); }
-.pct-badge.mid  { background: rgba(245,158,11,.15); color: var(--accent2); }
-.pct-badge.low  { background: rgba(239,68,68,.15); color: var(--red); }
+.loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
+.spinner{width:32px;height:32px;border:3px solid #e0ecf8;border-top-color:#2f9ec9;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-row td{text-align:center;color:#aaa;padding:24px;font-style:italic;}
 
 @media(max-width:640px){
-  .split-grid { grid-template-columns: 1fr; }
-  .hero-name { font-size: 30px; }
-  .stat-cards { grid-template-columns: repeat(3, 1fr); }
+  .split-grid{grid-template-columns:1fr;}
+  .hero-name{font-size:20px;}
+  .stat-cards{grid-template-columns:repeat(3,1fr);}
 }
 </style>
 </head>
 <body>
-
 <script src="./ticker.js"></script>
 <script src="./menu.js"></script>
 
 <div class="hero">
-  <div class="hero-inner">
-    <div class="hero-avatar" id="heroAvatar">👤</div>
-    <div class="hero-info">
-      <div class="hero-name" id="heroName">Načítám...</div>
-      <div class="hero-meta" id="heroMeta"></div>
-    </div>
-    <a class="back-btn" onclick="history.back()">← Zpět</a>
+  <div class="hero-avatar" id="heroAvatar">👤</div>
+  <div>
+    <div class="hero-name" id="heroName">Načítám...</div>
+    <div class="hero-meta" id="heroMeta"></div>
   </div>
+  <a class="back-btn" onclick="history.back()">← Zpět</a>
 </div>
 
 <div class="wrapper">
   <div id="loadingEl" class="loading">
-    <div class="loading-spinner"></div>
+    <div class="spinner"></div>
     Načítám statistiky...
   </div>
   <div id="content" style="display:none"></div>
@@ -367,536 +125,337 @@ const params = new URLSearchParams(window.location.search)
 const playerId = params.get("player_id") || params.get("id")
 const playerName = params.get("name")
 
-function fmt(n, decimals=0){
-  if(n===null||n===undefined||isNaN(n)) return "—"
-  return Number(n).toFixed(decimals)
-}
-function fmtPct(n){
-  if(n===null||n===undefined||isNaN(n)) return "—"
-  return (Number(n)*100).toFixed(1)+"%"
-}
+function fmt(n,d=0){ if(n===null||n===undefined||isNaN(n)) return "—"; return Number(n).toFixed(d) }
+function toi(str){ if(!str||str==="00:00") return "—"; return str }
+
 function pctBadge(val){
   const cls = val>=0.9?"high":val>=0.85?"mid":"low"
   return `<span class="pct-badge ${cls}">${(val*100).toFixed(1)}%</span>`
 }
-function bar(val, max, cls=""){
-  const pct = Math.min(100, (val/max)*100)
+function bar(val,max,cls=""){
+  const pct=Math.min(100,(val/Math.max(max,1))*100)
   return `<span class="bar-wrap"><span class="bar-fill ${cls}" style="width:${pct}%"></span></span>`
 }
-function matchLabel(m, teams){
+
+function matchCell(m, teams, stages){
   if(!m) return "—"
-  const h = teams[m.home_team]?.name||"?"
-  const a = teams[m.away_team]?.name||"?"
-  const score = m.home_score!=null ? `${m.home_score}:${m.away_score}` : ""
-  return `<span class="td-match"><strong>${h}</strong> vs <strong>${a}</strong> ${score}</span>`
+  const h=teams[m.home_team]?.name||"?"
+  const a=teams[m.away_team]?.name||"?"
+  const score=m.home_score!=null?`<span class="match-score">${m.home_score} : ${m.away_score}${m.result_type&&m.result_type!=="REG"?" "+m.result_type:""}</span>`:""
+  const stage=stages[m.stage_id]?`<span class="match-stage">${stages[m.stage_id].name}</span>`:""
+  return `<span class="match-name">${h} vs ${a}</span>${score}${stage}`
 }
-function stageLabel(m, stages){
-  if(!m||!stages) return ""
-  const s = stages[m.stage_id]
-  return s ? `<span style="font-size:11px;color:var(--muted);margin-left:6px;">${s.name}</span>` : ""
-}
-function toi(str){
-  if(!str||str==="00:00") return "—"
-  return str
+
+function avgToiStr(rows){
+  const r=rows.filter(x=>x.toi&&x.toi!=="00:00")
+  if(!r.length) return "—"
+  const tot=r.reduce((s,x)=>{ const[m,sc]=(x.toi||"0:00").split(":").map(Number); return s+m*60+(sc||0) },0)
+  const avg=tot/r.length
+  return `${Math.floor(avg/60)}:${String(Math.round(avg%60)).padStart(2,"0")}`
 }
 
 async function load(){
-  // Načti data
-  const [playerRes, statsRes, teamsRes, matchesRes, stagesRes] = await Promise.all([
+  const [statsRes, teamsRes, matchesRes, stagesRes] = await Promise.all([
     playerId
-      ? supabase.from("hockey_players").select("*").eq("id", playerId).single()
-      : supabase.from("player_match_stats").select("player_name").eq("player_name", playerName).limit(1).single(),
-    playerId
-      ? supabase.from("player_match_stats").select("*, matches(*)").eq("player_id", playerId).order("created_at", {ascending:true})
-      : supabase.from("player_match_stats").select("*, matches(*)").eq("player_name", playerName).order("created_at", {ascending:true}),
+      ? supabase.from("player_match_stats").select("*").eq("player_id", playerId)
+      : supabase.from("player_match_stats").select("*").eq("player_name", playerName),
     supabase.from("teams").select("*"),
     supabase.from("matches").select("*"),
     supabase.from("stages").select("*"),
   ])
 
-  const teams = {}
-  ;(teamsRes.data||[]).forEach(t => teams[t.id]=t)
-  const stages = {}
-  ;(stagesRes.data||[]).forEach(s => stages[s.id]=s)
-  const matchesMap = {}
-  ;(matchesRes.data||[]).forEach(m => matchesMap[m.id]=m)
+  const teams={}; (teamsRes.data||[]).forEach(t=>teams[t.id]=t)
+  const stages={}; (stagesRes.data||[]).forEach(s=>stages[s.id]=s)
+  const matchesMap={}; (matchesRes.data||[]).forEach(m=>matchesMap[m.id]=m)
 
-  const rows = statsRes.data||[]
+  const rows=statsRes.data||[]
   if(!rows.length){
-    document.getElementById("loadingEl").innerHTML = '<div style="color:var(--muted);text-align:center;padding:60px">Žádné statistiky nenalezeny.</div>'
+    document.getElementById("loadingEl").innerHTML='<div style="color:#7ab0cc;text-align:center;padding:60px">Žádné statistiky nenalezeny.</div>'
     return
   }
 
-  const isGoalie = rows.some(r => r.is_goalie)
-  const name = rows[0].player_name || playerName || "Neznámý hráč"
-  const teamAbbrs = [...new Set(rows.map(r=>r.team_abbr).filter(Boolean))]
-  const teamObj = Object.values(teams).find(t => teamAbbrs.some(a => t.team_abbr===a || t.name.includes(a?.replace(/\s*\([KP]\)/,"")||"")))
+  const isGoalie=rows.some(r=>r.is_goalie)
+  const name=rows[0].player_name||playerName||"Neznámý hráč"
+  const teamAbbrs=[...new Set(rows.map(r=>r.team_abbr).filter(Boolean))]
+  const teamObj=Object.values(teams).find(t=>teamAbbrs.some(a=>t.team_abbr===a))
 
-  // Hero
-  document.getElementById("heroName").textContent = name
-  document.getElementById("heroAvatar").textContent = isGoalie ? "🥅" : "🏒"
-  const metaEl = document.getElementById("heroMeta")
-  metaEl.innerHTML = `
+  document.getElementById("heroName").textContent=name
+  document.getElementById("heroAvatar").textContent=isGoalie?"🥅":"🏒"
+  document.title=name+" — Detail hráče"
+  document.getElementById("heroMeta").innerHTML=`
     <span class="hero-badge pos">${isGoalie?"Brankář":"Hráč"}</span>
-    ${teamObj ? `<img class="hero-team-logo" src="./logos/${teamObj.logo}" onerror="this.style.display='none'">` : ""}
+    ${teamObj?`<img class="hero-team-logo" src="./logos/${teamObj.logo}" onerror="this.style.display='none'">`:""}
     ${teamAbbrs.map(a=>`<span class="hero-badge">${a}</span>`).join("")}
     <span class="hero-badge">${rows.length} zápasů</span>
   `
-  document.title = name + " — Detail hráče"
 
-  document.getElementById("loadingEl").style.display = "none"
-  const content = document.getElementById("content")
-  content.style.display = "block"
+  document.getElementById("loadingEl").style.display="none"
+  const content=document.getElementById("content")
+  content.style.display="block"
 
-  if(isGoalie){
-    renderGoalie(rows, teams, stages, matchesMap, content)
-  } else {
-    renderSkater(rows, teams, stages, matchesMap, content)
-  }
+  if(isGoalie) renderGoalie(rows,teams,stages,matchesMap,content)
+  else renderSkater(rows,teams,stages,matchesMap,content)
 }
 
-// ── BRANKÁŘ ────────────────────────────────────────────────
-function renderGoalie(rows, teams, stages, matchesMap, el){
-  const totalSA = rows.reduce((s,r)=>s+Number(r.goalie_sa||0),0)
-  const totalGA = rows.reduce((s,r)=>s+Number(r.goalie_ga||0),0)
-  const totalSaves = totalSA - totalGA
-  const svPct = totalSA > 0 ? totalSaves/totalSA : 0
-  const gaa = rows.reduce((s,r)=>{
-    const toi = r.toi||"00:00"
-    const [m,sec] = toi.split(":").map(Number)
-    const mins = m + (sec||0)/60
-    return s + Number(r.goalie_ga||0) / Math.max(mins/60, 0.01)
-  }, 0) / rows.length
-  const wins = rows.filter(r=>{
-    const m = matchesMap[r.match_id]
-    if(!m||m.home_score==null) return false
-    const homeTeam = Object.values(teams).find(t => t.team_abbr===r.team_abbr || t.name.includes(r.team_abbr?.replace(/\s*\([KP]\)/,"")||""))
-    if(!homeTeam) return false
-    const isHome = m.home_team === homeTeam.id
-    return isHome ? m.home_score > m.away_score : m.away_score > m.home_score
-  }).length
-  const losses = rows.filter(r=>{
-    const m = matchesMap[r.match_id]
-    if(!m||m.home_score==null) return false
-    const homeTeam = Object.values(teams).find(t => t.team_abbr===r.team_abbr)
-    if(!homeTeam) return false
-    const isHome = m.home_team === homeTeam.id
-    return isHome ? m.home_score < m.away_score : m.away_score < m.home_score
-  }).length
-  const avgToi = avgToiStr(rows)
-  const topSaves = [...rows].sort((a,b)=>Number(b.goalie_sa||0)-Number(a.goalie_sa||0)).slice(0,1)
-  const shutouts = rows.filter(r=>Number(r.goalie_ga||0)===0).length
+// ── BRANKÁŘ ──
+function renderGoalie(rows,teams,stages,matchesMap,el){
+  const totalSA=rows.reduce((s,r)=>s+Number(r.goalie_sa||0),0)
+  const totalGA=rows.reduce((s,r)=>s+Number(r.goalie_ga||0),0)
+  const totalSaves=totalSA-totalGA
+  const svPct=totalSA>0?totalSaves/totalSA:0
+  const shutouts=rows.filter(r=>Number(r.goalie_ga||0)===0&&Number(r.goalie_sa||0)>0).length
+  const gaa=rows.length>0?totalGA/rows.length:0
+  const avgToi=avgToiStr(rows)
+  const maxSA=Math.max(...rows.map(r=>Number(r.goalie_sa||0)),1)
 
-  el.innerHTML = `
-    <!-- Stat cards -->
+  el.innerHTML=`
     <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-card-val ${svPct>=0.9?"green":svPct>=0.85?"amber":"accent"}">${(svPct*100).toFixed(1)}%</div>
-        <div class="stat-card-label">Úspěšnost zákroků</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val accent">${totalSaves}</div>
-        <div class="stat-card-label">Celkem zákroků</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalSA}</div>
-        <div class="stat-card-label">Střely na bránu</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalGA}</div>
-        <div class="stat-card-label">Inkasované góly</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${fmt(gaa,2)}</div>
-        <div class="stat-card-label">GAA (průměr/zápas)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val green">${shutouts}</div>
-        <div class="stat-card-label">Nulové zápasy</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val green">${wins}</div>
-        <div class="stat-card-label">Výhry</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${rows.length}</div>
-        <div class="stat-card-label">Zápasy</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val amber">${avgToi}</div>
-        <div class="stat-card-label">Průměr TOI</div>
+      <div class="stat-card"><div class="stat-card-val ${svPct>=0.9?"green":svPct>=0.85?"amber":"red"}">${(svPct*100).toFixed(1)}%</div><div class="stat-card-label">Úspěšnost zákroků</div></div>
+      <div class="stat-card"><div class="stat-card-val blue">${totalSaves}</div><div class="stat-card-label">Celkem zákroků</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalSA}</div><div class="stat-card-label">Střely na bránu</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalGA}</div><div class="stat-card-label">Inkasované góly</div></div>
+      <div class="stat-card"><div class="stat-card-val">${fmt(gaa,2)}</div><div class="stat-card-label">GAA průměr/zápas</div></div>
+      <div class="stat-card"><div class="stat-card-val green">${shutouts}</div><div class="stat-card-label">Nulové zápasy</div></div>
+      <div class="stat-card"><div class="stat-card-val">${rows.length}</div><div class="stat-card-label">Odehrané zápasy</div></div>
+      <div class="stat-card"><div class="stat-card-val amber">${avgToi}</div><div class="stat-card-label">Průměr TOI</div></div>
+    </div>
+
+    <div class="legend-box">
+      <div class="legend-title">Legenda barev řádků</div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-color green"></div>Nulový zápas (0 inkasovaných gólů)</div>
+        <div class="legend-item"><div class="legend-color red"></div>Slabý výkon (SV% pod 85 %)</div>
       </div>
     </div>
 
-    <!-- Zápasy — úspěšnost -->
     <div class="section">
-      <div class="section-title"><span class="section-icon">📊</span> Úspěšnost zákroků po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th>Stage</th>
-              <th class="num">SA</th>
-              <th class="num">GA</th>
-              <th class="num">Zákroky</th>
-              <th class="num">SV%</th>
-              <th class="num">TOI</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r=>{
-              const m = matchesMap[r.match_id]
-              const sa = Number(r.goalie_sa||0), ga = Number(r.goalie_ga||0)
-              const sv = sa>0?(sa-ga)/sa:null
-              const isShutout = ga===0 && sa>0
-              return `<tr${isShutout?' style="background:rgba(34,197,94,.04)"':''}>
-                <td>${matchLabel(m,teams)}</td>
-                <td>${m?stageLabel(m,stages):""}</td>
-                <td class="num">${sa||"—"}</td>
-                <td class="num" style="${ga===0?"color:var(--green);font-weight:700":"color:var(--red)"}">${ga}</td>
-                <td class="num">${sa-ga}${bar(sa-ga, Math.max(totalSaves/rows.length*2,1),"green")}</td>
-                <td class="num">${sv!==null?pctBadge(sv):"—"}</td>
-                <td class="num">${toi(r.toi)}</td>
-              </tr>`
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Zápasy — střely na bránu -->
-    <div class="section">
-      <div class="section-title"><span class="section-icon">🎯</span> Střely na bránu po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th class="num">Střely (SA)</th>
-              <th class="num">Inkasováno</th>
-              <th class="num">TOI</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${[...rows].sort((a,b)=>Number(b.goalie_sa||0)-Number(a.goalie_sa||0)).map(r=>{
-              const m = matchesMap[r.match_id]
-              const sa = Number(r.goalie_sa||0)
-              return `<tr>
-                <td>${matchLabel(m,teams)}</td>
-                <td class="num bold">${sa}${bar(sa, Math.max(...rows.map(x=>Number(x.goalie_sa||0))))}</td>
-                <td class="num">${r.goalie_ga}</td>
-                <td class="num">${toi(r.toi)}</td>
-              </tr>`
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
+      <div class="section-title">📊 Úspěšnost zákroků po zápasech</div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Zápas</th>
+          <th class="num">Střely (SA)</th>
+          <th class="num">Inkasováno (GA)</th>
+          <th class="num">Zákroky</th>
+          <th class="num">SV%</th>
+          <th class="num">TOI</th>
+        </tr></thead>
+        <tbody>
+          ${[...rows].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).map(r=>{
+            const m=matchesMap[r.match_id]
+            const sa=Number(r.goalie_sa||0),ga=Number(r.goalie_ga||0)
+            const sv=sa>0?(sa-ga)/sa:null
+            const isShutout=ga===0&&sa>0
+            const isBad=sv!==null&&sv<0.85
+            return `<tr class="${isShutout?"row-shutout":isBad?"row-zero":""}">
+              <td>${matchCell(m,teams,stages)}</td>
+              <td class="num bold">${sa||"—"}</td>
+              <td class="num" style="${ga===0&&sa>0?"color:#16a34a;font-weight:700":ga>0?"color:#dc2626;font-weight:700":""}">${ga}</td>
+              <td class="num">${sa-ga}${sa>0?bar(sa-ga,maxSA,"green"):""}</td>
+              <td class="num">${sv!==null?pctBadge(sv):"—"}</td>
+              <td class="num">${toi(r.toi)}</td>
+            </tr>`
+          }).join("")}
+        </tbody>
+      </table></div>
     </div>
   `
 }
 
-// ── HRÁČ ──────────────────────────────────────────────────
-function renderSkater(rows, teams, stages, matchesMap, el){
-  const totalG = rows.reduce((s,r)=>s+Number(r.goals||0),0)
-  const totalA = rows.reduce((s,r)=>s+Number(r.assists||0),0)
-  const totalP = totalG+totalA
-  const totalPIM = rows.reduce((s,r)=>s+Number(r.pim||0),0)
-  const totalShots = rows.reduce((s,r)=>s+Number(r.shots||0),0)
-  const totalHits = rows.reduce((s,r)=>s+Number(r.hits||0),0)
-  const totalPPG = rows.reduce((s,r)=>s+Number(r.ppg||0),0)
-  const totalSHG = rows.reduce((s,r)=>s+Number(r.shg||0),0)
-  const totalPM = rows.reduce((s,r)=>s+Number(r.plus_minus||0),0)
-  const gamesPlayed = rows.length
-  const shotPct = totalShots>0 ? totalG/totalShots : 0
-  const ppg_avg = gamesPlayed>0 ? totalP/gamesPlayed : 0
-  const shots_avg = gamesPlayed>0 ? totalShots/gamesPlayed : 0
-  const avgToi = avgToiStr(rows)
+// ── HRÁČ ──
+function renderSkater(rows,teams,stages,matchesMap,el){
+  const totalG=rows.reduce((s,r)=>s+Number(r.goals||0),0)
+  const totalA=rows.reduce((s,r)=>s+Number(r.assists||0),0)
+  const totalP=totalG+totalA
+  const totalPIM=rows.reduce((s,r)=>s+Number(r.pim||0),0)
+  const totalShots=rows.reduce((s,r)=>s+Number(r.shots||0),0)
+  const totalHits=rows.reduce((s,r)=>s+Number(r.hits||0),0)
+  const totalPPG=rows.reduce((s,r)=>s+Number(r.ppg||0),0)
+  const totalSHG=rows.reduce((s,r)=>s+Number(r.shg||0),0)
+  const totalPM=rows.reduce((s,r)=>s+Number(r.plus_minus||0),0)
+  const gp=rows.length
+  const shotPct=totalShots>0?totalG/totalShots:0
+  const avgToi=avgToiStr(rows)
+  const maxPts=Math.max(...rows.map(r=>Number(r.points||0)),1)
+  const maxShots=Math.max(...rows.map(r=>Number(r.shots||0)),1)
+  const maxA=Math.max(...rows.map(r=>Number(r.assists||0)),1)
 
   // Playoff vs zakladni
-  const stageRows = { playoff: [], zakladni: [] }
-  rows.forEach(r => {
-    const m = matchesMap[r.match_id]
-    if(!m) return
-    const s = stages[m.stage_id]
-    const isPlayoff = s && (s.name.toLowerCase().includes("playoff")||s.name.toLowerCase().includes("finále")||s.name.toLowerCase().includes("semifinále")||s.name.toLowerCase().includes("čtvrtfinále"))
-    if(isPlayoff) stageRows.playoff.push(r)
-    else stageRows.zakladni.push(r)
+  const plRows=[],zkRows=[]
+  rows.forEach(r=>{
+    const m=matchesMap[r.match_id]
+    const s=m?stages[m.stage_id]:null
+    const isPO=s&&(s.name.toLowerCase().includes("playoff")||s.name.toLowerCase().includes("finále")||s.name.toLowerCase().includes("semifinále")||s.name.toLowerCase().includes("čtvrtfinále"))
+    if(isPO) plRows.push(r); else zkRows.push(r)
   })
+  function ss(arr){ return { g:arr.reduce((s,r)=>s+Number(r.goals||0),0), a:arr.reduce((s,r)=>s+Number(r.assists||0),0), p:arr.reduce((s,r)=>s+Number(r.points||0),0), sh:arr.reduce((s,r)=>s+Number(r.shots||0),0), pm:arr.reduce((s,r)=>s+Number(r.plus_minus||0),0), games:arr.length } }
+  const plSt=ss(plRows), zkSt=ss(zkRows)
 
-  function stageStats(arr){
-    const g=arr.reduce((s,r)=>s+Number(r.goals||0),0)
-    const a=arr.reduce((s,r)=>s+Number(r.assists||0),0)
-    const sh=arr.reduce((s,r)=>s+Number(r.shots||0),0)
-    const pm=arr.reduce((s,r)=>s+Number(r.plus_minus||0),0)
-    return {g,a,p:g+a,sh,pm,games:arr.length}
-  }
-  const plSt = stageStats(stageRows.playoff)
-  const zkSt = stageStats(stageRows.zakladni)
+  const sortedByPts=[...rows].sort((a,b)=>Number(b.points||0)-Number(a.points||0))
+  const bestPts=Number(sortedByPts[0]?.points||0)
 
-  el.innerHTML = `
-    <!-- Hlavní stat cards -->
+  el.innerHTML=`
     <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-card-val accent">${totalP}</div>
-        <div class="stat-card-label">Body celkem</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val green">${totalG}</div>
-        <div class="stat-card-label">Góly</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalA}</div>
-        <div class="stat-card-label">Asistence</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val ${totalPM>=0?"green":"accent"}">${totalPM>=0?"+":""}${totalPM}</div>
-        <div class="stat-card-label">+/−</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalShots}</div>
-        <div class="stat-card-label">Střely</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val amber">${(shotPct*100).toFixed(1)}%</div>
-        <div class="stat-card-label">Úspěšnost střelby</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalPPG}</div>
-        <div class="stat-card-label">Přesilovkové góly</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalSHG}</div>
-        <div class="stat-card-label">Oslabovkové góly</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalHits}</div>
-        <div class="stat-card-label">Hity</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${totalPIM}</div>
-        <div class="stat-card-label">TM (min)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${fmt(ppg_avg,2)}</div>
-        <div class="stat-card-label">Body/zápas</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${fmt(shots_avg,1)}</div>
-        <div class="stat-card-label">Střely/zápas</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val amber">${avgToi}</div>
-        <div class="stat-card-label">Průměr TOI</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-val">${gamesPlayed}</div>
-        <div class="stat-card-label">Zápasy</div>
-      </div>
+      <div class="stat-card"><div class="stat-card-val blue">${totalP}</div><div class="stat-card-label">Body celkem</div></div>
+      <div class="stat-card"><div class="stat-card-val green">${totalG}</div><div class="stat-card-label">Góly</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalA}</div><div class="stat-card-label">Asistence</div></div>
+      <div class="stat-card"><div class="stat-card-val ${totalPM>=0?"green":"red"}">${totalPM>=0?"+":""}${totalPM}</div><div class="stat-card-label">+/−</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalShots}</div><div class="stat-card-label">Střely</div></div>
+      <div class="stat-card"><div class="stat-card-val amber">${(shotPct*100).toFixed(1)}%</div><div class="stat-card-label">Úspěšnost střelby</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalPPG}</div><div class="stat-card-label">Přesilovkové góly</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalSHG}</div><div class="stat-card-label">Góly v oslabení</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalHits}</div><div class="stat-card-label">Hity</div></div>
+      <div class="stat-card"><div class="stat-card-val">${totalPIM}</div><div class="stat-card-label">Trestné minuty</div></div>
+      <div class="stat-card"><div class="stat-card-val">${fmt(gp>0?totalP/gp:0,2)}</div><div class="stat-card-label">Body / zápas</div></div>
+      <div class="stat-card"><div class="stat-card-val">${fmt(gp>0?totalShots/gp:0,1)}</div><div class="stat-card-label">Střely / zápas</div></div>
+      <div class="stat-card"><div class="stat-card-val amber">${avgToi}</div><div class="stat-card-label">Průměr TOI</div></div>
+      <div class="stat-card"><div class="stat-card-val">${gp}</div><div class="stat-card-label">Zápasy</div></div>
     </div>
 
-    <!-- Playoff vs Základní část -->
     ${(plSt.games>0||zkSt.games>0)?`
-    <div class="section">
-      <div class="section-title"><span class="section-icon">🏆</span> Základní část vs Playoff</div>
-      <div class="split-grid">
-        <div class="split-card">
-          <div class="split-card-title">📋 Základní část — ${zkSt.games} zápasů</div>
-          <div class="split-stats">
-            <div><div class="split-stat-val">${zkSt.p}</div><div class="split-stat-label">Body</div></div>
-            <div><div class="split-stat-val">${zkSt.g}</div><div class="split-stat-label">Góly</div></div>
-            <div><div class="split-stat-val">${zkSt.a}</div><div class="split-stat-label">Asistence</div></div>
-            <div><div class="split-stat-val">${zkSt.sh}</div><div class="split-stat-label">Střely</div></div>
-            <div><div class="split-stat-val ${zkSt.pm>=0?"":"" }">${zkSt.pm>=0?"+":""}${zkSt.pm}</div><div class="split-stat-label">+/−</div></div>
-          </div>
-        </div>
-        <div class="split-card">
-          <div class="split-card-title">🏆 Playoff — ${plSt.games} zápasů</div>
-          <div class="split-stats">
-            <div><div class="split-stat-val">${plSt.p}</div><div class="split-stat-label">Body</div></div>
-            <div><div class="split-stat-val">${plSt.g}</div><div class="split-stat-label">Góly</div></div>
-            <div><div class="split-stat-val">${plSt.a}</div><div class="split-stat-label">Asistence</div></div>
-            <div><div class="split-stat-val">${plSt.sh}</div><div class="split-stat-label">Střely</div></div>
-            <div><div class="split-stat-val">${plSt.pm>=0?"+":""}${plSt.pm}</div><div class="split-stat-label">+/−</div></div>
-          </div>
+    <div class="split-grid">
+      <div class="split-card">
+        <div class="split-card-title">📋 Základní část — ${zkSt.games} zápasů</div>
+        <div class="split-stats">
+          <div><div class="split-stat-val">${zkSt.p}</div><div class="split-stat-label">Body</div></div>
+          <div><div class="split-stat-val">${zkSt.g}</div><div class="split-stat-label">Góly</div></div>
+          <div><div class="split-stat-val">${zkSt.a}</div><div class="split-stat-label">Asistence</div></div>
+          <div><div class="split-stat-val">${zkSt.sh}</div><div class="split-stat-label">Střely</div></div>
+          <div><div class="split-stat-val">${zkSt.pm>=0?"+":""}${zkSt.pm}</div><div class="split-stat-label">+/−</div></div>
         </div>
       </div>
-    </div>
-    `:""}
+      <div class="split-card">
+        <div class="split-card-title">🏆 Playoff — ${plSt.games} zápasů</div>
+        <div class="split-stats">
+          <div><div class="split-stat-val">${plSt.p}</div><div class="split-stat-label">Body</div></div>
+          <div><div class="split-stat-val">${plSt.g}</div><div class="split-stat-label">Góly</div></div>
+          <div><div class="split-stat-val">${plSt.a}</div><div class="split-stat-label">Asistence</div></div>
+          <div><div class="split-stat-val">${plSt.sh}</div><div class="split-stat-label">Střely</div></div>
+          <div><div class="split-stat-val">${plSt.pm>=0?"+":""}${plSt.pm}</div><div class="split-stat-label">+/−</div></div>
+        </div>
+      </div>
+    </div>`:""}
 
-    <!-- Body po zápasech -->
+    <div class="legend-box">
+      <div class="legend-title">Legenda barev řádků</div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-color amber"></div>Nejlepší výkon (nejvíce bodů v zápase)</div>
+        <div class="legend-item"><div class="legend-color green"></div>Góly vstřeleny (v tabulce gólů)</div>
+        <div class="legend-item"><div class="legend-color red"></div>Žádný bod v zápase</div>
+      </div>
+    </div>
+
     <div class="section">
-      <div class="section-title"><span class="section-icon">🎯</span> Body po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th>Stage</th>
-              <th class="num">G</th>
-              <th class="num">A</th>
-              <th class="num">Body</th>
-              <th class="num">+/−</th>
-              <th class="num">Střely</th>
-              <th class="num">TM</th>
-              <th class="num">TOI</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r=>{
-              const m = matchesMap[r.match_id]
-              const pts = Number(r.goals||0)+Number(r.assists||0)
-              const pm = Number(r.plus_minus||0)
-              const best = pts >= 2
-              return `<tr${best?' style="background:rgba(59,130,246,.05)"':''}>
-                <td>${matchLabel(m,teams)}</td>
-                <td>${m?stageLabel(m,stages):""}</td>
-                <td class="num bold" style="${Number(r.goals||0)>0?"color:var(--green)":""}">${r.goals||0}</td>
-                <td class="num">${r.assists||0}</td>
-                <td class="num bold">${pts>0?"<strong>"+pts+"</strong>":0}${pts>0?bar(pts,Math.max(totalP/gamesPlayed*2,1),""):""}</td>
-                <td class="num" style="${pm>0?"color:var(--green)":pm<0?"color:var(--red)":""}">${pm>0?"+":""}${pm}</td>
-                <td class="num">${r.shots||0}</td>
-                <td class="num">${r.pim||0}</td>
-                <td class="num">${toi(r.toi)}</td>
+      <div class="section-title">🎯 Body po zápasech</div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Zápas</th>
+          <th class="num">G</th><th class="num">A</th><th class="num">Body</th>
+          <th class="num">+/−</th><th class="num">Střely</th><th class="num">TM</th><th class="num">TOI</th>
+        </tr></thead>
+        <tbody>
+          ${sortedByPts.map(r=>{
+            const m=matchesMap[r.match_id]
+            const pts=Number(r.points||0),pm=Number(r.plus_minus||0)
+            const isBest=pts>0&&pts===bestPts
+            const isZero=pts===0
+            return `<tr class="${isBest?"row-best":isZero?"row-zero":""}">
+              <td>${matchCell(m,teams,stages)}</td>
+              <td class="num bold" style="${Number(r.goals||0)>0?"color:#16a34a":""}">${r.goals||0}</td>
+              <td class="num">${r.assists||0}</td>
+              <td class="num bold">${pts>0?`<strong>${pts}</strong>`:0}${pts>0?bar(pts,maxPts):""}</td>
+              <td class="num" style="${pm>0?"color:#16a34a;font-weight:700":pm<0?"color:#dc2626;font-weight:700":""}">${pm>0?"+":""}${pm}</td>
+              <td class="num">${r.shots||0}</td>
+              <td class="num" style="${Number(r.pim||0)>0?"color:#d97706;font-weight:700":""}">${r.pim||0}</td>
+              <td class="num" style="color:#7ab0cc;">${toi(r.toi)}</td>
+            </tr>`
+          }).join("")}
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🚨 Góly po zápasech</div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Zápas</th><th class="num">Góly</th><th class="num">z toho přesilovka</th><th class="num">z toho oslabení</th>
+        </tr></thead>
+        <tbody>
+          ${rows.filter(r=>Number(r.goals||0)>0).length?
+            [...rows].sort((a,b)=>Number(b.goals||0)-Number(a.goals||0)).filter(r=>Number(r.goals||0)>0).map(r=>{
+              const m=matchesMap[r.match_id]
+              return `<tr class="row-shutout">
+                <td>${matchCell(m,teams,stages)}</td>
+                <td class="num bold" style="color:#16a34a;font-size:15px;">${r.goals}</td>
+                <td class="num">${r.ppg||0}</td>
+                <td class="num">${r.shg||0}</td>
               </tr>`
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
+            }).join(""):
+            `<tr class="empty-row"><td colspan="4">Žádné góly</td></tr>`}
+        </tbody>
+      </table></div>
     </div>
 
-    <!-- Góly po zápasech -->
     <div class="section">
-      <div class="section-title"><span class="section-icon">🚨</span> Góly po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th class="num">Góly</th>
-              <th class="num">z toho PPG</th>
-              <th class="num">z toho SHG</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.filter(r=>Number(r.goals||0)>0).length?
-              [...rows].sort((a,b)=>Number(b.goals||0)-Number(a.goals||0)).filter(r=>Number(r.goals||0)>0).map(r=>{
-                const m = matchesMap[r.match_id]
-                return `<tr>
-                  <td>${matchLabel(m,teams)}</td>
-                  <td class="num bold" style="color:var(--green)">${r.goals}</td>
-                  <td class="num">${r.ppg||0}</td>
-                  <td class="num">${r.shg||0}</td>
-                </tr>`
-              }).join("") :
-              `<tr class="empty-row"><td colspan="4">Žádné góly</td></tr>`
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Asistence po zápasech -->
-    <div class="section">
-      <div class="section-title"><span class="section-icon">🤝</span> Asistence po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th class="num">Asistence</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.filter(r=>Number(r.assists||0)>0).length?
-              [...rows].sort((a,b)=>Number(b.assists||0)-Number(a.assists||0)).filter(r=>Number(r.assists||0)>0).map(r=>{
-                const m = matchesMap[r.match_id]
-                return `<tr>
-                  <td>${matchLabel(m,teams)}</td>
-                  <td class="num bold">${r.assists}${bar(Number(r.assists), Math.max(...rows.map(x=>Number(x.assists||0))))}</td>
-                </tr>`
-              }).join("") :
-              `<tr class="empty-row"><td colspan="2">Žádné asistence</td></tr>`
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Střely po zápasech -->
-    <div class="section">
-      <div class="section-title"><span class="section-icon">🏹</span> Střely po zápasech</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th class="num">Střely</th>
-              <th class="num">Góly</th>
-              <th class="num">Úspěšnost</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${[...rows].sort((a,b)=>Number(b.shots||0)-Number(a.shots||0)).map(r=>{
-              const m = matchesMap[r.match_id]
-              const sh = Number(r.shots||0), g = Number(r.goals||0)
-              const pct = sh>0?g/sh:null
+      <div class="section-title">🤝 Asistence po zápasech</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Zápas</th><th class="num">Asistence</th></tr></thead>
+        <tbody>
+          ${rows.filter(r=>Number(r.assists||0)>0).length?
+            [...rows].sort((a,b)=>Number(b.assists||0)-Number(a.assists||0)).filter(r=>Number(r.assists||0)>0).map(r=>{
+              const m=matchesMap[r.match_id]
               return `<tr>
-                <td>${matchLabel(m,teams)}</td>
-                <td class="num bold">${sh}${bar(sh,Math.max(...rows.map(x=>Number(x.shots||0))))}</td>
-                <td class="num" style="${g>0?"color:var(--green)":""}">${g}</td>
-                <td class="num">${pct!==null?(pct*100).toFixed(1)+"%":"—"}</td>
+                <td>${matchCell(m,teams,stages)}</td>
+                <td class="num bold">${r.assists}${bar(Number(r.assists),maxA)}</td>
               </tr>`
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
+            }).join(""):
+            `<tr class="empty-row"><td colspan="2">Žádné asistence</td></tr>`}
+        </tbody>
+      </table></div>
     </div>
 
-    <!-- Hity & TM -->
+    <div class="section">
+      <div class="section-title">🏹 Střely po zápasech</div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Zápas</th><th class="num">Střely</th><th class="num">Góly</th><th class="num">Úspěšnost</th>
+        </tr></thead>
+        <tbody>
+          ${[...rows].sort((a,b)=>Number(b.shots||0)-Number(a.shots||0)).map(r=>{
+            const m=matchesMap[r.match_id]
+            const sh=Number(r.shots||0),g=Number(r.goals||0)
+            const pct=sh>0?g/sh:null
+            return `<tr>
+              <td>${matchCell(m,teams,stages)}</td>
+              <td class="num bold">${sh}${bar(sh,maxShots)}</td>
+              <td class="num" style="${g>0?"color:#16a34a;font-weight:700":""}">${g}</td>
+              <td class="num">${pct!==null?(pct*100).toFixed(1)+"%":"—"}</td>
+            </tr>`
+          }).join("")}
+        </tbody>
+      </table></div>
+    </div>
+
     ${(totalHits>0||totalPIM>0)?`
     <div class="section">
-      <div class="section-title"><span class="section-icon">💥</span> Fyzická hra — Hity & Trestné minuty</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Zápas</th>
-              <th class="num">Hity</th>
-              <th class="num">TM (min)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.filter(r=>Number(r.hits||0)>0||Number(r.pim||0)>0).length?
-              [...rows].sort((a,b)=>(Number(b.hits||0)+Number(b.pim||0))-(Number(a.hits||0)+Number(a.pim||0)))
-              .filter(r=>Number(r.hits||0)>0||Number(r.pim||0)>0).map(r=>{
-                const m = matchesMap[r.match_id]
-                return `<tr>
-                  <td>${matchLabel(m,teams)}</td>
-                  <td class="num">${r.hits||0}</td>
-                  <td class="num" style="${Number(r.pim||0)>0?"color:var(--accent2)":""}">${r.pim||0}</td>
-                </tr>`
-              }).join(""):
-              `<tr class="empty-row"><td colspan="3">Žádné záznamy</td></tr>`
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-    `:""}
+      <div class="section-title">💥 Fyzická hra — Hity & Trestné minuty</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Zápas</th><th class="num">Hity</th><th class="num">Trestné minuty</th></tr></thead>
+        <tbody>
+          ${rows.filter(r=>Number(r.hits||0)>0||Number(r.pim||0)>0).length?
+            [...rows].sort((a,b)=>(Number(b.hits||0)+Number(b.pim||0))-(Number(a.hits||0)+Number(a.pim||0)))
+            .filter(r=>Number(r.hits||0)>0||Number(r.pim||0)>0).map(r=>{
+              const m=matchesMap[r.match_id]
+              return `<tr>
+                <td>${matchCell(m,teams,stages)}</td>
+                <td class="num">${r.hits||0}</td>
+                <td class="num" style="${Number(r.pim||0)>0?"color:#d97706;font-weight:700":""}">${r.pim||0}</td>
+              </tr>`
+            }).join(""):
+            `<tr class="empty-row"><td colspan="3">Žádné záznamy</td></tr>`}
+        </tbody>
+      </table></div>
+    </div>`:""}
   `
-}
-
-function avgToiStr(rows){
-  const toiRows = rows.filter(r=>r.toi&&r.toi!=="00:00")
-  if(!toiRows.length) return "—"
-  const totalSec = toiRows.reduce((s,r)=>{
-    const [m,sec] = (r.toi||"0:00").split(":").map(Number)
-    return s + m*60 + (sec||0)
-  }, 0)
-  const avg = totalSec / toiRows.length
-  const m = Math.floor(avg/60), s = Math.round(avg%60)
-  return `${m}:${String(s).padStart(2,"0")}`
 }
 
 load()
