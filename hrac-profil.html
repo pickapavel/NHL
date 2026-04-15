@@ -364,7 +364,7 @@ const supabase = createClient(
 )
 
 const params = new URLSearchParams(window.location.search)
-const playerId = params.get("player_id")
+const playerId = params.get("player_id") || params.get("id")
 const playerName = params.get("name")
 
 function fmt(n, decimals=0){
