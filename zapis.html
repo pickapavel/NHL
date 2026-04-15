@@ -1040,8 +1040,9 @@ async function evaluateBets(match){
   // Výsledkové sázky
   const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
 if(bets){
-    for(const bet of bets){
-   const win=isWinningBet(match,bet.tip)
+for(const bet of bets){
+      if(bet.status !== "pending") continue
+      const win=isWinningBet(match,bet.tip)
       await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
@@ -1078,8 +1079,9 @@ if(bets){
     .eq("match_id",match.id)
     .like("type","match_goals_%")
 if(goalsBets){
-    for(const bet of goalsBets){
-const win=checkGoalsBet(match, bet.type, bet.tip_key)
+for(const bet of goalsBets){
+      if(bet.status !== "pending") continue
+      const win=checkGoalsBet(match, bet.type, bet.tip_key)
       await db.from("bets_special").update({status:win?"won":"lost"}).eq("id",bet.id)
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
