@@ -154,6 +154,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .hymna-confirm.ready{opacity:1;pointer-events:all;}
 .hymna-confirm.ready:hover{background:#0b5394;transform:translateY(-1px);}
 .hymna-warning{font-size:11px;color:rgba(255,255,255,.6);margin-top:10px;font-style:italic;}
+ .hymna-flag-wrap{display:flex;justify-content:center;margin-bottom:16px;}
+.hymna-flag-anim{width:180px;height:100px;position:relative;border-radius:4px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:flagWave 2s ease-in-out infinite;transform-origin:left center;}
+@keyframes flagWave{0%,100%{transform:skewY(0deg) scaleY(1)}25%{transform:skewY(1deg) scaleY(1.01)}75%{transform:skewY(-1deg) scaleY(.99)}}
+.hf-top{position:absolute;top:0;left:0;width:100%;height:50%;background:white;}
+.hf-bottom{position:absolute;bottom:0;left:0;width:100%;height:50%;background:#d7000f;}
+.hf-triangle{position:absolute;top:0;left:0;width:0;height:0;border-style:solid;border-width:50px 0 50px 70px;border-color:transparent transparent transparent #11457e;z-index:2;}
 </style>
 </head>
 <body>
@@ -166,12 +172,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
     <div class="hymna-flag">🇨🇿</div>
     <div class="hymna-title">Česká hymna</div>
     <div class="hymna-sub">Kde domov můj</div>
-    <div class="hymna-symbols">
-      <div class="hymna-sym">🦁</div>
-      <div class="hymna-sym">🏰</div>
-      <div class="hymna-sym">🎖️</div>
-      <div class="hymna-sym">🌺</div>
-    </div>
+   <div class="hymna-flag-wrap">
+  <div class="hymna-flag-anim">
+    <div class="hf-top"></div>
+    <div class="hf-bottom"></div>
+    <div class="hf-triangle"></div>
+  </div>
+</div>
     <div class="hymna-singer">
       <div class="hymna-singer-icon">👩‍🎤</div>
       <div class="hymna-singer-name">Eva Pilarová</div>
