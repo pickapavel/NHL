@@ -305,9 +305,9 @@ const items = [
     type: 'dropdown',
     icon: '🎲',
     label: 'Sázky',
-    pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html', 'prehledsazek.html'],
-    children: [
-      { icon: '📋', label: 'Přehled sázek',     href: 'prehledsazek.html', pages: ['prehledsazek.html'] },
+pages: ['sazky.html', 'sazkyoh.html', 'sazkyms.html', 'sazkypohár.html', 'prehledsazek.html', 'vyvojsazek.html'],    children: [
+   { icon: '📋', label: 'Přehled sázek',     href: 'prehledsazek.html', pages: ['prehledsazek.html'] },
+      { icon: '📈', label: 'Vývoj kreditu',      href: 'vyvojsazek.html',   pages: ['vyvojsazek.html'] },
       { icon: '🏒', label: 'Extraliga',          href: 'sazky.html',        pages: ['sazky.html'] },
       { icon: '🥇', label: 'Olympiáda',          href: 'sazkyoh.html',      pages: ['sazkyoh.html'] },
       { icon: '🌍', label: 'Mistrovství světa',  href: 'sazkyms.html',      pages: ['sazkyms.html'] },
