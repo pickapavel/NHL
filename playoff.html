@@ -191,14 +191,9 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
     </div>
     <div class="hymna-player">
       <div class="hymna-player-label">🎼 Přehrát státní hymnu</div>
-<iframe id="hymnaAudio"
-  width="100%" height="80"
-  src="https://www.youtube.com/embed/BzOoqaFH7cI?autoplay=0&controls=1"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowfullscreen
-  style="border-radius:8px;">
-</iframe>
+<audio controls id="hymnaAudio" style="width:100%;border-radius:8px;">
+  <source src="./music/hymna.mp3" type="audio/mpeg">
+</audio>
     </div>
     <div class="hymna-text">
       <strong>Kde domov můj, kde domov můj?</strong><br>
@@ -218,7 +213,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
       </label>
     </div>
     <button class="hymna-confirm" id="hymnaConfirm" onclick="hymnaConfirm()">
-      🇨🇿 Potvrzuji — vstoupit na sázecí stránku
+     Potvrzuji — vstoupit na sázecí stránku
     </button>
     <div class="hymna-warning">* Neposlech hymny může mít negativní vliv na výsledky vašich sázek</div>
   </div>
