@@ -62,17 +62,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .series-score.win{color:#16a34a;}
 .series-score.loss{color:#d0d8e0;}
 
-/* Odkaz na sázky na sérii */
-.serie-bet-link{
-  display:flex;align-items:center;justify-content:center;
-  padding:7px 12px;
-  background:#eafaf1;
-  border-top:1px solid #d5f5e3;
-  font-size:11px;font-weight:700;color:#27ae60;
-  text-decoration:none;
-  transition:background .15s;
-  gap:5px;
-}
+.serie-bet-link{display:flex;align-items:center;justify-content:center;padding:7px 12px;background:#eafaf1;border-top:1px solid #d5f5e3;font-size:11px;font-weight:700;color:#27ae60;text-decoration:none;transition:background .15s;gap:5px;cursor:pointer;border:none;width:100%;}
 .serie-bet-link:hover{background:#d5f5e3;}
 .serie-bet-link.disabled{background:#f7f9fc;color:#aaa;cursor:default;pointer-events:none;border-top:1px solid #eee;}
 
@@ -87,7 +77,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .result-card{background:white;border-radius:12px;border:1px solid #c8d8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .result-card-header{background:#0b2a3c;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
 .result-card-header-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;}
-.result-card-bet-link{display:inline-flex;align-items:center;gap:4px;background:#27ae60;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;transition:background .15s;}
+.result-card-bet-link{display:inline-flex;align-items:center;gap:4px;background:#27ae60;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;transition:background .15s;cursor:pointer;border:none;}
 .result-card-bet-link:hover{background:#219a52;}
 
 .result-mini-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;}
@@ -127,11 +117,101 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  .header{padding:14px 16px;}
  .header-title{font-size:18px;}
 }
+
+/* ── HYMNA DIALOG ── */
+.hymna-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.hymna-overlay.open{display:flex;}
+.hymna-modal{background:linear-gradient(160deg,#c8000f 0%,#8a0008 100%);border-radius:20px;padding:28px 24px;max-width:460px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:hidden;animation:popIn .25s ease;}
+@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.hymna-modal::before{content:"🇨🇿";position:absolute;top:-30px;right:-30px;font-size:140px;opacity:.07;pointer-events:none;}
+.hymna-flag{font-size:48px;margin-bottom:6px;}
+.hymna-title{font-size:24px;font-weight:800;color:white;margin-bottom:2px;}
+.hymna-sub{font-size:12px;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;}
+.hymna-symbols{display:flex;justify-content:center;gap:12px;margin-bottom:16px;}
+.hymna-sym{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;font-size:28px;}
+.hymna-singer{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:14px;margin-bottom:16px;}
+.hymna-singer-icon{font-size:42px;margin-bottom:4px;}
+.hymna-singer-name{font-size:15px;font-weight:700;color:white;}
+.hymna-singer-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;}
+.hymna-notes{display:flex;justify-content:center;gap:10px;margin-top:8px;}
+.hymna-note{font-size:20px;animation:noteFloat 1.5s ease-in-out infinite;}
+.hymna-note:nth-child(2){animation-delay:.3s;}
+.hymna-note:nth-child(3){animation-delay:.6s;}
+@keyframes noteFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.hymna-player{background:rgba(255,255,255,.95);border-radius:14px;padding:14px;margin-bottom:16px;}
+.hymna-player-label{font-size:11px;font-weight:700;color:#11457e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.hymna-player audio{width:100%;border-radius:8px;}
+.hymna-text{font-style:italic;color:rgba(255,255,255,.85);font-size:13px;line-height:1.6;margin-bottom:16px;text-align:left;background:rgba(0,0,0,.15);border-radius:10px;padding:12px 14px;}
+.hymna-text strong{font-style:normal;color:white;}
+.hymna-oath{background:rgba(255,255,255,.95);border-radius:14px;padding:14px;margin-bottom:14px;text-align:left;}
+.hymna-oath-label{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.hymna-check{width:22px;height:22px;border:2px solid #11457e;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white;margin-top:1px;}
+.hymna-check.checked{background:#11457e;}
+.hymna-check.checked::after{content:"✓";color:white;font-size:13px;font-weight:800;}
+.hymna-oath-text{font-size:13px;font-weight:600;color:#0b2a3c;line-height:1.5;}
+.hymna-oath-text strong{color:#c8000f;}
+.hymna-confirm{width:100%;padding:14px;background:#11457e;color:white;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;opacity:.45;pointer-events:none;}
+.hymna-confirm.ready{opacity:1;pointer-events:all;}
+.hymna-confirm.ready:hover{background:#0b5394;transform:translateY(-1px);}
+.hymna-warning{font-size:11px;color:rgba(255,255,255,.6);margin-top:10px;font-style:italic;}
 </style>
 </head>
 <body>
 <script src="./ticker.js"></script>
 <script src="./menu.js"></script>
+
+<!-- HYMNA DIALOG -->
+<div class="hymna-overlay" id="hymnaOverlay">
+  <div class="hymna-modal">
+    <div class="hymna-flag">🇨🇿</div>
+    <div class="hymna-title">Česká hymna</div>
+    <div class="hymna-sub">Kde domov můj</div>
+    <div class="hymna-symbols">
+      <div class="hymna-sym">🦁</div>
+      <div class="hymna-sym">🏰</div>
+      <div class="hymna-sym">🎖️</div>
+      <div class="hymna-sym">🌺</div>
+    </div>
+    <div class="hymna-singer">
+      <div class="hymna-singer-icon">👩‍🎤</div>
+      <div class="hymna-singer-name">Eva Pilarová</div>
+      <div class="hymna-singer-sub">Sólistka České filharmonie</div>
+      <div class="hymna-notes">
+        <span class="hymna-note">🎵</span>
+        <span class="hymna-note">🎶</span>
+        <span class="hymna-note">🎵</span>
+      </div>
+    </div>
+    <div class="hymna-player">
+      <div class="hymna-player-label">🎼 Přehrát státní hymnu</div>
+      <audio controls id="hymnaAudio">
+        <source src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Kde_domov_m%C5%AFj.ogg" type="audio/ogg">
+        <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5c/Kde_domov_m%C5%AFj.ogg/Kde_domov_m%C5%AFj.ogg.mp3" type="audio/mpeg">
+      </audio>
+    </div>
+    <div class="hymna-text">
+      <strong>Kde domov můj, kde domov můj?</strong><br>
+      Voda hučí po lučinách,<br>
+      bory šumí po skalinách,<br>
+      v sadě skví se jara květ,<br>
+      zemský ráj to na pohled!<br>
+      A to je ta krásná země,<br>
+      <strong>země česká, domov můj!</strong>
+    </div>
+    <div class="hymna-oath">
+      <label class="hymna-oath-label" onclick="toggleOath()">
+        <div class="hymna-check" id="hymnaCheck"></div>
+        <div class="hymna-oath-text">
+          Přísahám na <strong>zánik pardubického hokeje</strong>, že jsem si hymnu poslechl/a a budu tipovat s českou hrdostí v srdci. 🇨🇿
+        </div>
+      </label>
+    </div>
+    <button class="hymna-confirm" id="hymnaConfirm" onclick="hymnaConfirm()">
+      🇨🇿 Potvrzuji — vstoupit na sázecí stránku
+    </button>
+    <div class="hymna-warning">* Neposlech hymny může mít negativní vliv na výsledky vašich sázek</div>
+  </div>
+</div>
 
 <div class="header">
  <img class="header-logo" src="./logos/lokomotiva.png" alt="logo">
@@ -155,25 +235,25 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header"><span>ČF 1</span><span class="series-state neutral" id="state-qf1">Stav série</span></div>
    <div class="team-row tbd" id="qf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-qf1" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-qf1" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
   <div class="series-card" id="card-qf2">
    <div class="series-header"><span>ČF 2</span><span class="series-state neutral" id="state-qf2">Stav série</span></div>
    <div class="team-row tbd" id="qf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-qf2" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-qf2" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
   <div class="series-card" id="card-qf3">
    <div class="series-header"><span>ČF 3</span><span class="series-state neutral" id="state-qf3">Stav série</span></div>
    <div class="team-row tbd" id="qf3-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf3-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-qf3" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-qf3" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
   <div class="series-card" id="card-qf4">
    <div class="series-header"><span>ČF 4</span><span class="series-state neutral" id="state-qf4">Stav série</span></div>
    <div class="team-row tbd" id="qf4-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
    <div class="team-row tbd" id="qf4-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-qf4" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-qf4" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
  </div>
 </div>
@@ -186,13 +266,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header"><span>Semifinále 1</span><span class="series-state neutral" id="state-sf1">Stav série</span></div>
    <div class="team-row tbd" id="sf1-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF1</div></div>
    <div class="team-row tbd" id="sf1-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF2</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-sf1" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-sf1" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
   <div class="series-card" id="card-sf2">
    <div class="series-header"><span>Semifinále 2</span><span class="series-state neutral" id="state-sf2">Stav série</span></div>
    <div class="team-row tbd" id="sf2-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF3</div></div>
    <div class="team-row tbd" id="sf2-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz ČF4</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-sf2" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-sf2" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
  </div>
 </div>
@@ -205,13 +285,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
    <div class="series-header is-third"><span>🥉 O 3. místo</span><span class="series-state neutral" id="state-third">Stav série</span></div>
    <div class="team-row tbd" id="third-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF1</div></div>
    <div class="team-row tbd" id="third-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Poražený SF2</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-third" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-third" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
   <div class="series-card is-final" id="card-f">
    <div class="series-header is-final"><span>🏆 Finále</span><span class="series-state" id="state-f">Stav série</span></div>
    <div class="team-row tbd" id="f-t1"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF1</div></div>
    <div class="team-row tbd" id="f-t2"><div class="team-logo-placeholder">?</div><div class="team-name tbd">Vítěz SF2</div></div>
-   <a class="serie-bet-link disabled" id="bet-link-f" href="#">🎲 Sázky na tuto sérii</a>
+   <button class="serie-bet-link disabled" id="bet-link-f" onclick="openHymna(this)">🎲 Sázky na tuto sérii</button>
   </div>
  </div>
 </div>
@@ -246,13 +326,46 @@ const LOGOS = './logos/'
 let teamsMap = {}
 let currentSeasonId = null
 let allSeasons = []
+let hymnaTargetUrl = ""
+let hymnaOathChecked = false
 
-// Mapování klíčů série na fázi pro URL
 const PHASE_MAP = {
  qf1:'ctvrtfinale', qf2:'ctvrtfinale', qf3:'ctvrtfinale', qf4:'ctvrtfinale',
  sf1:'semifinale',  sf2:'semifinale',
  third:'finale',    f:'finale',
 }
+
+function openHymna(btn){
+ hymnaTargetUrl = btn.dataset.url || ""
+ if(!hymnaTargetUrl) return
+ hymnaOathChecked = false
+ document.getElementById("hymnaCheck").classList.remove("checked")
+ document.getElementById("hymnaConfirm").classList.remove("ready")
+ document.getElementById("hymnaAudio").pause()
+ document.getElementById("hymnaAudio").currentTime = 0
+ document.getElementById("hymnaOverlay").classList.add("open")
+}
+
+function toggleOath(){
+ hymnaOathChecked = !hymnaOathChecked
+ document.getElementById("hymnaCheck").classList.toggle("checked", hymnaOathChecked)
+ document.getElementById("hymnaConfirm").classList.toggle("ready", hymnaOathChecked)
+}
+
+function hymnaConfirm(){
+ if(!hymnaOathChecked) return
+ document.getElementById("hymnaOverlay").classList.remove("open")
+ document.getElementById("hymnaAudio").pause()
+ window.location.href = hymnaTargetUrl
+}
+
+// Zavření kliknutím mimo modal
+document.getElementById("hymnaOverlay").addEventListener("click", function(e){
+ if(e.target === this){
+  this.classList.remove("open")
+  document.getElementById("hymnaAudio").pause()
+ }
+})
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -303,33 +416,23 @@ async function loadSeason(seasonId, seasonName){
   .eq("season_id", seasonId)
   .order("order", { ascending: true })
 
- if(!stages||!stages.length){
-  showNoPlayoff()
-  return
- }
+ if(!stages||!stages.length){ showNoPlayoff(); return }
 
  const STAGE_IDS = {}
  const nameMap = {
-  'Čtvrtfinále 1': 'qf1', 'Čtvrtfinále 2': 'qf2',
-  'Čtvrtfinále 3': 'qf3', 'Čtvrtfinále 4': 'qf4',
-  'Semifinále 1':  'sf1', 'Semifinále 2':  'sf2',
-  'Semifinále':    'sf1',
-  'O 3. místo':    'third',
-  'Finále':        'f',
+  'Čtvrtfinále 1':'qf1','Čtvrtfinále 2':'qf2','Čtvrtfinále 3':'qf3','Čtvrtfinále 4':'qf4',
+  'Semifinále 1':'sf1','Semifinále 2':'sf2','Semifinále':'sf1',
+  'O 3. místo':'third','Finále':'f',
  }
+ stages.forEach(s=>{ const key=nameMap[s.name]; if(key) STAGE_IDS[key]=s.id })
 
- stages.forEach(s=>{
-  const key = nameMap[s.name]
-  if(key) STAGE_IDS[key] = s.id
- })
-
- // Nastav bet-linky na série hned jak víme stage IDs
  Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
   const phase = PHASE_MAP[key]
   if(!phase) return
   const linkEl = document.getElementById(`bet-link-${key}`)
   if(linkEl){
-   linkEl.href = `sazky.html?phase=${phase}&stage=${stageId}`
+   const url = `sazky.html?phase=${phase}&stage=${stageId}`
+   linkEl.dataset.url = url
    linkEl.classList.remove("disabled")
   }
  })
@@ -344,123 +447,76 @@ async function loadSeason(seasonId, seasonName){
  document.getElementById("phase-f").classList.toggle("hidden", !hasF)
  document.getElementById("no-playoff-msg").style.display = hasPlayoff ? "none" : "block"
 
- if(!hasPlayoff){
-  document.getElementById("results-grid").innerHTML = '<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'
-  return
- }
+ if(!hasPlayoff){ document.getElementById("results-grid").innerHTML='<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'; return }
 
  if(hasSF){
   if(hasQF){
-   document.getElementById("sf1-t1").querySelector(".team-name").textContent = "Vítěz ČF1"
-   document.getElementById("sf1-t2").querySelector(".team-name").textContent = "Vítěz ČF2"
-   document.getElementById("sf2-t1").querySelector(".team-name").textContent = "Vítěz ČF3"
-   document.getElementById("sf2-t2").querySelector(".team-name").textContent = "Vítěz ČF4"
+   document.getElementById("sf1-t1").querySelector(".team-name").textContent="Vítěz ČF1"
+   document.getElementById("sf1-t2").querySelector(".team-name").textContent="Vítěz ČF2"
+   document.getElementById("sf2-t1").querySelector(".team-name").textContent="Vítěz ČF3"
+   document.getElementById("sf2-t2").querySelector(".team-name").textContent="Vítěz ČF4"
   } else {
-   document.getElementById("sf1-t1").querySelector(".team-name").textContent = "Tým 1"
-   document.getElementById("sf1-t2").querySelector(".team-name").textContent = "Tým 2"
-   document.getElementById("sf2-t1").querySelector(".team-name").textContent = "Tým 3"
-   document.getElementById("sf2-t2").querySelector(".team-name").textContent = "Tým 4"
+   document.getElementById("sf1-t1").querySelector(".team-name").textContent="Tým 1"
+   document.getElementById("sf1-t2").querySelector(".team-name").textContent="Tým 2"
+   document.getElementById("sf2-t1").querySelector(".team-name").textContent="Tým 3"
+   document.getElementById("sf2-t2").querySelector(".team-name").textContent="Tým 4"
   }
  }
 
  const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
  const { data: matches } = await db
-  .from("matches")
-  .select("*")
+  .from("matches").select("*")
   .eq("season_id", seasonId)
   .in("stage_id", uniqueStageIds)
   .order("round", { ascending: true })
 
  const SERIES = {}
  const seriesKeys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
- const seriesLabels = {
-  qf1:'ČF 1', qf2:'ČF 2', qf3:'ČF 3', qf4:'ČF 4',
-  sf1:'Semifinále 1', sf2:'Semifinále 2',
-  third:'O 3. místo', f:'Finále'
- }
+ const seriesLabels = { qf1:'ČF 1',qf2:'ČF 2',qf3:'ČF 3',qf4:'ČF 4',sf1:'Semifinále 1',sf2:'Semifinále 2',third:'O 3. místo',f:'Finále' }
  const winsNeededMap = { third:1 }
 
  seriesKeys.forEach(k=>{
-  if(STAGE_IDS[k]){
-   SERIES[k] = {
-    label: seriesLabels[k],
-    t1:null, t2:null, t1id:null, t2id:null,
-    games:[], allMatches:[],
-    winsNeeded: winsNeededMap[k] || 4,
-    stageId: STAGE_IDS[k]
-   }
-  }
+  if(STAGE_IDS[k]) SERIES[k]={ label:seriesLabels[k],t1:null,t2:null,t1id:null,t2id:null,games:[],allMatches:[],winsNeeded:winsNeededMap[k]||4,stageId:STAGE_IDS[k] }
  })
 
- const stageMatches = {}
- ;(matches||[]).forEach(m=>{
-  if(!stageMatches[m.stage_id]) stageMatches[m.stage_id] = []
-  stageMatches[m.stage_id].push(m)
- })
+ const stageMatches={}
+ ;(matches||[]).forEach(m=>{ if(!stageMatches[m.stage_id]) stageMatches[m.stage_id]=[]; stageMatches[m.stage_id].push(m) })
 
  Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
-  const s = SERIES[key]
-  if(!s) return
-  const ms = stageMatches[stageId] || []
-  if(!ms.length) return
-
-  const first = ms[0]
-  s.t1id = first.home_team
-  s.t2id = first.away_team
-  s.t1 = teamsMap[first.home_team]?.name || first.home_team
-  s.t2 = teamsMap[first.away_team]?.name || first.away_team
-  s.allMatches = ms
-
-  s.games = ms.filter(m=> m.played && m.home_score != null).map(m=>{
-   const isT1Home = m.home_team === first.home_team
-   return {
-    gh: isT1Home ? m.home_score : m.away_score,
-    ga: isT1Home ? m.away_score : m.home_score,
-    t1score: isT1Home ? m.home_score : m.away_score,
-    t2score: isT1Home ? m.away_score : m.home_score,
-    type: m.result_type==='REG' ? '' : (m.result_type||''),
-    matchId: m.id,
-    home_team_id: m.home_team,
-    away_team_id: m.away_team,
-    home_score: m.home_score,
-    away_score: m.away_score,
-   }
+  const s=SERIES[key]; if(!s) return
+  const ms=stageMatches[stageId]||[]; if(!ms.length) return
+  const first=ms[0]
+  s.t1id=first.home_team; s.t2id=first.away_team
+  s.t1=teamsMap[first.home_team]?.name||first.home_team
+  s.t2=teamsMap[first.away_team]?.name||first.away_team
+  s.allMatches=ms
+  s.games=ms.filter(m=>m.played&&m.home_score!=null).map(m=>{
+   const isT1Home=m.home_team===first.home_team
+   return { gh:isT1Home?m.home_score:m.away_score, ga:isT1Home?m.away_score:m.home_score, t1score:isT1Home?m.home_score:m.away_score, t2score:isT1Home?m.away_score:m.home_score, type:m.result_type==='REG'?'':(m.result_type||''), matchId:m.id, home_team_id:m.home_team, away_team_id:m.away_team, home_score:m.home_score, away_score:m.away_score }
   })
  })
 
- if(SERIES.sf1){
-  SERIES.sf1.t1 = SERIES.sf1.t1 || getWinner(SERIES.qf1)
-  SERIES.sf1.t2 = SERIES.sf1.t2 || getWinner(SERIES.qf2)
- }
- if(SERIES.sf2){
-  SERIES.sf2.t1 = SERIES.sf2.t1 || getWinner(SERIES.qf3)
-  SERIES.sf2.t2 = SERIES.sf2.t2 || getWinner(SERIES.qf4)
- }
- if(SERIES.third){
-  SERIES.third.t1 = SERIES.third.t1 || getLoser(SERIES.sf1)
-  SERIES.third.t2 = SERIES.third.t2 || getLoser(SERIES.sf2)
- }
- if(SERIES.f){
-  SERIES.f.t1 = SERIES.f.t1 || getWinner(SERIES.sf1)
-  SERIES.f.t2 = SERIES.f.t2 || getWinner(SERIES.sf2)
- }
+ if(SERIES.sf1){ SERIES.sf1.t1=SERIES.sf1.t1||getWinner(SERIES.qf1); SERIES.sf1.t2=SERIES.sf1.t2||getWinner(SERIES.qf2) }
+ if(SERIES.sf2){ SERIES.sf2.t1=SERIES.sf2.t1||getWinner(SERIES.qf3); SERIES.sf2.t2=SERIES.sf2.t2||getWinner(SERIES.qf4) }
+ if(SERIES.third){ SERIES.third.t1=SERIES.third.t1||getLoser(SERIES.sf1); SERIES.third.t2=SERIES.third.t2||getLoser(SERIES.sf2) }
+ if(SERIES.f){ SERIES.f.t1=SERIES.f.t1||getWinner(SERIES.sf1); SERIES.f.t2=SERIES.f.t2||getWinner(SERIES.sf2) }
 
- Object.keys(SERIES).forEach(k=> renderSeries(k, SERIES[k]))
+ Object.keys(SERIES).forEach(k=>renderSeries(k,SERIES[k]))
  renderResults(SERIES)
  renderChampion(SERIES)
 }
 
 function resetSeries(){
- const keys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
+ const keys=['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
  keys.forEach(k=>{
-  const t1 = document.getElementById(`${k}-t1`)
-  const t2 = document.getElementById(`${k}-t2`)
+  const t1=document.getElementById(`${k}-t1`)
+  const t2=document.getElementById(`${k}-t2`)
   if(t1){ t1.className="team-row tbd"; t1.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
   if(t2){ t2.className="team-row tbd"; t2.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
-  const state = document.getElementById(`state-${k}`)
+  const state=document.getElementById(`state-${k}`)
   if(state){ state.textContent="Stav série"; state.className="series-state neutral" }
-  const link = document.getElementById(`bet-link-${k}`)
-  if(link){ link.href="#"; link.classList.add("disabled") }
+  const link=document.getElementById(`bet-link-${k}`)
+  if(link){ link.dataset.url=""; link.classList.add("disabled") }
  })
 }
 
@@ -468,78 +524,39 @@ function showNoPlayoff(){
  document.getElementById("phase-qf").classList.add("hidden")
  document.getElementById("phase-sf").classList.add("hidden")
  document.getElementById("phase-f").classList.add("hidden")
- document.getElementById("no-playoff-msg").style.display = "block"
- document.getElementById("results-grid").innerHTML = '<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'
+ document.getElementById("no-playoff-msg").style.display="block"
+ document.getElementById("results-grid").innerHTML='<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'
 }
 
-function logoHtml(teamName, size=22){
- const team = Object.values(teamsMap).find(t=> t.name === teamName)
+function logoHtml(teamName,size=22){
+ const team=Object.values(teamsMap).find(t=>t.name===teamName)
  if(!team||!team.logo) return `<div class="team-logo-placeholder" style="width:${size}px;height:${size}px">?</div>`
  return `<img class="team-logo" style="width:${size}px;height:${size}px" src="${LOGOS}${team.logo}" alt="${teamName}" onerror="this.outerHTML='<div class=team-logo-placeholder>?</div>'">`
 }
 
-function gameScoresHtml(games, perspective){
- let html = '<div class="game-scores">'
+function gameScoresHtml(games,perspective){
+ let html='<div class="game-scores">'
  for(let i=0;i<7;i++){
-  if(i < games.length){
-   const g = games[i]
-   const myScore = perspective===1 ? g.t1score : g.t2score
-   const oppScore = perspective===1 ? g.t2score : g.t1score
-   const win = myScore > oppScore
-   html += `<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}</span>`
-  } else {
-   html += `<span class="gscore gscore-empty">·</span>`
-  }
+  if(i<games.length){ const g=games[i],myScore=perspective===1?g.t1score:g.t2score,oppScore=perspective===1?g.t2score:g.t1score,win=myScore>oppScore; html+=`<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}</span>` }
+  else html+=`<span class="gscore gscore-empty">·</span>`
  }
- return html + '</div>'
+ return html+'</div>'
 }
 
-function getWins(series, t){
- if(!series) return 0
- return series.games.filter(g => t===1 ? g.gh > g.ga : g.ga > g.gh).length
-}
+function getWins(series,t){ if(!series) return 0; return series.games.filter(g=>t===1?g.gh>g.ga:g.ga>g.gh).length }
+function getLoser(series){ if(!series) return null; const w1=getWins(series,1),w2=getWins(series,2); if(w1>=series.winsNeeded) return series.t2; if(w2>=series.winsNeeded) return series.t1; return null }
+function getWinner(series){ if(!series) return null; const w1=getWins(series,1),w2=getWins(series,2); if(w1>=series.winsNeeded) return series.t1; if(w2>=series.winsNeeded) return series.t2; return null }
 
-function getLoser(series){
- if(!series) return null
- const w1=getWins(series,1), w2=getWins(series,2)
- if(w1>=series.winsNeeded) return series.t2
- if(w2>=series.winsNeeded) return series.t1
- return null
-}
-
-function getWinner(series){
- if(!series) return null
- const w1=getWins(series,1), w2=getWins(series,2)
- if(w1>=series.winsNeeded) return series.t1
- if(w2>=series.winsNeeded) return series.t2
- return null
-}
-
-function renderSeries(key, s){
+function renderSeries(key,s){
  if(!s) return
- const w1=getWins(s,1), w2=getWins(s,2)
- const winner=getWinner(s)
-
+ const w1=getWins(s,1),w2=getWins(s,2),winner=getWinner(s)
  const stateEl=document.getElementById(`state-${key}`)
- if(stateEl){
-  const hasGames=s.games.length>0
-  stateEl.textContent=hasGames?`${w1} : ${w2}`:'Stav série'
-  stateEl.className='series-state'+(hasGames?'':' neutral')
+ if(stateEl){ const hasGames=s.games.length>0; stateEl.textContent=hasGames?`${w1} : ${w2}`:'Stav série'; stateEl.className='series-state'+(hasGames?'':' neutral') }
+ function renderTeamRow(rowId,team,wins,isWinner,isLoser,perspective){
+  const el=document.getElementById(rowId); if(!el) return
+  el.className=`team-row ${isWinner?'winner':isLoser?'loser':team?'':'tbd'}`
+  el.innerHTML=`${logoHtml(team)}<div class="team-name ${team?'':'tbd'}">${team||'?'}</div>${gameScoresHtml(s.games,perspective)}<div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>`
  }
-
- function renderTeamRow(rowId, team, wins, isWinner, isLoser, perspective){
-  const el=document.getElementById(rowId)
-  if(!el) return
-  const cls=isWinner?'winner':isLoser?'loser':team?'':'tbd'
-  el.className=`team-row ${cls}`
-  el.innerHTML=`
-   ${logoHtml(team)}
-   <div class="team-name ${team?'':'tbd'}">${team||'?'}</div>
-   ${gameScoresHtml(s.games, perspective)}
-   <div class="series-score ${isWinner?'win':isLoser?'loss':''}">${wins}</div>
-  `
- }
-
  renderTeamRow(`${key}-t1`,s.t1,w1,winner===s.t1,winner&&winner!==s.t1,1)
  renderTeamRow(`${key}-t2`,s.t2,w2,winner===s.t2,winner&&winner!==s.t2,2)
 }
@@ -547,20 +564,13 @@ function renderSeries(key, s){
 function renderResults(SERIES){
  const grid=document.getElementById('results-grid')
  grid.innerHTML=''
-
  const order=['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
- const labels={
-  qf1:'ČF 1',qf2:'ČF 2',qf3:'ČF 3',qf4:'ČF 4',
-  sf1:'Semifinále 1',sf2:'Semifinále 2',
-  third:'🥉 O 3. místo',f:'🏆 Finále'
- }
+ const labels={ qf1:'ČF 1',qf2:'ČF 2',qf3:'ČF 3',qf4:'ČF 4',sf1:'Semifinále 1',sf2:'Semifinále 2',third:'🥉 O 3. místo',f:'🏆 Finále' }
 
  order.forEach(key=>{
-  const s=SERIES[key]
-  if(!s) return
-
-  const phase = PHASE_MAP[key]
-  const betUrl = `sazky.html?phase=${phase}&stage=${s.stageId}`
+  const s=SERIES[key]; if(!s) return
+  const phase=PHASE_MAP[key]
+  const betUrl=`sazky.html?phase=${phase}&stage=${s.stageId}`
 
   const card=document.createElement('div')
   card.className='result-card'
@@ -576,41 +586,35 @@ function renderResults(SERIES){
     const type=m.result_type==='REG'?'':(m.result_type||'')
     const homeWin=played&&m.home_score>m.away_score
     const awayWin=played&&m.away_score>m.home_score
-
     const homeTagHtml=(played&&homeWin&&type)?`<span class="result-tag">${type}</span>`:`<span class="result-tag-empty"></span>`
     const awayTagHtml=(played&&awayWin&&type)?`<span class="result-tag">${type}</span>`:`<span class="result-tag-empty"></span>`
-
     matchesHtml+=`
      <div class="result-mini-card ${played?'':'unplayed'}">
       <div class="rm-header">
        <span class="rm-num">${i+1}. zápas</span>
        ${played
         ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
-        :`<button class="btn-sm btn-bet" onclick="window.location.href='${betUrl}'">🎲 Vsaď si</button>`
-
+        :`<button class="btn-sm btn-bet" data-url="vsad-si.html?id=${m.id}" onclick="openHymna(this)">🎲 Vsaď si</button>`
        }
       </div>
       <div class="rm-teams">
        <div class="rm-team-row ${played&&!homeWin?'rm-loser':''}">
-        ${logoHtml(homeTeam,22)}
-        <span class="rm-team-name">${homeTeam}</span>
+        ${logoHtml(homeTeam,22)}<span class="rm-team-name">${homeTeam}</span>
         <div class="rm-score-wrap">${homeTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.home_score:'–'}</span></div>
        </div>
        <div class="rm-team-row ${played&&!awayWin?'rm-loser':''}">
-        ${logoHtml(awayTeam,22)}
-        <span class="rm-team-name">${awayTeam}</span>
+        ${logoHtml(awayTeam,22)}<span class="rm-team-name">${awayTeam}</span>
         <div class="rm-score-wrap">${awayTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.away_score:'–'}</span></div>
        </div>
       </div>
-     </div>
-    `
+     </div>`
    })
   }
 
   card.innerHTML=`
    <div class="result-card-header">
     <span class="result-card-header-label">${labels[key]}</span>
-    <a class="result-card-bet-link" href="${betUrl}">🎲 Sázky na sérii</a>
+    <button class="result-card-bet-link" data-url="${betUrl}" onclick="openHymna(this)">🎲 Sázky na sérii</button>
    </div>
    ${matchesHtml}
   `
