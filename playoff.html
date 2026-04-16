@@ -184,10 +184,14 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
     </div>
     <div class="hymna-player">
       <div class="hymna-player-label">🎼 Přehrát státní hymnu</div>
-      <audio controls id="hymnaAudio">
-        <source src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Kde_domov_m%C5%AFj.ogg" type="audio/ogg">
-        <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5c/Kde_domov_m%C5%AFj.ogg/Kde_domov_m%C5%AFj.ogg.mp3" type="audio/mpeg">
-      </audio>
+<iframe id="hymnaAudio"
+  width="100%" height="80"
+  src="https://www.youtube.com/embed/BzOoqaFH7cI?autoplay=0&controls=1"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style="border-radius:8px;">
+</iframe>
     </div>
     <div class="hymna-text">
       <strong>Kde domov můj, kde domov můj?</strong><br>
@@ -341,7 +345,6 @@ function openHymna(btn){
  hymnaOathChecked = false
  document.getElementById("hymnaCheck").classList.remove("checked")
  document.getElementById("hymnaConfirm").classList.remove("ready")
- document.getElementById("hymnaAudio").pause()
  document.getElementById("hymnaAudio").currentTime = 0
  document.getElementById("hymnaOverlay").classList.add("open")
 }
@@ -355,7 +358,6 @@ function toggleOath(){
 function hymnaConfirm(){
  if(!hymnaOathChecked) return
  document.getElementById("hymnaOverlay").classList.remove("open")
- document.getElementById("hymnaAudio").pause()
  window.location.href = hymnaTargetUrl
 }
 
