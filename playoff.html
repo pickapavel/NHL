@@ -105,10 +105,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .empty-msg{padding:16px;text-align:center;color:#aaa;font-size:13px;}
 .loading-msg{padding:30px;text-align:center;color:#7ab0cc;font-size:13px;}
 .phase-label{font-size:11px;font-weight:700;color:#7ab0cc;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
-
 .bracket-phase{margin-bottom:0;}
 .bracket-phase.hidden{display:none;}
-
 .no-playoff-msg{background:white;border-radius:14px;border:1px solid #c8d8e8;padding:40px;text-align:center;color:#aaa;font-size:14px;margin-bottom:20px;}
 
 @media(max-width:1100px){.bracket-row-qf{grid-template-columns:repeat(2,1fr);}}
@@ -119,47 +117,75 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 }
 
 /* ── HYMNA DIALOG ── */
-.hymna-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.hymna-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:20px;}
 .hymna-overlay.open{display:flex;}
-.hymna-modal{background:linear-gradient(160deg,#c8000f 0%,#8a0008 100%);border-radius:20px;padding:28px 24px;max-width:460px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:hidden;animation:popIn .25s ease;}
+.hymna-modal{background:linear-gradient(160deg,#c8000f 0%,#8a0008 100%);border-radius:20px;padding:24px 22px;max-width:480px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:hidden;animation:popIn .25s ease;max-height:90vh;overflow-y:auto;}
 @keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-.hymna-modal::before{content:"🇨🇿";position:absolute;top:-30px;right:-30px;font-size:140px;opacity:.07;pointer-events:none;}
-.hymna-flag{font-size:48px;margin-bottom:6px;}
-.hymna-title{font-size:24px;font-weight:800;color:white;margin-bottom:2px;}
-.hymna-sub{font-size:12px;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;}
-.hymna-symbols{display:flex;justify-content:center;gap:12px;margin-bottom:16px;}
-.hymna-sym{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;font-size:28px;}
-.hymna-singer{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:14px;margin-bottom:16px;}
-.hymna-singer-icon{font-size:42px;margin-bottom:4px;}
-.hymna-singer-name{font-size:15px;font-weight:700;color:white;}
-.hymna-singer-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;}
-.hymna-notes{display:flex;justify-content:center;gap:10px;margin-top:8px;}
-.hymna-note{font-size:20px;animation:noteFloat 1.5s ease-in-out infinite;}
+.hymna-modal::before{content:"🇨🇿";position:absolute;top:-30px;right:-30px;font-size:140px;opacity:.06;pointer-events:none;}
+
+.hymna-title{font-size:22px;font-weight:800;color:white;margin-bottom:2px;}
+.hymna-sub{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+
+/* Vlajka vlající */
+.hymna-flag-scene{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;}
+.hymna-team-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:52px;}
+.hymna-team-logo{width:48px;height:48px;object-fit:contain;background:white;border-radius:8px;padding:4px;border:2px solid rgba(255,255,255,.3);}
+.hymna-team-logo-ph{width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:8px;border:2px solid rgba(255,255,255,.2);}
+.hymna-team-name-sm{font-size:9px;font-weight:700;color:rgba(255,255,255,.75);text-align:center;line-height:1.2;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* Česká vlajka animovaná */
+.cz-flag-wrap{flex:1;display:flex;justify-content:center;}
+.cz-flag{width:160px;height:90px;position:relative;border-radius:3px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.4);transform-origin:left center;}
+.cz-flag-inner{width:100%;height:100%;position:relative;animation:bigWave 1.2s ease-in-out infinite;}
+@keyframes bigWave{
+  0%  {transform:perspective(300px) rotateY(0deg)  skewY(0deg)  scaleX(1);}
+  20% {transform:perspective(300px) rotateY(4deg)  skewY(1.5deg) scaleX(1.02);}
+  40% {transform:perspective(300px) rotateY(-3deg) skewY(-1deg) scaleX(.98);}
+  60% {transform:perspective(300px) rotateY(5deg)  skewY(2deg)  scaleX(1.03);}
+  80% {transform:perspective(300px) rotateY(-2deg) skewY(-.5deg) scaleX(.99);}
+  100%{transform:perspective(300px) rotateY(0deg)  skewY(0deg)  scaleX(1);}
+}
+.cz-top{position:absolute;top:0;left:0;width:100%;height:50%;background:white;}
+.cz-bottom{position:absolute;bottom:0;left:0;width:100%;height:50%;background:#d7000f;}
+.cz-triangle{position:absolute;top:0;left:0;width:0;height:0;border-style:solid;border-width:45px 0 45px 80px;border-color:transparent transparent transparent #11457e;z-index:2;}
+/* Vlnový efekt přes vlajku */
+.cz-wave-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,rgba(0,0,0,.08) 0%,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%,rgba(0,0,0,.06) 100%);animation:waveShimmer 1.2s ease-in-out infinite;z-index:3;}
+@keyframes waveShimmer{0%,100%{opacity:.6;transform:scaleX(1)}50%{opacity:1;transform:scaleX(1.05)}}
+
+/* Zpěvačka */
+.hymna-singer{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.hymna-singer-icon{font-size:34px;flex-shrink:0;}
+.hymna-singer-info{text-align:left;}
+.hymna-singer-name{font-size:14px;font-weight:700;color:white;}
+.hymna-singer-sub{font-size:10px;color:rgba(255,255,255,.65);margin-top:1px;}
+.hymna-notes{display:flex;gap:6px;margin-top:4px;}
+.hymna-note{font-size:14px;animation:noteFloat 1.5s ease-in-out infinite;}
 .hymna-note:nth-child(2){animation-delay:.3s;}
 .hymna-note:nth-child(3){animation-delay:.6s;}
-@keyframes noteFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.hymna-player{background:rgba(255,255,255,.95);border-radius:14px;padding:14px;margin-bottom:16px;}
-.hymna-player-label{font-size:11px;font-weight:700;color:#11457e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+@keyframes noteFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* Player */
+.hymna-player{background:rgba(255,255,255,.95);border-radius:12px;padding:12px;margin-bottom:12px;}
+.hymna-player-label{font-size:10px;font-weight:700;color:#11457e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
 .hymna-player audio{width:100%;border-radius:8px;}
-.hymna-text{font-style:italic;color:rgba(255,255,255,.85);font-size:13px;line-height:1.6;margin-bottom:16px;text-align:left;background:rgba(0,0,0,.15);border-radius:10px;padding:12px 14px;}
+
+/* Text hymny */
+.hymna-text{font-style:italic;color:rgba(255,255,255,.82);font-size:12px;line-height:1.65;margin-bottom:12px;text-align:left;background:rgba(0,0,0,.18);border-radius:10px;padding:10px 12px;}
 .hymna-text strong{font-style:normal;color:white;}
-.hymna-oath{background:rgba(255,255,255,.95);border-radius:14px;padding:14px;margin-bottom:14px;text-align:left;}
-.hymna-oath-label{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
-.hymna-check{width:22px;height:22px;border:2px solid #11457e;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white;margin-top:1px;}
+
+/* Přísaha */
+.hymna-oath{background:rgba(255,255,255,.95);border-radius:12px;padding:12px;margin-bottom:12px;text-align:left;}
+.hymna-oath-label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
+.hymna-check{width:20px;height:20px;border:2px solid #11457e;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white;margin-top:1px;}
 .hymna-check.checked{background:#11457e;}
-.hymna-check.checked::after{content:"✓";color:white;font-size:13px;font-weight:800;}
+.hymna-check.checked::after{content:"✓";color:white;font-size:12px;font-weight:800;}
 .hymna-oath-text{font-size:13px;font-weight:600;color:#0b2a3c;line-height:1.5;}
 .hymna-oath-text strong{color:#c8000f;}
-.hymna-confirm{width:100%;padding:14px;background:#11457e;color:white;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;opacity:.45;pointer-events:none;}
+
+.hymna-confirm{width:100%;padding:13px;background:#11457e;color:white;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;opacity:.45;pointer-events:none;}
 .hymna-confirm.ready{opacity:1;pointer-events:all;}
 .hymna-confirm.ready:hover{background:#0b5394;transform:translateY(-1px);}
-.hymna-warning{font-size:11px;color:rgba(255,255,255,.6);margin-top:10px;font-style:italic;}
- .hymna-flag-wrap{display:flex;justify-content:center;margin-bottom:16px;}
-.hymna-flag-anim{width:180px;height:100px;position:relative;border-radius:4px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:flagWave 2s ease-in-out infinite;transform-origin:left center;}
-@keyframes flagWave{0%,100%{transform:skewY(0deg) scaleY(1)}25%{transform:skewY(1deg) scaleY(1.01)}75%{transform:skewY(-1deg) scaleY(.99)}}
-.hf-top{position:absolute;top:0;left:0;width:100%;height:50%;background:white;}
-.hf-bottom{position:absolute;bottom:0;left:0;width:100%;height:50%;background:#d7000f;}
-.hf-triangle{position:absolute;top:0;left:0;width:0;height:0;border-style:solid;border-width:50px 0 50px 70px;border-color:transparent transparent transparent #11457e;z-index:2;}
+.hymna-warning{font-size:11px;color:rgba(255,255,255,.55);margin-top:8px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -169,32 +195,50 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 <!-- HYMNA DIALOG -->
 <div class="hymna-overlay" id="hymnaOverlay">
   <div class="hymna-modal">
-    <div class="hymna-flag">🇨🇿</div>
     <div class="hymna-title">Česká hymna</div>
     <div class="hymna-sub">Kde domov můj</div>
-   <div class="hymna-flag-wrap">
-  <div class="hymna-flag-anim">
-    <div class="hf-top"></div>
-    <div class="hf-bottom"></div>
-    <div class="hf-triangle"></div>
-  </div>
-</div>
-    <div class="hymna-singer">
-      <div class="hymna-singer-icon">👩‍🎤</div>
-      <div class="hymna-singer-name">Eva Pilarová</div>
-      <div class="hymna-singer-sub">Sólistka České filharmonie</div>
-      <div class="hymna-notes">
-        <span class="hymna-note">🎵</span>
-        <span class="hymna-note">🎶</span>
-        <span class="hymna-note">🎵</span>
+
+    <div class="hymna-flag-scene">
+      <div class="hymna-team-logo-wrap" id="hymnaHomeLogo">
+        <div class="hymna-team-logo-ph"></div>
+        <div class="hymna-team-name-sm"></div>
+      </div>
+      <div class="cz-flag-wrap">
+        <div class="cz-flag">
+          <div class="cz-flag-inner">
+            <div class="cz-top"></div>
+            <div class="cz-bottom"></div>
+            <div class="cz-triangle"></div>
+            <div class="cz-wave-overlay"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hymna-team-logo-wrap" id="hymnaAwayLogo">
+        <div class="hymna-team-logo-ph"></div>
+        <div class="hymna-team-name-sm"></div>
       </div>
     </div>
+
+    <div class="hymna-singer">
+      <div class="hymna-singer-icon">👩‍🎤</div>
+      <div class="hymna-singer-info">
+        <div class="hymna-singer-name">Eva Pilarová</div>
+        <div class="hymna-singer-sub">Sólistka České filharmonie</div>
+        <div class="hymna-notes">
+          <span class="hymna-note">🎵</span>
+          <span class="hymna-note">🎶</span>
+          <span class="hymna-note">🎵</span>
+        </div>
+      </div>
+    </div>
+
     <div class="hymna-player">
       <div class="hymna-player-label">🎼 Přehrát státní hymnu</div>
-<audio controls id="hymnaAudio" style="width:100%;border-radius:8px;">
-  <source src="./music/hymna.mp3" type="audio/mpeg">
-</audio>
+      <audio controls id="hymnaAudio" style="width:100%;border-radius:8px;">
+        <source src="./music/hymna.mp3" type="audio/mpeg">
+      </audio>
     </div>
+
     <div class="hymna-text">
       <strong>Kde domov můj, kde domov můj?</strong><br>
       Voda hučí po lučinách,<br>
@@ -204,16 +248,18 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
       A to je ta krásná země,<br>
       <strong>země česká, domov můj!</strong>
     </div>
+
     <div class="hymna-oath">
       <label class="hymna-oath-label" onclick="toggleOath()">
         <div class="hymna-check" id="hymnaCheck"></div>
         <div class="hymna-oath-text">
-          Přísahám na <strong>zánik pardubického hokeje</strong>, že jsem si hymnu poslechl/a a budu tipovat s českou hrdostí v srdci. 🇨🇿
+          Přísahám na <strong>zánik pardubického hokeje</strong>, že jsem si hymnu poslechl.
         </div>
       </label>
     </div>
+
     <button class="hymna-confirm" id="hymnaConfirm" onclick="hymnaConfirm()">
-     Potvrzuji — vstoupit na sázecí stránku
+      Potvrzuji — vstoupit na sázecí stránku
     </button>
     <div class="hymna-warning">* Neposlech hymny může mít negativní vliv na výsledky vašich sázek</div>
   </div>
@@ -228,9 +274,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div class="wrapper">
-
 <div class="season-tabs" id="seasonTabs"></div>
-
 <div class="section-title">Pavouk</div>
 
 <!-- ČF -->
@@ -302,9 +346,7 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
  </div>
 </div>
 
-<div id="no-playoff-msg" class="no-playoff-msg" style="display:none;">
- Tato sezóna nemá playoff fázi.
-</div>
+<div id="no-playoff-msg" class="no-playoff-msg" style="display:none;">Tato sezóna nemá playoff fázi.</div>
 
 <div style="max-width:400px;margin:20px auto 0;">
  <div class="trophy-wrap">
@@ -316,11 +358,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 <div class="results-section">
  <div class="section-title">Rozpis / Výsledky zápasů</div>
- <div class="results-grid" id="results-grid">
-  <div class="loading-msg">Načítám...</div>
- </div>
+ <div class="results-grid" id="results-grid"><div class="loading-msg">Načítám...</div></div>
 </div>
-
 </div>
 
 <script>
@@ -341,6 +380,20 @@ const PHASE_MAP = {
  third:'finale',    f:'finale',
 }
 
+function setHymnaTeams(homeLogo, homeName, awayLogo, awayName){
+ const homeEl = document.getElementById("hymnaHomeLogo")
+ const awayEl = document.getElementById("hymnaAwayLogo")
+ function renderTeam(el, logo, name){
+  if(logo){
+   el.innerHTML=`<img class="hymna-team-logo" src="${LOGOS}${logo}" onerror="this.outerHTML='<div class=hymna-team-logo-ph></div>'"><div class="hymna-team-name-sm">${name||""}</div>`
+  } else {
+   el.innerHTML=`<div class="hymna-team-logo-ph"></div><div class="hymna-team-name-sm">${name||""}</div>`
+  }
+ }
+ renderTeam(homeEl, homeLogo, homeName)
+ renderTeam(awayEl, awayLogo, awayName)
+}
+
 function openHymna(btn){
  hymnaTargetUrl = btn.dataset.url || ""
  if(!hymnaTargetUrl) return
@@ -348,6 +401,12 @@ function openHymna(btn){
  document.getElementById("hymnaCheck").classList.remove("checked")
  document.getElementById("hymnaConfirm").classList.remove("ready")
  document.getElementById("hymnaAudio").currentTime = 0
+ // Nastav loga týmů
+ const homeLogo = btn.dataset.homeLogo || ""
+ const homeName = btn.dataset.homeName || ""
+ const awayLogo = btn.dataset.awayLogo || ""
+ const awayName = btn.dataset.awayName || ""
+ setHymnaTeams(homeLogo, homeName, awayLogo, awayName)
  document.getElementById("hymnaOverlay").classList.add("open")
 }
 
@@ -360,10 +419,10 @@ function toggleOath(){
 function hymnaConfirm(){
  if(!hymnaOathChecked) return
  document.getElementById("hymnaOverlay").classList.remove("open")
+ document.getElementById("hymnaAudio").pause()
  window.location.href = hymnaTargetUrl
 }
 
-// Zavření kliknutím mimo modal
 document.getElementById("hymnaOverlay").addEventListener("click", function(e){
  if(e.target === this){
   this.classList.remove("open")
@@ -381,12 +440,7 @@ async function init(){
  const { data: teams } = await db.from("teams").select("*")
  ;(teams||[]).forEach(t=> teamsMap[t.id] = t)
 
- const { data: seasons } = await db
-  .from("seasons")
-  .select("*")
-  .eq("competition_id", EXTRALIGA_COMPETITION_ID)
-  .order("created_at", { ascending: false })
-
+ const { data: seasons } = await db.from("seasons").select("*").eq("competition_id", EXTRALIGA_COMPETITION_ID).order("created_at", { ascending: false })
  allSeasons = seasons || []
  if(!allSeasons.length) return
 
@@ -395,14 +449,9 @@ async function init(){
   const btn = document.createElement("button")
   btn.className = "season-tab" + (i===0 ? " active" : "")
   btn.textContent = s.name
-  btn.onclick = ()=>{
-   tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
-   btn.classList.add("active")
-   loadSeason(s.id, s.name)
-  }
+  btn.onclick = ()=>{ tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); loadSeason(s.id, s.name) }
   tabsEl.appendChild(btn)
  })
-
  loadSeason(allSeasons[0].id, allSeasons[0].name)
 }
 
@@ -411,34 +460,22 @@ async function loadSeason(seasonId, seasonName){
  document.getElementById("header-sub").textContent = `Play off · ${seasonName}`
  document.getElementById("results-grid").innerHTML = '<div class="loading-msg">Načítám...</div>'
  document.getElementById("champion-label").textContent = "—"
-
  resetSeries()
 
- const { data: stages } = await db
-  .from("stages")
-  .select("*")
-  .eq("season_id", seasonId)
-  .order("order", { ascending: true })
-
+ const { data: stages } = await db.from("stages").select("*").eq("season_id", seasonId).order("order", { ascending: true })
  if(!stages||!stages.length){ showNoPlayoff(); return }
 
  const STAGE_IDS = {}
  const nameMap = {
   'Čtvrtfinále 1':'qf1','Čtvrtfinále 2':'qf2','Čtvrtfinále 3':'qf3','Čtvrtfinále 4':'qf4',
-  'Semifinále 1':'sf1','Semifinále 2':'sf2','Semifinále':'sf1',
-  'O 3. místo':'third','Finále':'f',
+  'Semifinále 1':'sf1','Semifinále 2':'sf2','Semifinále':'sf1','O 3. místo':'third','Finále':'f',
  }
  stages.forEach(s=>{ const key=nameMap[s.name]; if(key) STAGE_IDS[key]=s.id })
 
  Object.entries(STAGE_IDS).forEach(([key, stageId])=>{
-  const phase = PHASE_MAP[key]
-  if(!phase) return
+  const phase = PHASE_MAP[key]; if(!phase) return
   const linkEl = document.getElementById(`bet-link-${key}`)
-  if(linkEl){
-   const url = `sazky.html?phase=${phase}&stage=${stageId}`
-   linkEl.dataset.url = url
-   linkEl.classList.remove("disabled")
-  }
+  if(linkEl){ linkEl.dataset.url=`sazky.html?phase=${phase}&stage=${stageId}`; linkEl.classList.remove("disabled") }
  })
 
  const hasQF = !!(STAGE_IDS.qf1 || STAGE_IDS.qf2)
@@ -450,7 +487,6 @@ async function loadSeason(seasonId, seasonName){
  document.getElementById("phase-sf").classList.toggle("hidden", !hasSF)
  document.getElementById("phase-f").classList.toggle("hidden", !hasF)
  document.getElementById("no-playoff-msg").style.display = hasPlayoff ? "none" : "block"
-
  if(!hasPlayoff){ document.getElementById("results-grid").innerHTML='<div class="empty-msg">Tato sezóna nemá playoff fázi.</div>'; return }
 
  if(hasSF){
@@ -468,20 +504,14 @@ async function loadSeason(seasonId, seasonName){
  }
 
  const uniqueStageIds = [...new Set(Object.values(STAGE_IDS))]
- const { data: matches } = await db
-  .from("matches").select("*")
-  .eq("season_id", seasonId)
-  .in("stage_id", uniqueStageIds)
-  .order("round", { ascending: true })
+ const { data: matches } = await db.from("matches").select("*").eq("season_id", seasonId).in("stage_id", uniqueStageIds).order("round", { ascending: true })
 
  const SERIES = {}
  const seriesKeys = ['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
  const seriesLabels = { qf1:'ČF 1',qf2:'ČF 2',qf3:'ČF 3',qf4:'ČF 4',sf1:'Semifinále 1',sf2:'Semifinále 2',third:'O 3. místo',f:'Finále' }
  const winsNeededMap = { third:1 }
 
- seriesKeys.forEach(k=>{
-  if(STAGE_IDS[k]) SERIES[k]={ label:seriesLabels[k],t1:null,t2:null,t1id:null,t2id:null,games:[],allMatches:[],winsNeeded:winsNeededMap[k]||4,stageId:STAGE_IDS[k] }
- })
+ seriesKeys.forEach(k=>{ if(STAGE_IDS[k]) SERIES[k]={ label:seriesLabels[k],t1:null,t2:null,t1id:null,t2id:null,games:[],allMatches:[],winsNeeded:winsNeededMap[k]||4,stageId:STAGE_IDS[k] } })
 
  const stageMatches={}
  ;(matches||[]).forEach(m=>{ if(!stageMatches[m.stage_id]) stageMatches[m.stage_id]=[]; stageMatches[m.stage_id].push(m) })
@@ -493,6 +523,8 @@ async function loadSeason(seasonId, seasonName){
   s.t1id=first.home_team; s.t2id=first.away_team
   s.t1=teamsMap[first.home_team]?.name||first.home_team
   s.t2=teamsMap[first.away_team]?.name||first.away_team
+  s.t1logo=teamsMap[first.home_team]?.logo||""
+  s.t2logo=teamsMap[first.away_team]?.logo||""
   s.allMatches=ms
   s.games=ms.filter(m=>m.played&&m.home_score!=null).map(m=>{
    const isT1Home=m.home_team===first.home_team
@@ -505,6 +537,18 @@ async function loadSeason(seasonId, seasonName){
  if(SERIES.third){ SERIES.third.t1=SERIES.third.t1||getLoser(SERIES.sf1); SERIES.third.t2=SERIES.third.t2||getLoser(SERIES.sf2) }
  if(SERIES.f){ SERIES.f.t1=SERIES.f.t1||getWinner(SERIES.sf1); SERIES.f.t2=SERIES.f.t2||getWinner(SERIES.sf2) }
 
+ // Nastav loga týmů na série tlačítka v pavouku
+ Object.entries(SERIES).forEach(([key, s])=>{
+  if(!s) return
+  const linkEl = document.getElementById(`bet-link-${key}`)
+  if(linkEl){
+   linkEl.dataset.homeLogo = s.t1logo||""
+   linkEl.dataset.homeName = s.t1||""
+   linkEl.dataset.awayLogo = s.t2logo||""
+   linkEl.dataset.awayName = s.t2||""
+  }
+ })
+
  Object.keys(SERIES).forEach(k=>renderSeries(k,SERIES[k]))
  renderResults(SERIES)
  renderChampion(SERIES)
@@ -513,14 +557,11 @@ async function loadSeason(seasonId, seasonName){
 function resetSeries(){
  const keys=['qf1','qf2','qf3','qf4','sf1','sf2','third','f']
  keys.forEach(k=>{
-  const t1=document.getElementById(`${k}-t1`)
-  const t2=document.getElementById(`${k}-t2`)
+  const t1=document.getElementById(`${k}-t1`); const t2=document.getElementById(`${k}-t2`)
   if(t1){ t1.className="team-row tbd"; t1.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
   if(t2){ t2.className="team-row tbd"; t2.innerHTML='<div class="team-logo-placeholder">?</div><div class="team-name tbd">...</div>' }
-  const state=document.getElementById(`state-${k}`)
-  if(state){ state.textContent="Stav série"; state.className="series-state neutral" }
-  const link=document.getElementById(`bet-link-${k}`)
-  if(link){ link.dataset.url=""; link.classList.add("disabled") }
+  const state=document.getElementById(`state-${k}`); if(state){ state.textContent="Stav série"; state.className="series-state neutral" }
+  const link=document.getElementById(`bet-link-${k}`); if(link){ link.dataset.url=""; link.classList.add("disabled") }
  })
 }
 
@@ -541,7 +582,7 @@ function logoHtml(teamName,size=22){
 function gameScoresHtml(games,perspective){
  let html='<div class="game-scores">'
  for(let i=0;i<7;i++){
-  if(i<games.length){ const g=games[i],myScore=perspective===1?g.t1score:g.t2score,oppScore=perspective===1?g.t2score:g.t1score,win=myScore>oppScore; html+=`<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}</span>` }
+  if(i<games.length){ const g=games[i],myScore=perspective===1?g.t1score:g.t2score,win=myScore>(perspective===1?g.t2score:g.t1score); html+=`<span class="gscore ${win?'gscore-win':'gscore-loss'}">${myScore}</span>` }
   else html+=`<span class="gscore gscore-empty">·</span>`
  }
  return html+'</div>'
@@ -575,6 +616,8 @@ function renderResults(SERIES){
   const s=SERIES[key]; if(!s) return
   const phase=PHASE_MAP[key]
   const betUrl=`sazky.html?phase=${phase}&stage=${s.stageId}`
+  const homeLogo=s.t1logo||""; const homeName=s.t1||""
+  const awayLogo=s.t2logo||""; const awayName=s.t2||""
 
   const card=document.createElement('div')
   card.className='result-card'
@@ -586,6 +629,8 @@ function renderResults(SERIES){
    s.allMatches.forEach((m,i)=>{
     const homeTeam=teamsMap[m.home_team]?.name||'?'
     const awayTeam=teamsMap[m.away_team]?.name||'?'
+    const homeLogoM=teamsMap[m.home_team]?.logo||""
+    const awayLogoM=teamsMap[m.away_team]?.logo||""
     const played=m.played&&m.home_score!=null
     const type=m.result_type==='REG'?'':(m.result_type||'')
     const homeWin=played&&m.home_score>m.away_score
@@ -598,7 +643,13 @@ function renderResults(SERIES){
        <span class="rm-num">${i+1}. zápas</span>
        ${played
         ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
-        :`<button class="btn-sm btn-bet" data-url="vsad-si.html?id=${m.id}" onclick="openHymna(this)">🎲 Vsaď si</button>`
+        :`<button class="btn-sm btn-bet"
+            data-url="vsad-si.html?id=${m.id}"
+            data-home-logo="${homeLogoM}"
+            data-home-name="${homeTeam}"
+            data-away-logo="${awayLogoM}"
+            data-away-name="${awayTeam}"
+            onclick="openHymna(this)">🎲 Vsaď si</button>`
        }
       </div>
       <div class="rm-teams">
@@ -618,7 +669,13 @@ function renderResults(SERIES){
   card.innerHTML=`
    <div class="result-card-header">
     <span class="result-card-header-label">${labels[key]}</span>
-    <button class="result-card-bet-link" data-url="${betUrl}" onclick="openHymna(this)">🎲 Sázky na sérii</button>
+    <button class="result-card-bet-link"
+      data-url="${betUrl}"
+      data-home-logo="${homeLogo}"
+      data-home-name="${homeName}"
+      data-away-logo="${awayLogo}"
+      data-away-name="${awayName}"
+      onclick="openHymna(this)">🎲 Sázky na sérii</button>
    </div>
    ${matchesHtml}
   `
