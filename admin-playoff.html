@@ -1,5 +1,319 @@
 <!DOCTYPE html>
+<html lang="cs">a<!DOCTYPE html>
 <html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Play off správa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;margin:0;background:#f2f2f2;}
+.wrapper{max-width:800px;margin:auto;padding:20px;}
+h1{margin-bottom:5px;}
+.subtitle{color:#666;margin-bottom:25px;font-size:14px;}
+
+.card{background:white;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.card-title{font-weight:700;font-size:16px;margin-bottom:14px;color:#0b2a3c;border-bottom:2px solid #e0e0e0;padding-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+
+.stage-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid #eee;}
+.stage-row:last-child{border-bottom:none;}
+.stage-name{font-weight:600;font-size:14px;color:#1a2a3c;}
+.stage-meta{font-size:12px;color:#888;margin-top:2px;}
+
+.stage-controls{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+
+.control-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;}
+.control-label{font-size:12px;color:#888;font-weight:600;white-space:nowrap;}
+
+select{padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;background:white;cursor:pointer;}
+select:focus{outline:none;border-color:#1a5276;}
+
+.score-inputs{display:flex;align-items:center;gap:6px;}
+.score-input{width:52px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;text-align:center;color:#0b2a3c;}
+.score-input:focus{outline:none;border-color:#1a5276;}
+.score-sep{font-weight:800;color:#0b2a3c;font-size:16px;}
+.score-hint{font-size:11px;color:#aaa;margin-top:3px;}
+
+.btn{border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.btn-save{background:#27ae60;color:white;}
+.btn-save:hover{background:#219a52;}
+.btn-saved{background:#d1e7dd;color:#155724;cursor:default;}
+
+.section-title{font-size:16px;font-weight:700;color:#0b2a3c;margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
+
+.info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:16px;}
+
+.empty{color:#aaa;font-size:14px;padding:16px 0;text-align:center;font-style:italic;}
+
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:white;padding:12px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-qf{background:#dce8f5;color:#1a5276;}
+.badge-sf{background:#dcf5e8;color:#1a6634;}
+.badge-f{background:#f5f0dc;color:#7a5200;}
+.badge-3rd{background:#f0dce8;color:#661a4a;}
+.badge-baraz{background:#f5dcdc;color:#661a1a;}
+
+.score-current{display:inline-flex;align-items:center;gap:6px;background:#f0f4f8;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:#0b2a3c;}
+.score-current span{color:#888;font-size:11px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <h1>Admin – Play off správa</h1>
+  <p class="subtitle">Nastavení formátu sérií a výchozího skóre pro aktuální sezónu.</p>
+
+  <div class="info-box">
+    ℹ️ <b>Počet vítězných zápasů</b> určuje kolik výher tým potřebuje pro postup. <b>Výchozí skóre série</b> umožňuje začít sérii s jiným než 0:0 stavem (např. pokud tým přišel z jiné části pavouku s výhodou).
+  </div>
+
+  <div id="app">Načítám...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+
+const PLAYOFF_STAGE_NAMES = [
+  "Čtvrtfinále 1","Čtvrtfinále 2","Čtvrtfinále 3","Čtvrtfinále 4",
+  "Semifinále 1","Semifinále 2","Semifinále",
+  "O 3. místo","Finále","Baráž",
+  "Baráž 1","Baráž 2","Baráž 3","Baráž 4",
+]
+
+const PHASE_BADGE = {
+  "Čtvrtfinále 1":"badge-qf","Čtvrtfinále 2":"badge-qf","Čtvrtfinále 3":"badge-qf","Čtvrtfinále 4":"badge-qf",
+  "Semifinále 1":"badge-sf","Semifinále 2":"badge-sf","Semifinále":"badge-sf",
+  "Finále":"badge-f","O 3. místo":"badge-3rd",
+  "Baráž":"badge-baraz","Baráž 1":"badge-baraz","Baráž 2":"badge-baraz","Baráž 3":"badge-baraz","Baráž 4":"badge-baraz",
+}
+
+const PHASE_LABEL = {
+  "Čtvrtfinále 1":"Čtvrtfinále","Čtvrtfinále 2":"Čtvrtfinále","Čtvrtfinále 3":"Čtvrtfinále","Čtvrtfinále 4":"Čtvrtfinále",
+  "Semifinále 1":"Semifinále","Semifinále 2":"Semifinále","Semifinále":"Semifinále",
+  "Finále":"Finále","O 3. místo":"O 3. místo",
+  "Baráž":"Baráž","Baráž 1":"Baráž","Baráž 2":"Baráž","Baráž 3":"Baráž","Baráž 4":"Baráž",
+}
+
+function getAllowedWins(stageName){
+  if(stageName.startsWith("Čtvrtfinále")) return [3,4,5,6]
+  if(stageName==="O 3. místo") return [1]
+  return [4]
+}
+
+let stages = []
+let teamsMap = {}
+let matchesByStage = {}
+
+async function load(){
+  const{data:seasons}=await supabase.from("seasons").select("*")
+    .eq("competition_id",EXTRALIGA_COMPETITION_ID)
+    .order("created_at",{ascending:false})
+  const currentSeason=seasons?.[0]
+  if(!currentSeason){
+    document.getElementById("app").innerHTML='<div class="empty">Žádná sezóna nenalezena.</div>'
+    return
+  }
+
+  const{data:stagesData}=await supabase.from("stages").select("*")
+    .eq("season_id",currentSeason.id)
+    .order("order",{ascending:true})
+
+  stages=(stagesData||[]).filter(s=>PLAYOFF_STAGE_NAMES.includes(s.name))
+
+  const{data:teams}=await supabase.from("teams").select("*")
+  ;(teams||[]).forEach(t=>teamsMap[t.id]=t)
+
+  if(stages.length){
+    const stageIds=stages.map(s=>s.id)
+    const{data:matches}=await supabase.from("matches").select("home_team,away_team,stage_id")
+      .in("stage_id",stageIds)
+    ;(matches||[]).forEach(m=>{
+      if(!matchesByStage[m.stage_id]) matchesByStage[m.stage_id]={home:null,away:null}
+      matchesByStage[m.stage_id].home=m.home_team
+      matchesByStage[m.stage_id].away=m.away_team
+    })
+  }
+
+  render(currentSeason.name)
+}
+
+function getTeamsForStage(stageId){
+  const d=matchesByStage[stageId]
+  if(!d||!d.home) return ""
+  const h=teamsMap[d.home]?.name||d.home
+  const a=teamsMap[d.away]?.name||d.away
+  return `${h} vs ${a}`
+}
+
+function getTeamNames(stageId){
+  const d=matchesByStage[stageId]
+  if(!d||!d.home) return {home:"Domácí",away:"Hosté"}
+  return {
+    home: teamsMap[d.home]?.name||"Domácí",
+    away: teamsMap[d.away]?.name||"Hosté",
+  }
+}
+
+function render(seasonName){
+  const app=document.getElementById("app")
+
+  if(!stages.length){
+    app.innerHTML=`<div class="card"><div class="empty">Tato sezóna (${seasonName}) nemá žádné play off stages.</div></div>`
+    return
+  }
+
+  const grouped={}
+  stages.forEach(s=>{
+    const phase=PHASE_LABEL[s.name]||s.name
+    if(!grouped[phase]) grouped[phase]=[]
+    grouped[phase].push(s)
+  })
+
+  let html=`<div style="font-size:12px;color:#888;margin-bottom:16px;">Sezóna: <b>${seasonName}</b></div>`
+
+  Object.entries(grouped).forEach(([phase,phaseStages])=>{
+    html+=`<div class="section-title">${phase}</div><div class="card">`
+
+    phaseStages.forEach(s=>{
+      const allowed=getAllowedWins(s.name)
+      const current=s.wins_needed||4
+      const badge=PHASE_BADGE[s.name]||"badge-qf"
+      const teams=getTeamsForStage(s.id)
+      const teamNames=getTeamNames(s.id)
+      const initHome=s.initial_wins_home||0
+      const initAway=s.initial_wins_away||0
+      const maxInit=current-1
+
+      const options=allowed.map(n=>
+        `<option value="${n}" ${n===current?"selected":""}>${n} vítězné${n===1?" zápas":n<5?" zápasy":" zápasů"}</option>`
+      ).join("")
+
+      // Možnosti výchozího skóre: 0 až wins_needed-1
+      const scoreOpts=(max)=>{
+        let o=""
+        for(let i=0;i<=max;i++) o+=`<option value="${i}">${i}</option>`
+        return o
+      }
+
+      html+=`
+      <div class="stage-row">
+        <div>
+          <div class="stage-name"><span class="badge ${badge}">${s.name}</span></div>
+          <div class="stage-meta">${teams||"Zatím bez zápasů"}</div>
+        </div>
+        <div class="stage-controls">
+          <div class="control-row">
+            <span class="control-label">Postup po:</span>
+            ${allowed.length>1
+              ?`<select id="wins-${s.id}" onchange="markChanged('${s.id}')">${options}</select>`
+              :`<span style="font-size:13px;color:#888;font-weight:600;">${current} zápas</span>`
+            }
+          </div>
+          <div class="control-row">
+            <span class="control-label">Výchozí skóre:</span>
+            <div class="score-inputs">
+              <select id="inithome-${s.id}" onchange="markChanged('${s.id}')" title="${teamNames.home}">
+                ${scoreOpts(maxInit).replace(`value="${initHome}"`,`value="${initHome}" selected`)}
+              </select>
+              <span class="score-sep">:</span>
+              <select id="initaway-${s.id}" onchange="markChanged('${s.id}')" title="${teamNames.away}">
+                ${scoreOpts(maxInit).replace(`value="${initAway}"`,`value="${initAway}" selected`)}
+              </select>
+            </div>
+          </div>
+          <div class="score-hint" style="font-size:11px;color:#aaa;text-align:right;">${teamNames.home} : ${teamNames.away}</div>
+        </div>
+        <button class="btn btn-save" id="btn-${s.id}" onclick="saveStage('${s.id}')">Uložit</button>
+      </div>`
+    })
+
+    html+=`</div>`
+  })
+
+  app.innerHTML=html
+}
+
+window.markChanged=function(stageId){
+  const btn=document.getElementById(`btn-${stageId}`)
+  if(btn){ btn.className="btn btn-save"; btn.textContent="Uložit" }
+}
+
+window.saveStage=async function(stageId){
+  const winsEl=document.getElementById(`wins-${stageId}`)
+  const initHomeEl=document.getElementById(`inithome-${stageId}`)
+  const initAwayEl=document.getElementById(`initaway-${stageId}`)
+  const btn=document.getElementById(`btn-${stageId}`)
+  if(!btn) return
+
+  const wins=winsEl?Number(winsEl.value):(stages.find(s=>s.id===stageId)?.wins_needed||4)
+  const initHome=initHomeEl?Number(initHomeEl.value):0
+  const initAway=initAwayEl?Number(initAwayEl.value):0
+
+  // Validace — součet nesmí přesáhnout wins_needed
+  if(initHome+initAway>=wins){
+    showToast("❌ Výchozí skóre nesmí dát dohromady tolik jako počet vítězných zápasů!")
+    return
+  }
+
+  btn.textContent="Ukládám..."
+  btn.disabled=true
+
+  const{error}=await supabase.from("stages")
+    .update({
+      wins_needed: wins,
+      initial_wins_home: initHome,
+      initial_wins_away: initAway,
+    })
+    .eq("id",stageId)
+
+  if(error){
+    showToast("❌ Chyba při ukládání: "+error.message)
+    btn.textContent="Uložit"
+    btn.disabled=false
+    return
+  }
+
+  const stage=stages.find(s=>s.id===stageId)
+  if(stage){
+    stage.wins_needed=wins
+    stage.initial_wins_home=initHome
+    stage.initial_wins_away=initAway
+  }
+
+  btn.className="btn btn-saved"
+  btn.textContent="✓ Uloženo"
+  btn.disabled=false
+  showToast("✅ Uloženo!")
+
+  setTimeout(()=>{
+    btn.className="btn btn-save"
+    btn.textContent="Uložit"
+  },2000)
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast")
+  t.innerText=msg; t.classList.add("show")
+  setTimeout(()=>t.classList.remove("show"),2500)
+}
+
+load()
+</script>
+</body>
+</html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
