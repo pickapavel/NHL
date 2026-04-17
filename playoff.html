@@ -536,10 +536,26 @@ seriesKeys.forEach(k=>{
   })
  })
 
- if(SERIES.sf1){ SERIES.sf1.t1=SERIES.sf1.t1||getWinner(SERIES.qf1); SERIES.sf1.t2=SERIES.sf1.t2||getWinner(SERIES.qf2) }
- if(SERIES.sf2){ SERIES.sf2.t1=SERIES.sf2.t1||getWinner(SERIES.qf3); SERIES.sf2.t2=SERIES.sf2.t2||getWinner(SERIES.qf4) }
- if(SERIES.third){ SERIES.third.t1=SERIES.third.t1||getLoser(SERIES.sf1); SERIES.third.t2=SERIES.third.t2||getLoser(SERIES.sf2) }
- if(SERIES.f){ SERIES.f.t1=SERIES.f.t1||getWinner(SERIES.sf1); SERIES.f.t2=SERIES.f.t2||getWinner(SERIES.sf2) }
+if(SERIES.sf1){
+  if(!SERIES.sf1.t1&&!SERIES.sf1.t2){
+   SERIES.sf1.t1=getWinner(SERIES.qf1); SERIES.sf1.t2=getWinner(SERIES.qf2)
+  }
+ }
+ if(SERIES.sf2){
+  if(!SERIES.sf2.t1&&!SERIES.sf2.t2){
+   SERIES.sf2.t1=getWinner(SERIES.qf3); SERIES.sf2.t2=getWinner(SERIES.qf4)
+  }
+ }
+ if(SERIES.third){
+  if(!SERIES.third.t1&&!SERIES.third.t2){
+   SERIES.third.t1=getLoser(SERIES.sf1); SERIES.third.t2=getLoser(SERIES.sf2)
+  }
+ }
+ if(SERIES.f){
+  if(!SERIES.f.t1&&!SERIES.f.t2){
+   SERIES.f.t1=getWinner(SERIES.sf1); SERIES.f.t2=getWinner(SERIES.sf2)
+  }
+ }
 
  // Nastav loga týmů na série tlačítka v pavouku
  Object.entries(SERIES).forEach(([key, s])=>{
