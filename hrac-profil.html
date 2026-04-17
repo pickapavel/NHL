@@ -216,7 +216,7 @@ function renderGoalie(rows,teams,stages,matchesMap,el){
       <div class="stat-card"><div class="stat-card-val">${totalGA}</div><div class="stat-card-label">Inkasované góly</div></div>
       <div class="stat-card"><div class="stat-card-val">${fmt(gaa,2)}</div><div class="stat-card-label">GAA průměr/zápas</div></div>
       <div class="stat-card"><div class="stat-card-val green">${shutouts}</div><div class="stat-card-label">Nulové zápasy</div></div>
-<div class="stat-card"><div class="stat-card-val">${gp}</div><div class="stat-card-label">Zápasy</div></div>
+<div class="stat-card"><div class="stat-card-val">${rows.length}</div><div class="stat-card-label">Zápasy</div></div>
       <div class="stat-card"><div class="stat-card-val amber">${avgToi}</div><div class="stat-card-label">Průměr TOI</div></div>
     </div>
 
@@ -295,6 +295,7 @@ function renderSkater(rows,teams,stages,matchesMap,el){
 
   el.innerHTML=`
     <div class="stat-cards">
+<div class="stat-card"><div class="stat-card-val">${gp}</div><div class="stat-card-label">Zápasy</div></div>
       <div class="stat-card"><div class="stat-card-val blue">${totalP}</div><div class="stat-card-label">Body celkem</div></div>
       <div class="stat-card"><div class="stat-card-val green">${totalG}</div><div class="stat-card-label">Góly</div></div>
       <div class="stat-card"><div class="stat-card-val">${totalA}</div><div class="stat-card-label">Asistence</div></div>
@@ -308,7 +309,6 @@ function renderSkater(rows,teams,stages,matchesMap,el){
       <div class="stat-card"><div class="stat-card-val">${fmt(gp>0?totalP/gp:0,2)}</div><div class="stat-card-label">Body / zápas</div></div>
       <div class="stat-card"><div class="stat-card-val">${fmt(gp>0?totalShots/gp:0,1)}</div><div class="stat-card-label">Střely / zápas</div></div>
       <div class="stat-card"><div class="stat-card-val amber">${avgToi}</div><div class="stat-card-label">Průměr TOI</div></div>
-      <div class="stat-card"><div class="stat-card-val">${gp}</div><div class="stat-card-label">Zápasy</div></div>
     </div>
 
     ${(plSt.games>0||zkSt.games>0)?`
