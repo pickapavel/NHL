@@ -218,6 +218,7 @@ nav {
     justify-content: space-between;
     padding: 0 16px;
   }
+  .nav-logo-mobile { display: block !important; }
   .nav-desktop-items { display: none; }
   .nav-hamburger {
     display: inline-flex;
@@ -332,6 +333,7 @@ const logoMobile = document.createElement('a')
 logoMobile.className = 'nav-logo-mobile'
 logoMobile.href = 'elh.html'
 logoMobile.textContent = '🏒 ELH'
+logoMobile.style.display = 'none'
 nav.appendChild(logoMobile)
 
 const desktopItems = document.createElement('div')
