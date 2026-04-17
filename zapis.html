@@ -12,7 +12,9 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
  
 h1{color:#0b2a3c;margin-bottom:4px;}
 .subtitle{color:#888;font-size:13px;margin-bottom:20px;}
- 
+
+.team-search{width:100%;padding:7px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;margin-bottom:4px;}
+.team-search:focus{outline:none;border-color:#2f9ec9;}
 .topBar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
 .topBar h1{margin:0;flex:1;}
  
@@ -367,6 +369,17 @@ const POHAR_COMPETITION_ID = "254d4b5e-cb32-4c44-8b00-3010f895359c"
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+
+ function filterTeamSelect(input, selectId, seasonId){
+  const q = input.value.toLowerCase()
+  const sel = document.getElementById(selectId)
+  if(!sel) return
+  const teams = getTeamsForSeason(seasonId)
+  const filtered = q ? teams.filter(t => t.name.toLowerCase().includes(q)) : teams
+  const prev = sel.value
+  sel.innerHTML = filtered.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+  if(filtered.find(t=>t.id===prev)) sel.value = prev
+}
 
 const { createClient } = supabase
 const db = createClient(SUPABASE_URL, SUPABASE_KEY)
@@ -909,11 +922,19 @@ function addEntry(){
   const filteredTeams = getTeamsForSeason(seasonId)
   const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
-  div.innerHTML=`
+ div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
    <div class="entry-fields" style="grid-template-columns:${isPohar?'1fr 1fr':'1fr 1fr 80px'}">
-    <div><div class="entry-label">Domácí tým</div><select id="e-home-${id}">${teamOptions}</select></div>
-    <div><div class="entry-label">Hosté tým</div><select id="e-away-${id}">${teamOptions}</select></div>
+    <div>
+      <div class="entry-label">Domácí tým</div>
+      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-home-${id}','${seasonId}')">
+      <select id="e-home-${id}">${teamOptions}</select>
+    </div>
+    <div>
+      <div class="entry-label">Hosté tým</div>
+      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-away-${id}','${seasonId}')">
+      <select id="e-away-${id}">${teamOptions}</select>
+    </div>
     <div class="entry-round-wrap" style="display:${isPohar?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
    </div>`
   cont.appendChild(div)
