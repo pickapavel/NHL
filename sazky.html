@@ -547,14 +547,17 @@ function calcSeriesOdds(homeId,awayId){
   }
 }
 
-function calcGamesOdds(homeId,awayId,winsNeeded){
+function calcGamesOdds(homeId,awayId,winsNeeded,initHome=0,initAway=0){
   const n=standings.length
   const hp=standings.findIndex(t=>t.id===homeId)
   const ap=standings.findIndex(t=>t.id===awayId)
   const hStr=hp>=0?(n-hp)/n:0.5
   const aStr=ap>=0?(n-ap)/n:0.5
   const probH=hStr/(hStr+aStr),probA=1-probH
-  const maxGames=winsNeeded*2-1
+  const hNeeded=winsNeeded-initHome
+  const aNeeded=winsNeeded-initAway
+  const maxGames=hNeeded+aNeeded-1
+  const initTotal=initHome+initAway
   function binom(n,r){
     if(r>n) return 0
     let res=1;for(let i=0;i<r;i++) res=res*(n-i)/(i+1);return Math.round(res)
@@ -567,9 +570,9 @@ function calcGamesOdds(homeId,awayId,winsNeeded){
   }
   const probs={},odds={}
   let total=0
-  for(let k=winsNeeded;k<=maxGames;k++){probs[k]=seriesProb(k);total+=probs[k]}
-  for(let k=winsNeeded;k<=maxGames;k++){
-    odds[k]=Math.round((1.12/(probs[k]/total))*100)/100
+for(let k=winsNeeded;k<=maxGames;k++){
+    const totalGames=k+initTotal
+    odds[totalGames]=Math.round((1.12/(probs[k]/total))*100)/100
   }
   return odds
 }
@@ -747,8 +750,7 @@ async function load(){
     const phase=STAGE_NAME_TO_PHASE[s.name]
     if(phase){
       if(!playoffStagesByPhase[phase]) playoffStagesByPhase[phase]=[]
-      playoffStagesByPhase[phase].push({id:s.id,name:s.name,wins_needed:s.wins_needed||4})
-    }
+playoffStagesByPhase[phase].push({id:s.id,name:s.name,wins_needed:s.wins_needed||4,initial_wins_home:s.initial_wins_home||0,initial_wins_away:s.initial_wins_away||0})    }
   })
   let prevZakladniStageIds=[]
   if(prevSeason){
@@ -1166,8 +1168,10 @@ function renderMatchesPhase(phase){
     if(!home||!away) return
     const winsNeeded=stage.wins_needed||4
     const seriesOdds=calcSeriesOdds(home.id,away.id)
-    const gamesOdds=calcGamesOdds(home.id,away.id,winsNeeded)
-    ;["kubele","pici"].forEach(pk=>{
+const stageData=playoffStagesByPhase[currentPhase]?.find(s=>s.id===stage.id)||{}
+    const initHome=stageData.initial_wins_home||0
+    const initAway=stageData.initial_wins_away||0
+    const gamesOdds=calcGamesOdds(home.id,away.id,winsNeeded,initHome,initAway)    ;["kubele","pici"].forEach(pk=>{
       winnerState[`sw_odds_${stage.id}_${pk}`]={[home.id]:seriesOdds.home,[away.id]:seriesOdds.away}
       gamesState[`sg_odds_${stage.id}_${pk}`]=gamesOdds
     })
