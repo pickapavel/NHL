@@ -190,6 +190,27 @@ window.resolve = async function(betId, result){
   })
  }
 
+if(result === "lost"){
+  const { data: freshPlayer } = await supabase
+   .from("players")
+   .select("credit")
+   .eq("id", bet.player_id)
+   .single()
+
+  if(freshPlayer){
+   await supabase.from("credit_history").insert({
+    player_id: bet.player_id,
+    type: "lost",
+    description: `Prohra sázky: ${getTypLabel(bet.type)} — ${getTeamName(bet.target_id)}`,
+    amount: 0,
+    credit_before: freshPlayer.credit,
+    credit_after: freshPlayer.credit,
+    bet_id: bet.id,
+    source: "bets_special"
+   })
+  }
+ }
+
  showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
  load()
 }
