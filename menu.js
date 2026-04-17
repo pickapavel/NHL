@@ -248,7 +248,7 @@ nav {
 `
 document.head.appendChild(style)
 
-const currentPage = window.location.pathname.split('/').pop() || 'index.html'
+const currentPage = window.location.pathname.split('/').pop() || ''
 
 function isActive(pages){
   return pages.includes(currentPage) ? 'active' : ''
@@ -260,8 +260,7 @@ const items = [
     icon: '⚡',
     label: 'ELH',
     href: 'elh.html',
-    pages: ['elh.html', 'index.html', '']
-  },
+    pages: ['elh.html']  },
   {
     type: 'link',
     icon: '🏆',
