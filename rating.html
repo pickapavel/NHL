@@ -122,11 +122,13 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 <div class="section-title">Žebříček a historie</div>
 
 <div class="filter-bar">
-<button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
+<button class="filter-btn" onclick="setOwner('all',this)">Všichni</button>
+ <button class="filter-btn" onclick="setOwner('kubele',this)">🔵 Kubele</button>
+ <button class="filter-btn" onclick="setOwner('pici',this)">🟣 Pici</button>
+ <div class="filter-divider"></div>
+ <button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
  <button class="filter-btn" onclick="setFilter('reprezentace',this)">Reprezentace</button>
  <button class="filter-btn" onclick="setFilter('all',this)">Všechny</button>
- <button class="filter-btn" onclick="setFilter('kubele',this)">🔵 Kubele</button>
- <button class="filter-btn" onclick="setFilter('pici',this)">🟣 Pici</button>
 
  <div class="filter-divider"></div>
 
@@ -172,6 +174,7 @@ let seasonOrder = {}
 let historyMap = {}
 let currentFilter = "extraliga"
 let currentTeamId = ""
+let currentOwner = "all"
 
 function getScore(match, teamId){
  const hg=Number(match.home_score), ag=Number(match.away_score)
@@ -291,12 +294,23 @@ function buildTeamSelect(){
  })
 }
 
+window.setOwner = function(val, btn){
+ currentOwner = val
+ document.querySelectorAll(".filter-btn").forEach(b=>{
+  if(b.getAttribute("onclick")?.includes("setOwner")) b.classList.remove("active")
+ })
+ btn.classList.add("active")
+ render()
+}
+
 window.setFilter = function(val, btn){
  currentFilter = val
  currentTeamId = ""
  document.getElementById("teamFilterSelect").value = ""
  document.getElementById("btnClearTeam").style.display = "none"
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"))
+ document.querySelectorAll(".filter-btn").forEach(b=>{
+  if(b.getAttribute("onclick")?.includes("setFilter")) b.classList.remove("active")
+ })
  btn.classList.add("active")
  render()
 }
@@ -391,8 +405,8 @@ let filtered = allTeams
  } else {
   if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
   else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace||t.in_olympiada)
-  else if(currentFilter==="kubele")       filtered=allTeams.filter(t=>t.owner_id==="a5b84a2d-58e6-4bf6-877f-be814a993db6")
-  else if(currentFilter==="pici")         filtered=allTeams.filter(t=>t.owner_id==="38dd6159-1b85-4e87-9176-6a494597216f")
+  if(currentOwner==="kubele") filtered=filtered.filter(t=>t.owner_id==="a5b84a2d-58e6-4bf6-877f-be814a993db6")
+  else if(currentOwner==="pici") filtered=filtered.filter(t=>t.owner_id==="38dd6159-1b85-4e87-9176-6a494597216f")
  }
 
  const sorted = filtered
