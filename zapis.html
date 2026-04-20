@@ -930,7 +930,7 @@ function addEntry(){
   const cont=document.getElementById("matchEntries")
 const maxRound=allMatches.length?Math.max(...allMatches.map(m=>Number(m.round)||0)):0
 const nextRound=maxRound+cont.querySelectorAll(".match-entry").length+1
-const seasonId = document.getElementById("m-season").value
+const seasonId = document.getElementById("m-season").valueconst seasonId = document.getElementById("m-season").value
   const isPohar = isPoharSeason(seasonId)
   const filteredTeams = getTeamsForSeason(seasonId)
   const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
