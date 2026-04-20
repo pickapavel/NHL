@@ -1213,8 +1213,8 @@ const stageData=playoffStagesByPhase[currentPhase]?.find(s=>s.id===stage.id)||{}
         <div style="padding:16px 18px 8px;background:var(--bg);">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">🏒 Jednotlivé zápasy</div>
         </div>
-        ${matches.slice().sort((a,b)=>Number(b.round)-Number(a.round))
-          .map((m,idx)=>renderMatchCard(m,matches.length-idx,stage.name)).join("")}
+${matches.slice().sort((a,b)=>Number(a.round)-Number(b.round))
+          .map((m,idx)=>renderMatchCard(m,idx+1,stage.name)).join("")}
       </div>
     </div>`
   })
