@@ -255,15 +255,15 @@ async function load(){
   eloRatings[h]=eloH+Math.round(K_ELO*(sH-expH))
   eloRatings[a]=eloA+Math.round(K_ELO*(sA-expA))
 
-  const fH=updateForm(h,a,sH)
+const fH=updateForm(h,a,sH)
   const fA=updateForm(a,h,sA)
 
   historyMap[h].push({
-   match:m, formBefore:fH.before, formAfter:fH.after, formChange:fH.change,
+   match:m, formBefore:fH.before, formAfter:fH.after, formChange:fH.after-fH.before,
    resultType:getResultType(m,h), formSnapshot:[...formHistory[h]]
   })
   historyMap[a].push({
-   match:m, formBefore:fA.before, formAfter:fA.after, formChange:fA.change,
+   match:m, formBefore:fA.before, formAfter:fA.after, formChange:fA.after-fA.before,
    resultType:getResultType(m,a), formSnapshot:[...formHistory[a]]
   })
  })
