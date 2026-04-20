@@ -258,7 +258,7 @@ async function load(){
 const fH=updateForm(h,a,sH)
   const fA=updateForm(a,h,sA)
 
-  historyMap[h].push({
+historyMap[h].push({
    match:m, formBefore:fH.before, formAfter:fH.after, formChange:fH.after-fH.before,
    resultType:getResultType(m,h), formSnapshot:[...formHistory[h]]
   })
