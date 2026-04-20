@@ -122,9 +122,11 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 <div class="section-title">Žebříček a historie</div>
 
 <div class="filter-bar">
- <button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
+<button class="filter-btn active" onclick="setFilter('extraliga',this)">Extraliga</button>
  <button class="filter-btn" onclick="setFilter('reprezentace',this)">Reprezentace</button>
  <button class="filter-btn" onclick="setFilter('all',this)">Všechny</button>
+ <button class="filter-btn" onclick="setFilter('kubele',this)">🔵 Kubele</button>
+ <button class="filter-btn" onclick="setFilter('pici',this)">🟣 Pici</button>
 
  <div class="filter-divider"></div>
 
@@ -383,12 +385,14 @@ window.render = function(){
  const minForm = Number(document.getElementById("minForm")?.value) || null
  const maxForm = Number(document.getElementById("maxForm")?.value) || null
 
- let filtered = allTeams
+let filtered = allTeams
  if(currentTeamId){
   filtered = allTeams.filter(t=>t.id===currentTeamId)
  } else {
   if(currentFilter==="extraliga")         filtered=allTeams.filter(t=>t.in_extraliga)
   else if(currentFilter==="reprezentace") filtered=allTeams.filter(t=>t.in_reprezentace||t.in_olympiada)
+  else if(currentFilter==="kubele")       filtered=allTeams.filter(t=>t.owner_id==="a5b84a2d-58e6-4bf6-877f-be814a993db6")
+  else if(currentFilter==="pici")         filtered=allTeams.filter(t=>t.owner_id==="38dd6159-1b85-4e87-9176-6a494597216f")
  }
 
  const sorted = filtered
