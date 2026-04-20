@@ -639,16 +639,19 @@ function renderResults(SERIES){
      <div class="result-mini-card ${played?'':'unplayed'}">
       <div class="rm-header">
        <span class="rm-num">${i+1}. zápas</span>
-       ${played
-        ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
-        :`<button class="btn-sm btn-bet"
-            data-url="vsad-si.html?id=${m.id}"
-            data-home-logo="${homeLogoM}"
-            data-home-name="${homeTeam}"
-            data-away-logo="${awayLogoM}"
-            data-away-name="${awayTeam}"
-            onclick="openHymna(this)">🎲 Vsaď si</button>`
-       }
+<div style="display:flex;gap:4px;">
+     ${played
+      ?`<button class="btn-sm btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
+      :''
+     }
+     <button class="btn-sm btn-bet"
+       data-url="vsad-si.html?id=${m.id}"
+       data-home-logo="${homeLogoM}"
+       data-home-name="${homeTeam}"
+       data-away-logo="${awayLogoM}"
+       data-away-name="${awayTeam}"
+       onclick="openHymna(this)">${played ? '📋 Sázky' : '🎲 Vsaď si'}</button>
+    </div>
       </div>
       <div class="rm-teams">
        <div class="rm-team-row ${played&&!homeWin?'rm-loser':''}">
