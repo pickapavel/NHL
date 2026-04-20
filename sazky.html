@@ -1171,7 +1171,8 @@ function renderMatchesPhase(phase){
 const stageData=playoffStagesByPhase[currentPhase]?.find(s=>s.id===stage.id)||{}
     const initHome=stageData.initial_wins_home||0
     const initAway=stageData.initial_wins_away||0
-    const gamesOdds=calcGamesOdds(home.id,away.id,winsNeeded,initHome,initAway)    ;["kubele","pici"].forEach(pk=>{
+    const gamesOdds=calcGamesOdds(home.id,away.id,winsNeeded,initHome,initAway)
+    ;["kubele","pici"].forEach(pk=>{
       winnerState[`sw_odds_${stage.id}_${pk}`]={[home.id]:seriesOdds.home,[away.id]:seriesOdds.away}
       gamesState[`sg_odds_${stage.id}_${pk}`]=gamesOdds
     })
