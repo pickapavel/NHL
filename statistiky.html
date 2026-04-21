@@ -660,13 +660,43 @@ function renderTeams(){
   }
  })
 
+// Spočítej výhry/prohry z allMatches
+ allMatches.forEach(m=>{
+  if(m.home_score==null) return
+  const homeTeam=allTeamsDb.find(t=>t.id===m.home_team)
+  const awayTeam=allTeamsDb.find(t=>t.id===m.away_team)
+  let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+  const isReg=!isSN&&!isOT
+  ;[[homeTeam,Number(m.home_score),Number(m.away_score)],[awayTeam,Number(m.away_score),Number(m.home_score)]].forEach(([team,tg,og])=>{
+   if(!team?.team_abbr||!map[team.team_abbr]) return
+   const e=map[team.team_abbr]
+   if(!e.w) { e.w=0;e.l=0;e.vp=0;e.pp=0;e.vsn=0;e.psn=0;e.vot=0;e.pot=0;e.ga=0 }
+   e.ga+=og
+   const won=tg>og
+   if(won){
+    e.w++
+    if(isSN) e.vsn++
+    else if(isOT) e.vot++
+    else e.vp++
+   } else {
+    e.l++
+    if(isSN) e.psn++
+    else if(isOT) e.pot++
+    else e.pp++
+   }
+  })
+ })
+
  let teams=Object.values(map).map(t=>({
   ...t,
   gp:t.matches.size,
-  players:t.players.size,
   gpg:t.matches.size>0?(t.goals/t.matches.size).toFixed(2):'—',
   spg:t.matches.size>0?(t.shots/t.matches.size).toFixed(1):'—',
-  apg:t.matches.size>0?(t.assists/t.matches.size).toFixed(2):'—',
+  w:t.w||0, l:t.l||0, vp:t.vp||0, pp:t.pp||0,
+  vsn:t.vsn||0, psn:t.psn||0, vot:t.vot||0, pot:t.pot||0,
+  ga:t.ga||0,
  }))
 
  // Filtry
@@ -683,7 +713,7 @@ function renderTeams(){
   return tid?`tym-detail.html?id=${tid}`:`tym-detail.html?abbr=${encodeURIComponent(abbr)}`
  }
 
- document.getElementById('teamsContent').innerHTML=`
+document.getElementById('teamsContent').innerHTML=`
   <div class="filter-row" style="margin-bottom:12px;">
    <button class="seg-btn ${teamsOwnerFilter==='all'?'active':''}" onclick="setTeamsOwner('all',this)">Všichni</button>
    <button class="seg-btn ${teamsOwnerFilter==='kubele'?'active-kubele':''}" onclick="setTeamsOwner('kubele',this)">🔵 Kubele</button>
@@ -700,11 +730,14 @@ function renderTeams(){
     <thead><tr>
      <th class="th-left">#</th>
      <th class="th-left">Tým</th>
-     <th>Zápasy</th><th>Góly</th><th>G/Z</th>
-     <th>Asistence</th><th>A/Z</th>
+     <th>Z</th><th>Skóre</th><th>G/Z</th>
+     <th>V</th><th>P</th>
+     <th>VP</th><th>PP</th>
+     <th>VOT</th><th>POT</th>
+     <th>VSN</th><th>PSN</th>
      <th>Střely</th><th>Str/Z</th>
-     <th>PP</th><th>SHG</th>
-     <th>Hity</th><th>TM</th><th>Hráčů</th>
+     <th>PP góly</th><th>SHG</th>
+     <th>Hity</th><th>TM</th>
      <th>Detail</th>
     </tr></thead>
     <tbody>
@@ -715,21 +748,25 @@ function renderTeams(){
         <div class="team-cell">
          ${logoImg(t.team)}
          <a href="${teamDetailUrl(t.team)}" class="player-link">${teamName(t.team)}</a>
-         <span class="team-badge">${t.team}</span>
         </div>
        </td>
        <td>${t.gp}</td>
-       <td class="td-highlight">${t.goals}</td>
+       <td class="td-highlight" style="white-space:nowrap;">${t.goals} : ${t.ga}</td>
        <td>${t.gpg}</td>
-       <td>${t.assists}</td>
-       <td>${t.apg}</td>
+       <td style="color:#16a34a;font-weight:700;">${t.w}</td>
+       <td style="color:#dc2626;font-weight:700;">${t.l}</td>
+       <td style="color:#16a34a;">${t.vp}</td>
+       <td style="color:#dc2626;">${t.pp}</td>
+       <td style="color:#d97706;">${t.vot}</td>
+       <td style="color:#d97706;">${t.pot}</td>
+       <td style="color:#7ab0cc;">${t.vsn}</td>
+       <td style="color:#7ab0cc;">${t.psn}</td>
        <td>${t.shots}</td>
        <td>${t.spg}</td>
        <td>${t.ppg}</td>
        <td>${t.shg}</td>
        <td>${t.hits}</td>
        <td>${t.pim_total}</td>
-       <td>${t.players}</td>
        <td><a href="${teamDetailUrl(t.team)}" style="display:inline-flex;align-items:center;gap:4px;background:#1a5276;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;text-decoration:none;">📊 Statistiky</a></td>
       </tr>`).join('')}
     </tbody>
@@ -738,12 +775,15 @@ function renderTeams(){
   <div class="legend" style="margin-top:16px;">
    <div class="legend-title">Legenda — Týmové statistiky</div>
    <div class="legend-grid">
-    <div class="legend-item"><span class="legend-key">G/Z</span><span>Průměr gólů na zápas</span></div>
-    <div class="legend-item"><span class="legend-key">A/Z</span><span>Průměr asistencí na zápas</span></div>
-    <div class="legend-item"><span class="legend-key">Str/Z</span><span>Průměr střel na zápas</span></div>
-    <div class="legend-item"><span class="legend-key">PP</span><span>Přesilovkové góly</span></div>
+    <div class="legend-item"><span class="legend-key">Z</span><span>Zápasy</span></div>
+    <div class="legend-item"><span class="legend-key">Skóre</span><span>Vstřelené : Inkasované góly</span></div>
+    <div class="legend-item"><span class="legend-key">V/P</span><span>Výhry / Prohry celkem</span></div>
+    <div class="legend-item"><span class="legend-key">VP/PP</span><span>Výhra/Prohra v základní hrací době</span></div>
+    <div class="legend-item"><span class="legend-key">VOT/POT</span><span>Výhra/Prohra v prodloužení</span></div>
+    <div class="legend-item"><span class="legend-key">VSN/PSN</span><span>Výhra/Prohra v nájezdech</span></div>
+    <div class="legend-item"><span class="legend-key">PP góly</span><span>Přesilovkové góly</span></div>
     <div class="legend-item"><span class="legend-key">SHG</span><span>Góly v oslabení</span></div>
-    <div class="legend-item"><span class="legend-key">TM</span><span>Trestné minuty celkem</span></div>
+    <div class="legend-item"><span class="legend-key">TM</span><span>Trestné minuty</span></div>
    </div>
   </div>`
 }
