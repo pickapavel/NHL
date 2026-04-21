@@ -616,38 +616,77 @@ function renderLegend(isGoalieView){
 // =====================================================
 // TÝMOVÉ STATISTIKY
 // =====================================================
+let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal=''
+
 function renderTeams(){
  const map={}
  rawStats.forEach(r=>{
   const t=r.team_abbr||'?'
-  if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,players:new Set()}
+  if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,shg:0,assists:0,plus_minus:0,pim_total:0,players:new Set(),owner_id:null,is_klub:false,is_repre:false}
   const m=map[t]
   m.matches.add(r.match_id)
-  m.goals +=r.goals||0
-  m.shots +=r.shots||0
-  m.hits  +=r.hits||0
-  m.pim   +=r.pim||0
-  m.ppg   +=r.ppg||0
+  m.goals      +=r.goals||0
+  m.assists    +=r.assists||0
+  m.shots      +=r.shots||0
+  m.hits       +=r.hits||0
+  m.pim_total  +=r.pim||0
+  m.ppg        +=r.ppg||0
+  m.shg        +=r.shg||0
+  m.plus_minus +=r.plus_minus||0
   m.players.add(r.player_name)
+  if(!m.owner_id && TEAM_MAP[t]){
+   m.owner_id = TEAM_MAP[t].owner_id
+   m.is_klub  = TEAM_MAP[t].is_klub
+   m.is_repre = TEAM_MAP[t].is_repre
+  }
  })
 
- const teams=Object.values(map).map(t=>({
+ let teams=Object.values(map).map(t=>({
   ...t,
   gp:t.matches.size,
   players:t.players.size,
   gpg:t.matches.size>0?(t.goals/t.matches.size).toFixed(2):'—',
   spg:t.matches.size>0?(t.shots/t.matches.size).toFixed(1):'—',
- })).sort((a,b)=>b.goals-a.goals)
+  apg:t.matches.size>0?(t.assists/t.matches.size).toFixed(2):'—',
+ }))
+
+ // Filtry
+ if(teamsOwnerFilter==='kubele') teams=teams.filter(t=>t.owner_id===PLAYER_IDS.kubele)
+ else if(teamsOwnerFilter==='pici') teams=teams.filter(t=>t.owner_id===PLAYER_IDS.pici)
+ if(teamsTypeFilter==='klub') teams=teams.filter(t=>t.is_klub)
+ else if(teamsTypeFilter==='repre') teams=teams.filter(t=>t.is_repre)
+ if(teamsSearchVal) teams=teams.filter(t=>teamName(t.team).toLowerCase().includes(teamsSearchVal.toLowerCase()))
+
+ teams.sort((a,b)=>b.goals-a.goals)
+
+ const teamDetailUrl=(abbr)=>{
+  const tid=TEAM_MAP[abbr]?.id
+  return tid?`tym-detail.html?id=${tid}`:`tym-detail.html?abbr=${encodeURIComponent(abbr)}`
+ }
 
  document.getElementById('teamsContent').innerHTML=`
+  <div class="filter-row" style="margin-bottom:12px;">
+   <button class="seg-btn ${teamsOwnerFilter==='all'?'active':''}" onclick="setTeamsOwner('all',this)">Všichni</button>
+   <button class="seg-btn ${teamsOwnerFilter==='kubele'?'active-kubele':''}" onclick="setTeamsOwner('kubele',this)">🔵 Kubele</button>
+   <button class="seg-btn ${teamsOwnerFilter==='pici'?'active-pici':''}" onclick="setTeamsOwner('pici',this)">🟣 Pici</button>
+   <div class="filter-divider"></div>
+   <button class="seg-btn ${teamsTypeFilter==='all'?'active':''}" onclick="setTeamsType('all',this)">Všechny typy</button>
+   <button class="seg-btn ${teamsTypeFilter==='klub'?'active':''}" onclick="setTeamsType('klub',this)">🏒 Klubové</button>
+   <button class="seg-btn ${teamsTypeFilter==='repre'?'active':''}" onclick="setTeamsType('repre',this)">🌍 Reprezentace</button>
+   <div class="filter-divider"></div>
+   <input class="search-input" placeholder="🔍 Hledat tým..." oninput="teamsSearchVal=this.value;renderTeams()" value="${teamsSearchVal}">
+  </div>
   <div class="table-wrap">
    <table>
     <thead><tr>
      <th class="th-left">#</th>
      <th class="th-left">Tým</th>
      <th>Zápasy</th><th>Góly</th><th>G/Z</th>
-     <th>Střely</th><th>Str/Z</th><th>PP góly</th>
+     <th>Asistence</th><th>A/Z</th>
+     <th>Střely</th><th>Str/Z</th>
+     <th>PP</th><th>SHG</th>
      <th>Hity</th><th>TM</th><th>Hráčů</th>
+     <th>Detail</th>
     </tr></thead>
     <tbody>
      ${teams.map((t,i)=>`
@@ -656,19 +695,23 @@ function renderTeams(){
        <td class="td-left">
         <div class="team-cell">
          ${logoImg(t.team)}
-         <span>${teamName(t.team)}</span>
+         <a href="${teamDetailUrl(t.team)}" class="player-link">${teamName(t.team)}</a>
          <span class="team-badge">${t.team}</span>
         </div>
        </td>
        <td>${t.gp}</td>
        <td class="td-highlight">${t.goals}</td>
        <td>${t.gpg}</td>
+       <td>${t.assists}</td>
+       <td>${t.apg}</td>
        <td>${t.shots}</td>
        <td>${t.spg}</td>
        <td>${t.ppg}</td>
+       <td>${t.shg}</td>
        <td>${t.hits}</td>
-       <td>${t.pim}</td>
+       <td>${t.pim_total}</td>
        <td>${t.players}</td>
+       <td><a href="${teamDetailUrl(t.team)}" style="display:inline-flex;align-items:center;gap:4px;background:#1a5276;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;text-decoration:none;">📊 Statistiky</a></td>
       </tr>`).join('')}
     </tbody>
    </table>
@@ -677,12 +720,22 @@ function renderTeams(){
    <div class="legend-title">Legenda — Týmové statistiky</div>
    <div class="legend-grid">
     <div class="legend-item"><span class="legend-key">G/Z</span><span>Průměr gólů na zápas</span></div>
+    <div class="legend-item"><span class="legend-key">A/Z</span><span>Průměr asistencí na zápas</span></div>
     <div class="legend-item"><span class="legend-key">Str/Z</span><span>Průměr střel na zápas</span></div>
-    <div class="legend-item"><span class="legend-key">PP</span><span>Přesilovkové góly celkem</span></div>
+    <div class="legend-item"><span class="legend-key">PP</span><span>Přesilovkové góly</span></div>
+    <div class="legend-item"><span class="legend-key">SHG</span><span>Góly v oslabení</span></div>
     <div class="legend-item"><span class="legend-key">TM</span><span>Trestné minuty celkem</span></div>
-    <div class="legend-item"><span class="legend-key">Hráčů</span><span>Počet různých hráčů se záznamy</span></div>
    </div>
   </div>`
+}
+
+function setTeamsOwner(val, btn){
+ teamsOwnerFilter=val
+ renderTeams()
+}
+function setTeamsType(val, btn){
+ teamsTypeFilter=val
+ renderTeams()
 }
 
 // =====================================================
