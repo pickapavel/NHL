@@ -620,11 +620,25 @@ let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal=''
 
 function renderTeams(){
  const map={}
+
+ // Nejdřív přidej všechny zápasy z allMatches
+ allMatches.forEach(m=>{
+  if(m.home_score==null) return
+  const homeTeam=allTeamsDb.find(t=>t.id===m.home_team)
+  const awayTeam=allTeamsDb.find(t=>t.id===m.away_team)
+  ;[homeTeam,awayTeam].forEach(team=>{
+   if(!team||!team.team_abbr) return
+   const t=team.team_abbr
+   if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,shg:0,assists:0,plus_minus:0,pim_total:0,players:new Set(),owner_id:team.owner_id,is_klub:team.team_type==='klub',is_repre:team.team_type==='reprezentace'}
+   map[t].matches.add(m.id)
+  })
+ })
+
+ // Pak přidej statistiky z rawStats
  rawStats.forEach(r=>{
   const t=r.team_abbr||'?'
   if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,shg:0,assists:0,plus_minus:0,pim_total:0,players:new Set(),owner_id:null,is_klub:false,is_repre:false}
   const m=map[t]
-  m.matches.add(r.match_id)
   m.goals      +=r.goals||0
   m.assists    +=r.assists||0
   m.shots      +=r.shots||0
