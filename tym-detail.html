@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detail týmu</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
+.hero{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);padding:20px 30px;display:flex;align-items:center;gap:16px;}
+.hero-logo{width:64px;height:64px;object-fit:contain;background:white;border-radius:12px;padding:4px;flex-shrink:0;}
+.hero-logo-ph{width:64px;height:64px;background:rgba(255,255,255,.1);border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.hero-name{font-size:26px;font-weight:800;color:white;}
+.hero-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.hero-badge{background:rgba(255,255,255,.12);color:#7ab0cc;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;}
+.back-btn{margin-left:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:all .15s;text-decoration:none;}
+.back-btn:hover{background:rgba(255,255,255,.2);}
+.wrapper{max-width:1200px;margin:0 auto;padding:28px 20px 60px;}
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px;}
+.stat-card{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);padding:14px;text-align:center;}
+.stat-card-val{font-size:30px;font-weight:800;color:#0b2a3c;line-height:1;}
+.stat-card-val.blue{color:#1a5276;}
+.stat-card-val.green{color:#16a34a;}
+.stat-card-val.amber{color:#d97706;}
+.stat-card-label{font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.06em;margin-top:5px;}
+.section{margin-bottom:28px;}
+.section-title{font-size:15px;font-weight:700;color:#0b2a3c;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#2f9ec9,transparent);border-radius:2px;}
+.filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+.seg-btn{padding:7px 16px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
+.seg-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
+.seg-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+.filter-select{padding:7px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;}
+.filter-select:focus{outline:none;border-color:#2f9ec9;}
+.search-input{padding:7px 14px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;color:#1a3a5c;}
+.search-input:focus{outline:none;border-color:#2f9ec9;}
+.filter-divider{width:1px;height:28px;background:#c8d8e8;margin:0 4px;}
+.table-wrap{background:white;border-radius:12px;border:1px solid #e0ecf8;box-shadow:0 2px 8px rgba(26,58,92,.07);overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:#0b2a3c;color:#7ab0cc;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+thead th.num{text-align:center;}
+tbody tr{border-bottom:1px solid #f0f4f8;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#f0f6fc;}
+tbody tr:nth-child(even){background:#f7fbff;}
+tbody tr:nth-child(even):hover{background:#e8f2fb;}
+tbody td{padding:10px 12px;vertical-align:middle;color:#1a2a3c;font-size:13px;}
+tbody td.num{text-align:center;}
+.result-win{color:#16a34a;font-weight:700;}
+.result-loss{color:#dc2626;font-weight:700;}
+.result-ot{color:#d97706;font-weight:700;}
+.score-badge{font-weight:800;font-size:14px;color:#0b2a3c;background:#e8f0f8;padding:2px 8px;border-radius:6px;}
+.opp-cell{display:flex;align-items:center;gap:8px;}
+.opp-logo{width:22px;height:22px;object-fit:contain;border-radius:4px;background:white;padding:1px;border:1px solid #e0e0e0;}
+.season-badge{font-size:10px;font-weight:700;background:#e8f0f8;color:#1a5276;padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
+.spinner{width:32px;height:32px;border:3px solid #e0ecf8;border-top-color:#2f9ec9;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-row td{text-align:center;color:#aaa;padding:24px;font-style:italic;}
+@media(max-width:640px){
+ .hero-name{font-size:20px;}
+ .stat-cards{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="hero">
+  <div id="heroLogo" class="hero-logo-ph">🏒</div>
+  <div>
+    <div class="hero-name" id="heroName">Načítám...</div>
+    <div class="hero-meta" id="heroMeta"></div>
+  </div>
+  <a class="back-btn" onclick="history.back()">← Zpět</a>
+</div>
+
+<div class="wrapper">
+  <div id="loadingEl" class="loading"><div class="spinner"></div>Načítám statistiky...</div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const params = new URLSearchParams(window.location.search)
+const teamId = params.get("id")
+const teamAbbr = params.get("abbr")
+
+let allMatches=[], teamsMap={}, seasonsMap={}, stagesMap={}
+let teamMatches=[]
+let locFilter='all', resultFilter='all', oppFilter='', seasonFilter='', searchOpp=''
+
+async function load(){
+  const [teamsRes, matchesRes, seasonsRes, stagesRes] = await Promise.all([
+    supabase.from("teams").select("*"),
+    supabase.from("matches").select("*").not("home_score","is",null).not("away_score","is",null),
+    supabase.from("seasons").select("*"),
+    supabase.from("stages").select("*"),
+  ])
+
+  ;(teamsRes.data||[]).forEach(t=>teamsMap[t.id]=t)
+  ;(seasonsRes.data||[]).forEach(s=>seasonsMap[s.id]=s)
+  ;(stagesRes.data||[]).forEach(s=>stagesMap[s.id]=s)
+  allMatches = matchesRes.data||[]
+
+  const team = teamId ? teamsMap[teamId] : Object.values(teamsMap).find(t=>t.team_abbr===teamAbbr)
+  if(!team){ document.getElementById("loadingEl").innerHTML='<div style="color:#7ab0cc;text-align:center;padding:60px">Tým nenalezen.</div>'; return }
+
+  document.title = team.name + " — Statistiky"
+  document.getElementById("heroName").textContent = team.name
+  if(team.logo){
+    document.getElementById("heroLogo").outerHTML=`<img class="hero-logo" src="./logos/${team.logo}" onerror="this.style.display='none'" id="heroLogo">`
+  }
+  document.getElementById("heroMeta").innerHTML=`
+    <span class="hero-badge">${team.team_abbr||""}</span>
+    <span class="hero-badge">${team.team_type||""}</span>
+  `
+
+  teamMatches = allMatches.filter(m=>m.home_team===team.id||m.away_team===team.id)
+    .map(m=>{
+      const isHome=m.home_team===team.id
+      const opp=teamsMap[isHome?m.away_team:m.home_team]
+      const hg=Number(m.home_score), ag=Number(m.away_score)
+      const tg=isHome?hg:ag, og=isHome?ag:hg
+      let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+      const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+      const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+      const won=tg>og, lost=tg<og
+      const result=isSN||isOT?(won?"OT/SN výhra":"OT/SN prohra"):(won?"Výhra":"Prohra")
+      const resultClass=won?"result-win":"result-loss"
+      const season=seasonsMap[m.season_id]
+      const stage=stagesMap[m.stage_id]
+      return {...m, isHome, opp, tg, og, won, lost, result, resultClass, isSN, isOT, season, stage}
+    })
+    .sort((a,b)=>(seasonsMap[a.season_id]?.created_at||"").localeCompare(seasonsMap[b.season_id]?.created_at||"")||Number(a.round)-Number(b.round))
+
+  document.getElementById("loadingEl").style.display="none"
+  const content=document.getElementById("content")
+  content.style.display="block"
+
+  // Soupeři pro select
+  const opps=[...new Set(teamMatches.map(m=>m.opp?.id).filter(Boolean))]
+    .map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
+  const seasons=[...new Set(teamMatches.map(m=>m.season?.id).filter(Boolean))]
+    .map(id=>seasonsMap[id]).filter(Boolean)
+
+  renderContent(team, opps, seasons)
+}
+
+function getFiltered(){
+  return teamMatches.filter(m=>{
+    if(locFilter==='home'&&!m.isHome) return false
+    if(locFilter==='away'&&m.isHome) return false
+    if(resultFilter==='win'&&!m.won) return false
+    if(resultFilter==='loss'&&!m.lost) return false
+    if(resultFilter==='ot'&&!(m.isSN||m.isOT)) return false
+    if(oppFilter&&m.opp?.id!==oppFilter) return false
+    if(seasonFilter&&m.season?.id!==seasonFilter) return false
+    if(searchOpp&&!m.opp?.name.toLowerCase().includes(searchOpp.toLowerCase())) return false
+    return true
+  })
+}
+
+function renderContent(team, opps, seasons){
+  const filtered=getFiltered()
+  const total=filtered.length
+  const wins=filtered.filter(m=>m.won).length
+  const losses=filtered.filter(m=>m.lost).length
+  const otWins=filtered.filter(m=>m.won&&(m.isSN||m.isOT)).length
+  const otLosses=filtered.filter(m=>m.lost&&(m.isSN||m.isOT)).length
+  const gf=filtered.reduce((s,m)=>s+m.tg,0)
+  const ga=filtered.reduce((s,m)=>s+m.og,0)
+  const homeM=filtered.filter(m=>m.isHome)
+  const awayM=filtered.filter(m=>!m.isHome)
+  const winPct=total>0?((wins/total)*100).toFixed(1):0
+
+  document.getElementById("content").innerHTML=`
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-val">${total}</div><div class="stat-card-label">Zápasy</div></div>
+      <div class="stat-card"><div class="stat-card-val green">${wins}</div><div class="stat-card-label">Výhry</div></div>
+      <div class="stat-card"><div class="stat-card-val result-loss">${losses}</div><div class="stat-card-label">Prohry</div></div>
+      <div class="stat-card"><div class="stat-card-val amber">${otWins}</div><div class="stat-card-label">OT/SN výhry</div></div>
+      <div class="stat-card"><div class="stat-card-val amber">${otLosses}</div><div class="stat-card-label">OT/SN prohry</div></div>
+      <div class="stat-card"><div class="stat-card-val blue">${winPct}%</div><div class="stat-card-label">Úspěšnost</div></div>
+      <div class="stat-card"><div class="stat-card-val green">${gf}</div><div class="stat-card-label">Vstřelené góly</div></div>
+      <div class="stat-card"><div class="stat-card-val result-loss">${ga}</div><div class="stat-card-label">Inkasované góly</div></div>
+      <div class="stat-card"><div class="stat-card-val">${total>0?(gf/total).toFixed(2):0}</div><div class="stat-card-label">Góly/zápas</div></div>
+      <div class="stat-card"><div class="stat-card-val">${homeM.length}</div><div class="stat-card-label">Domácí zápasy</div></div>
+      <div class="stat-card"><div class="stat-card-val">${homeM.filter(m=>m.won).length}</div><div class="stat-card-label">Domácí výhry</div></div>
+      <div class="stat-card"><div class="stat-card-val">${awayM.length}</div><div class="stat-card-label">Venkovní zápasy</div></div>
+      <div class="stat-card"><div class="stat-card-val">${awayM.filter(m=>m.won).length}</div><div class="stat-card-label">Venkovní výhry</div></div>
+      <div class="stat-card"><div class="stat-card-val">${gf-ga>=0?'+':''}${gf-ga}</div><div class="stat-card-label">Skóre rozdíl</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🏒 Výsledky zápasů</div>
+      <div class="filter-row">
+        <button class="seg-btn ${locFilter==='all'?'active':''}" onclick="setLoc('all')">Všechny</button>
+        <button class="seg-btn ${locFilter==='home'?'active':''}" onclick="setLoc('home')">🏠 Domácí</button>
+        <button class="seg-btn ${locFilter==='away'?'active':''}" onclick="setLoc('away')">✈️ Venkovní</button>
+        <div class="filter-divider"></div>
+        <button class="seg-btn ${resultFilter==='all'?'active':''}" onclick="setResult('all')">Vše</button>
+        <button class="seg-btn ${resultFilter==='win'?'active':''}" onclick="setResult('win')">✅ Výhry</button>
+        <button class="seg-btn ${resultFilter==='loss'?'active':''}" onclick="setResult('loss')">❌ Prohry</button>
+        <button class="seg-btn ${resultFilter==='ot'?'active':''}" onclick="setResult('ot')">⏱ OT/SN</button>
+        <div class="filter-divider"></div>
+        <select class="filter-select" onchange="oppFilter=this.value;rerender()">
+          <option value="">Všichni soupeři</option>
+          ${opps.map(o=>`<option value="${o.id}" ${oppFilter===o.id?'selected':''}>${o.name}</option>`).join('')}
+        </select>
+        <select class="filter-select" onchange="seasonFilter=this.value;rerender()">
+          <option value="">Všechny sezóny</option>
+          ${seasons.map(s=>`<option value="${s.id}" ${seasonFilter===s.id?'selected':''}>${s.name}</option>`).join('')}
+        </select>
+        <input class="search-input" placeholder="🔍 Hledat soupeře..." value="${searchOpp}" oninput="searchOpp=this.value;rerender()">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Sezóna</th>
+            <th>Stage</th>
+            <th>Místo</th>
+            <th>Soupeř</th>
+            <th class="num">Skóre</th>
+            <th class="num">Výsledek</th>
+            <th class="num">GF</th>
+            <th class="num">GA</th>
+            <th class="num">+/-</th>
+          </tr></thead>
+          <tbody>
+            ${filtered.length?filtered.map(m=>`
+              <tr>
+                <td><span class="season-badge">${m.season?.name||"—"}</span></td>
+                <td style="font-size:11px;color:#7ab0cc;">${m.stage?.name||"—"}</td>
+                <td style="font-size:12px;">${m.isHome?'🏠 Domácí':'✈️ Venkovní'}</td>
+                <td>
+                  <div class="opp-cell">
+                    ${m.opp?.logo?`<img class="opp-logo" src="./logos/${m.opp.logo}" onerror="this.style.display='none'">`:''}
+                    <span style="font-weight:600;">${m.opp?.name||"?"}</span>
+                  </div>
+                </td>
+                <td class="num"><span class="score-badge">${m.tg} : ${m.og}</span>${m.isSN?' <span style="font-size:10px;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;">SN</span>':m.isOT?' <span style="font-size:10px;background:#f0c040;color:#333;padding:1px 5px;border-radius:4px;">OT</span>':''}</td>
+                <td class="num"><span class="${m.resultClass}">${m.result}</span></td>
+                <td class="num" style="color:#16a34a;font-weight:700;">${m.tg}</td>
+                <td class="num" style="color:#dc2626;font-weight:700;">${m.og}</td>
+                <td class="num" style="color:${m.tg-m.og>0?'#16a34a':m.tg-m.og<0?'#dc2626':'#888'};font-weight:700;">${m.tg-m.og>0?'+':''}${m.tg-m.og}</td>
+              </tr>`).join('')
+            :`<tr class="empty-row"><td colspan="9">Žádné zápasy.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `
+}
+
+window.setLoc=function(v){ locFilter=v; rerender() }
+window.setResult=function(v){ resultFilter=v; rerender() }
+
+function rerender(){
+  const team=teamId?teamsMap[teamId]:Object.values(teamsMap).find(t=>t.team_abbr===teamAbbr)
+  const opps=[...new Set(teamMatches.map(m=>m.opp?.id).filter(Boolean))].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'cs'))
+  const seasons=[...new Set(teamMatches.map(m=>m.season?.id).filter(Boolean))].map(id=>seasonsMap[id]).filter(Boolean)
+  renderContent(team, opps, seasons)
+}
+
+load()
+</script>
+</body>
+</html>
