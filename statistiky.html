@@ -621,31 +621,36 @@ let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal=''
 function renderTeams(){
  const map={}
 
- // Nejdřív přidej všechny zápasy z allMatches
+// Počítej zápasy z allMatches (skóre)
  allMatches.forEach(m=>{
   if(m.home_score==null) return
   const homeTeam=allTeamsDb.find(t=>t.id===m.home_team)
   const awayTeam=allTeamsDb.find(t=>t.id===m.away_team)
-  ;[homeTeam,awayTeam].forEach(team=>{
-   if(!team||!team.team_abbr) return
-   const t=team.team_abbr
-   if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,shg:0,assists:0,plus_minus:0,pim_total:0,players:new Set(),owner_id:team.owner_id,is_klub:team.team_type==='klub',is_repre:team.team_type==='reprezentace'}
+  if(homeTeam?.team_abbr){
+   const t=homeTeam.team_abbr
+   if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim_total:0,ppg:0,shg:0,assists:0,plus_minus:0,players:new Set(),owner_id:homeTeam.owner_id,is_klub:homeTeam.team_type==='klub',is_repre:homeTeam.team_type==='reprezentace'}
    map[t].matches.add(m.id)
-  })
+   map[t].goals+=Number(m.home_score)
+  }
+  if(awayTeam?.team_abbr){
+   const t=awayTeam.team_abbr
+   if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim_total:0,ppg:0,shg:0,assists:0,plus_minus:0,players:new Set(),owner_id:awayTeam.owner_id,is_klub:awayTeam.team_type==='klub',is_repre:awayTeam.team_type==='reprezentace'}
+   map[t].matches.add(m.id)
+   map[t].goals+=Number(m.away_score)
+  }
  })
 
- // Pak přidej statistiky z rawStats
+ // Přidej hráčské statistiky z rawStats (shots, hits, pim, ppg, shg, assists, plus_minus, players)
  rawStats.forEach(r=>{
   const t=r.team_abbr||'?'
-  if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim:0,ppg:0,shg:0,assists:0,plus_minus:0,pim_total:0,players:new Set(),owner_id:null,is_klub:false,is_repre:false}
+  if(!map[t]) map[t]={team:t,matches:new Set(),goals:0,shots:0,hits:0,pim_total:0,ppg:0,shg:0,assists:0,plus_minus:0,players:new Set(),owner_id:null,is_klub:false,is_repre:false}
   const m=map[t]
-  m.goals      +=r.goals||0
-  m.assists    +=r.assists||0
   m.shots      +=r.shots||0
   m.hits       +=r.hits||0
   m.pim_total  +=r.pim||0
   m.ppg        +=r.ppg||0
   m.shg        +=r.shg||0
+  m.assists    +=r.assists||0
   m.plus_minus +=r.plus_minus||0
   m.players.add(r.player_name)
   if(!m.owner_id && TEAM_MAP[t]){
