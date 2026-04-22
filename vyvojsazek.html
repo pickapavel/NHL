@@ -113,6 +113,8 @@ function typeBadge(type){
   return `<span class="badge-bet">${type}</span>`
 }
 
+let pendingBets = {}
+
 async function load(){
   const { data: p } = await supabase.from("players").select("*")
   ;(p||[]).forEach(pl => players[pl.id] = pl)
@@ -123,6 +125,16 @@ async function load(){
     .order("created_at", {ascending: false})
 
   history = h || []
+
+  // Načti pending sázky
+  const [betsRes, specialRes] = await Promise.all([
+    supabase.from("bets").select("player_id,amount").eq("status","pending"),
+    supabase.from("bets_special").select("player_id,amount").eq("status","pending"),
+  ])
+  pendingBets = {}
+  ;[...(betsRes.data||[]), ...(specialRes.data||[])].forEach(b => {
+    pendingBets[b.player_id] = (pendingBets[b.player_id]||0) + Number(b.amount)
+  })
 
   buildPlayerTabs()
   renderCreditsBar()
@@ -164,11 +176,22 @@ function renderCreditsBar(){
     const diff = pl.credit - START_CREDIT
     const diffStr = (diff >= 0 ? "+" : "") + Math.round(diff).toLocaleString("cs-CZ") + " Kč"
     const diffClass = diff >= 0 ? "diff-pos" : "diff-neg"
+    const inBets = pendingBets[pl.id] || 0
+    const total = pl.credit + inBets
+    const totalDiff = total - START_CREDIT
+    const totalDiffStr = (totalDiff >= 0 ? "+" : "") + Math.round(totalDiff).toLocaleString("cs-CZ") + " Kč"
+    const totalDiffClass = totalDiff >= 0 ? "diff-pos" : "diff-neg"
     return `<div class="credit-card">
       <div class="credit-card-name">${pl.name}</div>
       <div class="credit-card-value">${Math.round(pl.credit).toLocaleString("cs-CZ")} Kč</div>
       <div class="credit-card-start">Startovní kredit: ${START_CREDIT.toLocaleString("cs-CZ")} Kč</div>
       <div class="credit-card-diff ${diffClass}">${diffStr}</div>
+      ${inBets > 0 ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;">
+        <div style="font-size:12px;color:#6b7a8d;margin-bottom:3px;">V aktivních sázkách: <b style="color:#e67e22;">−${Math.round(inBets).toLocaleString("cs-CZ")} Kč</b></div>
+        <div style="font-size:12px;color:#6b7a8d;">Celkem (kredit + sázky): <b style="color:#0b2a3c;">${Math.round(total).toLocaleString("cs-CZ")} Kč</b></div>
+        <div class="${totalDiffClass}" style="font-size:13px;font-weight:700;margin-top:2px;">${totalDiffStr} celkově</div>
+      </div>` : ""}
     </div>`
   }).join("")
 }
