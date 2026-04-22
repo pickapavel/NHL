@@ -540,9 +540,10 @@ function calcSeriesOdds(homeId,awayId){
     h2hText=`Poslední vzájemný: ${hg}:${ag} → vyhrál ${wName} (${homeWon?"+":"-"}4%)`
   }
   const probA=1-probH
+const MULTIPLIER=2.0
   return{
-    home:Math.round((1/probH)*PLAYOFF_MARGIN*100)/100,
-    away:Math.round((1/probA)*PLAYOFF_MARGIN*100)/100,
+    home:Math.round((1/probH)*PLAYOFF_MARGIN*MULTIPLIER*100)/100,
+    away:Math.round((1/probA)*PLAYOFF_MARGIN*MULTIPLIER*100)/100,
     probHome:Math.round(probH*100),probAway:Math.round(probA*100),
     homePos:hp+1,awayPos:ap+1,h2hText,
   }
