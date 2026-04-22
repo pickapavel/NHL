@@ -901,8 +901,9 @@ function onModalSeasonChange(){
   if(isPohar) updatePoharRoundHint()
 
   // Skryj/zobraz kolo v jednotlivých entries
+const isPlayoffStage = isPlayoffStageSelected()
   document.querySelectorAll(".entry-round-wrap").forEach(el=>{
-    el.style.display = isPohar ? "none" : "block"
+    el.style.display = (isPohar||isPlayoffStage) ? "none" : "block"
   })
  // Přegeneruj týmy ve všech existujících entries po změně sezóny
   const refiltered = getTeamsForSeason(seasonId)
@@ -916,6 +917,14 @@ function onModalSeasonChange(){
   })
 }
 
+function isPlayoffStageSelected(){
+  const stageId = document.getElementById("m-stage").value
+  const stage = allStages.find(s=>s.id===stageId)
+  if(!stage) return false
+  const playoffNames = ["Čtvrtfinále","Semifinále","Finále","O 3. místo","Playoff","Baráž"]
+  return playoffNames.some(n=>stage.name.includes(n))
+}
+ 
 function updatePoharRoundHint(){
   const round = parseInt(document.getElementById("m-pohar-round").value) || 1
   const hint = document.getElementById("m-round-hint")
@@ -948,8 +957,7 @@ const seasonId = document.getElementById("m-season").value
       <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-away-${id}','${seasonId}')">
       <select id="e-away-${id}">${teamOptions}</select>
     </div>
-    <div class="entry-round-wrap" style="display:${isPohar?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
-   </div>`
+<div class="entry-round-wrap" style="display:${isPohar||isPlayoffStage?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>   </div>`
   cont.appendChild(div)
   if(filteredTeams.length>=2) document.getElementById(`e-away-${id}`).value=filteredTeams[1].id
 }
@@ -977,8 +985,11 @@ async function saveAllMatches(){
     const awayId=document.getElementById(`e-away-${id}`)?.value
     if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
     // Pro pohár: všechny zápasy v tomto přidání dostanou stejné kolo (jedno kolo = jedna fáze pavouka)
-    const round = isPohar ? (poharRound + entryIdx) : Number(document.getElementById(`e-round-${id}`)?.value)
-    if(!isPohar && (!round||round<1)){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
+    const isPlayoff = isPlayoffStageSelected()
+    const round = (isPohar||isPlayoff)
+      ? (allMatches.length + entryIdx + 1)
+      : Number(document.getElementById(`e-round-${id}`)?.value)
+    if(!isPohar && !isPlayoff && (!round||round<1)){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
     toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
     entryIdx++
   })
