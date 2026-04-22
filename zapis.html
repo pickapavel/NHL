@@ -943,10 +943,11 @@ const seasonId = document.getElementById("m-season").value
   const isPohar = isPoharSeason(seasonId)
   const filteredTeams = getTeamsForSeason(seasonId)
   const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+const isPlayoffStage = isPlayoffStageSelected()
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
- div.innerHTML=`
+  div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
-   <div class="entry-fields" style="grid-template-columns:${isPohar?'1fr 1fr':'1fr 1fr 80px'}">
+   <div class="entry-fields" style="grid-template-columns:${isPohar||isPlayoffStage?'1fr 1fr':'1fr 1fr 80px'}">
     <div>
       <div class="entry-label">Domácí tým</div>
       <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-home-${id}','${seasonId}')">
@@ -957,7 +958,8 @@ const seasonId = document.getElementById("m-season").value
       <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-away-${id}','${seasonId}')">
       <select id="e-away-${id}">${teamOptions}</select>
     </div>
-<div class="entry-round-wrap" style="display:${isPohar||isPlayoffStage?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>   </div>`
+    <div class="entry-round-wrap" style="display:${isPohar||isPlayoffStage?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
+   </div>`
   cont.appendChild(div)
   if(filteredTeams.length>=2) document.getElementById(`e-away-${id}`).value=filteredTeams[1].id
 }
