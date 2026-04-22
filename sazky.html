@@ -589,17 +589,23 @@ function seriesProb(k){
 }
 
 function calcMatchOdds(homeRating,awayRating){
-  const HOME_ADV=80,homeAdj=homeRating+HOME_ADV
-  const diff=Math.abs(homeAdj-awayRating)
-  let drawProb=Math.max(0.10,Math.min(0.30,0.25*Math.exp(-diff/400)))
-  const probHomeRaw=1/(1+Math.pow(10,(awayRating-homeAdj)/400))
+  const HOME_ADV=40,homeAdj=homeRating+HOME_ADV
+  // Zmenši rozdíl ratingů — kurzy nebudou tak extrémní
+  const compressedHome=1000+(homeAdj-1000)*0.5
+  const compressedAway=1000+(awayRating-1000)*0.5
+  const diff=Math.abs(compressedHome-compressedAway)
+  let drawProb=Math.max(0.14,Math.min(0.28,0.24*Math.exp(-diff/600)))
+  const probHomeRaw=1/(1+Math.pow(10,(compressedAway-compressedHome)/400))
   const probAwayRaw=1-probHomeRaw
   const probHome=probHomeRaw*(1-drawProb),probAway=probAwayRaw*(1-drawProb)
   const probHomeOT=drawProb*probHomeRaw,probAwayOT=drawProb*probAwayRaw
+  // Přidej margin a zaokrouhli na 2 desetinná místa
+  const MARGIN=1.08
+  function o(p){ return Math.round((MARGIN/p)*100)/100 }
   return{
-    "1":1/probHome,"0":1/drawProb,"2":1/probAway,
-    "11":1/(1-probAway),"no_draw":1/(probHome+probAway),"22":1/(1-probHome),
-    "vdr_home":1/(probHome+probHomeOT),"vdr_away":1/(probAway+probAwayOT),
+    "1":o(probHome),"0":o(drawProb),"2":o(probAway),
+    "11":o(1-probAway),"no_draw":o(probHome+probAway),"22":o(1-probHome),
+    "vdr_home":o(probHome+probHomeOT),"vdr_away":o(probAway+probAwayOT),
   }
 }
 
