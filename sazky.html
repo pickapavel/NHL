@@ -555,23 +555,33 @@ function calcGamesOdds(homeId,awayId,winsNeeded,initHome=0,initAway=0){
   const hStr=hp>=0?(n-hp)/n:0.5
   const aStr=ap>=0?(n-ap)/n:0.5
   const probH=hStr/(hStr+aStr),probA=1-probH
-  const hNeeded=winsNeeded-initHome
-  const aNeeded=winsNeeded-initAway
+  const hNeeded=Math.max(1,winsNeeded-initHome)
+  const aNeeded=Math.max(1,winsNeeded-initAway)
   const maxGames=hNeeded+aNeeded-1
   const initTotal=initHome+initAway
   function binom(n,r){
     if(r>n) return 0
     let res=1;for(let i=0;i<r;i++) res=res*(n-i)/(i+1);return Math.round(res)
   }
-  function seriesProb(k){
-    if(k<winsNeeded||k>maxGames) return 0
-    const losses=k-winsNeeded
-    const coef=binom(k-1,winsNeeded-1)
-    return coef*(Math.pow(probH,winsNeeded)*Math.pow(probA,losses)+Math.pow(probA,winsNeeded)*Math.pow(probH,losses))
+function seriesProb(k){
+    if(k>maxGames) return 0
+    const hLosses=k-hNeeded
+    const aLosses=k-aNeeded
+    let p=0
+    if(hLosses>=0&&hLosses<=aNeeded-1){
+      p+=binom(k-1,hNeeded-1)*Math.pow(probH,hNeeded)*Math.pow(probA,hLosses)
+    }
+    if(aLosses>=0&&aLosses<=hNeeded-1&&!(hLosses===aLosses&&hNeeded===aNeeded)){
+      p+=binom(k-1,aNeeded-1)*Math.pow(probA,aNeeded)*Math.pow(probH,aLosses)
+    }
+    return p
   }
   const probs={},odds={}
   let total=0
-for(let k=winsNeeded;k<=maxGames;k++){
+  for(let k=Math.min(hNeeded,aNeeded);k<=maxGames;k++){probs[k]=seriesProb(k);total+=probs[k]}
+  if(total===0) return {}
+  for(let k=Math.min(hNeeded,aNeeded);k<=maxGames;k++){
+    if(!probs[k]) continue
     const totalGames=k+initTotal
     odds[totalGames]=Math.round((1.12/(probs[k]/total))*100)/100
   }
