@@ -600,8 +600,9 @@ function calcMatchOdds(homeRating,awayRating){
   const probHome=probHomeRaw*(1-drawProb),probAway=probAwayRaw*(1-drawProb)
   const probHomeOT=drawProb*probHomeRaw,probAwayOT=drawProb*probAwayRaw
   // Přidej margin a zaokrouhli na 2 desetinná místa
-  const MARGIN=1.08
-  function o(p){ return Math.round((MARGIN/p)*100)/100 }
+const MARGIN=1.08
+  const MULTIPLIER=2.0
+  function o(p){ return Math.round((MARGIN/p)*MULTIPLIER*100)/100 }
   return{
     "1":o(probHome),"0":o(drawProb),"2":o(probAway),
     "11":o(1-probAway),"no_draw":o(probHome+probAway),"22":o(1-probHome),
