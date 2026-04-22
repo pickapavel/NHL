@@ -360,6 +360,7 @@ function calcMatchGoalsOdds(homeId,awayId){
 }
 
 function checkGoalsTip(match,category,key){
+  if(!key) return false
   const hg=Number(match.home_score),ag=Number(match.away_score)
   const total=hg+ag,diff=hg-ag
   if(category==="total"){
