@@ -328,11 +328,12 @@ async function load(){
   const bets=(betsRes.data||[]).map(b=>({...b,_source:"bets"}))
   const special=(specialRes.data||[]).map(b=>({...b,_source:"special"}))
 allBets=[...bets,...special].sort((a,b)=>{
-  if(!a.created_at && !b.created_at) return 0
-  if(!a.created_at) return 1
-  if(!b.created_at) return -1
-  return new Date(b.created_at)-new Date(a.created_at)
-})  renderCreditBar()
+    if(!a.created_at && !b.created_at) return 0
+    if(!a.created_at) return 1
+    if(!b.created_at) return -1
+    return new Date(b.created_at)-new Date(a.created_at)
+  })
+  renderCreditBar()
   render()
 }
 
