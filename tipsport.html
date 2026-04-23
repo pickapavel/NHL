@@ -241,9 +241,9 @@ function renderNote(bet, idx){
   const statusMap={pending:"⏳ Čeká",won:"✅ Výhra",lost:"❌ Prohra"}
   const statusClass={pending:"status-pending",won:"status-won",lost:"status-lost"}
 
-  const winAmountHtml = bet.status==="won"
-    ? `<div class="note-amount-item win-amount">Výhra: <span>${Math.round(bet.potential_win)} Kč</span></div>`
-    : `<div class="note-amount-item">Možná výhra: <span>${Math.round(bet.potential_win)} Kč</span></div>`
+const winAmountHtml = bet.status==="won"
+    ? `<div class="note-amount-item win-amount">Výhra: <span>${bet.potential_win ? Math.round(bet.potential_win) : "—"} Kč</span></div>`
+    : `<div class="note-amount-item">Možná výhra: <span>${bet.potential_win ? Math.round(bet.potential_win) : "—"} Kč</span></div>`
 
   return `
     <div class="note ${playerClass} ${bet.status}" style="animation-delay:${idx*0.03}s">
@@ -256,8 +256,7 @@ function renderNote(bet, idx){
         <div class="note-tip">${tipText}</div>
         <div class="note-amounts">
           <div class="note-amount-item">Vsazeno: <span>${Math.round(bet.amount)} Kč</span></div>
-          <div class="note-amount-item">Kurz: <span>${Number(bet.odds).toFixed(2)}</span></div>
-          ${winAmountHtml}
+<div class="note-amount-item">Kurz: <span>${bet.odds ? Number(bet.odds).toFixed(2) : "—"}</span></div>          ${winAmountHtml}
         </div>
       </div>
       <div class="note-date">${formatDate(bet.created_at)}</div>
