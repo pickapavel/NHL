@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Přehled sázek</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kubele:#fef08a;
+  --kubele-dark:#ca8a04;
+  --kubele-pin:#dc2626;
+  --pici:#bfdbfe;
+  --pici-dark:#1d4ed8;
+  --pici-pin:#7c3aed;
+  --bg:#1e293b;
+  --surface:#273548;
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(59,130,246,.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,.06) 0%, transparent 50%);
+}
+
+/* HEADER */
+.header{
+  background:linear-gradient(135deg,#0b2a3c,#1a5276);
+  padding:16px 24px;
+  display:flex;align-items:center;gap:14px;
+  border-bottom:2px solid rgba(240,192,64,.2);
+  position:sticky;top:0;z-index:100;
+}
+.header-title{font-size:18px;font-weight:700;color:white;}
+.header-title span{color:#f0c040;}
+
+/* CREDIT BAR */
+.credit-bar{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  padding:16px 24px;
+  background:rgba(255,255,255,.03);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.credit-card{
+  border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+}
+.credit-card.kubele{background:rgba(254,240,138,.1);border:1px solid rgba(254,240,138,.25);}
+.credit-card.pici{background:rgba(191,219,254,.1);border:1px solid rgba(191,219,254,.25);}
+.credit-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;}
+.credit-card.kubele .credit-avatar{background:rgba(254,240,138,.3);color:#ca8a04;}
+.credit-card.pici .credit-avatar{background:rgba(191,219,254,.3);color:#1d4ed8;}
+.credit-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.credit-card.kubele .credit-name{color:#ca8a04;}
+.credit-card.pici .credit-name{color:#1d4ed8;}
+.credit-amount{font-size:22px;font-weight:700;color:white;line-height:1;}
+.credit-diff{font-size:11px;font-weight:600;margin-top:2px;}
+.credit-in-bets{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;}
+
+/* TABS */
+.tabs{display:flex;gap:6px;padding:16px 24px 0;}
+.tab-btn{padding:7px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,.15);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.5);transition:all .15s;}
+.tab-btn:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.8);}
+.tab-btn.active{background:white;color:#0b2a3c;border-color:white;}
+
+/* MAIN */
+.wrapper{padding:20px 24px 60px;}
+
+.section-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+
+/* STICKY NOTES GRID */
+.notes-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;
+}
+
+/* STICKY NOTE */
+.note{
+  border-radius:4px;
+  padding:0;
+  box-shadow:4px 6px 20px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.15);
+  position:relative;
+  transform:rotate(var(--rot,0deg));
+  transition:transform .2s,box-shadow .2s;
+  cursor:default;
+  animation:noteIn .4s ease both;
+}
+.note:hover{
+  transform:rotate(0deg) scale(1.02);
+  box-shadow:8px 12px 32px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.2);
+  z-index:10;
+}
+@keyframes noteIn{
+  from{opacity:0;transform:rotate(var(--rot,0deg)) translateY(20px);}
+  to{opacity:1;transform:rotate(var(--rot,0deg)) translateY(0);}
+}
+
+.note.kubele{background:var(--kubele);}
+.note.pici{background:var(--pici);}
+.note.won{filter:brightness(1.05);}
+.note.lost{filter:grayscale(0.3) brightness(0.9);}
+
+/* PIN */
+.note-pin{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  width:18px;height:18px;border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  z-index:2;
+}
+.note.kubele .note-pin{background:var(--kubele-pin);}
+.note.pici .note-pin{background:var(--pici-pin);}
+
+/* NOTE TOP BAR */
+.note-top{
+  padding:10px 14px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+.note-player{
+  font-family:'Caveat',cursive;
+  font-size:18px;font-weight:700;
+}
+.note.kubele .note-player{color:#854d0e;}
+.note.pici .note-player{color:#1e3a8a;}
+
+.note-status{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.status-pending{background:rgba(0,0,0,.12);color:rgba(0,0,0,.5);}
+.status-won{background:#16a34a;color:white;}
+.status-lost{background:#dc2626;color:white;}
+
+/* NOTE TEAMS */
+.note-teams{
+  padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.note-team{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.note-team-logo{width:36px;height:36px;object-fit:contain;background:rgba(255,255,255,.6);border-radius:8px;padding:3px;}
+.note-team-name{font-size:9px;font-weight:700;color:rgba(0,0,0,.6);text-align:center;line-height:1.2;max-width:70px;}
+.note-score{
+  font-family:'Caveat',cursive;
+  font-size:24px;font-weight:700;color:rgba(0,0,0,.7);
+  text-align:center;flex-shrink:0;
+  background:rgba(255,255,255,.4);
+  border-radius:8px;padding:4px 10px;
+  min-width:60px;
+}
+.note-result-tag{font-size:9px;font-weight:700;background:rgba(0,0,0,.15);color:rgba(0,0,0,.5);padding:1px 5px;border-radius:4px;margin-top:2px;}
+
+/* NOTE BODY */
+.note-body{padding:8px 14px 14px;}
+.note-tip{
+  font-family:'Caveat',cursive;
+  font-size:16px;color:rgba(0,0,0,.75);
+  margin-bottom:8px;line-height:1.3;
+}
+.note-amounts{
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.note-amount-item{
+  font-size:11px;font-weight:600;color:rgba(0,0,0,.55);
+}
+.note-amount-item span{font-weight:700;color:rgba(0,0,0,.75);}
+.note-amount-item.win-amount span{color:#166534;}
+
+/* NOTE DATE */
+.note-date{
+  font-size:10px;color:rgba(0,0,0,.35);
+  padding:0 14px 10px;
+  font-style:italic;
+}
+
+.loading{padding:60px;text-align:center;color:rgba(255,255,255,.3);font-size:14px;}
+.empty-notes{padding:60px;text-align:center;color:rgba(255,255,255,.2);font-size:14px;}
+
+@media(max-width:600px){
+  .credit-bar{grid-template-columns:1fr;}
+  .notes-grid{grid-template-columns:1fr 1fr;}
+  .wrapper{padding:16px;}
+}
+@media(max-width:420px){
+  .notes-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="header">
+  <div class="header-title">🗒️ Přehled <span>sázek</span></div>
+</div>
+
+<div class="credit-bar" id="creditBar">
+  <div class="credit-card kubele">
+    <div class="credit-avatar">K</div>
+    <div><div class="credit-name">Kubele</div><div class="credit-amount">—</div></div>
+  </div>
+  <div class="credit-card pici">
+    <div class="credit-avatar">P</div>
+    <div><div class="credit-name">Pici</div><div class="credit-amount">—</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('all',this)">Všechny</button>
+  <button class="tab-btn" onclick="setTab('pending',this)">⏳ Čekající</button>
+  <button class="tab-btn" onclick="setTab('won',this)">✅ Výhry</button>
+  <button class="tab-btn" onclick="setTab('lost',this)">❌ Prohry</button>
+  <button class="tab-btn" onclick="setTab('kubele',this)">🟡 Kubele</button>
+  <button class="tab-btn" onclick="setTab('pici',this)">🔵 Pici</button>
+</div>
+
+<div class="wrapper">
+  <div id="notesContainer" class="loading">Načítám...</div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const KUBELE_ID = "a5b84a2d-58e6-4bf6-877f-be814a993db6"
+const PICI_ID   = "38dd6159-1b85-4e87-9176-6a494597216f"
+const START_CREDIT = 10000
+
+let allBets = []
+let players = {}
+let teamsMap = {}
+let matchesMap = {}
+let currentTab = "all"
+
+const ROTS = [-2,-1,0,1,2,-1.5,1.5,-0.5,0.5]
+
+function tipLabel(tip){
+  if(!tip) return "—"
+  const map = {
+    "1":"Výhra domácích","2":"Výhra hostů","0":"Remíza / OT / SN",
+    "11":"Neprohra domácích","22":"Neprohra hostů","no_draw":"Nebude remíza",
+    "vdr_home":"Výhra domácích (vč. OT/SN)","vdr_away":"Výhra hostů (vč. OT/SN)",
+  }
+  const tips = tip.split(",")
+  return tips.map(t => map[t] || t).join(" + ")
+}
+
+function goalsTipLabel(type, tipKey){
+  if(!tipKey) return "—"
+  const cat = (type||"").replace("match_goals_","")
+  const goalMap = {
+    "over_3":"Přes 3.5 gólů","under_4":"Méně než 4","over_4":"Přes 4.5","under_5":"Méně než 5",
+    "over_5":"Přes 5.5","under_6":"Méně než 6","over_6":"Přes 6.5","under_7":"Méně než 7",
+    "0":"0 gólů","1":"1 gól","2":"2 góly","3":"3 góly","4p":"4+ góly",
+    "home_1":"Dom. o 1","home_2":"Dom. o 2","home_3p":"Dom. o 3+",
+    "draw":"Remíza","away_1":"Hosté o 1","away_2":"Hosté o 2","away_3p":"Hosté o 3+",
+  }
+  const catLabels = {total:"Góly celkem",home:"Góly domácích",away:"Góly hostů",diff:"Rozdíl gólů"}
+  const catLabel = catLabels[cat] || cat
+  const tipL = goalMap[tipKey] || tipKey
+  return `${catLabel}: ${tipL}`
+}
+
+function seriesTipLabel(type, targetId){
+  if(type?.startsWith("serie_winner_")) return `Postup: ${teamsMap[targetId]?.name||targetId}`
+  if(type?.startsWith("serie_games_")){
+    const n = targetId
+    return `Délka série: ${n} zápasů`
+  }
+  if(type==="winner_regular_season") return `Vítěz ZČ: ${teamsMap[targetId]?.name||targetId}`
+  if(type==="nonwinner_regular_season") return `Nevítěz ZČ: ${teamsMap[targetId]?.name||targetId}`
+  if(type==="last_regular_season") return `Poslední ZČ: ${teamsMap[targetId]?.name||targetId}`
+  return type||"—"
+}
+
+function formatDate(str){
+  if(!str) return ""
+  const d = new Date(str)
+  return d.toLocaleDateString("cs-CZ",{day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"})
+}
+
+function logoImg(teamId, size=36){
+  const t = teamsMap[teamId]
+  if(!t?.logo) return `<div style="width:${size}px;height:${size}px;background:rgba(255,255,255,.4);border-radius:8px;"></div>`
+  return `<img class="note-team-logo" style="width:${size}px;height:${size}px;" src="./logos/${t.logo}" onerror="this.style.display='none'">`
+}
+
+function shortName(teamId){
+  const t = teamsMap[teamId]
+  if(!t) return "?"
+  return t.short_name || t.name?.replace(/HC\s*/i,"").replace(/\(.\)$/,"").trim() || t.name
+}
+
+function renderNote(bet, idx){
+  const isKubele = bet.player_id === KUBELE_ID
+  const playerClass = isKubele ? "kubele" : "pici"
+  const playerName = isKubele ? "Kubele" : "Pici"
+  const rot = ROTS[idx % ROTS.length]
+
+  const match = bet.match_id ? matchesMap[bet.match_id] : null
+  const isGoalsBet = bet.type?.startsWith("match_goals_")
+  const isSeriesBet = bet.type?.startsWith("serie_") || ["winner_regular_season","nonwinner_regular_season","last_regular_season"].includes(bet.type)
+
+  // Skóre
+  let scoreHtml = ""
+  let teamsHtml = ""
+  if(match){
+    const hg = match.home_score != null ? match.home_score : "–"
+    const ag = match.home_score != null ? match.away_score : "–"
+    const suffix = match.result_type === "SN" ? " SN" : match.result_type === "OT" ? " OT" : ""
+    scoreHtml = `<div class="note-score">${hg} : ${ag}${suffix}</div>`
+    teamsHtml = `
+      <div class="note-teams">
+        <div class="note-team">
+          ${logoImg(match.home_team)}
+          <div class="note-team-name">${shortName(match.home_team)}</div>
+        </div>
+        ${scoreHtml}
+        <div class="note-team">
+          ${logoImg(match.away_team)}
+          <div class="note-team-name">${shortName(match.away_team)}</div>
+        </div>
+      </div>`
+  } else if(isSeriesBet){
+    const teamObj = teamsMap[bet.target_id]
+    teamsHtml = `
+      <div class="note-teams" style="justify-content:center;">
+        ${teamObj?.logo ? `<img class="note-team-logo" style="width:40px;height:40px;" src="./logos/${teamObj.logo}">` : ""}
+        <div class="note-team-name" style="font-size:11px;font-weight:700;color:rgba(0,0,0,.6);margin-left:8px;">${teamObj?.name||bet.target_id||"—"}</div>
+      </div>`
+  }
+
+  // Tip text
+  let tipText = "—"
+  if(isGoalsBet) tipText = goalsTipLabel(bet.type, bet.tip_key || bet.target_id)
+  else if(isSeriesBet) tipText = seriesTipLabel(bet.type, bet.target_id)
+  else if(bet.tip) tipText = tipLabel(bet.tip)
+
+  // Status
+  const statusMap = {pending:"⏳ Čeká",won:"✅ Výhra",lost:"❌ Prohra"}
+  const statusClass = {pending:"status-pending",won:"status-won",lost:"status-lost"}
+  const statusText = statusMap[bet.status] || bet.status
+
+  // Výhra
+  const winAmountHtml = bet.status === "won"
+    ? `<div class="note-amount-item win-amount">Výhra: <span>${Math.round(bet.potential_win)} Kč</span></div>`
+    : `<div class="note-amount-item">Možná výhra: <span>${Math.round(bet.potential_win)} Kč</span></div>`
+
+  return `
+    <div class="note ${playerClass} ${bet.status}" style="--rot:${rot}deg;animation-delay:${idx*0.04}s">
+      <div class="note-pin"></div>
+      <div class="note-top">
+        <div class="note-player">${playerName}</div>
+        <div class="note-status ${statusClass[bet.status]||'status-pending'}">${statusText}</div>
+      </div>
+      ${teamsHtml}
+      <div class="note-body">
+        <div class="note-tip">${tipText}</div>
+        <div class="note-amounts">
+          <div class="note-amount-item">Vsazeno: <span>${Math.round(bet.amount)} Kč</span></div>
+          <div class="note-amount-item">Kurz: <span>${Number(bet.odds).toFixed(2)}</span></div>
+          ${winAmountHtml}
+        </div>
+      </div>
+      <div class="note-date">${formatDate(bet.created_at)}</div>
+    </div>`
+}
+
+function getFiltered(){
+  return allBets.filter(b => {
+    if(currentTab === "pending") return b.status === "pending"
+    if(currentTab === "won")     return b.status === "won"
+    if(currentTab === "lost")    return b.status === "lost"
+    if(currentTab === "kubele")  return b.player_id === KUBELE_ID
+    if(currentTab === "pici")    return b.player_id === PICI_ID
+    return true
+  })
+}
+
+function render(){
+  const cont = document.getElementById("notesContainer")
+  const filtered = getFiltered()
+  if(!filtered.length){
+    cont.innerHTML = '<div class="empty-notes">Žádné sázky.</div>'
+    return
+  }
+  cont.innerHTML = `<div class="section-label">${filtered.length} sázek</div><div class="notes-grid">${filtered.map((b,i)=>renderNote(b,i)).join("")}</div>`
+}
+
+function renderCreditBar(){
+  const bar = document.getElementById("creditBar")
+  const pending = {}
+  allBets.filter(b=>b.status==="pending").forEach(b=>{
+    pending[b.player_id] = (pending[b.player_id]||0) + Number(b.amount)
+  })
+  const ps = Object.values(players)
+  bar.innerHTML = ps.map(pl => {
+    const isKubele = pl.id === KUBELE_ID
+    const cls = isKubele ? "kubele" : "pici"
+    const initial = isKubele ? "K" : "P"
+    const diff = pl.credit - START_CREDIT
+    const diffStr = (diff>=0?"+":"") + Math.round(diff).toLocaleString("cs-CZ") + " Kč"
+    const diffCls = diff>=0?"diff-pos":"diff-neg"
+    const inBets = pending[pl.id]||0
+    return `<div class="credit-card ${cls}">
+      <div class="credit-avatar">${initial}</div>
+      <div>
+        <div class="credit-name">${pl.name}</div>
+        <div class="credit-amount">${Math.round(pl.credit).toLocaleString("cs-CZ")} Kč</div>
+        <div class="credit-diff ${diffCls}" style="font-size:12px;font-weight:700;margin-top:2px;">${diffStr}</div>
+        ${inBets>0?`<div class="credit-in-bets">V sázkách: ${Math.round(inBets).toLocaleString("cs-CZ")} Kč</div>`:""}
+      </div>
+    </div>`
+  }).join("")
+}
+
+window.setTab = function(tab, btn){
+  currentTab = tab
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"))
+  btn.classList.add("active")
+  render()
+}
+
+async function load(){
+  document.getElementById("notesContainer").innerHTML = '<div class="loading">Načítám sázky...</div>'
+
+  const [playersRes, teamsRes, matchesRes, betsRes, specialRes] = await Promise.all([
+    supabase.from("players").select("*"),
+    supabase.from("teams").select("*"),
+    supabase.from("matches").select("id,home_team,away_team,home_score,away_score,result_type"),
+    supabase.from("bets").select("*").order("created_at",{ascending:false}),
+    supabase.from("bets_special").select("*").order("created_at",{ascending:false}),
+  ])
+
+  ;(playersRes.data||[]).forEach(p => players[p.id]=p)
+  ;(teamsRes.data||[]).forEach(t => teamsMap[t.id]=t)
+  ;(matchesRes.data||[]).forEach(m => matchesMap[m.id]=m)
+
+  const bets = (betsRes.data||[]).map(b=>({...b,_source:"bets"}))
+  const special = (specialRes.data||[]).map(b=>({...b,_source:"special"}))
+
+  allBets = [...bets,...special].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+
+  renderCreditBar()
+  render()
+}
+
+load()
+</script>
+</body>
+</html>
