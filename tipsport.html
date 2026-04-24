@@ -225,10 +225,11 @@ function renderNote(bet, idx){
   const match = bet.match_id ? matchesMap[bet.match_id] : null
   const isGoalsBet = bet.type?.startsWith("match_goals_")
 const isSeriesBet = bet.type?.startsWith("serie_") || ["winner_playoff_overall","second_playoff_overall","third_playoff_overall","winner_regular_season","nonwinner_regular_season","last_regular_season"].includes(bet.type)
-  let teamsHtml = ""
+let teamsHtml = ""
   if(match){
-    const hg = match.home_score != null ? match.home_score : "–"
-    const ag = match.home_score != null ? match.away_score : "–"
+    const played = match.home_score != null
+    const hg = played ? match.home_score : "–"
+    const ag = played ? match.away_score : "–"
     const suffix = match.result_type==="SN"?" SN":match.result_type==="OT"?" OT":""
     teamsHtml = `
       <div class="note-teams">
