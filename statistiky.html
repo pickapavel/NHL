@@ -706,14 +706,70 @@ function renderTeams(){
  else if(teamsTypeFilter==='repre') teams=teams.filter(t=>t.is_repre)
  if(teamsSearchVal) teams=teams.filter(t=>teamName(t.team).toLowerCase().includes(teamsSearchVal.toLowerCase()))
 
- teams.sort((a,b)=>b.goals-a.goals)
+let teamsSortCol='ratio', teamsSortDir='desc'
 
  const teamDetailUrl=(abbr)=>{
   const tid=TEAM_MAP[abbr]?.id
   return tid?`tym-detail.html?id=${tid}`:`tym-detail.html?abbr=${encodeURIComponent(abbr)}`
  }
 
-document.getElementById('teamsContent').innerHTML=`
+ function doSortTeams(){
+  teams.sort((a,b)=>{
+   let av,bv
+   if(teamsSortCol==='ratio'){ av=a.gp>0?a.w/a.gp:0; bv=b.gp>0?b.w/b.gp:0 }
+   else if(teamsSortCol==='diff'){ av=a.goals-a.ga; bv=b.goals-b.ga }
+   else{ av=a[teamsSortCol]??0; bv=b[teamsSortCol]??0 }
+   return teamsSortDir==='asc'?av-bv:bv-av
+  })
+ }
+
+ doSortTeams()
+
+ window.sortTeamsCol=function(col){
+  if(teamsSortCol===col) teamsSortDir=teamsSortDir==='desc'?'asc':'desc'
+  else{ teamsSortCol=col; teamsSortDir='desc' }
+  doSortTeams()
+  const tbody=document.getElementById('teamsTableBody')
+  if(tbody) tbody.innerHTML=renderTeamsRows(teams, teamDetailUrl)
+  // Aktualizuj šipky v hlavičce
+  document.querySelectorAll('.teams-th-sort').forEach(th=>{
+   const c=th.dataset.col
+   th.querySelector('.sort-arrow').textContent = c===teamsSortCol?(teamsSortDir==='desc'?' ↓':' ↑'):''
+  })
+ }
+
+ function renderTeamsRows(teams, teamDetailUrl){
+  return teams.map((t,i)=>{
+   const diff=t.goals-t.ga
+   const diffColor=diff>0?'#16a34a':diff<0?'#dc2626':'#888'
+   return `<tr>
+    <td class="td-rank td-left">${i+1}</td>
+    <td class="td-left"><div class="team-cell">${logoImg(t.team)}<a href="${teamDetailUrl(t.team)}" class="player-link">${teamName(t.team)}</a></div></td>
+    <td>${t.gp}</td>
+    <td class="td-highlight" style="white-space:nowrap;">${t.goals} : ${t.ga}</td>
+    <td style="color:${diffColor};font-weight:700;">${diff>0?'+':''}${diff}</td>
+    <td style="color:#16a34a;font-weight:700;">${t.w}</td>
+    <td style="color:#dc2626;font-weight:700;">${t.l}</td>
+    <td style="color:#16a34a;">${t.vp}</td>
+    <td style="color:#dc2626;">${t.pp}</td>
+    <td style="color:#d97706;">${t.vot}</td>
+    <td style="color:#d97706;">${t.pot}</td>
+    <td style="color:#7ab0cc;">${t.vsn}</td>
+    <td style="color:#7ab0cc;">${t.psn}</td>
+    <td>${t.shots}</td>
+    <td>${t.spg}</td>
+    <td>${t.ppg}</td>
+    <td>${t.shg}</td>
+    <td>${t.hits}</td>
+    <td>${t.pim_total}</td>
+    <td><a href="${teamDetailUrl(t.team)}" style="display:inline-flex;align-items:center;gap:4px;background:#1a5276;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;text-decoration:none;">📊 Statistiky</a></td>
+   </tr>`
+  }).join('')
+ }
+
+ function si(col){ return `<span class="sort-arrow">${col===teamsSortCol?(teamsSortDir==='desc'?' ↓':' ↑'):''}</span>` }
+
+ document.getElementById('teamsContent').innerHTML=`
   <div class="filter-row" style="margin-bottom:12px;">
    <button class="seg-btn ${teamsOwnerFilter==='all'?'active':''}" onclick="setTeamsOwner('all',this)">Všichni</button>
    <button class="seg-btn ${teamsOwnerFilter==='kubele'?'active-kubele':''}" onclick="setTeamsOwner('kubele',this)">🔵 Kubele</button>
@@ -730,46 +786,27 @@ document.getElementById('teamsContent').innerHTML=`
     <thead><tr>
      <th class="th-left">#</th>
      <th class="th-left">Tým</th>
-     <th>Z</th><th>Skóre</th><th>G/Z</th>
-     <th>V</th><th>P</th>
-     <th>VP</th><th>PP</th>
-     <th>VOT</th><th>POT</th>
-     <th>VSN</th><th>PSN</th>
-     <th>Střely</th><th>Str/Z</th>
-     <th>PP góly</th><th>SHG</th>
-     <th>Hity</th><th>TM</th>
+     <th class="teams-th-sort" data-col="gp" onclick="sortTeamsCol('gp')" style="cursor:pointer;">Z${si('gp')}</th>
+     <th>Skóre</th>
+     <th class="teams-th-sort" data-col="diff" onclick="sortTeamsCol('diff')" style="cursor:pointer;">+/-${si('diff')}</th>
+     <th class="teams-th-sort" data-col="ratio" onclick="sortTeamsCol('ratio')" style="cursor:pointer;">V%${si('ratio')}</th>
+     <th class="teams-th-sort" data-col="w" onclick="sortTeamsCol('w')" style="cursor:pointer;">V${si('w')}</th>
+     <th class="teams-th-sort" data-col="l" onclick="sortTeamsCol('l')" style="cursor:pointer;">P${si('l')}</th>
+     <th class="teams-th-sort" data-col="vp" onclick="sortTeamsCol('vp')" style="cursor:pointer;">VP${si('vp')}</th>
+     <th class="teams-th-sort" data-col="pp" onclick="sortTeamsCol('pp')" style="cursor:pointer;">PP${si('pp')}</th>
+     <th class="teams-th-sort" data-col="vot" onclick="sortTeamsCol('vot')" style="cursor:pointer;">VOT${si('vot')}</th>
+     <th class="teams-th-sort" data-col="pot" onclick="sortTeamsCol('pot')" style="cursor:pointer;">POT${si('pot')}</th>
+     <th class="teams-th-sort" data-col="vsn" onclick="sortTeamsCol('vsn')" style="cursor:pointer;">VSN${si('vsn')}</th>
+     <th class="teams-th-sort" data-col="psn" onclick="sortTeamsCol('psn')" style="cursor:pointer;">PSN${si('psn')}</th>
+     <th class="teams-th-sort" data-col="shots" onclick="sortTeamsCol('shots')" style="cursor:pointer;">Střely${si('shots')}</th>
+     <th>Str/Z</th>
+     <th class="teams-th-sort" data-col="ppg" onclick="sortTeamsCol('ppg')" style="cursor:pointer;">PP góly${si('ppg')}</th>
+     <th class="teams-th-sort" data-col="shg" onclick="sortTeamsCol('shg')" style="cursor:pointer;">SHG${si('shg')}</th>
+     <th class="teams-th-sort" data-col="hits" onclick="sortTeamsCol('hits')" style="cursor:pointer;">Hity${si('hits')}</th>
+     <th class="teams-th-sort" data-col="pim_total" onclick="sortTeamsCol('pim_total')" style="cursor:pointer;">TM${si('pim_total')}</th>
      <th>Detail</th>
     </tr></thead>
-    <tbody>
-     ${teams.map((t,i)=>`
-      <tr>
-       <td class="td-rank td-left">${i+1}</td>
-       <td class="td-left">
-        <div class="team-cell">
-         ${logoImg(t.team)}
-         <a href="${teamDetailUrl(t.team)}" class="player-link">${teamName(t.team)}</a>
-        </div>
-       </td>
-       <td>${t.gp}</td>
-       <td class="td-highlight" style="white-space:nowrap;">${t.goals} : ${t.ga}</td>
-       <td>${t.gpg}</td>
-       <td style="color:#16a34a;font-weight:700;">${t.w}</td>
-       <td style="color:#dc2626;font-weight:700;">${t.l}</td>
-       <td style="color:#16a34a;">${t.vp}</td>
-       <td style="color:#dc2626;">${t.pp}</td>
-       <td style="color:#d97706;">${t.vot}</td>
-       <td style="color:#d97706;">${t.pot}</td>
-       <td style="color:#7ab0cc;">${t.vsn}</td>
-       <td style="color:#7ab0cc;">${t.psn}</td>
-       <td>${t.shots}</td>
-       <td>${t.spg}</td>
-       <td>${t.ppg}</td>
-       <td>${t.shg}</td>
-       <td>${t.hits}</td>
-       <td>${t.pim_total}</td>
-       <td><a href="${teamDetailUrl(t.team)}" style="display:inline-flex;align-items:center;gap:4px;background:#1a5276;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;text-decoration:none;">📊 Statistiky</a></td>
-      </tr>`).join('')}
-    </tbody>
+    <tbody id="teamsTableBody">${renderTeamsRows(teams, teamDetailUrl)}</tbody>
    </table>
   </div>
   <div class="legend" style="margin-top:16px;">
@@ -777,6 +814,8 @@ document.getElementById('teamsContent').innerHTML=`
    <div class="legend-grid">
     <div class="legend-item"><span class="legend-key">Z</span><span>Zápasy</span></div>
     <div class="legend-item"><span class="legend-key">Skóre</span><span>Vstřelené : Inkasované góly</span></div>
+    <div class="legend-item"><span class="legend-key">+/-</span><span>Rozdíl vstřelených a inkasovaných gólů</span></div>
+    <div class="legend-item"><span class="legend-key">V%</span><span>Poměr výher (výchozí řazení)</span></div>
     <div class="legend-item"><span class="legend-key">V/P</span><span>Výhry / Prohry celkem</span></div>
     <div class="legend-item"><span class="legend-key">VP/PP</span><span>Výhra/Prohra v základní hrací době</span></div>
     <div class="legend-item"><span class="legend-key">VOT/POT</span><span>Výhra/Prohra v prodloužení</span></div>
