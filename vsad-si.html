@@ -102,6 +102,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 <div class="wrapper">
 
+<div id="matchVideo" style="display:none;margin-bottom:20px;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(11,42,60,.15);">
+  <video width="100%" autoplay loop muted playsinline>
+    <source src="./video/1.mp4" type="video/mp4">
+  </video>
+</div>
+
 <div class="match-header">
   <div class="teams-row">
     <div class="team-info">
@@ -815,7 +821,15 @@ async function load(){
     if(pEl) pEl.innerText=creditStr(players.pici)
   })
 
-  await loadExistingBets(match)
+await loadExistingBets(match)
+
+  // Zobraz video pro Sparta vs Pardubice
+  const SPARTA_ID = "621ff644-f8e1-4ea2-89c4-08f174f9c987"
+  const PARDUBICE_ID = "90766e63-3eac-45e7-b1c3-6d8ef07e7a6d"
+  const isSpartaPardubice = (home.id===SPARTA_ID && away.id===PARDUBICE_ID) || (home.id===PARDUBICE_ID && away.id===SPARTA_ID)
+  if(isSpartaPardubice){
+    document.getElementById("matchVideo").style.display="block"
+  }
 }
 
 load()
