@@ -369,8 +369,6 @@ function renderLegend(isGoalieView){
 // =====================================================
 // TÝMOVÉ STATISTIKY
 // =====================================================
-let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal=''
-
 let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal='', teamsCompFilter='all'
  
 function renderTeams(){
@@ -463,7 +461,6 @@ if(teamsSortCol==='ratio'){ av=a.gp; bv=b.gp }   else if(teamsSortCol==='diff'){
   document.querySelectorAll('.teams-th-sort').forEach(th=>{ const c=th.dataset.col; th.querySelector('.sort-arrow').textContent=c===teamsSortCol?(teamsSortDir==='desc'?' ↓':' ↑'):'' })
  }
 
- function setTeamsComp(val,btn){ teamsCompFilter=val; renderTeams() }
  
  function renderTeamsRows(teams,teamDetailUrl){
   return teams.map((t,i)=>{
@@ -563,6 +560,7 @@ document.getElementById('teamsContent').innerHTML=`
 
 function setTeamsOwner(val,btn){ teamsOwnerFilter=val; renderTeams() }
 function setTeamsType(val,btn){ teamsTypeFilter=val; renderTeams() }
+function setTeamsComp(val,btn){ teamsCompFilter=val; renderTeams() }
 
 // =====================================================
 // REKORDY
