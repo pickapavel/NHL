@@ -73,6 +73,12 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 .legend-grid{display:flex;flex-wrap:wrap;gap:5px 20px;}
 .legend-item{display:flex;align-items:center;gap:5px;}
 .legend-key{font-weight:800;color:#0b2a3c;min-width:40px;}
+.sub-tabs{background:#1a3a5c;padding:0 30px;display:flex;gap:0;border-bottom:1px solid #0b2a3c;overflow-x:auto;}
+.sub-tabs::-webkit-scrollbar{display:none;}
+.sub-tab{padding:10px 20px;font-size:12px;font-weight:700;color:#7ab0cc;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.sub-tab:hover{color:white;}
+.sub-tab.active{color:#f0c040;border-bottom-color:#f0c040;}
+ 
 </style>
 </head>
 <body>
@@ -92,6 +98,14 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
  <div class="nav-tab" onclick="switchTab('teams',this)">🏒 Týmové statistiky</div>
  <div class="nav-tab" onclick="switchTab('records',this)">🏆 Rekordy</div>
  <div class="nav-tab" onclick="switchTab('betting',this)">🎲 Statistiky tipování</div>
+</div>
+<div class="sub-tabs" id="teamsSubTabs" style="display:none;">
+ <div class="sub-tab active" onclick="setTeamsComp('all',this)">Všechny</div>
+ <div class="sub-tab" onclick="setTeamsComp('extraliga',this)">🏒 Extraliga</div>
+ <div class="sub-tab" onclick="setTeamsComp('pohar',this)">🏆 Pohár</div>
+ <div class="sub-tab" onclick="setTeamsComp('ms',this)">🌍 Mistrovství světa</div>
+ <div class="sub-tab" onclick="setTeamsComp('olympiada',this)">🏅 Olympiáda</div>
+ <div class="sub-tab" onclick="setTeamsComp('reprezentace',this)">🎽 Reprezentace</div>
 </div>
 
 <div class="wrapper">
@@ -181,6 +195,7 @@ function switchTab(tab,el){
  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'))
  el.classList.add('active')
  document.getElementById('section-'+tab).classList.add('active')
+ document.getElementById('teamsSubTabs').style.display = tab==='teams' ? 'flex' : 'none'
  if(!loadedSections.has(tab)){
   loadedSections.add(tab)
   if(tab==='teams')   renderTeams()
@@ -506,14 +521,7 @@ document.getElementById('teamsContent').innerHTML=`
    <div class="filter-divider"></div>
    <input class="search-input" placeholder="🔍 Hledat tým..." oninput="teamsSearchVal=this.value;renderTeams()" value="${teamsSearchVal}">
   </div>
-  <div class="filter-row" style="margin-bottom:12px;">
-   <button class="seg-btn ${teamsCompFilter==='all'?'active':''}" onclick="setTeamsComp('all',this)">Všechny soutěže</button>
-   <button class="seg-btn ${teamsCompFilter==='extraliga'?'active':''}" onclick="setTeamsComp('extraliga',this)">🏒 Extraliga</button>
-   <button class="seg-btn ${teamsCompFilter==='pohar'?'active':''}" onclick="setTeamsComp('pohar',this)">🏆 Pohár</button>
-   <button class="seg-btn ${teamsCompFilter==='ms'?'active':''}" onclick="setTeamsComp('ms',this)">🌍 Mistrovství světa</button>
-   <button class="seg-btn ${teamsCompFilter==='olympiada'?'active':''}" onclick="setTeamsComp('olympiada',this)">🏅 Olympiáda</button>
-   <button class="seg-btn ${teamsCompFilter==='reprezentace'?'active':''}" onclick="setTeamsComp('reprezentace',this)">🎽 Reprezentace</button>
-  </div>
+
   <div class="table-wrap"><table>
    <thead><tr>
     <th class="th-left">#</th>
@@ -560,8 +568,12 @@ document.getElementById('teamsContent').innerHTML=`
 
 function setTeamsOwner(val,btn){ teamsOwnerFilter=val; renderTeams() }
 function setTeamsType(val,btn){ teamsTypeFilter=val; renderTeams() }
-function setTeamsComp(val,btn){ teamsCompFilter=val; renderTeams() }
-
+function setTeamsComp(val,btn){
+ teamsCompFilter=val
+ document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'))
+ btn.classList.add('active')
+ renderTeams()
+}
 // =====================================================
 // REKORDY
 // =====================================================
