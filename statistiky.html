@@ -332,8 +332,7 @@ function renderPlayers(){
    return playersSortDir==='asc'?av-bv:bv-av
   })
  } else {
-  data.sort((a,b=>{ let av=a[playersSortCol]??0,bv=b[playersSortCol]??0; if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av); return playersSortDir==='asc'?av-bv:bv-av }))
- }
+data.sort((a,b)=>{ let av=a[playersSortCol]??0,bv=b[playersSortCol]??0; if(typeof av==='string') return playersSortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av); return playersSortDir==='asc'?av-bv:bv-av }) }
  const si=(col)=>playersSortCol===col?(playersSortDir==='desc'?' ↓':' ↑'):''
  const head=document.getElementById('playersHead')
  if(isGoalieView){
