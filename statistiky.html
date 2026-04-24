@@ -109,7 +109,8 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
  <div class="sub-tab" onclick="setTeamsComp('pohar',this)">🏆 Pohár</div>
  <div class="sub-tab" onclick="setTeamsComp('ms',this)">🌍 Mistrovství světa</div>
  <div class="sub-tab" onclick="setTeamsComp('olympiada',this)">🏅 Olympiáda</div>
- <div class="sub-tab" onclick="setTeamsComp('reprezentace',this)">🎽 Reprezentace</div>
+<div class="sub-tab" onclick="setTeamsComp('reprezentace',this)">🎽 Reprezentace</div>
+ <div class="sub-tab" onclick="setTeamsComp('h2h',this)">⚔️ Vzájemné zápasy</div>
 </div>
 <div class="sub-tabs-2" id="teamsSubTabs2" style="display:none;"></div>
 
@@ -268,8 +269,13 @@ function setTeamsComp(val,btn){
  teamsStageFilter='all'
  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'))
  btn.classList.add('active')
- buildSubTabs2()
- renderTeams()
+ if(val==='h2h'){
+  document.getElementById('teamsSubTabs2').style.display='none'
+  renderH2H()
+ } else {
+  buildSubTabs2()
+  renderTeams()
+ }
 }
 
 function setTeamsStage(val,btn){
@@ -663,6 +669,101 @@ function renderTeams(){
 
 function setTeamsOwner(val,btn){ teamsOwnerFilter=val; renderTeams() }
 function setTeamsType(val,btn){ teamsTypeFilter=val; renderTeams() }
+
+function renderH2H(){
+ const PARDUBICE_K = '90766e63-3eac-45e7-b1c3-6d8ef07e7a6d'
+ const LITVINOV_P  = '8f67537c-fa70-4411-a81b-e62318fbfc55'
+ const h2hTeam1El = document.getElementById('h2hTeam1')
+ const h2hTeam2El = document.getElementById('h2hTeam2')
+ const t1 = h2hTeam1El?.value || PARDUBICE_K
+ const t2 = h2hTeam2El?.value || LITVINOV_P
+
+ const matches = allMatches.filter(m=>m.home_score!=null&&(
+  (m.home_team===t1&&m.away_team===t2)||(m.home_team===t2&&m.away_team===t1)
+ )).sort((a,b)=>{
+  const sa=allSeasons.findIndex(s=>s.id===a.season_id)
+  const sb=allSeasons.findIndex(s=>s.id===b.season_id)
+  return sa!==sb?sa-sb:Number(a.round)-Number(b.round)
+ })
+
+ const teamById={}; allTeamsDb.forEach(t=>{ teamById[t.id]=t })
+
+ // Součty
+ let t1w=0,t2w=0,draws=0,t1g=0,t2g=0
+ matches.forEach(m=>{
+  const isHome=m.home_team===t1
+  const tg=isHome?Number(m.home_score):Number(m.away_score)
+  const og=isHome?Number(m.away_score):Number(m.home_score)
+  t1g+=tg; t2g+=og
+  if(tg>og) t1w++; else if(og>tg) t2w++; else draws++
+ })
+
+ const t1obj=teamById[t1], t2obj=teamById[t2]
+ const teamOptions=allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}">${t.name}</option>`).join('')
+
+ document.getElementById('teamsContent').innerHTML=`
+  <div class="filter-row" style="margin-bottom:16px;align-items:center;gap:12px;">
+   <select class="filter-select" id="h2hTeam1" onchange="renderH2H()" style="min-width:220px;">
+    ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t1?'selected':''}>${t.name}</option>`).join('')}
+   </select>
+   <span style="font-size:16px;font-weight:800;color:#0b2a3c;">⚔️ vs</span>
+   <select class="filter-select" id="h2hTeam2" onchange="renderH2H()" style="min-width:220px;">
+    ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t2?'selected':''}>${t.name}</option>`).join('')}
+   </select>
+  </div>
+
+  ${matches.length ? `
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;margin-bottom:20px;background:white;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(26,58,92,.08);">
+   <div style="text-align:center;">
+    ${t1obj?.logo?`<img src="./logos/${t1obj.logo}" style="width:48px;height:48px;object-fit:contain;margin-bottom:8px;display:block;margin:0 auto 8px;">`:''}
+    <div style="font-size:14px;font-weight:800;color:#0b2a3c;">${t1obj?.name||'?'}</div>
+    <div style="font-size:36px;font-weight:800;color:#0b2a3c;margin-top:8px;">${t1w}</div>
+    <div style="font-size:11px;color:#7ab0cc;text-transform:uppercase;font-weight:700;">Výhry</div>
+    <div style="font-size:20px;font-weight:700;color:#1a5276;margin-top:4px;">${t1g} gólů</div>
+   </div>
+   <div style="text-align:center;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+    <div style="font-size:12px;color:#aaa;font-weight:700;">${matches.length} zápasů</div>
+    ${draws>0?`<div style="font-size:12px;color:#888;">Remízy/OT: ${draws}</div>`:''}
+   </div>
+   <div style="text-align:center;">
+    ${t2obj?.logo?`<img src="./logos/${t2obj.logo}" style="width:48px;height:48px;object-fit:contain;margin-bottom:8px;display:block;margin:0 auto 8px;">`:''}
+    <div style="font-size:14px;font-weight:800;color:#0b2a3c;">${t2obj?.name||'?'}</div>
+    <div style="font-size:36px;font-weight:800;color:#0b2a3c;margin-top:8px;">${t2w}</div>
+    <div style="font-size:11px;color:#7ab0cc;text-transform:uppercase;font-weight:700;">Výhry</div>
+    <div style="font-size:20px;font-weight:700;color:#1a5276;margin-top:4px;">${t2g} gólů</div>
+   </div>
+  </div>
+
+  <div class="table-wrap"><table>
+   <thead><tr>
+    <th class="th-left">Sezóna</th>
+    <th class="th-left">Stage</th>
+    <th>Domácí</th>
+    <th>Skóre</th>
+    <th>Hosté</th>
+    <th>Typ</th>
+   </tr></thead>
+   <tbody>
+    ${matches.map(m=>{
+     const home=teamById[m.home_team], away=teamById[m.away_team]
+     const season=allSeasons.find(s=>s.id===m.season_id)
+     const stage=allStages.find(s=>s.id===m.stage_id)
+     const hg=Number(m.home_score), ag=Number(m.away_score)
+     const homeWin=hg>ag
+     const suffix=m.result_type==='SN'?'<span style="font-size:10px;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;margin-left:4px;">SN</span>':m.result_type==='OT'?'<span style="font-size:10px;background:#f0c040;color:#333;padding:1px 5px;border-radius:4px;margin-left:4px;">OT</span>':''
+     return `<tr>
+      <td class="td-left"><span style="font-size:10px;font-weight:700;background:#e8f0f8;color:#1a5276;padding:2px 7px;border-radius:10px;">${season?.name||'—'}</span></td>
+      <td class="td-left" style="font-size:11px;color:#7ab0cc;">${stage?.name||'—'}</td>
+      <td style="font-weight:${homeWin?'800':'400'};color:${homeWin?'#16a34a':'#1a2a3c'};">${home?.name||'?'}</td>
+      <td style="font-weight:800;font-size:15px;">${hg} : ${ag}${suffix}</td>
+      <td style="font-weight:${!homeWin?'800':'400'};color:${!homeWin?'#16a34a':'#1a2a3c'};">${away?.name||'?'}</td>
+      <td style="font-size:11px;color:#888;">${m.result_type||'REG'}</td>
+     </tr>`
+    }).join('')}
+   </tbody>
+  </table></div>` : `<div class="empty">Žádné vzájemné zápasy.</div>`}
+ `
+}
 
 // =====================================================
 // REKORDY
