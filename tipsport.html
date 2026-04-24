@@ -187,11 +187,15 @@ function goalsTipLabel(type, tipKey){
 }
 
 function seriesTipLabel(type, targetId){
-  if(type?.startsWith("serie_winner_")) return `Postup: ${teamsMap[targetId]?.name||targetId}`
-  if(type?.startsWith("serie_games_")) return `Délka série: ${targetId} zápasů`
-  if(type==="winner_regular_season") return `Vítěz ZČ: ${teamsMap[targetId]?.name||targetId}`
-  if(type==="nonwinner_regular_season") return `Nevítěz ZČ: ${teamsMap[targetId]?.name||targetId}`
-  if(type==="last_regular_season") return `Poslední ZČ: ${teamsMap[targetId]?.name||targetId}`
+  const team = teamsMap[targetId]?.name || targetId || "?"
+  if(type?.startsWith("serie_winner_")) return `Postup ze série: ${team}`
+  if(type?.startsWith("serie_games_")) return `Délka série: ${team} zápasů`
+  if(type==="winner_playoff_overall") return `🏆 Vítěz playoff: ${team}`
+  if(type==="second_playoff_overall") return `🥈 2. místo playoff: ${team}`
+  if(type==="third_playoff_overall")  return `🥉 3. místo playoff: ${team}`
+  if(type==="winner_regular_season")  return `🥇 Vítěz základní části: ${team}`
+  if(type==="nonwinner_regular_season") return `Nevítěz ZČ: ${team}`
+  if(type==="last_regular_season")    return `Poslední ZČ: ${team}`
   return type||"—"
 }
 
@@ -220,8 +224,7 @@ function renderNote(bet, idx){
 
   const match = bet.match_id ? matchesMap[bet.match_id] : null
   const isGoalsBet = bet.type?.startsWith("match_goals_")
-  const isSeriesBet = bet.type?.startsWith("serie_") || ["winner_regular_season","nonwinner_regular_season","last_regular_season"].includes(bet.type)
-
+const isSeriesBet = bet.type?.startsWith("serie_") || ["winner_playoff_overall","second_playoff_overall","third_playoff_overall","winner_regular_season","nonwinner_regular_season","last_regular_season"].includes(bet.type)
   let teamsHtml = ""
   if(match){
     const hg = match.home_score != null ? match.home_score : "–"
