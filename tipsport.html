@@ -99,13 +99,22 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .loading{padding:60px;text-align:center;color:#7ab0cc;font-size:14px;}
 .empty-notes{padding:60px;text-align:center;color:#aaa;font-size:14px;}
 
-@media(max-width:600px){
+@media(max-width:700px){
   .credit-bar{grid-template-columns:1fr;}
-  .notes-grid{grid-template-columns:1fr 1fr;}
-  .wrapper{padding:14px;}
-}
-@media(max-width:420px){
+  .tabs{padding:10px 12px;gap:5px;}
+  .tab-btn{padding:6px 12px;font-size:11px;}
+  .wrapper{padding:12px 10px 60px;}
   .notes-grid{grid-template-columns:1fr;}
+  .note-top{flex-wrap:nowrap;gap:6px;}
+  .note-player{font-size:13px;flex-shrink:0;}
+  .note-status{font-size:9px;padding:2px 6px;white-space:nowrap;flex-shrink:0;}
+  .note-amounts{flex-direction:column;gap:4px;}
+  .note-amount-item{font-size:12px;}
+  .note-tip{font-size:14px;}
+  .note-score{font-size:18px;min-width:52px;padding:3px 8px;}
+  .note-team-logo{width:30px;height:30px;}
+  .credit-amount{font-size:20px;}
+  .section-label{text-align:center;}
 }
 </style>
 </head>
