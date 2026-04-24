@@ -425,15 +425,13 @@ function renderTeams(){
  else if(teamsTypeFilter==='repre') teams=teams.filter(t=>t.is_repre)
  if(teamsSearchVal) teams=teams.filter(t=>teamName(t.team).toLowerCase().includes(teamsSearchVal.toLowerCase()))
 
- let teamsSortCol='ratio', teamsSortDir='desc'
-
+ let teamsSortCol='gp', teamsSortDir='desc'
  const teamDetailUrl=(abbr)=>{ const tid=TEAM_MAP[abbr]?.id; return tid?`tym-detail.html?id=${tid}`:`tym-detail.html?abbr=${encodeURIComponent(abbr)}` }
 
  function doSortTeams(){
   teams.sort((a,b)=>{
    let av,bv
-   if(teamsSortCol==='ratio'){ av=a.gp>0?a.w/a.gp:0; bv=b.gp>0?b.w/b.gp:0 }
-   else if(teamsSortCol==='diff'){ av=a.goals-a.ga; bv=b.goals-b.ga }
+if(teamsSortCol==='ratio'){ av=a.gp; bv=b.gp }   else if(teamsSortCol==='diff'){ av=a.goals-a.ga; bv=b.goals-b.ga }
    else{ av=a[teamsSortCol]??0; bv=b[teamsSortCol]??0 }
    return teamsSortDir==='asc'?av-bv:bv-av
   })
