@@ -55,7 +55,7 @@ tbody tr{border-bottom:1px solid #f0f0f0;transition:background .1s;}
 tbody tr:hover{background:#f0f6fc;}
 tbody tr:nth-child(even){background:#f7fbff;}
 tbody tr:nth-child(even):hover{background:#e8f2fb;}
-tbody td{padding:6px 8px;text-align:center;color:#1a2a3c;vertical-align:middle;}tbody td.td-left{text-align:left;padding-left:14px;}
+tbody td{padding:5px 8px;text-align:center;color:#1a2a3c;vertical-align:middle;line-height:1.2;}tbody td.td-left{text-align:left;padding-left:14px;}
 tbody td.td-rank{font-weight:800;color:#0b2a3c;width:44px;}
 tbody td.td-name{font-weight:700;color:#0b2a3c;}
 tbody td.td-highlight{font-weight:800;color:#0b2a3c;background:#fff8e0;}
@@ -761,8 +761,7 @@ let teamsSortCol='ratio', teamsSortDir='desc'
     <td>${t.shg}</td>
     <td>${t.hits}</td>
     <td>${t.pim_total}</td>
-<td><a href="${teamDetailUrl(t.team)}" style="display:inline-flex;align-items:center;gap:4px;background:#1a5276;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-decoration:none;line-height:1.4;">📊</a></td>   </tr>`
-  }).join('')
+<td><a href="${teamDetailUrl(t.team)}" style="background:#1a5276;color:white;font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;text-decoration:none;">📊</a></td>  }).join('')
  }
 
  function si(col){ return `<span class="sort-arrow">${col===teamsSortCol?(teamsSortDir==='desc'?' ↓':' ↑'):''}</span>` }
