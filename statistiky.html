@@ -386,17 +386,7 @@ function renderLegend(isGoalieView){
 let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal='', teamsCompFilter='all'
  
 function renderTeams(){
-const compMatchIds = teamsCompFilter==='all' ? null : new Set(allMatches.filter(m=>{
-  const compId=seasonCompMap[m.season_id]
-  if(teamsCompFilter==='extraliga') return compId===COMP_IDS.extraliga
-  if(teamsCompFilter==='pohar')     return compId===COMP_IDS.pohar
-  if(teamsCompFilter==='ms')        return compId===COMP_IDS.ms
-  if(teamsCompFilter==='olympiada') return compId===COMP_IDS.olympiada
-  if(teamsCompFilter==='reprezentace') return compId===COMP_IDS.ms||compId===COMP_IDS.olympiada||compId===COMP_IDS.exhibice
-  return false
- }).map(m=>m.id))
-
-const compMatchIds = teamsCompFilter==='all' ? null : new Set(allMatches.filter(m=>{
+ const compMatchIds = teamsCompFilter==='all' ? null : new Set(allMatches.filter(m=>{
   const compId=seasonCompMap[m.season_id]
   if(teamsCompFilter==='extraliga') return compId===COMP_IDS.extraliga
   if(teamsCompFilter==='pohar')     return compId===COMP_IDS.pohar
@@ -409,7 +399,6 @@ const compMatchIds = teamsCompFilter==='all' ? null : new Set(allMatches.filter(
  const map={}
  allMatches.forEach(m=>{
   if(m.home_score==null) return
-  if(compMatchIds && !compMatchIds.has(m.id)) return
   if(compMatchIds && !compMatchIds.has(m.id)) return
   const homeTeam=allTeamsDb.find(t=>t.id===m.home_team)
   const awayTeam=allTeamsDb.find(t=>t.id===m.away_team)
