@@ -319,8 +319,11 @@ function buildSubTabs2(){
  )
  const existingGroups = stageGroups.filter(g=>[...existingStageNames].some(n=>g.match(n)))
 
-let html = `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:0;">
+bar.innerHTML = existingGroups.map(g =>
+  `<div class="sub-tab-2 ${teamsStageFilter===g.key?'active':''}" onclick="setTeamsStage('${g.key}',this)">${g.label}</div>`
+ ).join('')
+ bar.style.display = 'flex'
+}
 
 function setTeamsComp(val,btn){
  teamsCompFilter=val; teamsStageFilter='all'; teamsSelectedSeason=null
