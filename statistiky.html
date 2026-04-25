@@ -849,6 +849,7 @@ function renderH2H(){
  const t2logo=t2obj?.logo?`./logos/${t2obj.logo}`:''
 
  document.getElementById('teamsContent').innerHTML=`
+<div style="font-size:13px;font-weight:700;color:#0b2a3c;margin-bottom:8px;">⚔️ Vyber týmy pro srovnání vzájemných zápasů</div>
   <div class="h2h-selected-preview" onclick="openH2HPicker()">
    <div class="h2h-preview-team">
     ${t1logo?`<img class="h2h-preview-logo" src="${t1logo}" onerror="this.style.display='none'">`:`<div style="width:48px;height:48px;background:#e8f0f8;border-radius:8px;"></div>`}
@@ -1005,12 +1006,13 @@ function renderH2H(){
   ${card('🏒 Výpis všech zápasů',`
    <div style="overflow-x:auto;">
    <table style="width:100%;font-size:12px;border-collapse:collapse;">
-    <thead><tr style="background:#0b2a3c;">
+<thead><tr style="background:#0b2a3c;">
      <th style="padding:8px 10px;text-align:left;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Sezóna</th>
      <th style="padding:8px 10px;text-align:left;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Stage</th>
      <th style="padding:8px 10px;text-align:center;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Domácí</th>
      <th style="padding:8px 10px;text-align:center;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Skóre</th>
      <th style="padding:8px 10px;text-align:center;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Hosté</th>
+     <th style="padding:8px 10px;text-align:center;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">Detail</th>
     </tr></thead>
     <tbody>${matches.map((m,i)=>{
      const home=teamById[m.home_team],away=teamById[m.away_team]
@@ -1026,6 +1028,7 @@ function renderH2H(){
       <td style="padding:6px 10px;text-align:center;font-weight:${homeWins?'800':'400'};color:${homeWins?'#16a34a':'#1a2a3c'};">${home?.name||'?'}</td>
       <td style="padding:6px 10px;text-align:center;font-weight:800;font-size:14px;">${hg} : ${ag}${suffix}</td>
       <td style="padding:6px 10px;text-align:center;font-weight:${!homeWins?'800':'400'};color:${!homeWins?'#16a34a':'#1a2a3c'};">${away?.name||'?'}</td>
+      <td style="padding:6px 10px;text-align:center;"><a href="statistiky-zapasu.html?id=${m.id}" style="background:#1a5276;color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-decoration:none;white-space:nowrap;">📊 Statistiky</a></td>
      </tr>`
     }).join('')}</tbody>
    </table></div>
