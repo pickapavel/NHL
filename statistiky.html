@@ -255,8 +255,7 @@ function logoImg(a){ const l=teamLogo(a); return l?`<img src="${l}" class="team-
 let rawStats=[], allTeamsDb=[], seasonCompMap={}, allMatches=[], allSeasons=[], allStats=[], allStages=[]
 let playersSortCol='points', playersSortDir='desc', posFilter='all', ownerFilter='all', teamTypeFilter='all'
 let loadedSections=new Set(['players'])
-let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal='', teamsCompFilter='all', teamsStageFilter='all'
-
+let teamsOwnerFilter='all', teamsTypeFilter='all', teamsSearchVal='', teamsCompFilter='all', teamsStageFilter='all', teamsSelectedSeason=null
 // H2H state
 let h2tPickerSide = 1 // which side is being picked (not used in new dialog)
 let h2hCurrentT1 = null
@@ -292,32 +291,39 @@ function getCompIdForFilter(f){
 function buildSubTabs2(){
  const bar = document.getElementById('teamsSubTabs2')
  if(teamsCompFilter==='all'){ bar.style.display='none'; bar.innerHTML=''; return }
+
  const compId = getCompIdForFilter(teamsCompFilter)
- const relevantSeasonIds = allSeasons
+ const relevantSeasons = allSeasons
   .filter(s => teamsCompFilter==='reprezentace'
    ? (s.competition_id===COMP_IDS.ms||s.competition_id===COMP_IDS.olympiada||s.competition_id===COMP_IDS.exhibice)
    : s.competition_id===compId)
-  .map(s=>s.id)
- const stageNames = []
- const seen = new Set()
- allStages
-  .filter(s=>relevantSeasonIds.includes(s.season_id) && s.name!=='Playoff')
-  .forEach(s=>{ if(!seen.has(s.name)){ seen.add(s.name); stageNames.push({name:s.name,id:s.id}) } })
- const playoffNames = ['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Kvalifikace','Skupina o čtvrtfinále']
- const zakladni = stageNames.filter(s=>!playoffNames.some(p=>s.name.startsWith(p)))
- const playoff = stageNames.filter(s=>playoffNames.some(p=>s.name.startsWith(p)))
- let html = `<div class="sub-tab-2 ${teamsStageFilter==='all'?'active':''}" onclick="setTeamsStage('all',this)">Vše</div>`
- if(zakladni.length) html += `<div class="sub-tab-2 ${teamsStageFilter==='zakladni'?'active':''}" onclick="setTeamsStage('zakladni',this)">Základní část</div>`
- if(playoff.length){
-  html += `<div class="sub-tab-2 ${teamsStageFilter==='playoff'?'active':''}" onclick="setTeamsStage('playoff',this)">Playoff (vše)</div>`
-  playoff.forEach(s=>{ html += `<div class="sub-tab-2 ${teamsStageFilter===s.name?'active':''}" onclick="setTeamsStage('${s.name}',this)">${s.name}</div>` })
- }
- bar.innerHTML = html
- bar.style.display = 'flex'
-}
+  .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))
+ const relevantSeasonIds = relevantSeasons.map(s=>s.id)
+
+ // Nastav defaultní sezónu = nejnovější
+ if(!teamsSelectedSeason && relevantSeasons.length) teamsSelectedSeason = relevantSeasons[0].id
+
+ // Skupiny stages
+ const stageGroups = [
+  { key:'zakladni',    label:'Základní část', match: n => !['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p)) },
+  { key:'ctvrtfinale', label:'Čtvrtfinále',   match: n => n.startsWith('Čtvrtfinále') },
+  { key:'semifinale',  label:'Semifinále',    match: n => n.startsWith('Semifinále') },
+  { key:'tretimisto',  label:'O 3. místo',    match: n => n.startsWith('O 3. místo') },
+  { key:'finale',      label:'Finále',        match: n => n==='Finále' },
+  { key:'baraz',       label:'Baráž',         match: n => n.startsWith('Baráž') },
+  { key:'osmifinale',  label:'Osmifinále',    match: n => n.startsWith('Osmifinále') },
+ ]
+
+ const existingStageNames = new Set(
+  allStages.filter(s=>relevantSeasonIds.includes(s.season_id)&&s.name!=='Playoff').map(s=>s.name)
+ )
+ const existingGroups = stageGroups.filter(g=>[...existingStageNames].some(n=>g.match(n)))
+
+ let html = `
+  <div style="display:flex;align-items:cent
 
 function setTeamsComp(val,btn){
- teamsCompFilter=val; teamsStageFilter='all'
+ teamsCompFilter=val; teamsStageFilter='all'; teamsSelectedSeason=null
  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'))
  btn.classList.add('active')
  if(val==='h2h'){
@@ -332,6 +338,11 @@ function setTeamsStage(val,btn){
  teamsStageFilter=val
  document.querySelectorAll('.sub-tab-2').forEach(b=>b.classList.remove('active'))
  btn.classList.add('active'); renderTeams()
+}
+
+function setTeamsSeason(val){
+ teamsSelectedSeason = val || null
+ renderTeams()
 }
 
 function setPosFilter(val,btn){
@@ -597,8 +608,18 @@ window.selectH2HTeam = function(side, teamId){
 // TÝMOVÉ STATISTIKY
 // =====================================================
 function getCompMatchIds(){
- if(teamsCompFilter==='all' && teamsStageFilter==='all') return null
- const playoffNames=['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Kvalifikace','Skupina o čtvrtfinále']
+ if(teamsCompFilter==='all' && teamsStageFilter==='all' && !teamsSelectedSeason) return null
+
+ const stageGroupMatch = {
+  zakladni:    n => !['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p)),
+  ctvrtfinale: n => n.startsWith('Čtvrtfinále'),
+  semifinale:  n => n.startsWith('Semifinále'),
+  tretimisto:  n => n.startsWith('O 3. místo'),
+  finale:      n => n==='Finále',
+  baraz:       n => n.startsWith('Baráž'),
+  osmifinale:  n => n.startsWith('Osmifinále'),
+ }
+
  return new Set(allMatches.filter(m=>{
   const compId=seasonCompMap[m.season_id]
   if(teamsCompFilter!=='all'){
@@ -608,22 +629,16 @@ function getCompMatchIds(){
    if(teamsCompFilter==='olympiada'&&compId!==COMP_IDS.olympiada) return false
    if(teamsCompFilter==='reprezentace'&&!(compId===COMP_IDS.ms||compId===COMP_IDS.olympiada||compId===COMP_IDS.exhibice)) return false
   }
+  if(teamsSelectedSeason && m.season_id!==teamsSelectedSeason) return false
   if(teamsStageFilter!=='all'){
    const stage=allStages.find(s=>s.id===m.stage_id)
    if(!stage) return false
-   if(teamsStageFilter==='zakladni'){
-    if(playoffNames.some(p=>stage.name.startsWith(p))) return false
-    if(stage.name==='Playoff') return false
-   } else if(teamsStageFilter==='playoff'){
-    if(!playoffNames.some(p=>stage.name.startsWith(p))) return false
-   } else {
-    if(stage.name!==teamsStageFilter) return false
-   }
+   const matchFn=stageGroupMatch[teamsStageFilter]
+   if(matchFn&&!matchFn(stage.name)) return false
   }
   return true
  }).map(m=>m.id))
 }
-
 function renderTeams(){
  const compMatchIds = getCompMatchIds()
  const map={}
