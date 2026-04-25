@@ -759,14 +759,29 @@ function renderH2H(){
  const card=(title,content)=>`<div style="background:white;border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(26,58,92,.08);border:1px solid #e0ecf8;margin-bottom:16px;"><div style="font-size:13px;font-weight:800;color:#0b2a3c;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e8f0f8;">${title}</div>${content}</div>`
 
  document.getElementById('teamsContent').innerHTML=`
-  <div class="filter-row" style="margin-bottom:16px;align-items:center;gap:12px;">
-   <select class="filter-select" id="h2hTeam1" onchange="renderH2H()" style="min-width:240px;">
-    ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t1?'selected':''}>${t.name}</option>`).join('')}
-   </select>
-   <span style="font-size:16px;font-weight:800;color:#0b2a3c;">⚔️ vs</span>
-   <select class="filter-select" id="h2hTeam2" onchange="renderH2H()" style="min-width:240px;">
-    ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t2?'selected':''}>${t.name}</option>`).join('')}
-   </select>
+<style>
+   .h2h-team-select{appearance:none;-webkit-appearance:none;padding:10px 14px 10px 48px;border-radius:12px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;min-width:260px;position:relative;}
+   .h2h-team-select:focus{outline:none;border-color:#2f9ec9;}
+   .h2h-select-wrap{position:relative;display:inline-flex;align-items:center;}
+   .h2h-select-logo{position:absolute;left:10px;width:28px;height:28px;object-fit:contain;border-radius:5px;pointer-events:none;z-index:1;}
+  </style>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+   <div class="h2h-select-wrap">
+    <img class="h2h-select-logo" id="h2hLogo1" src="${t1obj?.logo?`./logos/${t1obj.logo}`:''}">
+    <select class="h2h-team-select" id="h2hTeam1" onchange="renderH2H()">
+     ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t1?'selected':''}>${t.name}</option>`).join('')}
+    </select>
+   </div>
+   <div style="text-align:center;">
+    <div style="font-size:22px;">🏒🏒</div>
+    <div style="font-size:11px;font-weight:800;color:#7ab0cc;text-transform:uppercase;letter-spacing:.1em;">vs</div>
+   </div>
+   <div class="h2h-select-wrap">
+    <img class="h2h-select-logo" id="h2hLogo2" src="${t2obj?.logo?`./logos/${t2obj.logo}`:''}">
+    <select class="h2h-team-select" id="h2hTeam2" onchange="renderH2H()">
+     ${allTeamsDb.sort((a,b)=>a.name.localeCompare(b.name,'cs')).map(t=>`<option value="${t.id}" ${t.id===t2?'selected':''}>${t.name}</option>`).join('')}
+    </select>
+   </div>
   </div>
 
   ${matches.length===0?`<div class="empty">Žádné vzájemné zápasy.</div>`:`
@@ -812,16 +827,105 @@ function renderH2H(){
     </table>`:'<div style="color:#aaa;font-size:12px;padding:8px 0;">Žádné hráčské statistiky.</div>'
    )}
 
-   ${card('⚽ Nejčastější skóre',`
-    <div style="display:flex;flex-direction:column;gap:8px;">
-     ${topScores.map(([score,count])=>`
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f7fbff;border-radius:8px;">
-       <span style="font-size:16px;font-weight:800;color:#0b2a3c;">${score}</span>
+${card('🏒 Nejčastější skóre & Rekordy',`
+    <div style="font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Nejčastější výsledky</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+     ${topScores.map(([score,count],i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:${i===0?'#fff8e0':'#f7fbff'};border-radius:8px;border:1px solid ${i===0?'#f0d060':'#e0ecf8'};">
+       <div style="display:flex;align-items:center;gap:8px;">
+        ${i===0?'<span style="font-size:14px;">⭐</span>':'<span style="font-size:12px;color:#aaa;">'+(i+1)+'.</span>'}
+        <span style="font-size:16px;font-weight:800;color:#0b2a3c;">${score}</span>
+       </div>
        <span style="font-size:12px;font-weight:700;background:#e8f0f8;color:#1a5276;padding:2px 8px;border-radius:10px;">${count}×</span>
       </div>`).join('')}
     </div>
+    <div style="font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Rekordy v duelech</div>
+    ${(()=>{
+     if(!matches.length) return '<div style="color:#aaa;font-size:12px;">Žádné zápasy.</div>'
+     let bigWin=null, bigWinDiff=0, mostGoals=null, mostGoalsTotal=0
+     matches.forEach(m=>{
+      const hg=Number(m.home_score), ag=Number(m.away_score)
+      const diff=Math.abs(hg-ag), total=hg+ag
+      if(diff>bigWinDiff){ bigWinDiff=diff; bigWin=m }
+      if(total>mostGoalsTotal){ mostGoalsTotal=total; mostGoals=m }
+     })
+     const teamById2={}; allTeamsDb.forEach(t=>{ teamById2[t.id]=t })
+     const fmtMatch=(m)=>{
+      const h=teamById2[m.home_team], a=teamById2[m.away_team]
+      const suffix=m.result_type==='SN'?' SN':m.result_type==='OT'?' OT':''
+      return `${h?.name||'?'} ${m.home_score}:${m.away_score}${suffix} ${a?.name||'?'}`
+     }
+     return `
+      <div style="display:flex;flex-direction:column;gap:8px;">
+       <div style="padding:8px 12px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;">
+        <div style="font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">🏆 Nejvyšší výhra</div>
+        <div style="font-size:13px;font-weight:800;color:#0b2a3c;">${bigWin?fmtMatch(bigWin):'—'}</div>
+        ${bigWin?`<div style="font-size:10px;color:#888;margin-top:2px;">${allSeasons.find(s=>s.id===bigWin.season_id)?.name||''}</div>`:''}
+       </div>
+       <div style="padding:8px 12px;background:#fff8e0;border-radius:8px;border:1px solid #f0d060;">
+        <div style="font-size:10px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">⚽ Nejvíce gólů v zápase</div>
+        <div style="font-size:13px;font-weight:800;color:#0b2a3c;">${mostGoals?fmtMatch(mostGoals):'—'} <span style="font-size:11px;font-weight:600;color:#888;">(${mostGoalsTotal} gólů)</span></div>
+        ${mostGoals?`<div style="font-size:10px;color:#888;margin-top:2px;">${allSeasons.find(s=>s.id===mostGoals.season_id)?.name||''}</div>`:''}
+       </div>
+      </div>`
+    })()}
    `)}
-  </div>
+ </div>
+
+  ${(()=>{
+   const goalieMap={}
+   rawStats.filter(r=>{
+    const m=allMatches.find(x=>x.id===r.match_id)
+    if(!m) return false
+    return r.is_goalie && ((m.home_team===t1&&m.away_team===t2)||(m.home_team===t2&&m.away_team===t1))
+   }).forEach(r=>{
+    const key=r.player_id?String(r.player_id):r.player_name
+    if(!goalieMap[key]) goalieMap[key]={name:r.player_name,team:r.team_abbr,gp:0,sa:0,ga:0,gw:0,gl:0,player_id:r.player_id}
+    const g=goalieMap[key]; g.gp++; g.sa+=r.goalie_sa||0; g.ga+=r.goalie_ga||0
+    const m=allMatches.find(x=>x.id===r.match_id)
+    if(m&&m.home_score!=null){
+     const homeTeam=allTeamsDb.find(t=>t.id===m.home_team)
+     const isHome=homeTeam?.team_abbr===r.team_abbr
+     const hg=Number(m.home_score), ag=Number(m.away_score)
+     const won=isHome?hg>ag:ag>hg
+     if(won) g.gw++; else g.gl++
+    }
+   })
+   const goalies=Object.values(goalieMap).filter(g=>g.sa>0).sort((a,b)=>{
+    const svA=(a.sa-a.ga)/a.sa, svB=(b.sa-b.ga)/b.sa; return svB-svA
+   })
+   if(!goalies.length) return ''
+   return card('🥅 Brankářské statistiky v duelech',`
+    <table style="width:100%;font-size:12px;border-collapse:collapse;">
+     <thead><tr style="background:#f0f6fc;">
+      <th style="padding:6px 8px;text-align:left;font-weight:700;color:#1a5276;">#</th>
+      <th style="padding:6px 8px;text-align:left;font-weight:700;color:#1a5276;">Brankář</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#1a5276;">Z</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#1a5276;">Zákroky</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#1a5276;">GA</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#1a5276;">GAA</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#1a5276;">SV%</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#16a34a;">V</th>
+      <th style="padding:6px 8px;text-align:center;font-weight:700;color:#dc2626;">P</th>
+     </tr></thead>
+     <tbody>${goalies.map((g,i)=>{
+      const svpct=g.sa>0?(((g.sa-g.ga)/g.sa)*100).toFixed(1)+'%':'—'
+      const gaa=g.gp>0?(g.ga/g.gp).toFixed(2):'—'
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+       <td style="padding:5px 8px;font-weight:800;color:#888;">${i+1}</td>
+       <td style="padding:5px 8px;"><a class="player-link" href="${profileUrl(g)}">${g.name}</a><div style="font-size:10px;color:#aaa;">${g.team||''}</div></td>
+       <td style="padding:5px 8px;text-align:center;">${g.gp}</td>
+       <td style="padding:5px 8px;text-align:center;">${g.sa}</td>
+       <td style="padding:5px 8px;text-align:center;">${g.ga}</td>
+       <td style="padding:5px 8px;text-align:center;">${gaa}</td>
+       <td style="padding:5px 8px;text-align:center;font-weight:800;background:#f0fdf4;">${svpct}</td>
+       <td style="padding:5px 8px;text-align:center;font-weight:700;color:#16a34a;">${g.gw}</td>
+       <td style="padding:5px 8px;text-align:center;font-weight:700;color:#dc2626;">${g.gl}</td>
+      </tr>`
+     }).join('')}</tbody>
+    </table>
+   `)
+  })()}
 
   ${card('📅 Statistiky podle sezóny',`
    <table style="width:100%;font-size:12px;border-collapse:collapse;">
