@@ -987,8 +987,7 @@ window.placeGamesBet=async function(stageId,playerKey){
   const o=odds[sel]||1
   const newCredit=player.credit-amount
   await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
-  const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type:`serie_games_${stageId}`,target_id:stageId,odds:o,amount,potential_win:amount*o,status:"pending"}).select().single()
-  await supabase.from("credit_history").insert({
+const{data:betData}=await supabase.from("bets_special").insert({player_id:player.id,type:`serie_games_${stageId}`,target_id:stageId,tip_key:String(sel),odds:o,amount,potential_win:amount*o,status:"pending"}).select().single()  await supabase.from("credit_history").insert({
     player_id:player.id,type:"bet",
     description:`Sázka na počet zápasů v sérii — ${sel} zápasů`,
     amount:-amount,credit_before:player.credit,credit_after:newCredit,
