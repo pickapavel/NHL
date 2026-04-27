@@ -236,8 +236,16 @@ function renderBetRows(betList){
  </div>`
  betList.forEach(b=>{
   const statusBadge=`<span class="badge badge-${b.status}">${b.status==="pending"?"Čeká":b.status==="won"?"Výhra":"Prohra"}</span>`
-  const tipLabel = b.target_id ? getTeamName(b.target_id) : (b.tip_key||'—')
-  const akce=b.status==="pending"
+let tipLabel = '—'
+  if(b.type?.startsWith("serie_games_")){
+   // target_id je stage_id, tip_key je null — zobraz počet zápasů z typu
+   const stageId = b.type.replace("serie_games_","")
+   tipLabel = getStageName(stageId)
+  } else if(b.type?.startsWith("serie_winner_")){
+   tipLabel = b.target_id ? getTeamName(b.target_id) : '—'
+  } else {
+   tipLabel = b.target_id ? getTeamName(b.target_id) : (b.tip_key||'—')
+  }  const akce=b.status==="pending"
    ?`<button class="btnWon" data-bet-id="${b.id}" onclick="resolve('${b.id}','won')">Výhra</button>
      <button class="btnLost" data-bet-id="${b.id}" onclick="resolve('${b.id}','lost')">Prohra</button>`
    :`<span class="resolved">Vyhodnoceno</span>`
