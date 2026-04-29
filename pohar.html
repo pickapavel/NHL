@@ -295,6 +295,7 @@ function buildHalfTabs(){
    <button class="half-tab ${currentHalf==='left'?'active':''}" onclick="setHalf('left')">◀ Levý pavouk (1–${seasonTeamCount/2} zápasů)</button>
    <button class="half-tab ${currentHalf==='right'?'active':''}" onclick="setHalf('right')">▶ Pravý pavouk (${seasonTeamCount/2+1}–${seasonTeamCount} zápasů)</button>
    <button class="half-tab ${currentHalf==='final'?'active':''}" onclick="setHalf('final')">🥇 Semifinále & Finále</button>
+   <button class="half-tab ${currentHalf==='rozpis'?'active':''}" onclick="setHalf('rozpis')">📋 Rozpis zápasů</button>
   `
   wrap.style.display = "block"
 }
@@ -303,6 +304,121 @@ window.setHalf = function(half){
   currentHalf = half
   buildHalfTabs()
   render()
+}
+
+function renderRozpisZapasu(){
+  const cont = document.getElementById("content")
+
+  const allSlots = []
+  phases.forEach(phase => {
+    for(let i = 0; i < phase.zapasu; i++){
+      const roundNum = phase.roundFrom + i
+      const m = allMatches.find(x => x.round === roundNum) || null
+      allSlots.push({ phase, roundNum, match: m })
+    }
+  })
+
+  // Rozdělení na odehrané, aktuální (první neodehraný) a budoucí
+  const played = allSlots.filter(s => s.match && s.match.home_score != null)
+  const pending = allSlots.filter(s => !s.match || s.match.home_score == null)
+  const current = pending[0] || null
+  const future = pending.slice(1)
+
+  function matchCard(slot, highlight){
+    const { phase, roundNum, match: m } = slot
+    if(!m){
+      return `
+       <div class="ml-card" style="${highlight?'border:2px solid #f0c040;box-shadow:0 0 0 4px rgba(240,192,64,.15);':''}">
+        <div class="ml-card-header">
+         <span class="ml-round-badge">Kolo ${roundNum}</span>
+         <span class="ml-phase-badge">${phase.label}</span>
+         <span class="ml-status" style="color:#f0c040;">⏳ Čeká na přiřazení</span>
+        </div>
+        <div class="ml-card-body">
+         <div class="ml-teams">
+          <div class="ml-team"><div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div><span class="ml-team-name" style="color:#aaa;font-style:italic;">— TBD —</span></div>
+          <div class="ml-team"><div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div><span class="ml-team-name" style="color:#aaa;font-style:italic;">— TBD —</span></div>
+         </div>
+        </div>
+       </div>`
+    }
+
+    const homeT = allTeams[m.home_team]
+    const awayT = allTeams[m.away_team]
+    if(!homeT || !awayT) return ''
+
+    const isPlayed = m.home_score != null
+    const winner = getWinner(m)
+    const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : ""
+    let stats = null
+    try{ stats = m.stats ? JSON.parse(m.stats) : null }catch(e){}
+    let periods = ""
+    if(stats){
+      const h1=Number(stats[16]||0),h2=Number(stats[17]||0),h3=Number(stats[18]||0)
+      const a1=Number(stats[6]||0),a2=Number(stats[7]||0),a3=Number(stats[8]||0)
+      periods = `${h1}:${a1} · ${h2}:${a2} · ${h3}:${a3}`
+    }
+
+    return `
+     <div class="ml-card ${isPlayed?"played":""}" style="${highlight?'border:2px solid #f0c040;box-shadow:0 0 0 4px rgba(240,192,64,.15);':''}">
+      <div class="ml-card-header">
+       <span class="ml-round-badge">Kolo ${m.round}</span>
+       <span class="ml-phase-badge">${phase.label}</span>
+       ${isPlayed
+         ? `<span class="ml-status" style="color:#4ade80;">✓ Odehráno${suffix?" · "+suffix:""}</span>`
+         : `<span class="ml-status" style="color:#f0c040;">${highlight?'🎯 Aktuální':'⏳ Čeká'}</span>`
+       }
+      </div>
+      <div class="ml-card-body">
+       <div class="ml-teams">
+        <div class="ml-team">
+         ${homeT.logo ? `<img class="ml-team-logo" src="./logos/${homeT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
+         <span class="ml-team-name ${isPlayed&&winner===m.home_team?"winner":""}">${homeT.name}</span>
+         ${isPlayed ? `<span class="ml-team-score ${winner===m.home_team?"winner":""}">${m.home_score}</span>` : ""}
+        </div>
+        <div class="ml-team">
+         ${awayT.logo ? `<img class="ml-team-logo" src="./logos/${awayT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
+         <span class="ml-team-name ${isPlayed&&winner===m.away_team?"winner":""}">${awayT.name}</span>
+         ${isPlayed ? `<span class="ml-team-score ${winner===m.away_team?"winner":""}">${m.away_score}</span>` : ""}
+        </div>
+       </div>
+      </div>
+      <div class="ml-card-footer">
+       <span class="ml-periods">${periods}</span>
+       ${isPlayed
+         ? `<button class="ml-btn ml-btn-stats" onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'">📊 Statistiky</button>`
+         : `<button class="ml-btn ml-btn-bet" onclick="window.location.href='vsad-si.html?id=${m.id}'">🎲 Vsaď si</button>`
+       }
+      </div>
+     </div>`
+  }
+
+  let html = ''
+
+  if(current){
+    html += `<div style="font-size:12px;font-weight:800;color:#f0c040;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px;">🎯 Aktuální zápas</div>`
+    html += matchCard(current, true)
+    html += `<div style="height:24px;"></div>`
+  }
+
+  if(future.length){
+    html += `<div style="font-size:12px;font-weight:800;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px;">⏳ Nadcházející zápasy</div>`
+    html += `<div class="match-list-cards">`
+    future.forEach(s => { html += matchCard(s, false) })
+    html += `</div><div style="height:24px;"></div>`
+  }
+
+  if(played.length){
+    html += `<div style="font-size:12px;font-weight:800;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px;">✓ Odehrané zápasy</div>`
+    html += `<div class="match-list-cards">`
+    // Odehrané zobrazíme od nejnovějšího
+    played.slice().reverse().forEach(s => { html += matchCard(s, false) })
+    html += `</div>`
+  }
+
+  if(!html) html = '<div class="empty">Žádné zápasy.</div>'
+
+  cont.innerHTML = `<div style="max-width:600px;">${html}</div>`
 }
 
 function updateTabs(){
@@ -363,13 +479,21 @@ function tbdHtml(roundNum){
 
 function render(){
   if(isLargeTournament && currentPhase === 0){
-    renderLargeTournament()
+    if(currentHalf === 'rozpis'){
+      renderRozpisZapasu()
+    } else {
+      renderLargeTournament()
+    }
   } else if(currentPhase === 0){
     renderBracket()
   } else {
     renderPhase(phases[currentPhase - 1])
   }
-  renderMatchList()
+  if(currentHalf !== 'rozpis'){
+    renderMatchList()
+  } else {
+    document.getElementById("matchList").innerHTML = ""
+  }
 }
 
 // =====================================================
