@@ -956,25 +956,25 @@ function addEntry(){
   entryCount++
   const id=entryCount
   const cont=document.getElementById("matchEntries")
-const maxRound=allMatches.length?Math.max(...allMatches.map(m=>Number(m.round)||0)):0
-const nextRound=maxRound+cont.querySelectorAll(".match-entry").length+1
-const seasonId = document.getElementById("m-season").value
+  const maxRound=allMatches.length?Math.max(...allMatches.map(m=>Number(m.round)||0)):0
+  const nextRound=maxRound+cont.querySelectorAll(".match-entry").length+1
+  const seasonId = document.getElementById("m-season").value
   const isPohar = isPoharSeason(seasonId)
   const filteredTeams = getTeamsForSeason(seasonId)
   const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
-const isPlayoffStage = isPlayoffStageSelected()
+  const isPlayoffStage = isPlayoffStageSelected()
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
   div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
    <div class="entry-fields" style="grid-template-columns:${isPohar||isPlayoffStage?'1fr 1fr':'1fr 1fr 80px'}">
     <div>
       <div class="entry-label">Domácí tým</div>
-      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-home-${id}','${seasonId}')">
+      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-home-${id}',document.getElementById('m-season').value)">
       <select id="e-home-${id}">${teamOptions}</select>
     </div>
     <div>
       <div class="entry-label">Hosté tým</div>
-      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-away-${id}','${seasonId}')">
+      <input class="team-search" placeholder="🔍 Hledat tým..." oninput="filterTeamSelect(this,'e-away-${id}',document.getElementById('m-season').value)">
       <select id="e-away-${id}">${teamOptions}</select>
     </div>
     <div class="entry-round-wrap" style="display:${isPohar||isPlayoffStage?'none':'block'}"><div class="entry-label">Kolo</div><input type="number" id="e-round-${id}" min="1" value="${nextRound}"></div>
