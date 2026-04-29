@@ -344,8 +344,19 @@ function teamHtml(teamId, score, isWinner, isLoser){
    </div>`
 }
 
-function tbdHtml(){
-  return `<div class="match-team"><div class="match-team-logo-ph"></div><span class="match-team-name tbd">— TBD —</span></div>`
+function metaHtml(roundNum, played, suffix){
+  return `<div style="background:#0b2a3c;padding:5px 10px;font-size:10px;font-weight:600;color:#7ab0cc;display:flex;justify-content:space-between;letter-spacing:.04em;border-radius:0;">
+   <span style="color:#f0c040;font-weight:700;">Kolo ${roundNum}</span>
+   <span style="color:${played?'#7ab0cc':'#e67e22'}">${played?suffix:'Čeká'}</span>
+  </div>`
+}
+
+function tbdHtml(roundNum){
+  return `<div class="match-card" style="border-color:#d0dce8;opacity:1;">
+   ${metaHtml(roundNum, false, '')}
+   <div class="match-team"><div class="match-team-logo-ph" style="background:#dce8f4;"></div><span class="match-team-name" style="color:#b0c4d8;font-style:italic;font-weight:500;">— TBD —</span></div>
+   <div class="match-team"><div class="match-team-logo-ph" style="background:#dce8f4;"></div><span class="match-team-name" style="color:#b0c4d8;font-style:italic;font-weight:500;">— TBD —</span></div>
+  </div>`
 }
 
 function render(){
@@ -423,18 +434,14 @@ function renderLargeTournament(){
 }
 
 function renderHalfBracketHtml(groupPhases, halfSize, side, title){
-  // Pro každou fázi vezmi první nebo druhou polovinu zápasů
   const bracketId = 'bracket-' + side
-
   let html = `<div class="bracket-section"><div class="bracket-section-title">${title}</div>`
   html += `<div class="bracket-wrap"><div class="bracket" id="${bracketId}">`
 
   groupPhases.forEach((phase, pi) => {
     const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
-    // Seřaď podle kola
     phaseMatches.sort((a,b) => a.round - b.round)
 
-    // Levá nebo pravá polovina
     let halfMatches, halfRounds
     if(side === 'left'){
       halfMatches = phaseMatches.slice(0, Math.ceil(phase.zapasu / 2))
@@ -453,16 +460,9 @@ function renderHalfBracketHtml(groupPhases, halfSize, side, title){
     for(let i = 0; i < zapasu; i++){
       const roundNum = halfRounds[i]
       const m = halfMatches[i] || null
-
       html += `<div class="match-slot">`
       if(!m){
-        html += `<div class="match-card tbd">
-         <div class="match-meta" style="background:#fff8e0;">
-          <span style="font-weight:800;color:#0b2a3c;">Kolo ${roundNum}</span>
-          <span style="color:#e67e22;">Čeká</span>
-         </div>
-         ${tbdHtml()}${tbdHtml()}
-        </div>`
+        html += tbdHtml(roundNum)
       } else {
         const winner = getWinner(m)
         const played = m.home_score != null
@@ -471,25 +471,20 @@ function renderHalfBracketHtml(groupPhases, halfSize, side, title){
           ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
           : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
         html += `<div class="match-card ${played?"played":""}">
-<div class="match-meta" style="${played?"":"background:#fff8e0;"}">          <span style="font-weight:800;color:#0b2a3c;">Kolo ${m.round}</span>
-          ${played ? `<span>${suffix}</span>` : "<span style='color:#e67e22;'>Čeká</span>"}
-         </div>
+         ${metaHtml(m.round, played, suffix)}
          ${teamHtml(m.home_team, played?m.home_score:null, winner===m.home_team, winner===m.away_team)}
          ${teamHtml(m.away_team, played?m.away_score:null, winner===m.away_team, winner===m.home_team)}
          ${btnHtml}
         </div>`
       }
-      html += `</div>` // match-slot
+      html += `</div>`
     }
 
-    html += `</div></div>` // round-matches, round-col
-
-    if(pi < groupPhases.length - 1){
-      html += `<div class="connector-col"></div>`
-    }
+    html += `</div></div>`
+    if(pi < groupPhases.length - 1) html += `<div class="connector-col"></div>`
   })
 
-  html += `</div></div></div>` // bracket, bracket-wrap, bracket-section
+  html += `</div></div></div>`
   return html
 }
 
@@ -507,16 +502,9 @@ function renderFinalBracketHtml(finalPhases){
     for(let i = 0; i < phase.zapasu; i++){
       const roundNum = phase.roundFrom + i
       const m = phaseMatches[i] || null
-
       html += `<div class="match-slot">`
       if(!m){
-        html += `<div class="match-card tbd">
-         <div class="match-meta" style="background:#fff8e0;">
-          <span style="font-weight:800;color:#0b2a3c;">Kolo ${roundNum}</span>
-          <span style="color:#e67e22;">Čeká</span>
-         </div>
-         ${tbdHtml()}${tbdHtml()}
-        </div>`
+        html += tbdHtml(roundNum)
       } else {
         const winner = getWinner(m)
         const played = m.home_score != null
@@ -525,25 +513,20 @@ function renderFinalBracketHtml(finalPhases){
           ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
           : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
         html += `<div class="match-card ${played?"played":""}">
-         <div class="match-meta" style="${played?"":"background:#fff8e0;"}">          <span style="font-weight:800;color:#0b2a3c;">Kolo ${m.round}</span>
-          ${played ? `<span>${suffix}</span>` : "<span style='color:#e67e22;'>Čeká</span>"}
-         </div>
+         ${metaHtml(m.round, played, suffix)}
          ${teamHtml(m.home_team, played?m.home_score:null, winner===m.home_team, winner===m.away_team)}
          ${teamHtml(m.away_team, played?m.away_score:null, winner===m.away_team, winner===m.home_team)}
          ${btnHtml}
         </div>`
       }
-      html += `</div>` // match-slot
+      html += `</div>`
     }
 
-    html += `</div></div>` // round-matches, round-col
-
-    if(pi < finalPhases.length - 1){
-      html += `<div class="connector-col"></div>`
-    }
+    html += `</div></div>`
+    if(pi < finalPhases.length - 1) html += `<div class="connector-col"></div>`
   })
 
-  html += `</div></div>` // bracket, bracket-wrap
+  html += `</div></div>`
   return html
 }
 
@@ -592,14 +575,7 @@ function renderBracket(){
       slot.className = "match-slot"
 
       if(!m){
-        slot.innerHTML = `
-         <div class="match-card tbd">
-          <div class="match-meta" style="background:#fff8e0;">
-           <span style="font-weight:800;color:#0b2a3c;">Kolo ${roundNum}</span>
-           <span style="color:#e67e22;">Čeká</span>
-          </div>
-          ${tbdHtml()}${tbdHtml()}
-         </div>`
+       slot.innerHTML = tbdHtml(roundNum)
       } else {
         const winner = getWinner(m)
         const played = m.home_score != null
@@ -607,12 +583,9 @@ function renderBracket(){
         const btnHtml = played
           ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
           : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
-        slot.innerHTML = `
+    slot.innerHTML = `
          <div class="match-card ${played?"played":""}">
-          <div class="match-meta" style="${played?"":"background:#fff8e0;"}">
-           <span style="font-weight:800;color:#0b2a3c;">Kolo ${m.round}</span>
-           ${played ? `<span>${suffix}</span>` : "<span style='color:#e67e22;'>Čeká</span>"}
-          </div>
+          ${metaHtml(m.round, played, suffix)}
           ${teamHtml(m.home_team, played?m.home_score:null, winner===m.home_team, winner===m.away_team)}
           ${teamHtml(m.away_team, played?m.away_score:null, winner===m.away_team, winner===m.home_team)}
           ${btnHtml}
