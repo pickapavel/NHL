@@ -489,45 +489,79 @@ function renderHalfBracketHtml(groupPhases, halfSize, side, title){
 }
 
 function renderFinalBracketHtml(finalPhases){
-  let html = `<div class="bracket-wrap"><div class="bracket">`
+ const allFinalRounds = []
+ finalPhases.forEach(p => {
+  for(let r = p.roundFrom; r <= p.roundTo; r++) allFinalRounds.push(r)
+ })
+ allFinalRounds.sort((a,b)=>a-b)
+ const base = allFinalRounds[0]
 
-  finalPhases.forEach((phase, pi) => {
-    const phaseMatches = allMatches.filter(m => m.round >= phase.roundFrom && m.round <= phase.roundTo)
-    phaseMatches.sort((a,b) => a.round - b.round)
+ const cfLeftRounds  = [base+0, base+1]
+ const cfRightRounds = [base+2, base+3]
+ const sfLeftRound   = base+4
+ const sfRightRound  = base+5
+ const finaleRound   = base+6
+ const o3Round       = base+7
 
-    html += `<div class="round-col">`
-    html += `<div class="round-header">${phase.label}</div>`
-    html += `<div class="round-matches">`
+ function getMatch(round){
+  return allMatches.find(m => m.round === round) || null
+ }
 
-    for(let i = 0; i < phase.zapasu; i++){
-      const roundNum = phase.roundFrom + i
-      const m = phaseMatches[i] || null
-      html += `<div class="match-slot">`
-      if(!m){
-        html += tbdHtml(roundNum)
-      } else {
-        const winner = getWinner(m)
-        const played = m.home_score != null
-        const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
-        const btnHtml = played
-          ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
-          : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
-        html += `<div class="match-card ${played?"played":""}">
-         ${metaHtml(m.round, played, suffix)}
-         ${teamHtml(m.home_team, played?m.home_score:null, winner===m.home_team, winner===m.away_team)}
-         ${teamHtml(m.away_team, played?m.away_score:null, winner===m.away_team, winner===m.home_team)}
-         ${btnHtml}
-        </div>`
-      }
-      html += `</div>`
-    }
+ function matchBox(m, roundNum){
+  if(!m) return tbdHtml(roundNum)
+  const winner = getWinner(m)
+  const played = m.home_score != null
+  const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
+  const btnHtml = played
+   ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
+   : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
+  return `<div class="match-card ${played?"played":""}">
+   ${metaHtml(m.round, played, suffix)}
+   ${teamHtml(m.home_team, played?m.home_score:null, winner===m.home_team, winner===m.away_team)}
+   ${teamHtml(m.away_team, played?m.away_score:null, winner===m.away_team, winner===m.home_team)}
+   ${btnHtml}
+  </div>`
+ }
 
-    html += `</div></div>`
-    if(pi < finalPhases.length - 1) html += `<div class="connector-col"></div>`
-  })
+ function col(title, rounds){
+  return `<div class="round-col">
+   <div class="round-header">${title}</div>
+   <div class="round-matches">
+    ${rounds.map(r => `<div class="match-slot">${matchBox(getMatch(r), r)}</div>`).join('')}
+   </div>
+  </div>`
+ }
 
-  html += `</div></div>`
-  return html
+ function colSingle(title, round){
+  return `<div class="round-col">
+   <div class="round-header">${title}</div>
+   <div class="round-matches" style="justify-content:center;">
+    <div class="match-slot">${matchBox(getMatch(round), round)}</div>
+   </div>
+  </div>`
+ }
+
+ const conn = `<div class="connector-col"></div>`
+
+ let html = `<div class="bracket-wrap"><div class="bracket">`
+ html += col('⚔️ Čtvrtfinále', cfLeftRounds)
+ html += conn
+ html += colSingle('🥊 Semifinále', sfLeftRound)
+ html += conn
+ html += colSingle('🏆 Finále', finaleRound)
+ html += conn
+ html += colSingle('🥊 Semifinále', sfRightRound)
+ html += conn
+ html += col('⚔️ Čtvrtfinále', cfRightRounds)
+ html += `</div></div>`
+
+ const o3match = getMatch(o3Round)
+ html += `<div style="margin-top:24px;">
+  <div style="font-size:12px;font-weight:800;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">🥉 O 3. místo</div>
+  <div style="max-width:260px;">${matchBox(o3match, o3Round)}</div>
+ </div>`
+
+ return html
 }
 
 // =====================================================
