@@ -897,8 +897,7 @@ function closeModal(){ document.getElementById("modalOverlay").classList.remove(
 
 function onModalSeasonChange(){
   const seasonId = document.getElementById("m-season").value
-  console.log("seasonId:", seasonId)
-  console.log("allSeasons:", allSeasons.map(s => ({id:s.id, name:s.name, competition_id:s.competition_id})))
+  const stageSel = document.getElementById("m-stage")
   stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
   if(!seasonId) return
   const seasonStages=allStages.filter(s=>s.season_id===seasonId)
