@@ -1357,12 +1357,6 @@ function updateWizardStepIndicators(currentStep){
 function openNewSeasonModal(){
   nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1; isPoharWizard=false
   renderWizardSteps()
-  const grid=document.getElementById("ns-teams-grid"); grid.innerHTML=""
-  allTeams.forEach(t=>{
-    const div=document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
-    div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
-    grid.appendChild(div)
-  })
   updateTeamsCount(); selectStructure("none")
   document.getElementById("ns-name").value=""
   document.getElementById("ns-season-number").textContent="— vyber nejdřív soutěž"
@@ -1388,11 +1382,32 @@ async function onNsCompetitionChange(){
   const num = (existing||[]).length + 1
   document.getElementById("ns-season-number").innerHTML = `<span class="season-number-badge">${num}. sezóna</span>`
 
+  // Filtruj týmy podle soutěže
+  let filteredTeams
+  if(compId === POHAR_COMPETITION_ID){
+    filteredTeams = allTeams.filter(t => t.in_extraliga || t.in_reprezentace || t.in_olympiada)
+  } else if(compId === EXTRALIGA_COMPETITION_ID){
+    filteredTeams = allTeams.filter(t => t.in_extraliga)
+  } else {
+    filteredTeams = allTeams.filter(t => t.in_reprezentace || t.in_olympiada)
+  }
+
+  // Překresli grid týmů
+  nsSelectedTeams = new Set()
+  const grid = document.getElementById("ns-teams-grid")
+  grid.innerHTML = ""
+  filteredTeams.forEach(t => {
+    const div = document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
+    div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
+    grid.appendChild(div)
+  })
+  updateTeamsCount()
+
   // Aktualizuj info box na kroku 2
   const infoBox = document.getElementById("wp2-infobox")
   if(isPoharWizard){
     infoBox.className = "pohar-info"
-    infoBox.innerHTML = "🏆 <b>Pohár</b> — vyber všechny účastníky. Kola se generují automaticky podle toho, jak budeš přidávat zápasy."
+    infoBox.innerHTML = "🏆 <b>Pohár</b> — vyber všechny účastníky (kluby i reprezentace). Kola se generují automaticky."
   } else {
     infoBox.className = "info-box"
     infoBox.textContent = "Klikni na tým pro výběr/zrušení výběru."
@@ -1453,19 +1468,21 @@ function toggleTeam(teamId){
 }
 
 function selectAllTeams(){
-  allTeams.forEach(t=>{
-    nsSelectedTeams.add(t.id)
-    document.getElementById(`tc-${t.id}`)?.classList.add("selected")
-    const box = document.getElementById(`tcb-${t.id}`); if(box) box.textContent="✓"
+  document.querySelectorAll("#ns-teams-grid .team-check").forEach(div=>{
+    const teamId = div.id.replace("tc-","")
+    nsSelectedTeams.add(teamId)
+    div.classList.add("selected")
+    const box = document.getElementById(`tcb-${teamId}`); if(box) box.textContent="✓"
   })
   updateTeamsCount()
 }
 
 function deselectAllTeams(){
-  allTeams.forEach(t=>{
-    nsSelectedTeams.delete(t.id)
-    document.getElementById(`tc-${t.id}`)?.classList.remove("selected")
-    const box = document.getElementById(`tcb-${t.id}`); if(box) box.textContent=""
+  document.querySelectorAll("#ns-teams-grid .team-check").forEach(div=>{
+    const teamId = div.id.replace("tc-","")
+    nsSelectedTeams.delete(teamId)
+    div.classList.remove("selected")
+    const box = document.getElementById(`tcb-${teamId}`); if(box) box.textContent=""
   })
   updateTeamsCount()
 }
