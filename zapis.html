@@ -893,15 +893,11 @@ async function openModal(){
   entryCount=0; document.getElementById("matchEntries").innerHTML=""
   document.getElementById("m-season").value=currentSeasonId||""
 
-  // Pokud je aktuální sezóna pohár, načti počet existujících zápasů
-  if(isPoharSeason(currentSeasonId)){
-    const {data:pm} = await db.from("matches").select("round").eq("season_id", currentSeasonId).order("round", {ascending:false}).limit(1)
-    _poharMatchCount = pm?.[0]?.round || 0
-  } else {
-    _poharMatchCount = 0
-  }
+  // Načti počet zápasů pro aktuální sezónu (ať je to cokoliv)
+  const {data:pm} = await db.from("matches").select("round").eq("season_id", currentSeasonId).order("round", {ascending:false}).limit(1)
+  _poharMatchCount = pm?.[0]?.round || 0
 
-  onModalSeasonChange(); addEntry()
+  await onModalSeasonChange(); addEntry()
   document.getElementById("modalOverlay").classList.add("open")
 }
  
@@ -911,13 +907,10 @@ async function onModalSeasonChange(){
   const seasonId = document.getElementById("m-season").value
   const stageSel = document.getElementById("m-stage")
 
-  // Přenačti počet pohárových zápasů při změně sezóny
-  if(isPoharSeason(seasonId)){
-    const {data:pm} = await db.from("matches").select("round").eq("season_id", seasonId).order("round", {ascending:false}).limit(1)
-    _poharMatchCount = pm?.[0]?.round || 0
-  } else {
-    _poharMatchCount = 0
-  }
+
+ // Přenačti počet zápasů při změně sezóny
+  const {data:pm} = await db.from("matches").select("round").eq("season_id", seasonId).order("round", {ascending:false}).limit(1)
+  _poharMatchCount = pm?.[0]?.round || 0
   stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
   if(!seasonId) return
   const seasonStages=allStages.filter(s=>s.season_id===seasonId)
