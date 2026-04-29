@@ -496,22 +496,18 @@ function renderFinalBracketHtml(finalPhases){
  allFinalRounds.sort((a,b)=>a-b)
  const base = allFinalRounds[0]
 
- const cfLeftRounds  = [base+0, base+1]
- const cfRightRounds = [base+2, base+3]
- const sfLeftRound   = base+4
- const sfRightRound  = base+5
- const finaleRound   = base+6
- const o3Round       = base+7
+ const cfRounds    = [base+0, base+1, base+2, base+3]
+ const sfRounds    = [base+4, base+5]
+ const finaleRound = base+6
+ const o3Round     = base+7
 
- function getMatch(round){
-  return allMatches.find(m => m.round === round) || null
- }
+ function getMatch(round){ return allMatches.find(m => m.round === round) || null }
 
  function matchBox(m, roundNum){
   if(!m) return tbdHtml(roundNum)
   const winner = getWinner(m)
   const played = m.home_score != null
-  const suffix = m.result_type === "SN" ? "SN" : m.result_type === "OT" ? "OT" : "REG"
+  const suffix = m.result_type==="SN"?"SN":m.result_type==="OT"?"OT":"REG"
   const btnHtml = played
    ? `<button onclick="window.location.href='statistiky-zapasu.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#1a5276;color:white;">📊 Statistiky</button>`
    : `<button onclick="window.location.href='vsad-si.html?id=${m.id}'" style="width:100%;border:none;border-radius:0 0 8px 8px;cursor:pointer;font-weight:700;font-size:10px;padding:4px;background:#27ae60;color:white;">🎲 Vsaď si</button>`
@@ -523,45 +519,61 @@ function renderFinalBracketHtml(finalPhases){
   </div>`
  }
 
- function col(title, rounds){
-  return `<div class="round-col">
-   <div class="round-header">${title}</div>
-   <div class="round-matches">
-    ${rounds.map(r => `<div class="match-slot">${matchBox(getMatch(r), r)}</div>`).join('')}
-   </div>
-  </div>`
+ function box(round){ return matchBox(getMatch(round), round) }
+
+ function lbl(text, color='#7ab0cc'){
+  return `<div style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;text-align:center;">${text}</div>`
  }
 
- function colSingle(title, round){
-  return `<div class="round-col">
-   <div class="round-header">${title}</div>
-   <div class="round-matches" style="justify-content:center;">
-    <div class="match-slot">${matchBox(getMatch(round), round)}</div>
+ const W = 240
+
+ return `
+  <div style="overflow-x:auto;padding-bottom:20px;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0;min-width:1060px;">
+
+   <!-- ČTVRTFINÁLE: 4 karty do šířky -->
+   <div style="display:flex;width:100%;justify-content:space-between;padding:0 20px;box-sizing:border-box;">
+    <div style="width:${W}px;">${lbl('⚔️ Čtvrtfinále')}${box(cfRounds[0])}</div>
+    <div style="width:${W}px;">${lbl('⚔️ Čtvrtfinále')}${box(cfRounds[1])}</div>
+    <div style="width:${W}px;">${lbl('⚔️ Čtvrtfinále')}${box(cfRounds[2])}</div>
+    <div style="width:${W}px;">${lbl('⚔️ Čtvrtfinále')}${box(cfRounds[3])}</div>
    </div>
+
+   <!-- SPOJOVACÍ ČÁRY ČF → SF -->
+   <svg width="100%" height="44" style="display:block;overflow:visible;">
+    <line x1="11%"  y1="0" x2="11%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="35%"  y1="0" x2="35%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="11%"  y1="22" x2="35%" y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="23%"  y1="22" x2="23%" y2="44" stroke="#c8d8e8" stroke-width="2"/>
+
+    <line x1="65%"  y1="0" x2="65%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="89%"  y1="0" x2="89%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="65%"  y1="22" x2="89%" y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="77%"  y1="22" x2="77%" y2="44" stroke="#c8d8e8" stroke-width="2"/>
+   </svg>
+
+   <!-- SEMIFINÁLE: 2 karty -->
+   <div style="display:flex;width:100%;justify-content:space-between;padding:0 130px;box-sizing:border-box;">
+    <div style="width:${W}px;">${lbl('🥊 Semifinále','#a0c8e8')}${box(sfRounds[0])}</div>
+    <div style="width:${W}px;">${lbl('🥊 Semifinále','#a0c8e8')}${box(sfRounds[1])}</div>
+   </div>
+
+   <!-- SPOJOVACÍ ČÁRY SF → FINÁLE -->
+   <svg width="100%" height="44" style="display:block;overflow:visible;">
+    <line x1="23%"  y1="0" x2="23%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="77%"  y1="0" x2="77%"  y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="23%"  y1="22" x2="77%" y2="22" stroke="#c8d8e8" stroke-width="2"/>
+    <line x1="50%"  y1="22" x2="50%" y2="44" stroke="#c8d8e8" stroke-width="2"/>
+   </svg>
+
+   <!-- O 3. MÍSTO + FINÁLE uprostřed -->
+   <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:${W}px;padding-bottom:20px;">
+    <div style="width:100%;">${lbl('🥉 O 3. místo','#cd7f32')}${box(o3Round)}</div>
+    <div style="width:100%;">${lbl('🏆 Finále','#f0c040')}${box(finaleRound)}</div>
+   </div>
+
+  </div>
   </div>`
- }
-
- const conn = `<div class="connector-col"></div>`
-
- let html = `<div class="bracket-wrap"><div class="bracket">`
- html += col('⚔️ Čtvrtfinále', cfLeftRounds)
- html += conn
- html += colSingle('🥊 Semifinále', sfLeftRound)
- html += conn
- html += colSingle('🏆 Finále', finaleRound)
- html += conn
- html += colSingle('🥊 Semifinále', sfRightRound)
- html += conn
- html += col('⚔️ Čtvrtfinále', cfRightRounds)
- html += `</div></div>`
-
- const o3match = getMatch(o3Round)
- html += `<div style="margin-top:24px;">
-  <div style="font-size:12px;font-weight:800;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">🥉 O 3. místo</div>
-  <div style="max-width:260px;">${matchBox(o3match, o3Round)}</div>
- </div>`
-
- return html
 }
 
 // =====================================================
