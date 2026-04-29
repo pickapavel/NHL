@@ -887,17 +887,37 @@ function isPoharSeason(seasonId){
   return season?.competition_id === POHAR_COMPETITION_ID
 }
 
-function openModal(){
+let _poharMatchCount = 0
+
+async function openModal(){
   entryCount=0; document.getElementById("matchEntries").innerHTML=""
   document.getElementById("m-season").value=currentSeasonId||""
+
+  // Pokud je aktuální sezóna pohár, načti počet existujících zápasů
+  if(isPoharSeason(currentSeasonId)){
+    const {data:pm} = await db.from("matches").select("round").eq("season_id", currentSeasonId).order("round", {ascending:false}).limit(1)
+    _poharMatchCount = pm?.[0]?.round || 0
+  } else {
+    _poharMatchCount = 0
+  }
+
   onModalSeasonChange(); addEntry()
   document.getElementById("modalOverlay").classList.add("open")
 }
+ 
 function closeModal(){ document.getElementById("modalOverlay").classList.remove("open") }
 
-function onModalSeasonChange(){
+async function onModalSeasonChange(){
   const seasonId = document.getElementById("m-season").value
   const stageSel = document.getElementById("m-stage")
+
+  // Přenačti počet pohárových zápasů při změně sezóny
+  if(isPoharSeason(seasonId)){
+    const {data:pm} = await db.from("matches").select("round").eq("season_id", seasonId).order("round", {ascending:false}).limit(1)
+    _poharMatchCount = pm?.[0]?.round || 0
+  } else {
+    _poharMatchCount = 0
+  }
   stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
   if(!seasonId) return
   const seasonStages=allStages.filter(s=>s.season_id===seasonId)
@@ -956,8 +976,21 @@ function addEntry(){
   entryCount++
   const id=entryCount
   const cont=document.getElementById("matchEntries")
-  const maxRound=allMatches.length?Math.max(...allMatches.map(m=>Number(m.round)||0)):0
-  const nextRound=maxRound+cont.querySelectorAll(".match-entry").length+1
+  const seasonId = document.getElementById("m-season").value
+  const isPoharModal = isPoharSeason(seasonId)
+
+  // Pro pohár: načti zápasy dané sezóny a najdi první neodehrané kolo
+  let nextRound = 1
+  if(isPoharModal && seasonId){
+    // Použij cached data pokud jsou ze stejné sezóny, jinak spočítej z matchEntries
+    const existingEntries = cont.querySelectorAll(".match-entry").length
+    // Zjisti max kolo ze všech zápasů pohárové sezóny (načteno async níže)
+    // Prozatím použij počet entries jako offset
+    nextRound = (_poharMatchCount || 0) + existingEntries + 1
+  } else {
+    const maxRound = allMatches.length ? Math.max(...allMatches.map(m=>Number(m.round)||0)) : 0
+    nextRound = maxRound + cont.querySelectorAll(".match-entry").length + 1
+  }
   const seasonId = document.getElementById("m-season").value
   const isPohar = isPoharSeason(seasonId)
   const filteredTeams = getTeamsForSeason(seasonId)
