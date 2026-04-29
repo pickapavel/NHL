@@ -953,11 +953,9 @@ function isPlayoffStageSelected(){
 }
  
 function updatePoharRoundHint(){
-  const round = parseInt(document.getElementById("m-pohar-round").value) || 1
-  const hint = document.getElementById("m-round-hint")
-  // Automaticky spočítej fázi podle čísla kola
-  // Závisí na počtu týmů — zobrazíme jen číslo kola
-  hint.textContent = `→ Zápas bude zapsán jako kolo č. ${round}`
+  const nextRound = (_poharMatchCount || 0) + 1
+  document.getElementById("m-pohar-round").value = nextRound
+  document.getElementById("m-round-hint").textContent = `→ Zápas bude zapsán jako kolo č. ${nextRound}`
 }
 
 function addEntry(){
