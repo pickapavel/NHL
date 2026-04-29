@@ -977,25 +977,20 @@ function addEntry(){
   const id=entryCount
   const cont=document.getElementById("matchEntries")
   const seasonId = document.getElementById("m-season").value
-  const isPoharModal = isPoharSeason(seasonId)
+  const isPohar = isPoharSeason(seasonId)
+  const filteredTeams = getTeamsForSeason(seasonId)
+  const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+  const isPlayoffStage = isPlayoffStageSelected()
 
-  // Pro pohár: načti zápasy dané sezóny a najdi první neodehrané kolo
   let nextRound = 1
-  if(isPoharModal && seasonId){
-    // Použij cached data pokud jsou ze stejné sezóny, jinak spočítej z matchEntries
+  if(isPohar && seasonId){
     const existingEntries = cont.querySelectorAll(".match-entry").length
-    // Zjisti max kolo ze všech zápasů pohárové sezóny (načteno async níže)
-    // Prozatím použij počet entries jako offset
     nextRound = (_poharMatchCount || 0) + existingEntries + 1
   } else {
     const maxRound = allMatches.length ? Math.max(...allMatches.map(m=>Number(m.round)||0)) : 0
     nextRound = maxRound + cont.querySelectorAll(".match-entry").length + 1
   }
-  const seasonId = document.getElementById("m-season").value
-  const isPohar = isPoharSeason(seasonId)
-  const filteredTeams = getTeamsForSeason(seasonId)
-  const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
-  const isPlayoffStage = isPlayoffStageSelected()
+
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
   div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
