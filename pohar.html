@@ -177,7 +177,8 @@ function getPhaseLabel(tymu, phaseIdx, totalPhases){
 
 async function init(){
   const [seasonsRes, teamsRes] = await Promise.all([
-   db.from("seasons").select("*, competitions(id,name)").eq("competition_id", POHAR_COMPETITION_ID).order("created_at", {ascending:true}),    db.from("teams").select("*")
+    db.from("seasons").select("*, competitions(id,name)").eq("competition_id", POHAR_COMPETITION_ID).order("created_at", {ascending:true}),
+    db.from("teams").select("*")
   ])
   allSeasons = seasonsRes.data || []
   ;(teamsRes.data||[]).forEach(t => allTeams[t.id] = t)
@@ -191,9 +192,12 @@ async function init(){
   }
   allSeasons.forEach(s => {
     const o = document.createElement("option")
-    o.value = s.id; o.textContent = s.name; sel.appendChild(o)
+    o.value = s.id
+    o.textContent = s.name
+    sel.appendChild(o)
   })
-currentSeasonId = allSeasons[allSeasons.length - 1].id  sel.value = currentSeasonId
+  currentSeasonId = allSeasons[allSeasons.length - 1].id
+  sel.value = currentSeasonId
   await loadSeason()
 }
 
