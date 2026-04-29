@@ -287,6 +287,13 @@ const items = [
       { icon: '📊', label: 'Statistiky MS', href: 'msstatistiky.html',  pages: ['msstatistiky.html'] },
     ]
   },
+{
+    type: 'link',
+    icon: '🏆',
+    label: 'Pohár',
+    href: 'pohar.html',
+    pages: ['pohar.html']
+  },
   {
     type: 'link',
     icon: '⭐',
