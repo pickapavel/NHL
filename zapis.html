@@ -1034,9 +1034,9 @@ async function saveAllMatches(){
     const awayId=document.getElementById(`e-away-${id}`)?.value
     if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
     // Pro pohár: všechny zápasy v tomto přidání dostanou stejné kolo (jedno kolo = jedna fáze pavouka)
-    const isPlayoff = isPlayoffStageSelected()
+ const isPlayoff = isPlayoffStageSelected()
     const round = (isPohar||isPlayoff)
-      ? (allMatches.length + entryIdx + 1)
+      ? (_poharMatchCount + entryIdx + 1)
       : Number(document.getElementById(`e-round-${id}`)?.value)
     if(!isPohar && !isPlayoff && (!round||round<1)){ alert(`Zápas ${id}: špatné kolo!`); valid=false; return }
     toInsert.push({home_team:homeId,away_team:awayId,round,season_id:seasonId,stage_id:stageId,played:false})
