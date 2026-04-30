@@ -656,11 +656,11 @@ function renderResults(SERIES){
       <div class="rm-teams">
        <div class="rm-team-row ${played&&!homeWin?'rm-loser':''}">
         ${logoHtml(homeTeam,22)}<span class="rm-team-name">${homeTeam}</span>
-        <div class="rm-score-wrap">${homeTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.home_score:'–'}</span></div>
+        <div class="rm-score-wrap">${homeTagHtml}<span class="rm-score ${played?'':'empty'}">${played?`<span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:15px;font-weight:800;width:32px;height:32px;border-radius:8px;">${m.home_score}</span>`:'–'}</span></div>
        </div>
        <div class="rm-team-row ${played&&!awayWin?'rm-loser':''}">
         ${logoHtml(awayTeam,22)}<span class="rm-team-name">${awayTeam}</span>
-        <div class="rm-score-wrap">${awayTagHtml}<span class="rm-score ${played?'':'empty'}">${played?m.away_score:'–'}</span></div>
+        <div class="rm-score-wrap">${awayTagHtml}<span class="rm-score ${played?'':'empty'}">${played?`<span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:15px;font-weight:800;width:32px;height:32px;border-radius:8px;">${m.away_score}</span>`:'–'}</span></div>
        </div>
       </div>
      </div>`
