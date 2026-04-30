@@ -310,14 +310,24 @@ let savedStats=null
   }
 
   // Abbr
-  let homeAbbr='',awayAbbr=''
-  if(playerStats&&playerStats.length){
+let homeAbbr='',awayAbbr=''
+  const allEventAbbrs=[...new Set((events||[]).map(e=>e.team_abbr).filter(Boolean))]
+  if(allEventAbbrs.length>=2){
+    const goalEventsTemp=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
+    const goalsByAbbr={}
+    goalEventsTemp.forEach(e=>{goalsByAbbr[e.team_abbr]=(goalsByAbbr[e.team_abbr]||0)+1})
+    const homeScore=Number(match.home_score||0),awayScore=Number(match.away_score||0)
+    const sorted=allEventAbbrs.sort((a,b)=>(goalsByAbbr[b]||0)-(goalsByAbbr[a]||0))
+    // Přiřaď abbr podle počtu gólů — kdo dal víc gólů odpovídá většímu skóre
+    if(homeScore>=awayScore){homeAbbr=sorted[0];awayAbbr=sorted[1]}
+    else{homeAbbr=sorted[1];awayAbbr=sorted[0]}
+  } else if(allEventAbbrs.length===1){
+    homeAbbr=allEventAbbrs[0]
+  }
+  // Fallback na playerStats
+  if(!homeAbbr&&playerStats&&playerStats.length){
     const abbrs=[...new Set(playerStats.filter(p=>!p.is_goalie).map(p=>p.team_abbr))]
     homeAbbr=abbrs[0]||'';awayAbbr=abbrs[1]||''
-    if(abbrs.length>=2){
-      const h=home?.name?.toLowerCase()||''
-      if(h.includes(abbrs[1]?.toLowerCase())&&!h.includes(abbrs[0]?.toLowerCase())){homeAbbr=abbrs[1];awayAbbr=abbrs[0]}
-    }
   }
 
   // Sestav statsCompare až teď kdy máme homeAbbr/awayAbbr
