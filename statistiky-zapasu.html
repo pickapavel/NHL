@@ -295,24 +295,18 @@ async function load(){
   let matchScore={hg:match.home_score||0,ag:match.away_score||0}
   let homePP={goals:0,attempts:0},awayPP={goals:0,attempts:0},homeShots=0,awayShots=0
 
+let savedStats=null
   if(match.stats){
-    const stats=JSON.parse(match.stats)
-    matchScore=calcScore(stats)
+    savedStats=JSON.parse(match.stats)
+    matchScore=calcScore(savedStats)
     document.getElementById('score').textContent=`${matchScore.hg} : ${matchScore.ag}`
     if(match.result_type&&match.result_type!=='REG')
       document.getElementById('scoreTag').innerHTML=`<span class="score-tag">${match.result_type}</span>`
-    document.getElementById('periods').textContent=`(${stats[16]||0}:${stats[6]||0}, ${stats[17]||0}:${stats[7]||0}, ${stats[18]||0}:${stats[8]||0})`
-    homePP=parsePP(stats[14]);awayPP=parsePP(stats[4])
-    homeShots=Number(stats[10])||0;awayShots=Number(stats[0])||0
-    const homePK=parsePP(stats[15]),awayPK=parsePP(stats[5])
-    document.getElementById('statsCompare').innerHTML=
-      renderStatRow('Střely',stats[10],stats[0])+renderStatRow('Hity',stats[11],stats[1])+
-      renderStatRow('Vhazování',stats[12],stats[2])+renderStatRow('Čas v útoku',stats[13],stats[3],true)+
-      renderStatRow('Přesilovky',stats[14],stats[4],true)+
-      renderStatRow('Oslabení (góly/pokusy)',`${homePK.goals}/${homePK.attempts}`,`${awayPK.goals}/${awayPK.attempts}`,true)
+    document.getElementById('periods').textContent=`(${savedStats[16]||0}:${savedStats[6]||0}, ${savedStats[17]||0}:${savedStats[7]||0}, ${savedStats[18]||0}:${savedStats[8]||0})`
+    homePP=parsePP(savedStats[14]);awayPP=parsePP(savedStats[4])
+    homeShots=Number(savedStats[10])||0;awayShots=Number(savedStats[0])||0
   } else {
     document.getElementById('score').textContent=`${matchScore.hg} : ${matchScore.ag}`
-    document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
 
   // Abbr
@@ -326,6 +320,22 @@ async function load(){
     }
   }
 
+  // Sestav statsCompare až teď kdy máme homeAbbr/awayAbbr
+  if(savedStats){
+    const homePK=parsePP(savedStats[15]),awayPK=parsePP(savedStats[5])
+    const homeHits=(playerStats||[]).filter(p=>p.team_abbr===homeAbbr&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+    const awayHits=(playerStats||[]).filter(p=>p.team_abbr===awayAbbr&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+    document.getElementById('statsCompare').innerHTML=
+      renderStatRow('Střely',savedStats[10],savedStats[0])+
+      renderStatRow('Hity',homeHits,awayHits)+
+      renderStatRow('Vhazování',savedStats[12],savedStats[2])+
+      renderStatRow('Čas v útoku',savedStats[13],savedStats[3],true)+
+      renderStatRow('Přesilovky',savedStats[14],savedStats[4],true)+
+      renderStatRow('Oslabení (góly/pokusy)',`${homePK.goals}/${homePK.attempts}`,`${awayPK.goals}/${awayPK.attempts}`,true)
+  } else {
+    document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
+  }
+  
   const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&Number(p.goalie_sa)>0)
   const homeGoalie=goalies.find(g=>g.team_abbr===homeAbbr)
   const awayGoalie=goalies.find(g=>g.team_abbr===awayAbbr)
