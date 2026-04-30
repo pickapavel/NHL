@@ -374,13 +374,11 @@ function renderRozpisZapasu(){
         <div class="ml-team">
          ${homeT.logo ? `<img class="ml-team-logo" src="./logos/${homeT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
          <span class="ml-team-name ${isPlayed&&winner===m.home_team?"winner":""}">${homeT.name}</span>
-         ${isPlayed ? `<span class="ml-team-score ${winner===m.home_team?"winner":""}">${m.home_score}</span>` : ""}
-        </div>
+${isPlayed ? `<span class="ml-team-score ${winner===m.home_team?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${m.home_score}</span></span>` : ""}        </div>
         <div class="ml-team">
          ${awayT.logo ? `<img class="ml-team-logo" src="./logos/${awayT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
          <span class="ml-team-name ${isPlayed&&winner===m.away_team?"winner":""}">${awayT.name}</span>
-         ${isPlayed ? `<span class="ml-team-score ${winner===m.away_team?"winner":""}">${m.away_score}</span>` : ""}
-        </div>
+${isPlayed ? `<span class="ml-team-score ${winner===m.away_team?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${m.away_score}</span></span>` : ""}        </div>
        </div>
       </div>
       <div class="ml-card-footer">
@@ -934,13 +932,11 @@ function renderMatchList(){
         <div class="ml-team">
          ${homeT.logo ? `<img class="ml-team-logo" src="./logos/${homeT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
          <span class="ml-team-name ${played&&winner===m.home_team?"winner":""}">${homeT.name}</span>
-         ${played ? `<span class="ml-team-score ${winner===m.home_team?"winner":""}">${m.home_score}</span>` : ""}
-        </div>
+${played ? `<span class="ml-team-score ${winner===m.home_team?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${m.home_score}</span></span>` : ""}        </div>
         <div class="ml-team">
          ${awayT.logo ? `<img class="ml-team-logo" src="./logos/${awayT.logo}">` : '<div style="width:26px;height:26px;border-radius:4px;background:#e8f0f8;flex-shrink:0;"></div>'}
          <span class="ml-team-name ${played&&winner===m.away_team?"winner":""}">${awayT.name}</span>
-         ${played ? `<span class="ml-team-score ${winner===m.away_team?"winner":""}">${m.away_score}</span>` : ""}
-        </div>
+${played ? `<span class="ml-team-score ${winner===m.away_team?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${m.away_score}</span></span>` : ""}        </div>
        </div>
       </div>
       <div class="ml-card-footer">
