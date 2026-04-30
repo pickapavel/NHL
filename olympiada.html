@@ -754,17 +754,70 @@ function buildBracket(stageMap, matchesByStage){
   const champion=finaleMatch&&isPlayed(finaleMatch)?teamName(getWinner(finaleMatch)):"—"
   document.getElementById("champion").textContent=champion
 }
+function onSeasonSelect(){
+  const sel=document.getElementById("seasonTabs")
+  const s=allSeasons.find(x=>x.id===sel.value)
+  if(s) loadSeason(s.id,s.name)
+}
 
-// INIT
+async function loadSeason(seasonId, seasonName){
+  currentSeasonId=seasonId
+  document.getElementById("headerSub").textContent=seasonName
+  const {data:stages}=await db.from("stages").select("*").eq("season_id",seasonId).order("order",{ascending:true})
+  const {data:matches}=await db.from("matches").select("*").eq("season_id",seasonId).order("round",{ascending:true})
+  const stageMap={};(stages||[]).forEach(s=>stageMap[s.name]=s.id)
+  const matchesByStage={};(matches||[]).forEach(m=>{if(!matchesByStage[m.stage_id])matchesByStage[m.stage_id]=[];matchesByStage[m.stage_id].push(m)})
+  const phaseMatches={"kv-nas":[],"skupina":[],"kval":[],"osm":[],"ctv":[],"finale":[]}
+  ;(stages||[]).forEach(s=>{
+    const phase=STAGE_PHASE_MAP[s.name]
+    if(phase)(matchesByStage[s.id]||[]).forEach(m=>phaseMatches[phase].push({...m,_stageName:s.name}))
+  })
+  const sgKvNas=document.getElementById("sg-kv-nas"); sgKvNas.innerHTML=""
+  ;["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
+  })
+  document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  buildSkupinaTabulka(phaseMatches["skupina"])
+  document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
+  ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgKval.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kval",2)
+  })
+  document.getElementById("ml-kval").innerHTML=phaseMatches["kval"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  const sgOsm=document.getElementById("sg-osm"); sgOsm.innerHTML=""
+  ;["Osmifinále - č. 1","Osmifinále - č. 2","Osmifinále - č. 3","Osmifinále - č. 4","Osmifinále - č. 5","Osmifinále - č. 6"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    sgOsm.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-osm")
+  })
+  document.getElementById("ml-osm").innerHTML=phaseMatches["osm"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  const sgCtv=document.getElementById("sg-ctv"); sgCtv.innerHTML=""
+  ;["Čtvrtfinále - č. 1","Čtvrtfinále - č. 2","Čtvrtfinále - č. 3","Čtvrtfinále - č. 4"].forEach((n,i)=>{
+    const sid=stageMap[n]; if(!sid)return
+    const note=i<2?"⭐ přímý postup ze skupiny":""
+    sgCtv.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-ctv",note)
+  })
+  document.getElementById("ml-ctv").innerHTML=phaseMatches["ctv"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  const sgFinale=document.getElementById("sg-finale"); sgFinale.innerHTML=""
+  ;["Semifinále - č. 1","Semifinále - č. 2","O 3. místo","Finále"].forEach(n=>{
+    const sid=stageMap[n]; if(!sid)return
+    const cls=n==="Finále"?"sch-finale":n==="O 3. místo"?"sch-f3":"sch-sf"
+    sgFinale.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,cls)
+  })
+  document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  buildBracket(stageMap,matchesByStage)
+  buildPhaseNav()
+  setPhase(activePhase)
+}
+
 async function init(){
   const {data:teams}=await db.from("teams").select("*")
   ;(teams||[]).forEach(t=>teamsMap[t.id]=t)
   const {data:seasons}=await db.from("seasons").select("*")
     .eq("competition_id",OLYMPIADA_COMPETITION_ID).order("created_at",{ascending:false})
   allSeasons=seasons||[]
-  const tabsEl=document.getElementById("seasonTabs")
-  tabsEl.innerHTML=""
-const sel=document.getElementById("seasonTabs")
+  const sel=document.getElementById("seasonTabs")
   sel.innerHTML=""
   allSeasons.forEach(s=>{
     const o=document.createElement("option")
@@ -778,79 +831,8 @@ const sel=document.getElementById("seasonTabs")
   } else {
     document.getElementById("headerSub").textContent="Žádné sezóny"
   }
-
-async function loadSeason(seasonId, seasonName){
-  currentSeasonId=seasonId
-  document.getElementById("headerSub").textContent=seasonName
-  const {data:stages}=await db.from("stages").select("*").eq("season_id",seasonId).order("order",{ascending:true})
-  const {data:matches}=await db.from("matches").select("*").eq("season_id",seasonId).order("round",{ascending:true})
-  const stageMap={};(stages||[]).forEach(s=>stageMap[s.name]=s.id)
-  const matchesByStage={};(matches||[]).forEach(m=>{if(!matchesByStage[m.stage_id])matchesByStage[m.stage_id]=[];matchesByStage[m.stage_id].push(m)})
-
-  const phaseMatches={"kv-nas":[],"skupina":[],"kval":[],"osm":[],"ctv":[],"finale":[]}
-  ;(stages||[]).forEach(s=>{
-    const phase=STAGE_PHASE_MAP[s.name]
-    if(phase)(matchesByStage[s.id]||[]).forEach(m=>phaseMatches[phase].push({...m,_stageName:s.name}))
-  })
-
-  // KV-NAS
-  const sgKvNas=document.getElementById("sg-kv-nas"); sgKvNas.innerHTML=""
-  ;["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"].forEach(n=>{
-    const sid=stageMap[n]; if(!sid)return
-    sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
-  })
-  document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // SKUPINA
-  buildSkupinaTabulka(phaseMatches["skupina"])
-  document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // KVAL
-  const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
-  ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
-    const sid=stageMap[n]; if(!sid)return
-    sgKval.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kval",2)
-  })
-  document.getElementById("ml-kval").innerHTML=phaseMatches["kval"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // OSM
-  const sgOsm=document.getElementById("sg-osm"); sgOsm.innerHTML=""
-  ;["Osmifinále - č. 1","Osmifinále - č. 2","Osmifinále - č. 3","Osmifinále - č. 4","Osmifinále - č. 5","Osmifinále - č. 6"].forEach(n=>{
-    const sid=stageMap[n]; if(!sid)return
-    sgOsm.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-osm")
-  })
-  document.getElementById("ml-osm").innerHTML=phaseMatches["osm"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // ČF
-  const sgCtv=document.getElementById("sg-ctv"); sgCtv.innerHTML=""
-  ;["Čtvrtfinále - č. 1","Čtvrtfinále - č. 2","Čtvrtfinále - č. 3","Čtvrtfinále - č. 4"].forEach((n,i)=>{
-    const sid=stageMap[n]; if(!sid)return
-    const note=i<2?"⭐ přímý postup ze skupiny":""
-    sgCtv.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,"sch-ctv",note)
-  })
-  document.getElementById("ml-ctv").innerHTML=phaseMatches["ctv"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // FINALE
-  const sgFinale=document.getElementById("sg-finale"); sgFinale.innerHTML=""
-  ;["Semifinále - č. 1","Semifinále - č. 2","O 3. místo","Finále"].forEach(n=>{
-    const sid=stageMap[n]; if(!sid)return
-    const cls=n==="Finále"?"sch-finale":n==="O 3. místo"?"sch-f3":"sch-sf"
-    sgFinale.innerHTML+=buildSingleMatchCard(n,(matchesByStage[sid]||[])[0]||null,cls)
-  })
-  document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-
-  // BRACKET
-  buildBracket(stageMap,matchesByStage)
-  buildPhaseNav()
-  setPhase(activePhase)
 }
 
-function onSeasonSelect(){
-  const sel=document.getElementById("seasonTabs")
-  const s=allSeasons.find(x=>x.id===sel.value)
-  if(s) loadSeason(s.id,s.name)
-}  
-  
 init()
 </script>
 </body>
