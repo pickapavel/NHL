@@ -482,10 +482,12 @@ function parseGamestatEvents(rows) {
 function parsePlayerstatPlayers(rows) {
   if (rows.length < 2 || rows[0].length < 2) return []
   const headers = rows.map(r => r[0] || '')
+  console.log('Playerstat headers:', headers)
   const players = []
   for (let p = 1; p < rows[0].length; p++) {
     const obj = {}
     headers.forEach((h, ri) => { obj[h] = rows[ri]?.[p] || '' })
+    console.log('Player obj:', obj)
     players.push(obj)
   }
   return players
