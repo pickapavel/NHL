@@ -465,9 +465,9 @@ function updateGoalsSummary(category, playerKey){
   if(!sel){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>'; return }
   const oddsMap=goalsOdds[category]
   const o=oddsMap[sel]?.odds||1
-  summaryEl.innerHTML=amount
-    ?`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*o)} Kč</span>`
-    :`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
+summaryEl.innerHTML = amount
+  ? `<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount * o)} Kč <span style="font-size:11px;font-weight:600;color:#15803d;">(zisk +${Math.round(amount * o - amount)} Kč)</span></span>`
+  : `<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
 }
 
 // ── Výsledek zápasu — existující funkce ──
@@ -612,9 +612,9 @@ function updateResultSummary(playerKey){
   if(!selected.length){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber tip a částku</span>'; return }
   let combinedOdds=1
   selected.forEach(t=>combinedOdds*=oddsGlobal[t])
-  summaryEl.innerHTML=amount
-    ?`<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*combinedOdds)} Kč</span>`
-    :`<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
+summaryEl.innerHTML = amount
+  ? `<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount * combinedOdds)} Kč <span style="font-size:11px;font-weight:600;color:#15803d;">(zisk +${Math.round(amount * combinedOdds - amount)} Kč)</span></span>`
+  : `<span class="odds-val">Kurz: ${combinedOdds.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
 }
 
 document.getElementById("amount_kubele").oninput=()=>updateResultSummary("kubele")
