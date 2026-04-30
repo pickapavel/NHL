@@ -456,8 +456,7 @@ function teamHtml(teamId, score, isWinner, isLoser){
    <div class="match-team ${cls}">
     ${logoHtml}
     <span class="match-team-name">${t?.name || "?"}</span>
-    ${score != null ? `<span class="match-team-score ${isWinner?"winner":""}">${score}</span>` : ""}
-   </div>`
+${score != null ? `<span class="match-team-score ${isWinner?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${score}</span></span>` : ""}   </div>`
 }
 
 function metaHtml(roundNum, played, suffix){
