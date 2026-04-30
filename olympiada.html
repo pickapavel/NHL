@@ -275,8 +275,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
     </div>
     <div class="olympic-title-wrap">
       <div class="olympic-title">Olympijský <span>turnaj</span></div>
-      <div class="olympic-sub" id="headerSub">Načítám...</div>
-      <div class="season-tabs" id="seasonTabs"></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;">
+       <div class="olympic-sub" id="headerSub">Načítám...</div>
+       <select id="seasonTabs" onchange="onSeasonSelect()" style="padding:7px 14px;border-radius:20px;border:2px solid rgba(240,192,64,.5);background:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#1a1a00;cursor:pointer;outline:none;"></select>
+      </div>
     </div>
   </div>
 </div>
@@ -762,20 +764,20 @@ async function init(){
   allSeasons=seasons||[]
   const tabsEl=document.getElementById("seasonTabs")
   tabsEl.innerHTML=""
-  allSeasons.forEach((s,i)=>{
-    const btn=document.createElement("button")
-    btn.className="season-tab"+(i===0?" active":"")
-    btn.textContent=s.name
-    btn.onclick=()=>{
-      tabsEl.querySelectorAll(".season-tab").forEach(b=>b.classList.remove("active"))
-      btn.classList.add("active")
-      loadSeason(s.id,s.name)
-    }
-    tabsEl.appendChild(btn)
+const sel=document.getElementById("seasonTabs")
+  sel.innerHTML=""
+  allSeasons.forEach(s=>{
+    const o=document.createElement("option")
+    o.value=s.id
+    o.textContent=s.name
+    sel.appendChild(o)
   })
-  if(allSeasons.length>0) loadSeason(allSeasons[0].id,allSeasons[0].name)
-  else document.getElementById("headerSub").textContent="Žádné sezóny"
-}
+  if(allSeasons.length>0){
+    sel.value=allSeasons[0].id
+    loadSeason(allSeasons[0].id,allSeasons[0].name)
+  } else {
+    document.getElementById("headerSub").textContent="Žádné sezóny"
+  }
 
 async function loadSeason(seasonId, seasonName){
   currentSeasonId=seasonId
@@ -843,6 +845,12 @@ async function loadSeason(seasonId, seasonName){
   setPhase(activePhase)
 }
 
+function onSeasonSelect(){
+  const sel=document.getElementById("seasonTabs")
+  const s=allSeasons.find(x=>x.id===sel.value)
+  if(s) loadSeason(s.id,s.name)
+}  
+  
 init()
 </script>
 </body>
