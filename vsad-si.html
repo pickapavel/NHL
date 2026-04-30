@@ -645,9 +645,9 @@ const{data:goalsBets}=await supabase.from("bets_special").select("*")
 
 if(match.played){
       const won=bet.status==="won"
-      summaryEl.innerHTML=won
-        ?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč!</span>`
-        :`<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>`
+summaryEl.innerHTML = won
+  ? `<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(zisk +${Math.round(bet.potential_win - bet.amount)} Kč)</span></span>`
+  : `<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>`
     } else {
       summaryEl.innerHTML=`<span class="odds-val">Kurz: ${bet.odds.toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>`
     }
@@ -668,9 +668,9 @@ if(match.played){
     const summaryEl=document.getElementById(`summary_${category}_${playerKey}`)
  if(match.played){
       const won=bet.status==="won"
-      summaryEl.innerHTML=won
-        ?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč!</span>`
-        :`<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>`
+      summaryEl.innerHTML = won
+  ? `<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(zisk +${Math.round(bet.potential_win - bet.amount)} Kč)</span></span>`
+  : `<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>`
     } else {
       summaryEl.innerHTML=`<span class="odds-val">Kurz: ${bet.odds.toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>`
     }
