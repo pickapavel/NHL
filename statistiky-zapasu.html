@@ -344,8 +344,11 @@ let savedStats=null
   // Góly
   const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
     .sort((a,b)=>{if((a.period||0)!==(b.period||0))return(a.period||0)-(b.period||0);return(a.time||'').localeCompare(b.time||'')})
-  const homeGoals=goalEvents.filter(e=>e.team_abbr===homeAbbr)
-  const awayGoals=goalEvents.filter(e=>e.team_abbr===awayAbbr)
+const allGoalAbbrs=[...new Set(goalEvents.map(e=>e.team_abbr).filter(Boolean))]
+const resolvedHomeAbbr=homeAbbr||allGoalAbbrs[0]||''
+const resolvedAwayAbbr=awayAbbr||allGoalAbbrs[1]||''
+const homeGoals=goalEvents.filter(e=>e.team_abbr===resolvedHomeAbbr)
+const awayGoals=goalEvents.filter(e=>e.team_abbr===resolvedAwayAbbr)
 
   function renderGoalItem(e){
     const isPPG=e.type?.toUpperCase().includes('PPG'),isSHG=e.type?.toUpperCase().includes('SHG')
