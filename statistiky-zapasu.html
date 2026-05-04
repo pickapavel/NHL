@@ -333,8 +333,11 @@ let homeAbbr='',awayAbbr=''
   // Sestav statsCompare až teď kdy máme homeAbbr/awayAbbr
   if(savedStats){
     const homePK=parsePP(savedStats[15]),awayPK=parsePP(savedStats[5])
-    const homeHits=(playerStats||[]).filter(p=>p.team_abbr===homeAbbr&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
-    const awayHits=(playerStats||[]).filter(p=>p.team_abbr===awayAbbr&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
+    const resolvedHome=homeAbbr||allAbbrs[0]||''
+    const resolvedAway=awayAbbr||allAbbrs[1]||''
+    const homeHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+    const awayHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedAway&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
     document.getElementById('statsCompare').innerHTML=
       renderStatRow('Střely',savedStats[10],savedStats[0])+
       renderStatRow('Hity',homeHits,awayHits)+
@@ -346,7 +349,7 @@ let homeAbbr='',awayAbbr=''
     document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
   
-  const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&Number(p.goalie_sa)>0)
+const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00')
   const homeGoalie=goalies.find(g=>g.team_abbr===homeAbbr)
   const awayGoalie=goalies.find(g=>g.team_abbr===awayAbbr)
   function shortName(t){return t?.name?.replace(/\(.\)$/,'').trim()||''}
@@ -453,8 +456,8 @@ const awayGoals=goalEvents.filter(e=>e.team_abbr===resolvedAwayAbbr)
     document.getElementById('homePlayers').innerHTML=sortPl(homePl).map(playerRow).join('')||'<tr><td colspan="9" class="no-data">Žádní hráči</td></tr>'
     document.getElementById('awayPlayers').innerHTML=sortPl(awayPl).map(playerRow).join('')||'<tr><td colspan="9" class="no-data">Žádní hráči</td></tr>'
 
-    const allGoalies=[...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===homeAbbr),
-                      ...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===awayAbbr)]
+const allGoalies=[...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===resolvedHome),
+                      ...(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00'&&p.team_abbr===resolvedAway)]
     if(allGoalies.length){
       document.getElementById('goalieCards').innerHTML=allGoalies.map(g=>{
         const isHome=g.team_abbr===homeAbbr
