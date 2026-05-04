@@ -111,9 +111,15 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <div class="match-header">
-<div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 <span id="homeRatingTop" style="color:white;"></span></div>
-    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 <span id="awayRatingTop" style="color:white;"></span></div>
+<div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+    <div style="display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:6px 14px;min-width:90px;">
+      <div style="font-size:9px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Celkový rating</div>
+      <div style="font-size:18px;font-weight:800;color:white;" id="homeRatingTop">—</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:6px 14px;min-width:90px;">
+      <div style="font-size:9px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Celkový rating</div>
+      <div style="font-size:18px;font-weight:800;color:white;" id="awayRatingTop">—</div>
+    </div>
   </div>
   <div class="teams-row">
     <div class="team-info">
@@ -863,8 +869,8 @@ async function load(){
   document.getElementById("awayLogo").src="./logos/"+away.logo
 document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
   document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
-document.getElementById("homeRatingTop").innerText="ELO "+( home.rating_overall||1000)+" / Forma "+(home.rating_form||1000)
-  document.getElementById("awayRatingTop").innerText="ELO "+(away.rating_overall||1000)+" / Forma "+(away.rating_form||1000)
+document.getElementById("homeRatingTop").innerText=(home.rating_overall||1000)
+  document.getElementById("awayRatingTop").innerText=(away.rating_overall||1000)
 
   // Název domácích/hostů v accordion titulcích
   document.getElementById("acc-home-title").innerText="🏠 Góly — "+home.name.replace(/\(.\)$/,'').trim()
