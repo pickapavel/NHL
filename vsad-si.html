@@ -788,7 +788,8 @@ async function load(){
     }
   }
 
-  renderH2H(allMatches||[], home.id, away.id, teamMap)
+  if(allMatches&&allMatches.length) renderH2H(allMatches, home.id, away.id, teamMap)
+  else document.getElementById("h2hMatches").innerHTML='<div class="h2h-empty">Žádné zápasy</div>'
 
   // Výsledek — rating odds
   oddsGlobal=calculateOdds(home.rating_form||1000, away.rating_form||1000)
