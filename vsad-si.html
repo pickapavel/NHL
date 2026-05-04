@@ -863,8 +863,8 @@ async function load(){
   document.getElementById("awayLogo").src="./logos/"+away.logo
 document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
   document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
-  document.getElementById("homeRatingTop").innerText="Celkový rating "+(home.rating_overall||1000)
-  document.getElementById("awayRatingTop").innerText="Celkový rating "+(away.rating_overall||1000)
+document.getElementById("homeRatingTop").innerText="ELO "+( home.rating_overall||1000)+" / Forma "+(home.rating_form||1000)
+  document.getElementById("awayRatingTop").innerText="ELO "+(away.rating_overall||1000)+" / Forma "+(away.rating_form||1000)
 
   // Název domácích/hostů v accordion titulcích
   document.getElementById("acc-home-title").innerText="🏠 Góly — "+home.name.replace(/\(.\)$/,'').trim()
