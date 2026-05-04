@@ -211,7 +211,6 @@ const homeWins = allMatches.filter(m => {
 function renderSummary(){
   const home = teams[homeId], away = teams[awayId]
   if(!home||!away) return
-
   const total = allMatches.length
   if(!total){ document.getElementById("summaryGrid").innerHTML=""; return }
 
@@ -219,21 +218,15 @@ function renderSummary(){
   const awayGoals = allMatches.reduce((s,m) => s + (m.home_team===awayId ? Number(m.home_score) : Number(m.away_score)), 0)
   const totalGoals = allMatches.reduce((s,m) => s + Number(m.home_score) + Number(m.away_score), 0)
   const avgGoals = (totalGoals/total).toFixed(1)
-
-const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
+  const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
   const homeWins = allMatches.filter(m => {
-    const hw = Number(m.home_score) > Number(m.away_score)
-    const aw = Number(m.away_score) > Number(m.home_score)
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
     return (m.home_team===homeId&&hw)||(m.away_team===homeId&&aw)
   }).length
   const awayWins = allMatches.filter(m => {
-    const hw = Number(m.home_score) > Number(m.away_score)
-    const aw = Number(m.away_score) > Number(m.home_score)
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
     return (m.home_team===awayId&&hw)||(m.away_team===awayId&&aw)
   }).length
-  const draws = otSn
-
-  const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
   const hn = home.name.replace(/\(.\)$/,'').trim()
   const an = away.name.replace(/\(.\)$/,'').trim()
 
