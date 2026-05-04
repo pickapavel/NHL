@@ -869,8 +869,30 @@ async function load(){
   document.getElementById("awayLogo").src="./logos/"+away.logo
 document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
   document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
-document.getElementById("homeRatingTop").innerText=(home.rating_overall||1000)
-  document.getElementById("awayRatingTop").innerText=(away.rating_overall||1000)
+const eloRatings={}
+  const allTeamsList=Object.values(teamMap)
+  allTeamsList.forEach(t=>{ eloRatings[t.id]=1000 })
+  const allMatchesSorted=[...(allMatches||[])].sort((a,b)=>{
+    const sa=a.season_id, sb=b.season_id
+    return sa<sb?-1:sa>sb?1:Number(a.round)-Number(b.round)
+  })
+  allMatchesSorted.forEach(m=>{
+    const h=m.home_team,a=m.away_team
+    if(eloRatings[h]===undefined||eloRatings[a]===undefined) return
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    let stats=null;try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const sH=(hg>ag)?(isSN||isOT?0.75:1):(isSN||isOT?0.25:0)
+    const sA=1-sH
+    const eH=eloRatings[h],eA=eloRatings[a]
+    const expH=1/(1+Math.pow(10,(eA-eH)/400))
+    const expA=1/(1+Math.pow(10,(eH-eA)/400))
+    eloRatings[h]=eH+Math.round(32*(sH-expH))
+    eloRatings[a]=eA+Math.round(32*(sA-expA))
+  })
+  document.getElementById("homeRatingTop").innerText=(eloRatings[home.id]||1000)
+  document.getElementById("awayRatingTop").innerText=(eloRatings[away.id]||1000)
 
   // Název domácích/hostů v accordion titulcích
   document.getElementById("acc-home-title").innerText="🏠 Góly — "+home.name.replace(/\(.\)$/,'').trim()
