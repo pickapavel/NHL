@@ -567,12 +567,11 @@ function renderRow(m){
     const tag=isSN?"SN":isOT?"OT":""
     const hn=home.name.replace(/\(.\)$/,'').trim()
     const an=away.name.replace(/\(.\)$/,'').trim()
-return `<div class="h2h-match" style="display:flex;align-items:center;gap:0;">
-      <span style="width:36px;flex-shrink:0;"></span>
-      <span style="flex:1;text-align:right;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;" class="${homeWin?"h2h-winner":"h2h-loser"}">${hn}</span>
-      <span class="h2h-score" style="flex-shrink:0;white-space:nowrap;min-width:44px;text-align:center;">${hg} : ${ag}</span>
-      <span style="width:36px;flex-shrink:0;text-align:left;padding-left:4px;">${tag?`<span class="h2h-tag">${tag}</span>`:""}</span>
-      <span style="flex:1;text-align:left;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:8px;" class="${homeWin?"h2h-loser":"h2h-winner"}">${an}</span>
+return `<div class="h2h-match" style="display:grid;grid-template-columns:1fr 40px 28px 1fr;align-items:center;gap:0;">
+      <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:6px;" class="${homeWin?"h2h-winner":"h2h-loser"}">${hn}</span>
+      <span class="h2h-score" style="text-align:center;white-space:nowrap;">${hg}:${ag}</span>
+      <span style="text-align:left;padding-left:2px;">${tag?`<span class="h2h-tag">${tag}</span>`:""}</span>
+      <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding-left:6px;" class="${homeWin?"h2h-loser":"h2h-winner"}">${an}</span>
     </div>`
   }
 
