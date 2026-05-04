@@ -549,23 +549,25 @@ function checkGoalsTip(match, category, key){
 }
 
 function renderH2H(allMatches, hId, aId, teamMap){
-  const h2h=allMatches
-    .filter(m=>(m.home_team===hId&&m.away_team===aId)||(m.home_team===aId&&m.away_team===hId))
+  const homeMatches=allMatches
+    .filter(m=>m.home_team===hId)
     .slice(-5).reverse()
+  const awayMatches=allMatches
+    .filter(m=>m.home_team===aId)
+    .slice(-5).reverse()
+
   const cont=document.getElementById("h2hMatches")
   cont.innerHTML=""
-  if(!h2h.length){ cont.innerHTML='<div class="h2h-empty">Žádné vzájemné zápasy</div>'; return }
-  h2h.forEach(m=>{
+
+  function renderMatchRow(m){
     const home=teamMap[m.home_team], away=teamMap[m.away_team]
-    if(!home||!away) return
+    if(!home||!away) return ""
     const hg=Number(m.home_score), ag=Number(m.away_score), homeWin=hg>ag
     let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
     const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
     const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
     const tag=isSN?"SN":isOT?"OT":""
-    const div=document.createElement("div")
-    div.className="h2h-match"
-    div.innerHTML=`
+    return `<div class="h2h-match">
       <span class="h2h-teams">
         <span class="${homeWin?"h2h-winner":"h2h-loser"}">${home.name.replace(/\(.\)$/,'').trim()}</span>
         vs
@@ -573,10 +575,11 @@ function renderH2H(allMatches, hId, aId, teamMap){
       </span>
       <span class="h2h-score">${hg} : ${ag}</span>
       ${tag?`<span class="h2h-tag">${tag}</span>`:''}
-    `
-    cont.appendChild(div)
-  })
-}
+    </div>`
+  }
+
+  const homeName=teamMap[hId]?.name?.replace(/\(.\)$/,'').trim()||"Domácí"
+  const awayName=teamMap[aId]?.name?.rep
 
 function renderOdds(playerKey){
   const cont=document.getElementById("odds_"+playerKey)
