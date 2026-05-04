@@ -548,17 +548,6 @@ function checkGoalsTip(match, category, key){
 }
 
 function renderH2H(allMatches, hId, aId, teamMap){
-  const homeMatches=allMatches
-    .filter(m=>m.home_team===hId)
-    .slice(-5).reverse()
-  const awayMatches=allMatches
-    .filter(m=>m.home_team===aId)
-    .slice(-5).reverse()
-
-  const cont=document.getElementById("h2hMatches")
-  cont.innerHTML=""
-
-function renderH2H(allMatches, hId, aId, teamMap){
   const homeMatches=allMatches.filter(m=>m.home_team===hId).slice(-5).reverse()
   const awayMatches=allMatches.filter(m=>m.home_team===aId).slice(-5).reverse()
   const cont=document.getElementById("h2hMatches")
@@ -604,6 +593,33 @@ function renderH2H(allMatches, hId, aId, teamMap){
   cont.appendChild(wrapper)
 }
 
+  function renderOdds(playerKey){
+  const cont=document.getElementById("odds_"+playerKey)
+  cont.innerHTML=""
+  const tips=getNewTips(homeShortName, awayShortName)
+  tips.forEach(({type,label})=>{
+    const div=document.createElement("div")
+    if(type==="__empty"){ div.className="odd-btn placeholder"; cont.appendChild(div); return }
+    const o=oddsGlobal[type]
+    if(!o){ div.className="odd-btn placeholder"; cont.appendChild(div); return }
+    div.className="odd-btn"
+    div.dataset.type=type
+    div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>`
+    div.onclick=()=>{
+      const selected=state[playerKey].result.selected
+      if(selected.includes(type)){
+        state[playerKey].result.selected=selected.filter(t=>t!==type)
+        div.classList.remove("active")
+      } else {
+        if(selected.length>=2) return
+        selected.push(type); div.classList.add("active")
+      }
+      updateResultSummary(playerKey)
+    }
+    cont.appendChild(div)
+  })
+}
+  
 function updateResultSummary(playerKey){
   const amount=Number(document.getElementById("amount_"+playerKey).value)
   const selected=state[playerKey].result.selected
