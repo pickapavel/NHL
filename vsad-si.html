@@ -557,7 +557,7 @@ function renderH2H(allMatches, hId, aId, teamMap){
   const cont=document.getElementById("h2hMatches")
   cont.innerHTML=""
 
-  function renderRow(m){
+function renderRow(m){
     const home=teamMap[m.home_team],away=teamMap[m.away_team]
     if(!home||!away) return ""
     const hg=Number(m.home_score),ag=Number(m.away_score),homeWin=hg>ag
@@ -565,14 +565,12 @@ function renderH2H(allMatches, hId, aId, teamMap){
     const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
     const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
     const tag=isSN?"SN":isOT?"OT":""
-    return `<div class="h2h-match">
-      <span class="h2h-teams">
-        <span class="${homeWin?"h2h-winner":"h2h-loser"}">${home.name.replace(/\(.\)$/,'').trim()}</span>
-        vs
-        <span class="${homeWin?"h2h-loser":"h2h-winner"}">${away.name.replace(/\(.\)$/,'').trim()}</span>
-      </span>
-      <span class="h2h-score">${hg} : ${ag}</span>
-      ${tag?`<span class="h2h-tag">${tag}</span>`:''}
+    const hn=home.name.replace(/\(.\)$/,'').trim()
+    const an=away.name.replace(/\(.\)$/,'').trim()
+    return `<div class="h2h-match" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+      <span style="flex:1;text-align:right;font-size:11px;" class="${homeWin?"h2h-winner":"h2h-loser"}">${hn}</span>
+      <span class="h2h-score" style="flex-shrink:0;">${hg} : ${ag}${tag?` <span style="font-size:9px;background:#2f9ec9;color:white;padding:1px 4px;border-radius:3px;">${tag}</span>`:""}</span>
+      <span style="flex:1;text-align:left;font-size:11px;" class="${homeWin?"h2h-loser":"h2h-winner"}">${an}</span>
     </div>`
   }
 
