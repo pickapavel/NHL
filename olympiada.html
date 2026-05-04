@@ -184,21 +184,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
 /* ── MATCH LIST ── */
 .match-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
 .match-row{
-  background:#fff;border-radius:10px 10px 0 0;border:1px solid #dde6ef;border-bottom:none;
+  background:#fff;border-radius:10px;border:1px solid #dde6ef;
   padding:10px 14px;display:grid;
   grid-template-columns:50px 1fr auto 1fr 160px;
   gap:10px;align-items:center;
   box-shadow:0 1px 3px rgba(0,0,0,.05);transition:background .15s;
 }
-.match-wrap{border-radius:10px;border:1px solid #dde6ef;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:8px;}
-.match-wrap .match-row{border-radius:0;border:none;box-shadow:none;margin-bottom:0;}
-.match-btns-row{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;}
-.match-btns-row a{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;text-decoration:none;transition:background .15s;}
-.match-btns-row .mb-stats{color:#1a5276;background:#f7fbff;border-right:1px solid #eef0f3;}
-.match-btns-row .mb-stats:hover{background:#e8f0f8;}
-.match-btns-row .mb-bet{color:#166534;background:#f0fdf4;}
-.match-btns-row .mb-bet:hover{background:#dcfce7;}
-.match-btns-row .mb-bet.disabled{color:#aaa;background:#f7f7f7;pointer-events:none;}
 .match-row:hover{background:#f5faff;}
 .match-row.played{background:#f0fdf4 !important;border-color:#bbf7d0;}
 .match-row.played:hover{background:#e0f9ec !important;}
@@ -607,33 +598,28 @@ function buildMatchRow(m){
   const rt=played?getResultType(m):""
   const tag=rt&&rt!=="REG"?`<span class="result-tag">${rt}</span>`:""
   return `
-  <div style="background:white;border-radius:10px;border:1px solid #dde6ef;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:8px;overflow:hidden;">
-    <div class="match-row${played?" played":""}" style="margin-bottom:0;border-radius:0;box-shadow:none;border:none;">
-      <div class="mr-round">${m.round}</div>
-      <div class="mr-team">
-        <img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'">
-        <span class="mr-name${played?(homeWin?" winner":" loser"):""}">${home.name}</span>
-      </div>
-      <div class="mr-score">
-        <span class="score-badge${played?"":" empty"}">${played?`${hg} : ${ag}`:"– : –"}</span>${tag}
-      </div>
-      <div class="mr-team away">
-        <span class="mr-name${played?(awayWin?" winner":" loser"):""}">${away.name}</span>
-        <img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
-      </div>
-      <div class="mr-btns">
-        ${played
-          ?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`
-          :`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`
-        }
-      </div>
+  <div class="match-row${played?" played":""}">
+    <div class="mr-round">${m.round}</div>
+    <div class="mr-team">
+      <img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'">
+      <span class="mr-name${played?(homeWin?" winner":" loser"):""}">${home.name}</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
-      <a href="statistiky-zapasu.html?id=${m.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;text-decoration:none;background:#f7fbff;border-right:1px solid #eef0f3;transition:background .15s;" onmouseover="this.style.background='#e8f0f8'" onmouseout="this.style.background='#f7fbff'">📊 Statistiky</a>
-      <a href="vsad-si.html?id=${m.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:${played?'#aaa':'#166534'};text-decoration:none;background:${played?'#f7f7f7':'#f0fdf4'};transition:background .15s;${played?'pointer-events:none;':''}" ${played?'':'onmouseover="this.style.background=\'#dcfce7\'" onmouseout="this.style.background=\'#f0fdf4\'"'}>🎲 Vsaď si</a>
+    <div class="mr-score">
+      <span class="score-badge${played?"":" empty"}">${played?`${hg} : ${ag}`:"– : –"}</span>${tag}
+    </div>
+    <div class="mr-team away">
+      <span class="mr-name${played?(awayWin?" winner":" loser"):""}">${away.name}</span>
+      <img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
+    </div>
+    <div class="mr-btns">
+      ${played
+        ?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`
+        :`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`
+      }
     </div>
   </div>`
 }
+
 // SKUPINA TABULKA
 function buildSkupinaTabulka(matches){
   const tbody=document.getElementById("skupinaBody")
