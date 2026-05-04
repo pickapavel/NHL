@@ -555,7 +555,11 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
       <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
-    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
+      <a href="statistiky-zapasu.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Statistiky</a>
+      <a href="vsad-si.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#166534;background:#f0fdf4;text-decoration:none;">🎲 Vsaď si</a>
+    </div>
   </div>`
 }
 
@@ -583,7 +587,11 @@ function buildSingleMatchCard(stageName, match, schClass, note){
       <span class="st-name${!t2id?" tbd":""}">${t2id?teamName(t2id):"?"}</span>
       ${played?`<span class="st-wins${ag>hg?" w":" l"}">${ag}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
     </div>
-    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+  ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
+      <a href="statistiky-zapasu.html?id=${match?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Statistiky</a>
+      <a href="vsad-si.html?id=${match?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#166634;background:#f0fdf4;text-decoration:none;">🎲 Vsaď si</a>
+    </div>
   </div>`
 }
 
