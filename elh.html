@@ -111,6 +111,12 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 
 <div class="season-tabs" id="seasonTabs"></div>
 
+<div class="season-tabs" id="subTabs" style="margin-bottom:20px;">
+  <button class="season-tab active" onclick="setSubTab('current',this)">📋 Aktuální sezóna</button>
+  <button class="season-tab" onclick="setSubTab('history',this)">🏆 Základní část — historické pořadí</button>
+</div>
+
+<div id="subCurrent">
 <div class="sectionTitle">Tabulka</div>
 <div class="table-scroll">
 <table class="standings-table">
@@ -135,8 +141,37 @@ body{font-family:Arial;margin:0;background:#f2f2f2;}
 </table>
 </div>
 
-<div class="filterBar">
- <select id="teamFilter"><option value="all">Všechny týmy</option></select>
+</div><!-- end subCurrent -->
+
+<div id="subHistory" style="display:none;">
+  <div class="sectionTitle">🏆 Historické pořadí — Základní část</div>
+  <div class="table-scroll">
+    <table class="standings-table" id="historyTable">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th class="th-team">Tým</th>
+          <th title="Body">Body</th>
+          <th title="Zápasy">Z</th>
+          <th title="Výhry v základní době">V</th>
+          <th title="Prohry v základní době">P</th>
+          <th title="Výhra po prodloužení">VOT</th>
+          <th title="Prohra po prodloužení">POT</th>
+          <th title="Výhra po nájezdech">VSN</th>
+          <th title="Prohra po nájezdech">PSN</th>
+          <th title="Skóre celkem">Skóre</th>
+          <th title="Rozdíl gólů">+/-</th>
+          <th title="Průměr gólů na zápas">Průměr G/Z</th>
+          <th title="Počet sezón">Sezóny</th>
+          <th title="Nejlepší umístění">Nejl. místo</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"><tr><td colspan="15" class="loading">Načítám...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="filterBar"> <select id="teamFilter"><option value="all">Všechny týmy</option></select>
  <select id="matchFilter">
   <option value="all">Všechny zápasy</option>
   <option value="played">Jen odehrané</option>
@@ -344,6 +379,108 @@ function render(matches, teamMap){
  })
 }
 
+window.setSubTab = function(tab, btn){
+  document.querySelectorAll('#subTabs .season-tab').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('subCurrent').style.display = tab==='current'?'':'none'
+  document.getElementById('subHistory').style.display  = tab==='history'?'':'none'
+  if(tab==='history') loadHistory()
+}
+
+async function loadHistory(){
+  const tbody=document.getElementById('historyBody')
+  tbody.innerHTML=`<tr><td colspan="15" class="loading">Načítám...</td></tr>`
+
+  const {data:seasons}=await supabase.from('seasons').select('*').eq('competition_id',EXTRALIGA_COMPETITION_ID).order('created_at',{ascending:true})
+  if(!seasons||!seasons.length){ tbody.innerHTML=`<tr><td colspan="15">Žádná data.</td></tr>`; return }
+
+  const seasonIds=seasons.map(s=>s.id)
+  const {data:stages}=await supabase.from('stages').select('id,season_id,name').in('season_id',seasonIds).eq('name','Základní část')
+  const stageIds=(stages||[]).map(s=>s.id)
+
+  const {data:matches}=await supabase.from('matches').select('*').in('stage_id',stageIds).not('home_score','is',null)
+  const {data:teams}=await supabase.from('teams').select('*')
+  const teamMap={}
+  ;(teams||[]).forEach(t=>teamMap[t.id]=t)
+
+  const stageSeasonMap={}
+  ;(stages||[]).forEach(s=>stageSeasonMap[s.id]=s.season_id)
+
+  const hist={}
+  ;(matches||[]).forEach(m=>{
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+    const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+    const seasonId=stageSeasonMap[m.stage_id]
+
+    for(const [tid,tg,og,isH] of [[m.home_team,hg,ag,true],[m.away_team,ag,hg,false]]){
+      if(!hist[tid]) hist[tid]={tid,b:0,z:0,v:0,p:0,vot:0,pot:0,vsn:0,psn:0,gf:0,ga:0,seasons:new Set(),bestPos:999}
+      const t=hist[tid]
+      t.z++; t.gf+=tg; t.ga+=og; t.seasons.add(seasonId)
+      if(isSN||isOT){
+        if(tg>og){t.vsn++;t.b+=2} else{t.psn++;t.b+=1}
+      } else {
+        if(tg>og){t.v++;t.b+=3} else{t.p++}
+      }
+    }
+  })
+
+  // Spočítej nejlepší umístění z každé sezóny
+  seasons.forEach(s=>{
+    const sStage=(stages||[]).find(st=>st.season_id===s.id)
+    if(!sStage) return
+    const sMatches=(matches||[]).filter(m=>m.stage_id===sStage.id)
+    const pts={}
+    sMatches.forEach(m=>{
+      const hg=Number(m.home_score),ag=Number(m.away_score)
+      let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+      const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+      const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+      if(!pts[m.home_team]) pts[m.home_team]=0
+      if(!pts[m.away_team]) pts[m.away_team]=0
+      if(isSN||isOT){ if(hg>ag){pts[m.home_team]+=2;pts[m.away_team]+=1}else{pts[m.away_team]+=2;pts[m.home_team]+=1} }
+      else{ if(hg>ag) pts[m.home_team]+=3; else pts[m.away_team]+=3 }
+    })
+    const sorted=Object.keys(pts).sort((a,b)=>pts[b]-pts[a])
+    sorted.forEach((tid,i)=>{
+      if(hist[tid]&&i+1<hist[tid].bestPos) hist[tid].bestPos=i+1
+    })
+  })
+
+  const arr=Object.values(hist).sort((a,b)=>{
+    if(b.b!==a.b) return b.b-a.b
+    return (b.gf-b.ga)-(a.gf-a.ga)
+  })
+
+  tbody.innerHTML=arr.map((t,i)=>{
+    const team=teamMap[t.tid]
+    if(!team) return ''
+    const pm=t.gf-t.ga
+    const pmStr=pm>0?`+${pm}`:String(pm)
+    const pmClass=pm>0?'pos':pm<0?'neg':'neu'
+    const avg=t.z>0?((t.gf/t.z).toFixed(2)):'—'
+    const bestPos=t.bestPos<999?`${t.bestPos}. místo`:'—'
+    return `<tr>
+      <td class="td-rank">${i+1}</td>
+      <td class="td-team"><div class="team-cell"><img class="team-logo" src="./logos/${team.logo}" alt="${team.name}"><div class="team-name">${team.name}</div></div></td>
+      <td><span class="points-pill">${t.b}</span></td>
+      <td class="td-num">${t.z}</td>
+      <td class="td-wins">${t.v}</td>
+      <td class="td-losses">${t.p}</td>
+      <td class="td-num">${t.vot}</td>
+      <td class="td-num">${t.pot}</td>
+      <td class="td-num">${t.vsn}</td>
+      <td class="td-num">${t.psn}</td>
+      <td class="td-score">${t.gf}:${t.ga}</td>
+      <td class="td-pm ${pmClass}">${pmStr}</td>
+      <td class="td-num">${avg}</td>
+      <td class="td-num">${t.seasons.size}</td>
+      <td class="td-num">${bestPos}</td>
+    </tr>`
+  }).join('')
+}
+  
 await initSeasons()
 load()
 </script>
