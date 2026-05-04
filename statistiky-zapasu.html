@@ -309,8 +309,8 @@ let savedStats=null
     document.getElementById('score').textContent=`${matchScore.hg} : ${matchScore.ag}`
   }
 
-  // Abbr
-let homeAbbr='',awayAbbr=''
+// Abbr
+  let homeAbbr='',awayAbbr=''
   const allEventAbbrs=[...new Set((events||[]).map(e=>e.team_abbr).filter(Boolean))]
   if(allEventAbbrs.length>=2){
     const goalEventsTemp=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
@@ -318,23 +318,20 @@ let homeAbbr='',awayAbbr=''
     goalEventsTemp.forEach(e=>{goalsByAbbr[e.team_abbr]=(goalsByAbbr[e.team_abbr]||0)+1})
     const homeScore=Number(match.home_score||0),awayScore=Number(match.away_score||0)
     const sorted=allEventAbbrs.sort((a,b)=>(goalsByAbbr[b]||0)-(goalsByAbbr[a]||0))
-    // Přiřaď abbr podle počtu gólů — kdo dal víc gólů odpovídá většímu skóre
     if(homeScore>=awayScore){homeAbbr=sorted[0];awayAbbr=sorted[1]}
     else{homeAbbr=sorted[1];awayAbbr=sorted[0]}
   } else if(allEventAbbrs.length===1){
     homeAbbr=allEventAbbrs[0]
   }
-  // Fallback na playerStats
   if(!homeAbbr&&playerStats&&playerStats.length){
     const abbrs=[...new Set(playerStats.filter(p=>!p.is_goalie).map(p=>p.team_abbr))]
     homeAbbr=abbrs[0]||'';awayAbbr=abbrs[1]||''
   }
 
-const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
+  const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
   const resolvedHome=homeAbbr||allAbbrs[0]||''
   const resolvedAway=awayAbbr||allAbbrs[1]||''
 
-  // Sestav statsCompare
   if(savedStats){
     const homePK=parsePP(savedStats[15]),awayPK=parsePP(savedStats[5])
     const homeHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
@@ -349,19 +346,10 @@ const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean)
   } else {
     document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
+
   const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00')
   const homeGoalie=goalies.find(g=>g.team_abbr===resolvedHome)
   const awayGoalie=goalies.find(g=>g.team_abbr===resolvedAway)
-  function shortName(t){return t?.name?.replace(/\(.\)$/,'').trim()||''}
-
-  // Góly
-  const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
-    .sort((a,b)=>{if((a.period||0)!==(b.period||0))return(a.period||0)-(b.period||0);return(a.time||'').localeCompare(b.time||'')})
-const allGoalAbbrs=[...new Set(goalEvents.map(e=>e.team_abbr).filter(Boolean))]
-const resolvedHomeAbbr=homeAbbr||allGoalAbbrs[0]||''
-const resolvedAwayAbbr=awayAbbr||allGoalAbbrs[1]||''
-const homeGoals=goalEvents.filter(e=>e.team_abbr===resolvedHomeAbbr)
-const awayGoals=goalEvents.filter(e=>e.team_abbr===resolvedAwayAbbr)
 
   function renderGoalItem(e){
     const isPPG=e.type?.toUpperCase().includes('PPG'),isSHG=e.type?.toUpperCase().includes('SHG')
