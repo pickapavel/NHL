@@ -328,6 +328,7 @@ async function load(){
   const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
   const resolvedHome=homeAbbr||allAbbrs[0]||''
   const resolvedAway=awayAbbr||allAbbrs[1]||''
+  console.log('DEBUG abbrs:', {homeAbbr, awayAbbr, resolvedHome, resolvedAway, allAbbrs, goaliesCount: (playerStats||[]).filter(p=>p.is_goalie).length})
  
   // Stats compare
   if(savedStats){
