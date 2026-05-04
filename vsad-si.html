@@ -112,8 +112,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 
 <div class="match-header">
 <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 Celkový rating: <span id="homeRatingTop" style="color:white;"></span></div>
-    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 Celkový rating: <span id="awayRatingTop" style="color:white;"></span></div>
+    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 <span id="homeRatingTop" style="color:white;"></span></div>
+    <div style="font-size:11px;font-weight:700;color:#7ab0cc;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px;">📊 <span id="awayRatingTop" style="color:white;"></span></div>
   </div>
   <div class="teams-row">
     <div class="team-info">
@@ -861,8 +861,10 @@ async function load(){
   document.getElementById("awayName").innerText=away.name
   document.getElementById("homeLogo").src="./logos/"+home.logo
   document.getElementById("awayLogo").src="./logos/"+away.logo
-  document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
+document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
   document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
+  document.getElementById("homeRatingTop").innerText="Celkový rating "+(home.rating_overall||1000)
+  document.getElementById("awayRatingTop").innerText="Celkový rating "+(away.rating_overall||1000)
 
   // Název domácích/hostů v accordion titulcích
   document.getElementById("acc-home-title").innerText="🏠 Góly — "+home.name.replace(/\(.\)$/,'').trim()
