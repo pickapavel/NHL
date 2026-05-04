@@ -333,11 +333,11 @@ let homeAbbr='',awayAbbr=''
   // Sestav statsCompare až teď kdy máme homeAbbr/awayAbbr
   if(savedStats){
     const homePK=parsePP(savedStats[15]),awayPK=parsePP(savedStats[5])
-const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
-    const resolvedHome=homeAbbr||allAbbrs[0]||''
-    const resolvedAway=awayAbbr||allAbbrs[1]||''
-const homeHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
-    const awayHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedAway&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+const _allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
+    const _resolvedHome=homeAbbr||_allAbbrs[0]||''
+    const _resolvedAway=awayAbbr||_allAbbrs[1]||''
+    const homeHits=(playerStats||[]).filter(p=>p.team_abbr===_resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+    const awayHits=(playerStats||[]).filter(p=>p.team_abbr===_resolvedAway&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
     document.getElementById('statsCompare').innerHTML=
       renderStatRow('Střely',savedStats[10],savedStats[0])+
       renderStatRow('Hity',homeHits,awayHits)+
