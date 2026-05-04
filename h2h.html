@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vzájemné zápasy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;min-height:100vh;}
+.wrapper{max-width:1000px;margin:0 auto;padding:20px 16px 60px;}
+
+.header{background:linear-gradient(135deg,#0b2a3c 0%,#1a5276 100%);border-radius:16px;padding:24px 20px;margin-bottom:24px;box-shadow:0 4px 16px rgba(11,42,60,.15);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.header-teams{display:flex;align-items:center;gap:16px;}
+.header-logo{width:52px;height:52px;object-fit:contain;background:white;border-radius:10px;padding:2px;border:1px solid rgba(255,255,255,.2);}
+.header-vs{font-size:20px;font-weight:800;color:rgba(255,255,255,.5);}
+.header-name{font-size:15px;font-weight:700;color:white;}
+.header-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.hstat{text-align:center;}
+.hstat-val{font-size:22px;font-weight:800;color:white;}
+.hstat-label{font-size:10px;color:#7ab0cc;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+.scard{background:white;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(11,42,60,.07);text-align:center;}
+.scard-val{font-size:22px;font-weight:800;color:#0b2a3c;}
+.scard-val.green{color:#27ae60;}
+.scard-val.red{color:#e74c3c;}
+.scard-val.blue{color:#2f9ec9;}
+.scard-label{font-size:11px;color:#6b7a8d;font-weight:600;margin-top:4px;}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.filter-btn{padding:7px 14px;border-radius:20px;border:2px solid #ddd;background:white;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:#666;transition:all .15s;}
+.filter-btn:hover{border-color:#2f9ec9;color:#0b2a3c;}
+.filter-btn.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+.filter-label{font-size:12px;font-weight:700;color:#6b7a8d;margin-right:4px;}
+
+.count{font-size:12px;color:#888;margin-bottom:10px;}
+
+.table-wrap{background:white;border-radius:12px;box-shadow:0 2px 8px rgba(11,42,60,.07);overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px;}
+thead th{background:#0b2a3c;color:white;padding:11px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+thead th.tc{text-align:center;}
+tbody tr{border-bottom:1px solid #f0f4f8;transition:background .15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#f7fafc;}
+tbody td{padding:10px 14px;vertical-align:middle;}
+tbody td.tc{text-align:center;}
+
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:800;font-size:13px;padding:3px 10px;border-radius:6px;}
+.tag{display:inline-block;font-size:9px;font-weight:700;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;}
+.result-w{color:#27ae60;font-weight:700;}
+.result-l{color:#e74c3c;font-weight:700;}
+.result-d{color:#e67e22;font-weight:700;}
+.team-cell{display:flex;align-items:center;gap:8px;}
+.team-logo-sm{width:24px;height:24px;object-fit:contain;background:white;border-radius:4px;padding:1px;border:1px solid #e2e8f0;flex-shrink:0;}
+.highlight-home{background:#f0fdf4 !important;}
+.highlight-away{background:#fff8f0 !important;}
+
+.records-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.record-card{background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(11,42,60,.07);}
+.record-title{font-size:12px;font-weight:700;color:#6b7a8d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.record-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f4f8;font-size:13px;}
+.record-item:last-child{border-bottom:none;}
+.record-key{color:#6b7a8d;}
+.record-val{font-weight:700;color:#0b2a3c;}
+
+.empty{padding:40px;text-align:center;color:#aaa;font-size:14px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:none;border-radius:10px;background:#1a5276;color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;}
+.back-btn:hover{background:#0b2a3c;}
+
+@media(max-width:600px){
+  .records-grid{grid-template-columns:1fr;}
+  .header{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="wrapper">
+  <button class="back-btn" onclick="history.back()">← Zpět</button>
+
+  <div class="header" id="header">
+    <div class="header-teams">
+      <img class="header-logo" id="homeLogo">
+      <div>
+        <div class="header-name" id="homeName"></div>
+      </div>
+      <div class="header-vs">vs</div>
+      <div>
+        <div class="header-name" id="awayName"></div>
+      </div>
+      <img class="header-logo" id="awayLogo">
+    </div>
+    <div class="header-stats" id="headerStats"></div>
+  </div>
+
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <div class="records-grid" id="recordsGrid"></div>
+
+  <div class="filters">
+    <span class="filter-label">Filtr:</span>
+    <button class="filter-btn active" onclick="setFilter('all',this)">Všechny</button>
+    <button class="filter-btn" onclick="setFilter('home_wins',this)">Výhry domácích</button>
+    <button class="filter-btn" onclick="setFilter('away_wins',this)">Výhry hostů</button>
+    <button class="filter-btn" onclick="setFilter('ot_sn',this)">OT / SN</button>
+    <button class="filter-btn" onclick="setFilter('reg',this)">Pouze REG</button>
+    <button class="filter-btn" onclick="setFilter('high_scoring',this)">Hodně gólů (6+)</button>
+  </div>
+
+  <div class="count" id="count"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Sezóna</th>
+          <th>Domácí</th>
+          <th class="tc">Skóre</th>
+          <th>Hosté</th>
+          <th class="tc">Výsledek</th>
+          <th class="tc">Góly</th>
+          <th class="tc">Typ</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none;">Žádné vzájemné zápasy.</div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const params = new URLSearchParams(window.location.search)
+const homeId = params.get("home")
+const awayId  = params.get("away")
+
+let allMatches = []
+let teams = {}
+let seasons = {}
+let currentFilter = "all"
+
+async function load(){
+  const {data:t} = await supabase.from("teams").select("*")
+  ;(t||[]).forEach(tm => teams[tm.id] = tm)
+
+  const {data:s} = await supabase.from("seasons").select("*")
+  ;(s||[]).forEach(se => seasons[se.id] = se)
+
+  const {data:m} = await supabase.from("matches").select("*")
+    .not("home_score","is",null)
+    .not("away_score","is",null)
+    .or(`and(home_team.eq.${homeId},away_team.eq.${awayId}),and(home_team.eq.${awayId},away_team.eq.${homeId})`)
+    .order("created_at",{ascending:true})
+
+  allMatches = (m||[]).sort((a,b) => {
+    const sA = seasons[a.season_id]?.created_at||""
+    const sB = seasons[b.season_id]?.created_at||""
+    return sA < sB ? -1 : sA > sB ? 1 : Number(a.round)-Number(b.round)
+  })
+
+  renderHeader()
+  renderSummary()
+  renderRecords()
+  applyFilter()
+}
+
+function getResultType(m){
+  let stats=null; try{stats=m.stats?JSON.parse(m.stats):null}catch(e){}
+  const isSN=stats&&(stats[20]==="1"||stats[20]==="2")
+  const isOT=stats&&!isSN&&(stats[9]==="11"||stats[19]==="11")
+  return isSN?"SN":isOT?"OT":"REG"
+}
+
+function renderHeader(){
+  const home = teams[homeId], away = teams[awayId]
+  if(!home||!away) return
+  document.getElementById("homeName").textContent = home.name.replace(/\(.\)$/,'').trim()
+  document.getElementById("awayName").textContent = away.name.replace(/\(.\)$/,'').trim()
+  document.getElementById("homeLogo").src = "./logos/"+home.logo
+  document.getElementById("awayLogo").src  = "./logos/"+away.logo
+  document.title = `${home.name} vs ${away.name} — vzájemné zápasy`
+
+  const total = allMatches.length
+  const homeWins = allMatches.filter(m => {
+    const hw = Number(m.home_score) > Number(m.away_score)
+    const aw = Number(m.away_score) > Number(m.home_score)
+    return (m.home_team===homeId&&hw)||(m.home_team===awayId&&aw)
+  }).length
+  const awayWins = allMatches.filter(m => {
+    const hw = Number(m.home_score) > Number(m.away_score)
+    const aw = Number(m.away_score) > Number(m.home_score)
+    return (m.home_team===awayId&&hw)||(m.home_team===homeId&&aw)
+  }).length
+  const draws = total - homeWins - awayWins
+
+  document.getElementById("headerStats").innerHTML = `
+    <div class="hstat"><div class="hstat-val">${total}</div><div class="hstat-label">Celkem zápasů</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:#22c55e;">${homeWins}</div><div class="hstat-label">${home.name.replace(/\(.\)$/,'').trim()} výhry</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:#f87171;">${awayWins}</div><div class="hstat-label">${away.name.replace(/\(.\)$/,'').trim()} výhry</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:#fbbf24;">${draws}</div><div class="hstat-label">Prodloužení/SN</div></div>
+  `
+}
+
+function renderSummary(){
+  const home = teams[homeId], away = teams[awayId]
+  if(!home||!away) return
+
+  const total = allMatches.length
+  if(!total){ document.getElementById("summaryGrid").innerHTML=""; return }
+
+  const homeGoals = allMatches.reduce((s,m) => s + (m.home_team===homeId ? Number(m.home_score) : Number(m.away_score)), 0)
+  const awayGoals = allMatches.reduce((s,m) => s + (m.home_team===awayId ? Number(m.home_score) : Number(m.away_score)), 0)
+  const totalGoals = allMatches.reduce((s,m) => s + Number(m.home_score) + Number(m.away_score), 0)
+  const avgGoals = (totalGoals/total).toFixed(1)
+
+  const homeWins = allMatches.filter(m => {
+    const hw = Number(m.home_score) > Number(m.away_score)
+    const aw = Number(m.away_score) > Number(m.home_score)
+    return (m.home_team===homeId&&hw)||(m.home_team===awayId&&aw)
+  }).length
+  const awayWins = total - homeWins - allMatches.filter(m=>{
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===awayId&&hw)||(m.home_team===homeId&&aw)
+  }).length - allMatches.filter(m=>{
+    return Number(m.home_score)===Number(m.away_score)
+  }).length
+
+  const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
+  const hn = home.name.replace(/\(.\)$/,'').trim()
+  const an = away.name.replace(/\(.\)$/,'').trim()
+
+  document.getElementById("summaryGrid").innerHTML = `
+    <div class="scard"><div class="scard-val">${total}</div><div class="scard-label">Celkem zápasů</div></div>
+    <div class="scard"><div class="scard-val green">${homeWins}</div><div class="scard-label">Výhry ${hn}</div></div>
+    <div class="scard"><div class="scard-val red">${awayWins}</div><div class="scard-label">Výhry ${an}</div></div>
+    <div class="scard"><div class="scard-val blue">${otSn}</div><div class="scard-label">OT / SN</div></div>
+    <div class="scard"><div class="scard-val">${homeGoals}</div><div class="scard-label">Góly ${hn}</div></div>
+    <div class="scard"><div class="scard-val">${awayGoals}</div><div class="scard-label">Góly ${an}</div></div>
+    <div class="scard"><div class="scard-val">${avgGoals}</div><div class="scard-label">Průměr gólů/zápas</div></div>
+    <div class="scard"><div class="scard-val">${totalGoals}</div><div class="scard-label">Celkem gólů</div></div>
+  `
+}
+
+function renderRecords(){
+  if(!allMatches.length){ document.getElementById("recordsGrid").innerHTML=""; return }
+
+  const home = teams[homeId], away = teams[awayId]
+  const hn = home?.name.replace(/\(.\)$/,'').trim()||""
+  const an = away?.name.replace(/\(.\)$/,'').trim()||""
+
+  // Nejvyšší výhra domácích (home tým)
+  const homeWinMatches = allMatches.filter(m => {
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===homeId&&hw)||(m.home_team===awayId&&aw)
+  })
+  const awayWinMatches = allMatches.filter(m => {
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===awayId&&hw)||(m.home_team===homeId&&aw)
+  })
+
+  function getScore(m, teamId){
+    return m.home_team===teamId ? `${m.home_score}:${m.away_score}` : `${m.away_score}:${m.home_score}`
+  }
+  function getDiff(m, teamId){
+    return m.home_team===teamId
+      ? Number(m.home_score)-Number(m.away_score)
+      : Number(m.away_score)-Number(m.home_score)
+  }
+
+  const biggestHomeWin = homeWinMatches.sort((a,b)=>getDiff(b,homeId)-getDiff(a,homeId))[0]
+  const biggestAwayWin = awayWinMatches.sort((a,b)=>getDiff(b,awayId)-getDiff(a,awayId))[0]
+  const highestScoring = [...allMatches].sort((a,b)=>(Number(b.home_score)+Number(b.away_score))-(Number(a.home_score)+Number(a.away_score)))[0]
+  const lowestScoring  = [...allMatches].sort((a,b)=>(Number(a.home_score)+Number(a.away_score))-(Number(b.home_score)+Number(b.away_score)))[0]
+
+  const homeStreak = calcStreak(homeId)
+  const awayStreak = calcStreak(awayId)
+
+  document.getElementById("recordsGrid").innerHTML = `
+    <div class="record-card">
+      <div class="record-title">🏆 Rekordy</div>
+      <div class="record-item"><span class="record-key">Největší výhra ${hn}</span><span class="record-val">${biggestHomeWin?getScore(biggestHomeWin,homeId):"—"}</span></div>
+      <div class="record-item"><span class="record-key">Největší výhra ${an}</span><span class="record-val">${biggestAwayWin?getScore(biggestAwayWin,awayId):"—"}</span></div>
+      <div class="record-item"><span class="record-key">Nejvíce gólů v zápase</span><span class="record-val">${highestScoring?`${highestScoring.home_score}:${highestScoring.away_score} (${Number(highestScoring.home_score)+Number(highestScoring.away_score)} gólů)`:"—"}</span></div>
+      <div class="record-item"><span class="record-key">Nejméně gólů v zápase</span><span class="record-val">${lowestScoring?`${lowestScoring.home_score}:${lowestScoring.away_score} (${Number(lowestScoring.home_score)+Number(lowestScoring.away_score)} gólů)`:"—"}</span></div>
+    </div>
+    <div class="record-card">
+      <div class="record-title">📊 Série</div>
+      <div class="record-item"><span class="record-key">Aktuální série ${hn}</span><span class="record-val ${homeStreak.type==='W'?'result-w':'result-l'}">${homeStreak.count > 0 ? homeStreak.count+"× "+( homeStreak.type==='W'?'výhra':'prohra') : "—"}</span></div>
+      <div class="record-item"><span class="record-key">Aktuální série ${an}</span><span class="record-val ${awayStreak.type==='W'?'result-w':'result-l'}">${awayStreak.count > 0 ? awayStreak.count+"× "+(awayStreak.type==='W'?'výhra':'prohra') : "—"}</span></div>
+      <div class="record-item"><span class="record-key">Zápasy s OT/SN</span><span class="record-val">${allMatches.filter(m=>getResultType(m)!=="REG").length}</span></div>
+      <div class="record-item"><span class="record-key">Zápasy s 0 gólů týmu</span><span class="record-val">${allMatches.filter(m=>Number(m.home_score)===0||Number(m.away_score)===0).length}</span></div>
+    </div>
+  `
+}
+
+function calcStreak(teamId){
+  const sorted = [...allMatches].reverse()
+  let count = 0, type = null
+  for(const m of sorted){
+    const hw = Number(m.home_score) > Number(m.away_score)
+    const isWin = (m.home_team===teamId&&hw)||(m.away_team===teamId&&!hw)
+    const t = isWin ? 'W' : 'L'
+    if(type===null){ type=t; count=1 }
+    else if(t===type) count++
+    else break
+  }
+  return {count, type}
+}
+
+window.setFilter = function(filter, btn){
+  currentFilter = filter
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"))
+  btn.classList.add("active")
+  applyFilter()
+}
+
+function applyFilter(){
+  let filtered = allMatches
+  if(currentFilter==="home_wins") filtered = allMatches.filter(m=>Number(m.home_score)>Number(m.away_score))
+  else if(currentFilter==="away_wins") filtered = allMatches.filter(m=>Number(m.away_score)>Number(m.home_score))
+  else if(currentFilter==="ot_sn") filtered = allMatches.filter(m=>getResultType(m)!=="REG")
+  else if(currentFilter==="reg") filtered = allMatches.filter(m=>getResultType(m)==="REG")
+  else if(currentFilter==="high_scoring") filtered = allMatches.filter(m=>Number(m.home_score)+Number(m.away_score)>=6)
+  renderTable(filtered)
+}
+
+function renderTable(matches){
+  const tbody = document.getElementById("tbody")
+  const empty = document.getElementById("empty")
+  document.getElementById("count").textContent = `Zobrazeno ${matches.length} z ${allMatches.length} zápasů`
+
+  if(!matches.length){ tbody.innerHTML=""; empty.style.display="block"; return }
+  empty.style.display="none"
+
+  tbody.innerHTML = matches.map(m => {
+    const home = teams[m.home_team], away = teams[m.away_team]
+    if(!home||!away) return ""
+    const hg = Number(m.home_score), ag = Number(m.away_score)
+    const hw = hg > ag, aw = ag > hg
+    const rt = getResultType(m)
+    const tag = rt!=="REG" ? `<span class="tag">${rt}</span>` : ""
+    const season = seasons[m.season_id]?.name || "—"
+
+    // Výsledek z pohledu homeId týmu
+    const homeIdWin = (m.home_team===homeId&&hw)||(m.away_team===homeId&&aw)
+    const homeIdLose = (m.home_team===homeId&&aw)||(m.away_team===homeId&&hw)
+    const resultClass = homeIdWin?"result-w":homeIdLose?"result-l":"result-d"
+    const resultText = homeIdWin?"V":homeIdLose?"P":"R"
+
+    const isHomeRow = m.home_team===homeId
+    const rowClass = isHomeRow ? "highlight-home" : "highlight-away"
+
+    return `<tr class="${rowClass}">
+      <td style="font-size:11px;color:#6b7a8d;white-space:nowrap;">${season}</td>
+      <td>
+        <div class="team-cell">
+          <img class="team-logo-sm" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <span style="font-weight:${m.home_team===homeId?'700':'400'};font-size:13px;">${home.name.replace(/\(.\)$/,'').trim()}</span>
+        </div>
+      </td>
+      <td class="tc"><span class="score-badge">${hg}:${ag}</span>${tag}</td>
+      <td>
+        <div class="team-cell">
+          <img class="team-logo-sm" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <span style="font-weight:${m.away_team===homeId?'700':'400'};font-size:13px;">${away.name.replace(/\(.\)$/,'').trim()}</span>
+        </div>
+      </td>
+      <td class="tc"><span class="${resultClass}" style="font-size:13px;">${resultText}</span></td>
+      <td class="tc" style="font-size:13px;color:#6b7a8d;">${hg+ag}</td>
+      <td class="tc"><span style="font-size:11px;color:#6b7a8d;">${rt}</span></td>
+    </tr>`
+  }).join("")
+}
+
+load()
+</script>
+</body>
+</html>
