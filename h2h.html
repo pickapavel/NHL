@@ -190,15 +190,13 @@ function renderHeader(){
   document.title = `${home.name} vs ${away.name} — vzájemné zápasy`
 
   const total = allMatches.length
-  const homeWins = allMatches.filter(m => {
-    const hw = Number(m.home_score) > Number(m.away_score)
-    const aw = Number(m.away_score) > Number(m.home_score)
-    return (m.home_team===homeId&&hw)||(m.home_team===awayId&&aw)
+const homeWins = allMatches.filter(m => {
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===homeId&&hw)||(m.away_team===homeId&&aw)
   }).length
   const awayWins = allMatches.filter(m => {
-    const hw = Number(m.home_score) > Number(m.away_score)
-    const aw = Number(m.away_score) > Number(m.home_score)
-    return (m.home_team===awayId&&hw)||(m.home_team===homeId&&aw)
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===awayId&&hw)||(m.away_team===awayId&&aw)
   }).length
   const draws = total - homeWins - awayWins
 
@@ -222,17 +220,18 @@ function renderSummary(){
   const totalGoals = allMatches.reduce((s,m) => s + Number(m.home_score) + Number(m.away_score), 0)
   const avgGoals = (totalGoals/total).toFixed(1)
 
+const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
   const homeWins = allMatches.filter(m => {
     const hw = Number(m.home_score) > Number(m.away_score)
     const aw = Number(m.away_score) > Number(m.home_score)
-    return (m.home_team===homeId&&hw)||(m.home_team===awayId&&aw)
+    return (m.home_team===homeId&&hw)||(m.away_team===homeId&&aw)
   }).length
-  const awayWins = total - homeWins - allMatches.filter(m=>{
-    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
-    return (m.home_team===awayId&&hw)||(m.home_team===homeId&&aw)
-  }).length - allMatches.filter(m=>{
-    return Number(m.home_score)===Number(m.away_score)
+  const awayWins = allMatches.filter(m => {
+    const hw = Number(m.home_score) > Number(m.away_score)
+    const aw = Number(m.away_score) > Number(m.home_score)
+    return (m.home_team===awayId&&hw)||(m.away_team===awayId&&aw)
   }).length
+  const draws = otSn
 
   const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
   const hn = home.name.replace(/\(.\)$/,'').trim()
