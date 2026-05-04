@@ -581,80 +581,7 @@ function renderRow(m){
     </div>`
   }
 
-  function renderH2HOverview(allMatches, hId, aId, teamMap){
-  const h2h = allMatches.filter(m =>
-    (m.home_team===hId&&m.away_team===aId)||(m.home_team===aId&&m.away_team===hId)
-  )
-  const el = document.getElementById("h2hOverview")
-  if(!h2h.length){ el.innerHTML=""; return }
-
-  const home = teamMap[hId], away = teamMap[aId]
-  if(!home||!away){ el.innerHTML=""; return }
-
-  function getRT(m){
-    let s=null; try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
-    const isSN=s&&(s[20]==="1"||s[20]==="2")
-    const isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11")
-    return isSN?"SN":isOT?"OT":"REG"
-  }
-
-  const total = h2h.length
-  const homeWins = h2h.filter(m=>{
-    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
-    return (m.home_team===hId&&hw)||(m.away_team===hId&&aw)
-  }).length
-  const awayWins = h2h.filter(m=>{
-    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
-    return (m.home_team===aId&&hw)||(m.away_team===aId&&aw)
-  }).length
-  const homeGoals = h2h.reduce((s,m)=>s+(m.home_team===hId?Number(m.home_score):Number(m.away_score)),0)
-  const awayGoals = h2h.reduce((s,m)=>s+(m.home_team===aId?Number(m.home_score):Number(m.away_score)),0)
-  const avgGoals = ((homeGoals+awayGoals)/total).toFixed(2)
-
-  // Aktuální série
-  let streak="", streakCount=0
-  const sorted=[...h2h].sort((a,b)=>(a.round||0)-(b.round||0))
-  for(let i=sorted.length-1;i>=0;i--){
-    const m=sorted[i]
-    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
-    const homeWon=(m.home_team===hId&&hw)||(m.away_team===hId&&aw)
-    const awayWon=(m.home_team===aId&&hw)||(m.away_team===aId&&aw)
-    const r=homeWon?"home":awayWon?"away":"draw"
-    if(streakCount===0){ streak=r; streakCount=1 }
-    else if(r===streak) streakCount++
-    else break
-  }
-  const hn=home.name.replace(/\(.\)$/,'').trim()
-  const an=away.name.replace(/\(.\)$/,'').trim()
-  const streakText=streak==="home"?`${hn} vyhrál${streakCount>1?` ${streakCount}× za sebou`:' poslední zápas'}`:streak==="away"?`${an} vyhrál${streakCount>1?` ${streakCount}× za sebou`:' poslední zápas'}`:"Remíza v posledním zápase"
-
-  el.innerHTML=`
-    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
-      <div style="font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">📊 Celkový přehled vzájemných zápasů (${total})</div>
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="text-align:center;">
-          <div style="font-size:28px;font-weight:800;color:#22c55e;">${homeWins}</div>
-          <div style="font-size:10px;color:#7ab0cc;font-weight:600;text-transform:uppercase;">Výhry</div>
-          <div style="font-size:12px;color:#cde;margin-top:4px;font-weight:600;">${homeGoals} gólů</div>
-          <div style="font-size:10px;color:#7ab0cc;">${(homeGoals/total).toFixed(2)} / zápas</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:13px;font-weight:800;color:rgba(255,255,255,.4);">vs</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:28px;font-weight:800;color:#f87171;">${awayWins}</div>
-          <div style="font-size:10px;color:#7ab0cc;font-weight:600;text-transform:uppercase;">Výhry</div>
-          <div style="font-size:12px;color:#cde;margin-top:4px;font-weight:600;">${awayGoals} gólů</div>
-          <div style="font-size:10px;color:#7ab0cc;">${(awayGoals/total).toFixed(2)} / zápas</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#7ab0cc;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;">
-        <div>🔥 <span style="color:#cde;font-weight:600;">${streakText}</span></div>
-        <div>⚽ Průměr: <span style="color:#cde;font-weight:600;">${avgGoals} gólů/zápas</span></div>
-      </div>
-    </div>
-  `
-}
+ 
 
   const hName=teamMap[hId]?.name?.replace(/\(.\)$/,'').trim()||"Domácí"
   const aName=teamMap[aId]?.name?.replace(/\(.\)$/,'').trim()||"Hosté"
@@ -677,6 +604,69 @@ function renderRow(m){
   cont.appendChild(wrapper)
 }
 
+function renderH2HOverview(allMatches, hId, aId, teamMap){
+  const h2h=allMatches.filter(m=>
+    (m.home_team===hId&&m.away_team===aId)||(m.home_team===aId&&m.away_team===hId)
+  )
+  const el=document.getElementById("h2hOverview")
+  if(!h2h.length){ el.innerHTML=""; return }
+  const home=teamMap[hId], away=teamMap[aId]
+  if(!home||!away){ el.innerHTML=""; return }
+  const total=h2h.length
+  const homeWins=h2h.filter(m=>{
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===hId&&hw)||(m.away_team===hId&&aw)
+  }).length
+  const awayWins=h2h.filter(m=>{
+    const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
+    return (m.home_team===aId&&hw)||(m.away_team===aId&&aw)
+  }).length
+  const homeGoals=h2h.reduce((s,m)=>s+(m.home_team===hId?Number(m.home_score):Number(m.away_score)),0)
+  const awayGoals=h2h.reduce((s,m)=>s+(m.home_team===aId?Number(m.home_score):Number(m.away_score)),0)
+  const avgGoals=((homeGoals+awayGoals)/total).toFixed(2)
+  let streak="",streakCount=0
+  const sorted=[...h2h].sort((a,b)=>(a.round||0)-(b.round||0))
+  for(let i=sorted.length-1;i>=0;i--){
+    const m=sorted[i]
+    const hw=Number(m.home_score)>Number(m.away_score),aw=Number(m.away_score)>Number(m.home_score)
+    const homeWon=(m.home_team===hId&&hw)||(m.away_team===hId&&aw)
+    const awayWon=(m.home_team===aId&&hw)||(m.away_team===aId&&aw)
+    const r=homeWon?"home":awayWon?"away":"draw"
+    if(streakCount===0){ streak=r; streakCount=1 }
+    else if(r===streak) streakCount++
+    else break
+  }
+  const hn=home.name.replace(/\(.\)$/,'').trim()
+  const an=away.name.replace(/\(.\)$/,'').trim()
+  const streakText=streak==="home"?`${hn} vyhrál${streakCount>1?` ${streakCount}× za sebou`:' poslední zápas'}`:streak==="away"?`${an} vyhrál${streakCount>1?` ${streakCount}× za sebou`:' poslední zápas'}`:"Remíza v posledním zápase"
+  el.innerHTML=`
+    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">📊 Celkový přehled vzájemných zápasů (${total})</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#22c55e;">${homeWins}</div>
+          <div style="font-size:10px;color:#7ab0cc;font-weight:600;text-transform:uppercase;">Výhry ${hn}</div>
+          <div style="font-size:12px;color:#cde;margin-top:4px;font-weight:600;">${homeGoals} gólů</div>
+          <div style="font-size:10px;color:#7ab0cc;">${(homeGoals/total).toFixed(2)} / zápas</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.4);">${total} zápasů</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#f87171;">${awayWins}</div>
+          <div style="font-size:10px;color:#7ab0cc;font-weight:600;text-transform:uppercase;">Výhry ${an}</div>
+          <div style="font-size:12px;color:#cde;margin-top:4px;font-weight:600;">${awayGoals} gólů</div>
+          <div style="font-size:10px;color:#7ab0cc;">${(awayGoals/total).toFixed(2)} / zápas</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#7ab0cc;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;">
+        <div>🔥 <span style="color:#cde;font-weight:600;">${streakText}</span></div>
+        <div>⚽ Průměr: <span style="color:#cde;font-weight:600;">${avgGoals} gólů/zápas</span></div>
+      </div>
+    </div>
+  `
+}
+  
   function renderOdds(playerKey){
   const cont=document.getElementById("odds_"+playerKey)
   cont.innerHTML=""
