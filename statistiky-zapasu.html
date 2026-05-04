@@ -336,7 +336,7 @@ let homeAbbr='',awayAbbr=''
 const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
     const resolvedHome=homeAbbr||allAbbrs[0]||''
     const resolvedAway=awayAbbr||allAbbrs[1]||''
-    const homeHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
+const homeHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedHome&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
     const awayHits=(playerStats||[]).filter(p=>p.team_abbr===resolvedAway&&!p.is_goalie).reduce((s,p)=>s+(p.hits||0),0)
     document.getElementById('statsCompare').innerHTML=
       renderStatRow('Střely',savedStats[10],savedStats[0])+
@@ -349,9 +349,12 @@ const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean)
     document.getElementById('statsCompare').innerHTML='<div class="no-data">Týmové statistiky nejsou k dispozici.</div>'
   }
   
-const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00')
-  const homeGoalie=goalies.find(g=>g.team_abbr===homeAbbr)
-  const awayGoalie=goalies.find(g=>g.team_abbr===awayAbbr)
+const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
+  const resolvedHome=homeAbbr||allAbbrs[0]||''
+  const resolvedAway=awayAbbr||allAbbrs[1]||''
+  const goalies=(playerStats||[]).filter(p=>p.is_goalie&&p.toi&&p.toi!=='00:00')
+  const homeGoalie=goalies.find(g=>g.team_abbr===resolvedHome)
+  const awayGoalie=goalies.find(g=>g.team_abbr===resolvedAway)
   function shortName(t){return t?.name?.replace(/\(.\)$/,'').trim()||''}
 
   // Góly
