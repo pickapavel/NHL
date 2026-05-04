@@ -869,12 +869,16 @@ async function load(){
   document.getElementById("awayLogo").src="./logos/"+away.logo
 document.getElementById("homeRating").innerText="⭐ "+(home.rating_form||1000)
   document.getElementById("awayRating").innerText="⭐ "+(away.rating_form||1000)
-const eloRatings={}
+const{data:seasonsForElo}=await supabase.from("seasons").select("id,created_at").order("created_at",{ascending:true})
+  const seasonOrderElo={}
+  ;(seasonsForElo||[]).forEach((s,i)=>{ seasonOrderElo[s.id]=i })
+  const eloRatings={}
   const allTeamsList=Object.values(teamMap)
   allTeamsList.forEach(t=>{ eloRatings[t.id]=1000 })
   const allMatchesSorted=[...(allMatches||[])].sort((a,b)=>{
-    const sa=a.season_id, sb=b.season_id
-    return sa<sb?-1:sa>sb?1:Number(a.round)-Number(b.round)
+    const sa=seasonOrderElo[a.season_id]??999, sb=seasonOrderElo[b.season_id]??999
+    if(sa!==sb) return sa-sb
+    return Number(a.round)-Number(b.round)
   })
   allMatchesSorted.forEach(m=>{
     const h=m.home_team,a=m.away_team
