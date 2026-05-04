@@ -198,13 +198,13 @@ const homeWins = allMatches.filter(m => {
     const hw=Number(m.home_score)>Number(m.away_score), aw=Number(m.away_score)>Number(m.home_score)
     return (m.home_team===awayId&&hw)||(m.away_team===awayId&&aw)
   }).length
-  const draws = total - homeWins - awayWins
+const otSn = allMatches.filter(m => getResultType(m)!=="REG").length
 
   document.getElementById("headerStats").innerHTML = `
     <div class="hstat"><div class="hstat-val">${total}</div><div class="hstat-label">Celkem zápasů</div></div>
     <div class="hstat"><div class="hstat-val" style="color:#22c55e;">${homeWins}</div><div class="hstat-label">${home.name.replace(/\(.\)$/,'').trim()} výhry</div></div>
     <div class="hstat"><div class="hstat-val" style="color:#f87171;">${awayWins}</div><div class="hstat-label">${away.name.replace(/\(.\)$/,'').trim()} výhry</div></div>
-    <div class="hstat"><div class="hstat-val" style="color:#fbbf24;">${draws}</div><div class="hstat-label">Prodloužení/SN</div></div>
+    <div class="hstat"><div class="hstat-val" style="color:#fbbf24;">${otSn}</div><div class="hstat-label">Prodloužení/SN</div></div>
   `
 }
 
