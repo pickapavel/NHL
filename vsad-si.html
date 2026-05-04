@@ -129,7 +129,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
     </div>
   </div>
   <div class="h2h-section">
-<div class="h2h-title">🏠 Posledních 5 zápasů doma</div>    <div class="h2h-matches" id="h2hMatches"><div class="h2h-empty">Načítám...</div></div>
+<div class="h2h-matches" id="h2hMatches"><div class="h2h-empty">Načítám...</div></div>
+    <div style="text-align:center;margin-top:10px;">
+      <a id="h2hLink" href="#" style="font-size:11px;color:#7ab0cc;font-weight:700;text-decoration:none;letter-spacing:.05em;text-transform:uppercase;">📊 Zobrazit všechny vzájemné zápasy →</a>
+    </div>
   </div>
 </div>
 
@@ -778,6 +781,7 @@ async function load(){
   const home=teamMap[match.home_team]
   const away=teamMap[match.away_team]
   homeId=home.id; awayId=away.id
+  document.getElementById("h2hLink").href=`h2h.html?home=${home.id}&away=${away.id}`
   homeName=home.name; awayName=away.name
   homeShortName=home.short_name||home.name
   awayShortName=away.short_name||away.name
