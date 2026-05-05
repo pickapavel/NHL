@@ -543,15 +543,21 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <span>${stageName}</span>
       <span class="series-state">${stateText}</span>
     </div>
-    <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
+<div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t1id?" tbd":""}">${t1}</span>
+      <span class="st-name${!t1id?" tbd":""}">
+        ${t1}
+        ${t1id&&teamsMap[t1id]?.rating_overall?`<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${teamsMap[t1id].rating_overall}</span>`:''}
+      </span>
       <div class="game-dots">${dots(w1,w2,winsNeeded)}</div>
       <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t2id?" tbd":""}">${t2}</span>
+      <span class="st-name${!t2id?" tbd":""}">
+        ${t2}
+        ${t2id&&teamsMap[t2id]?.rating_overall?`<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${teamsMap[t2id].rating_overall}</span>`:''}
+      </span>
       <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
       <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
@@ -579,13 +585,17 @@ function buildSingleMatchCard(stageName, match, schClass, note){
     </div>
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t1id?" tbd":""}">${t1id?teamName(t1id):"?"}</span>
-      ${played?`<span class="st-wins${hg>ag?" w":" l"}">${hg}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
+<span class="st-name${!t1id?" tbd":""}">
+        ${t1id?teamName(t1id):"?"}
+        ${t1id&&teamsMap[t1id]?.rating_overall?`<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${teamsMap[t1id].rating_overall}</span>`:''}
+      </span>      ${played?`<span class="st-wins${hg>ag?" w":" l"}">${hg}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t2id?" tbd":""}">${t2id?teamName(t2id):"?"}</span>
-      ${played?`<span class="st-wins${ag>hg?" w":" l"}">${ag}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
+<span class="st-name${!t2id?" tbd":""}">
+        ${t2id?teamName(t2id):"?"}
+        ${t2id&&teamsMap[t2id]?.rating_overall?`<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${teamsMap[t2id].rating_overall}</span>`:''}
+      </span>      ${played?`<span class="st-wins${ag>hg?" w":" l"}">${ag}</span>`:`<span class="st-wins" style="color:#ddd">—</span>`}
     </div>
   ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
