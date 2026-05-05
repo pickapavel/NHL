@@ -20,9 +20,10 @@ const { data: matches } = await supabase
   }
 
   // Načti týmy
-  const { data: teams } = await supabase.from('teams').select('id,name,logo')
+ const { data: teams } = await supabase.from('teams').select('id,name,logo')
   const teamMap = {}
   ;(teams || []).forEach(t => { teamMap[t.id] = t })
+  const BASE_URL = 'https://pickapavel.github.io/NHL'
 
   // Načti sázky pro tyto zápasy
   const matchIds = matches.map(m => m.id)
@@ -59,14 +60,20 @@ const { data: matches } = await supabase
       <div style="margin-bottom:14px;">
           <table style="width:100%;border-collapse:collapse;">
             <tr>
-              <td style="text-align:left;font-size:15px;font-weight:700;color:#0b2a3c;padding:4px 0;">${home?.name || '?'}</td>
-              <td style="text-align:center;width:80px;">
+              <td style="text-align:left;padding:4px 0;">
+                ${home?.logo?`<img src="${BASE_URL}/logos/${home.logo}" width="28" height="28" style="vertical-align:middle;border-radius:4px;margin-right:6px;">`:''}
+                <span style="font-size:15px;font-weight:700;color:#0b2a3c;vertical-align:middle;">${home?.name || '?'}</span>
+              </td>
+              <td style="text-align:center;width:100px;">
                 <span style="font-size:24px;font-weight:800;color:#0b2a3c;">${match.home_score}</span>
                 <span style="font-size:16px;color:#aaa;margin:0 4px;">:</span>
                 <span style="font-size:24px;font-weight:800;color:#0b2a3c;">${match.away_score}</span>
                 ${resultType?`<div style="font-size:11px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;">${resultType.replace(/[()]/g,'')}</div>`:''}
               </td>
-              <td style="text-align:right;font-size:15px;font-weight:700;color:#0b2a3c;padding:4px 0;">${away?.name || '?'}</td>
+              <td style="text-align:right;padding:4px 0;">
+                <span style="font-size:15px;font-weight:700;color:#0b2a3c;vertical-align:middle;">${away?.name || '?'}</span>
+                ${away?.logo?`<img src="${BASE_URL}/logos/${away.logo}" width="28" height="28" style="vertical-align:middle;border-radius:4px;margin-left:6px;">`:''}
+              </td>
             </tr>
           </table>
         </div>
