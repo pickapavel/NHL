@@ -319,8 +319,7 @@ function buildSubTabs2(){
   ?(s.competition_id===COMP_IDS.ms||s.competition_id===COMP_IDS.olympiada||s.competition_id===COMP_IDS.exhibice)
   :s.competition_id===compId).sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))
  const relevantSeasonIds=relevantSeasons.map(s=>s.id)
- if(!teamsSelectedSeason&&relevantSeasons.length) teamsSelectedSeason=relevantSeasons[0].id
- const stageGroups=[
+if(!teamsSelectedSeason&&relevantSeasons.length) teamsSelectedSeason=null const stageGroups=[
   {key:'zakladni',    label:'Základní část', match:n=>!['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p))},
   {key:'ctvrtfinale', label:'Čtvrtfinále',   match:n=>n.startsWith('Čtvrtfinále')},
   {key:'semifinale',  label:'Semifinále',    match:n=>n.startsWith('Semifinále')},
@@ -581,8 +580,8 @@ function getCompMatchIds(){
    if(teamsCompFilter==='olympiada'&&compId!==COMP_IDS.olympiada) return false
    if(teamsCompFilter==='reprezentace'&&!(compId===COMP_IDS.ms||compId===COMP_IDS.olympiada||compId===COMP_IDS.exhibice)) return false
   }
-  if(teamsSelectedSeason&&m.season_id!==teamsSelectedSeason) return false
-  if(teamsStageFilter!=='all'){
+if(teamsSelectedSeason&&m.season_id!==teamsSelectedSeason) return false
+  if(teamsCompFilter==='extraliga'&&seasonCompMap[m.season_id]!==COMP_IDS.extraliga) return false  if(teamsStageFilter!=='all'){
    const stage=allStages.find(s=>s.id===m.stage_id)
    if(!stage) return false
    const matchFn=stageGroupMatch[teamsStageFilter]
