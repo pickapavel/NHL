@@ -415,8 +415,8 @@ async function init(){
   const compId=match?(seasonCompMap[match.season_id]||''):''
   const stage=match?stageMap[match.stage_id]:null
 const playoffNames=["Čtvrtfinále","Semifinále","Finále","O 3. místo","Playoff","Baráž","Osmifinále"]
-const isPlayoff=stage?(stage.parent_stage_id!==null||playoffNames.some(n=>stage.name?.startsWith(n))):false  const owner_id=TEAM_MAP[r.team_abbr]?.owner_id||null
-  return {...r,competition_id:compId,is_playoff:isPlayoff,match_obj:match,owner_id}
+const isPlayoff=stage?(stage.parent_stage_id!==null||playoffNames.some(n=>stage.name?.startsWith(n))):false
+const owner_id=TEAM_MAP[r.team_abbr]?.owner_id||null  return {...r,competition_id:compId,is_playoff:isPlayoff,match_obj:match,owner_id}
  })
  const teamAbbrs=[...new Set(rawStats.map(p=>p.team_abbr).filter(Boolean))].sort()
  const sel=document.getElementById('teamFilterPlayers')
