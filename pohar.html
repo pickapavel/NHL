@@ -452,10 +452,11 @@ function teamHtml(teamId, score, isWinner, isLoser){
   const logoHtml = t?.logo
     ? `<img class="match-team-logo" src="./logos/${t.logo}" onerror="this.style.display='none'">`
     : `<div class="match-team-logo-ph"></div>`
+  const elo = t?.rating_overall ? `<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${t.rating_overall}</span>` : ''
   return `
    <div class="match-team ${cls}">
     ${logoHtml}
-    <span class="match-team-name">${t?.name || "?"}</span>
+    <span class="match-team-name">${t?.name || "?"}${elo}</span>
 ${score != null ? `<span class="match-team-score ${isWinner?"winner":""}"><span style="display:inline-flex;align-items:center;justify-content:center;background:#0b2a3c;color:white;font-size:13px;font-weight:800;width:30px;height:30px;border-radius:8px;">${score}</span></span>` : ""}   </div>`
 }
 
