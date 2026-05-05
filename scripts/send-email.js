@@ -8,11 +8,12 @@ async function main() {
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
   // Načti zápasy odehrané za posledních 24 hodin
-  const { data: matches } = await supabase
+const { data: matches } = await supabase
     .from('matches')
     .select('*, seasons(name)')
     .not('home_score', 'is', null)
-    .gte('updated_at', yesterday.toISOString())
+    .order('id', { ascending: false })
+    .limit(5)
 
   if (!matches || matches.length === 0) {
     console.log('Žádné zápasy za posledních 24 hodin.')
