@@ -56,12 +56,19 @@ const { data: matches } = await supabase
         <div style="font-size:11px;color:#7ab0cc;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
           ${match.seasons?.name || ''}
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:15px;font-weight:700;color:#0b2a3c;">${home?.name || '?'}</div>
-          <div style="font-size:22px;font-weight:800;color:#0b2a3c;background:#f0f4f8;padding:6px 16px;border-radius:8px;">
-            ${match.home_score} : ${match.away_score}${resultType}
-          </div>
-          <div style="font-size:15px;font-weight:700;color:#0b2a3c;">${away?.name || '?'}</div>
+      <div style="margin-bottom:14px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="text-align:left;font-size:15px;font-weight:700;color:#0b2a3c;padding:4px 0;">${home?.name || '?'}</td>
+              <td style="text-align:center;width:80px;">
+                <span style="font-size:24px;font-weight:800;color:#0b2a3c;">${match.home_score}</span>
+                <span style="font-size:16px;color:#aaa;margin:0 4px;">:</span>
+                <span style="font-size:24px;font-weight:800;color:#0b2a3c;">${match.away_score}</span>
+                ${resultType?`<div style="font-size:11px;font-weight:700;background:#2f9ec9;color:white;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;">${resultType.replace(/[()]/g,'')}</div>`:''}
+              </td>
+              <td style="text-align:right;font-size:15px;font-weight:700;color:#0b2a3c;padding:4px 0;">${away?.name || '?'}</td>
+            </tr>
+          </table>
         </div>
     `
 
@@ -69,16 +76,19 @@ const { data: matches } = await supabase
       html += `<div style="border-top:1px solid #f0f0f0;padding-top:10px;">`
       html += `<div style="font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;margin-bottom:8px;">🎲 Sázky</div>`
       for (const bet of matchBets) {
-        const playerName = bet.players?.name || '?'
+  const playerName = bet.players?.name || '?'
         const won = bet.status === 'won'
         const lost = bet.status === 'lost'
         const statusColor = won ? '#16a34a' : lost ? '#dc2626' : '#888'
-        const statusText = won ? `✅ Výhra +${Math.round(bet.potential_win - bet.amount)} Kč` : lost ? `❌ Prohra -${Math.round(bet.amount)} Kč` : '⏳ Čeká'
+        const statusIcon = won ? '✅' : lost ? '❌' : '⏳'
+        const statusText = won ? `+${Math.round(bet.potential_win - bet.amount)} Kč` : lost ? `-${Math.round(bet.amount)} Kč` : 'Čeká'
         html += `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f7f7f7;">
-            <div style="font-size:13px;font-weight:600;color:#0b2a3c;">${playerName}</div>
-            <div style="font-size:12px;color:#555;">Vsazeno: ${Math.round(bet.amount)} Kč · Kurz: ${bet.odds}</div>
-            <div style="font-size:12px;font-weight:700;color:${statusColor};">${statusText}</div>
+          <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:14px;font-weight:700;color:#0b2a3c;">${statusIcon} ${playerName}</div>
+              <div style="font-size:14px;font-weight:800;color:${statusColor};">${statusText}</div>
+            </div>
+            <div style="font-size:12px;color:#888;">Vsazeno: ${Math.round(bet.amount)} Kč · Kurz: ${Number(bet.odds).toFixed(2)}</div>
           </div>
         `
       }
