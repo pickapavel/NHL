@@ -125,7 +125,6 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
   <div class="phase-tabs" id="phaseTabs"></div>
  </div>
 
- <div class="stats-bar" id="statsBar"></div>
  <div class="legend">
   <div class="legend-item"><div class="legend-dot legend-dot-win"></div> Vítěz / postoupil</div>
   <div class="legend-item"><div class="legend-dot legend-dot-pending"></div> Čeká na odehrání</div>
@@ -433,12 +432,7 @@ function buildStatsBar(){
   const completedPhases = phases.filter(p => p.completed).length
   const currentPhaseName = phases.find(p => !p.completed)?.label || "Dokončeno"
 
-  document.getElementById("statsBar").innerHTML = `
-   <div class="stat-box"><div class="stat-val">${totalPlayed}/${totalZapasu}</div><div class="stat-label">Odehráno zápasů</div></div>
-   <div class="stat-box"><div class="stat-val">${completedPhases}/${phases.length}</div><div class="stat-label">Dokončené fáze</div></div>
-   <div class="stat-box"><div class="stat-val">${currentPhaseName}</div><div class="stat-label">Aktuální fáze</div></div>
-   <div class="stat-box"><div class="stat-val">${seasonTeamCount}</div><div class="stat-label">Týmů v pohári</div></div>
-  `
+
 }
 
 function getWinner(match){
