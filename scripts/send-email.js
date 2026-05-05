@@ -123,7 +123,7 @@ const { data: matches } = await supabase
     },
     body: JSON.stringify({
       from: 'onboarding@resend.dev',
-      to: ['pickapavel@gmail.com'],
+      to: ['pickapavel@gmail.com', 'kubes.kamen@seznam.cz'],
       subject: `🏒 Výsledky ${now.toLocaleDateString('cs-CZ')} — Extraliga U dvou Blbounů`,
       html: html
     })
