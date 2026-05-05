@@ -678,9 +678,9 @@ function renderTeams(){
    <button class="seg-btn ${teamsOwnerFilter==='kubele'?'active-kubele':''}" onclick="setTeamsOwner('kubele',this)">🔵 Kubele</button>
    <button class="seg-btn ${teamsOwnerFilter==='pici'?'active-pici':''}" onclick="setTeamsOwner('pici',this)">🟣 Pici</button>
    <div class="filter-divider"></div>
-   <button class="seg-btn ${teamsTypeFilter==='all'?'active':''}" onclick="setTeamsType('all',this)">Všechny</button>
+ <button class="seg-btn ${teamsTypeFilter==='all'?'active':''}" onclick="setTeamsType('all',this)">Všechny</button>
    <button class="seg-btn ${teamsTypeFilter==='klub'?'active':''}" onclick="setTeamsType('klub',this)">🏒 Klubové</button>
-   <button class="seg-btn ${teamsTypeFilter==='repre'?'active':''}" onclick="setTeamsType('repre',this)">🌍 Reprezentace</button>
+   ${['extraliga','pohar'].includes(teamsCompFilter)?'':` <button class="seg-btn ${teamsTypeFilter==='repre'?'active':''}" onclick="setTeamsType('repre',this)">🌍 Reprezentace</button>`}
    <div class="filter-divider"></div>
    <input class="search-input" placeholder="🔍 Hledat tým..." oninput="teamsSearchVal=this.value;renderTeams()" value="${teamsSearchVal}">
   </div>
