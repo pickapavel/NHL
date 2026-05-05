@@ -211,7 +211,6 @@ async function loadSeason(){
   document.getElementById("content").innerHTML = '<div class="loading">Načítám...</div>'
   document.getElementById("matchList").innerHTML = ""
   document.getElementById("phaseTabs").innerHTML = ""
-  document.getElementById("statsBar").innerHTML = ""
   document.getElementById("halfTabsWrap").style.display = "none"
 
   const [matchesRes, seasonTeamsRes] = await Promise.all([
@@ -231,7 +230,6 @@ async function loadSeason(){
 
   buildPhases(seasonTeamCount)
   buildPhaseTabs()
-  buildStatsBar()
 
   if(isLargeTournament){
     buildHalfTabs()
@@ -426,14 +424,7 @@ function updateTabs(){
   })
 }
 
-function buildStatsBar(){
-  const totalPlayed = allMatches.filter(m => m.home_score != null).length
-  const totalZapasu = phases.reduce((s, p) => s + p.zapasu, 0)
-  const completedPhases = phases.filter(p => p.completed).length
-  const currentPhaseName = phases.find(p => !p.completed)?.label || "Dokončeno"
 
-
-}
 
 function getWinner(match){
   if(match.home_score == null) return null
