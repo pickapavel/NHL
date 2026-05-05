@@ -320,7 +320,8 @@ function buildSubTabs2(){
   :s.competition_id===compId).sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))
  const relevantSeasonIds=relevantSeasons.map(s=>s.id)
 const stageGroups=[
-  {key:'zakladni',   label:'Základní část', match:n=>!['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p))},
+  {key:'zakladni',    label:'Základní část', match:n=>!['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p))},
+  {key:'playoff',     label:'Play off',      match:n=>['Čtvrtfinále','Semifinále','Finále','O 3. místo','Osmifinále'].some(p=>n.startsWith(p))},
   {key:'ctvrtfinale', label:'Čtvrtfinále',   match:n=>n.startsWith('Čtvrtfinále')},
   {key:'semifinale',  label:'Semifinále',    match:n=>n.startsWith('Semifinále')},
   {key:'tretimisto',  label:'O 3. místo',    match:n=>n.startsWith('O 3. místo')},
@@ -562,8 +563,9 @@ window.selectH2HTeam=function(side,teamId){ if(side===1) h2hPickerT1=teamId; els
 // =====================================================
 function getCompMatchIds(){
  if(teamsCompFilter==='all'&&teamsStageFilter==='all'&&!teamsSelectedSeason) return null
- const stageGroupMatch={
+const stageGroupMatch={
   zakladni:    n=>!['Čtvrtfinále','Semifinále','Finále','O 3. místo','Baráž','Osmifinále','Playoff'].some(p=>n.startsWith(p)),
+  playoff:     n=>['Čtvrtfinále','Semifinále','Finále','O 3. místo','Osmifinále'].some(p=>n.startsWith(p)),
   ctvrtfinale: n=>n.startsWith('Čtvrtfinále'),
   semifinale:  n=>n.startsWith('Semifinále'),
   tretimisto:  n=>n.startsWith('O 3. místo'),
