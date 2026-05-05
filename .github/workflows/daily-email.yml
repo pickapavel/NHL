@@ -1,0 +1,19 @@
+name: Daily Email
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: node scripts/send-email.js
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_URL: https://qaocbodrflsaerxntfui.supabase.co
+          SUPABASE_KEY: sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU
