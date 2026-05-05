@@ -12,8 +12,7 @@ const { data: matches } = await supabase
     .from('matches')
     .select('*, seasons(name)')
     .not('home_score', 'is', null)
-    .order('id', { ascending: false })
-    .limit(5)
+    .gte('played_at', yesterday.toISOString())
 
   if (!matches || matches.length === 0) {
     console.log('Žádné zápasy za posledních 24 hodin.')
