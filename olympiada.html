@@ -299,11 +299,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
       <div class="fi"><div class="dot-green"></div>Vítěz → Skupina o čtvrtfinále</div>
       <div class="fi"><div class="dot-red"></div>Poražený → Osmifinále</div>
     </div>
-<button onclick="const b=document.getElementById('bk-kv-nas-rozpis');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'"
-      style="width:100%;margin-bottom:16px;padding:12px 20px;font-size:13px;font-weight:700;color:white;background:linear-gradient(135deg,#1a5276,#2f9ec9);border:none;border-radius:10px;cursor:pointer;letter-spacing:.04em;">
-      📋 Rozpis zápasů ▼
-    </button>
-    <div id="bk-kv-nas-rozpis" style="display:none;" class="match-list"></div>
+
 
     <!-- 2. SKUPINA -->
     <div class="bracket-phase-label">2. Skupina o čtvrtfinále — každý s každým (V=3B, VOT/SN=2B, POT/SN=1B)</div>
@@ -545,7 +541,23 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
   }
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
   const stateText=played.length?`${w1} : ${w2}`:"—"
-  return `
+  const rid='rozpis-'+stageName.replace(/[^a-z0-9]/gi,'')
+  const rowsHtml=matches.map(m=>{
+    const home=teamsMap[m.home_team],away=teamsMap[m.away_team]
+    if(!home||!away) return ''
+    const p=isPlayed(m),hg=p?m.home_score:null,ag=p?m.away_score:null
+    const homeWin=p&&Number(hg)>Number(ag),awayWin=p&&Number(ag)>Number(hg)
+    const rt=p?getResultType(m):'',tag=rt&&rt!=='REG'?`<span class="result-tag">${rt}</span>`:''
+    return `<div class="match-row${p?' played':''}">
+      <div class="mr-round">${m.round}</div>
+      <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${p?(homeWin?' winner':' loser'):''}">${home.name}</span></div>
+      <div class="mr-score"><span class="score-badge${p?'':' empty'}">${p?`${hg} : ${ag}`:'– : –'}</span>${tag}</div>
+      <div class="mr-team away"><span class="mr-name${p?(awayWin?' winner':' loser'):''}">${away.name}</span><img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'"></div>
+      <div class="mr-btns">${p?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>
+    </div>`
+  }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'
+
+  return `<div>
   <div class="series-card">
     <div class="series-card-header ${schClass}">
       <span>${stageName}</span>
@@ -563,26 +575,10 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
       <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
-${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
-    </div>
-  <div style="margin-top:8px;">
-   <button onclick="const rid='rozpis-${stageName.replace(/[^a-z0-9]/gi,'')}';const b=document.getElementById(rid);const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'" style="width:100%;padding:10px;font-size:12px;font-weight:700;color:white;background:linear-gradient(135deg,#1a5276,#2f9ec9);border:none;border-radius:8px;cursor:pointer;">📋 Rozpis zápasů ▼</button>
-   <div id="rozpis-${stageName.replace(/[^a-z0-9]/gi,'')}" style="display:none;margin-top:8px;">
-    ${matches.map(m=>{
-      const home=teamsMap[m.home_team],away=teamsMap[m.away_team]
-      if(!home||!away) return ''
-      const played=isPlayed(m),hg=played?m.home_score:null,ag=played?m.away_score:null
-      const homeWin=played&&Number(hg)>Number(ag),awayWin=played&&Number(ag)>Number(hg)
-      const rt=played?getResultType(m):'',tag=rt&&rt!=='REG'?`<span class="result-tag">${rt}</span>`:''
-      return `<div class="match-row${played?' played':''}">
-        <div class="mr-round">${m.round}</div>
-        <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${played?(homeWin?' winner':' loser'):''}">${home.name}</span></div>
-        <div class="mr-score"><span class="score-badge${played?'':' empty'}">${played?`${hg} : ${ag}`:'– : –'}</span>${tag}</div>
-        <div class="mr-team away"><span class="mr-name${played?(awayWin?' winner':' loser'):''}">${away.name}</span><img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'"></div>
-        <div class="mr-btns">${played?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>
-      </div>`
-    }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'}
-   </div>
+    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+    <button onclick="const b=document.getElementById('${rid}');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'" style="width:100%;padding:10px;font-size:12px;font-weight:700;color:white;background:linear-gradient(135deg,#1a5276,#2f9ec9);border:none;cursor:pointer;">📋 Rozpis zápasů ▼</button>
+  </div>
+  <div id="${rid}" style="display:none;margin-top:8px;">${rowsHtml}</div>
   </div>`
 }
 
@@ -808,8 +804,7 @@ async function loadSeason(seasonId, seasonName){
     const sid=stageMap[n]; if(!sid)return
     sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
   })
-document.getElementById("bk-kv-nas-rozpis").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-document.getElementById("bk-kv-nas-rozpis").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+
   document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
   buildSkupinaTabulka(phaseMatches["skupina"])
   
