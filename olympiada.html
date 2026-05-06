@@ -149,12 +149,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
 .st-wins.w{color:#16a34a;}
 .st-wins.l{color:#ddd;}
 
-/* game dots */
-.game-dots{display:flex;gap:3px;align-items:center;margin-right:6px;}
-.gdot{width:10px;height:10px;border-radius:50%;}
-.gdot-w{background:#22c55e;}
-.gdot-l{background:#f87171;}
-.gdot-e{background:#e2eaf0;}
 
 /* ── SKUPINA TABULKA ── */
 .standings-table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -536,24 +530,24 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     return h
   }
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
-  const stateText=played.length?`${w1} : ${w2}`:"—"
-  return `
+const stateText=played.length?`${w1} : ${w2}`:"—"  return `
   <div class="series-card">
     <div class="series-card-header ${schClass}">
       <span>${stageName}</span>
-      <span class="series-state">${stateText}</span>
-    </div>
+<span class="series-state" style="background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:800;">${stateText}</span>    </div>
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      <div class="game-dots">${dots(w1,w2,winsNeeded)}</div>
-      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
+<span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">
+        ${played.length?(played[played.length-1].home_team===t1id?played[played.length-1].home_score:played[played.length-1].away_score):'—'}
+      </span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
-      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
+      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">
+        ${played.length?(played[played.length-1].home_team===t2id?played[played.length-1].home_score:played[played.length-1].away_score):'—'}
+      </span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
