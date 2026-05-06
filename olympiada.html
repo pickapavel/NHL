@@ -460,8 +460,7 @@ function buildRozpisBtn(stageName, matches){
   }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'
   return `<div>
     <button class="rozpis-btn" onclick="const b=document.getElementById('${rid}');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'">📋 Rozpis zápasů ▼</button>
-    <div id="${rid}" style="display:none;margin-top:8px;display:flex;flex-direction:column;gap:8px;">${rowsHtml}</div>
-  </div>`
+<div id="${rid}" style="display:none;margin-top:8px;flex-direction:column;gap:8px;">${rowsHtml}</div>  </div>`
 }
 
 function buildSingleMatchCard(stageName, match, schClass, note){
