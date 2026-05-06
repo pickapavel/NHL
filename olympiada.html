@@ -179,7 +179,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
       <div class="fi"><div class="dot-green"></div>Vítěz → Skupina o čtvrtfinále</div>
       <div class="fi"><div class="dot-red"></div>Poražený → Osmifinále</div>
     </div>
-    <div id="bk-kv-nas-btns" class="rozpis-grid br-4" style="margin-bottom:16px;"></div>
+   <div id="bk-kv-nas-btns" style="margin-bottom:16px;"></div>
 
     <div class="bracket-phase-label">2. Skupina o čtvrtfinále — každý s každým</div>
     <div class="bracket-row br-skupina" id="bk-skupina" style="max-width:560px;"></div>
@@ -194,7 +194,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
       <div class="fi"><div class="dot-green"></div>Vítěz (6 týmů) → Osmifinále</div>
       <div class="fi"><div class="dot-red"></div>Poražený → vyřazen</div>
     </div>
-    <div id="bk-kval-btns" class="rozpis-grid br-6" style="margin-bottom:16px;"></div>
+   <div id="bk-kval-btns" style="margin-bottom:16px;"></div>
 
     <div class="bracket-phase-label">4. Osmifinále č. 1–6</div>
     <div class="bracket-row br-6" id="bk-osm"></div>
@@ -538,8 +538,8 @@ function buildBracket(stageMap, matchesByStage){
   const kvNasNames=["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"]
   const bkKvNas=document.getElementById("bk-kv-nas"); bkKvNas.innerHTML=""
   kvNasNames.forEach((n,i)=>{ bkKvNas.innerHTML+=buildSeriesCard(`Kval.nas. č.${i+1}`,getMs(n),"sch-kv-nas",2) })
-  const bkKvNasBtns=document.getElementById("bk-kv-nas-btns"); bkKvNasBtns.innerHTML=""
-  kvNasNames.forEach((n,i)=>{ bkKvNasBtns.innerHTML+=buildRozpisBtn(`Kval.nas. č.${i+1}`,getMs(n)) })
+const allKvNasMatches=kvNasNames.flatMap(n=>getMs(n))
+  document.getElementById("bk-kv-nas-btns").innerHTML=buildRozpisBtn('kvnas-all', allKvNasMatches)
 
   // SKUPINA
   const skupMatches=(matchesByStage[stageMap["Skupina o čtvrtfinále"]]||[])
@@ -579,8 +579,8 @@ function buildBracket(stageMap, matchesByStage){
   const kvalNames=["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"]
   const bkKval=document.getElementById("bk-kval"); bkKval.innerHTML=""
   kvalNames.forEach((n,i)=>{ bkKval.innerHTML+=buildSeriesCard(`Kval. č.${i+1}`,getMs(n),"sch-kval",2) })
-  const bkKvalBtns=document.getElementById("bk-kval-btns"); bkKvalBtns.innerHTML=""
-  kvalNames.forEach((n,i)=>{ bkKvalBtns.innerHTML+=buildRozpisBtn(`Kval. č.${i+1}`,getMs(n)) })
+ const allKvalMatches=kvalNames.flatMap(n=>getMs(n))
+  document.getElementById("bk-kval-btns").innerHTML=buildRozpisBtn('kval-all', allKvalMatches)
 
   // OSM
   const bkOsm=document.getElementById("bk-osm"); bkOsm.innerHTML=""
