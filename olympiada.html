@@ -530,7 +530,8 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     return h
   }
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
-const stateText=played.length?`${w1} : ${w2}`:"—"  return `
+const stateText=played.length?`${w1} : ${w2}`:"—"
+  return `
   <div class="series-card">
     <div class="series-card-header ${schClass}">
       <span>${stageName}</span>
