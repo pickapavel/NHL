@@ -510,6 +510,7 @@ function setPhase(id){
 }
 
 // SERIES CARD (Bo2)
+// SERIES CARD (Bo2)
 function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
   const played=matches.filter(m=>isPlayed(m))
   const t1id=matches[0]?.home_team, t2id=matches[0]?.away_team
@@ -521,50 +522,35 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     else{if(ag>hg)w1++;else w2++}
   })
   const winner=w1>=winsNeeded?t1id:w2>=winsNeeded?t2id:null
-  function dots(wins,losses,needed){
-    let h=""
-    for(let i=0;i<wins;i++) h+=`<div class="gdot gdot-w"></div>`
-    for(let i=0;i<losses;i++) h+=`<div class="gdot gdot-l"></div>`
-    const rem=Math.max(0,needed-wins-losses)
-    for(let i=0;i<rem;i++) h+=`<div class="gdot gdot-e"></div>`
-    return h
-  }
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
-const lastMatch=played[played.length-1]||null
   const stateText=played.length?`${w1} : ${w2}`:"—"
-  return `  <div class="series-card">
+  const colWidth=played.length*22
+  function scoreRow(isT1){
+    return played.map(m=>{
+      const isT1Home=m.home_team===t1id
+      const myG=isT1?(isT1Home?Number(m.home_score):Number(m.away_score)):(isT1Home?Number(m.away_score):Number(m.home_score))
+      const opG=isT1?(isT1Home?Number(m.away_score):Number(m.home_score)):(isT1Home?Number(m.home_score):Number(m.away_score))
+      const won=myG>opG
+      return `<span style="font-size:12px;font-weight:800;color:${won?'#16a34a':'#dc2626'};width:20px;text-align:center;display:inline-block;">${myG}</span>`
+    }).join('')
+  }
+  return `
+  <div class="series-card">
     <div class="series-card-header ${schClass}">
       <span>${stageName}</span>
-<span class="series-state" style="background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:800;">${stateText}</span>    </div>
+      <span class="series-state" style="background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:800;">${stateText}</span>
+    </div>
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
-<span class="st-name${!t1id?" tbd":""}">${t1}</span>
-   <div style="display:flex;gap:3px;align-items:center;margin-left:auto;margin-right:8px;min-width:${played.length*22}px;justify-content:flex-end;">
-        ${played.map(m=>{
-          const isT1Home=m.home_team===t1id
-          const t1g=isT1Home?Number(m.home_score):Number(m.away_score)
-          const t2g=isT1Home?Number(m.away_score):Number(m.home_score)
-          const t2won=t2g>t1g
-          return `<span style="font-size:12px;font-weight:800;color:${t2won?'#16a34a':'#dc2626'};width:20px;text-align:center;">${t2g}</span>`
-        }).join('')}
-      </div>
-      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w2}</span>
+      <span class="st-name${!t1id?" tbd":""}">${t1}</span>
+      <div style="display:flex;margin-left:auto;margin-right:8px;min-width:${colWidth}px;justify-content:flex-end;">${scoreRow(true)}</div>
       <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w1}</span>
-      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      <div style="display:flex;gap:3px;align-items:center;margin-left:auto;margin-right:8px;">
-        ${played.map(m=>{
-          const isT1Home=m.home_team===t1id
-          const t1g=isT1Home?Number(m.home_score):Number(m.away_score)
-          const t2g=isT1Home?Number(m.away_score):Number(m.home_score)
-          const t2won=t2g>t1g
-          return `<span style="font-size:12px;font-weight:800;color:${t2won?'#16a34a':'#dc2626'};">${t2g}</span>`
-        }).join('<span style="color:#ddd;font-size:10px;margin:0 1px;">·</span>')}
-      </div>
-      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
+      <div style="display:flex;margin-left:auto;margin-right:8px;min-width:${colWidth}px;justify-content:flex-end;">${scoreRow(false)}</div>
+      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w2}</span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
@@ -573,7 +559,6 @@ ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7
     </div>
   </div>`
 }
-
 // SINGLE MATCH CARD
 function buildSingleMatchCard(stageName, match, schClass, note){
   const played=match&&isPlayed(match)
