@@ -237,7 +237,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
       <div class="flow-item"><div class="dot-green"></div>Vítěz každé série → Skupina o čtvrtfinále</div>
       <div class="flow-item"><div class="dot-red"></div>Poražený každé série → Osmifinále</div>
     </div>
-    <div id="sg-kv-nas-btns" class="rozpis-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:16px;"></div>
     <div class="match-list" id="ml-kv-nas"></div>
   </div>
 
@@ -271,7 +270,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
       <div class="flow-item"><div class="dot-green"></div>Vítěz každé série (6 týmů) → Osmifinále</div>
       <div class="flow-item"><div class="dot-red"></div>Poražený každé série → vyřazen</div>
     </div>
-    <div id="sg-kval-btns" class="rozpis-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:16px;"></div>
     <div class="match-list" id="ml-kval"></div>
   </div>
 
@@ -632,11 +630,10 @@ async function loadSeason(seasonId, seasonName){
 
   // KV-NAS sekce
   const sgKvNas=document.getElementById("sg-kv-nas"); sgKvNas.innerHTML=""
-  const sgKvNasBtns=document.getElementById("sg-kv-nas-btns"); sgKvNasBtns.innerHTML=""
+  
   ;["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"].forEach(n=>{
     const sid=stageMap[n]; if(!sid)return
     sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
-    sgKvNasBtns.innerHTML+=buildRozpisBtn(n,matchesByStage[sid]||[])
   })
   document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
@@ -646,11 +643,9 @@ async function loadSeason(seasonId, seasonName){
 
   // KVAL sekce
   const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
-  const sgKvalBtns=document.getElementById("sg-kval-btns"); sgKvalBtns.innerHTML=""
   ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
     const sid=stageMap[n]; if(!sid)return
     sgKval.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kval",2)
-    sgKvalBtns.innerHTML+=buildRozpisBtn(n,matchesByStage[sid]||[])
   })
   document.getElementById("ml-kval").innerHTML=phaseMatches["kval"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
