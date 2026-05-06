@@ -546,16 +546,15 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">
-        ${played.length?Number(played[played.length-1].home_team===t1id?played[played.length-1].home_score:played[played.length-1].away_score):'—'}
-      </span>
+      <div class="game-dots">${dots(w1,w2,winsNeeded)}</div>
+      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">
-        ${played.length?Number(played[played.length-1].home_team===t2id?played[played.length-1].home_score:played[played.length-1].away_score):'—'}
-      </span>    </div>
+      <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
+      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
+    </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
       <a href="statistiky-zapasu.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Statistiky</a>
