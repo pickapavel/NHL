@@ -544,13 +544,13 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
       <div style="display:flex;margin-left:auto;margin-right:8px;min-width:${colWidth}px;justify-content:flex-end;">${scoreRow(true)}</div>
-      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w1}</span>
+ <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:14px;font-weight:800;background:${w1>=winsNeeded?'#16a34a':winner&&w1<winsNeeded?'#f0f0f0':'#0b2a3c'};color:${w1>=winsNeeded?'#fff':winner&&w1<winsNeeded?'#bbb':'#fff'};">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
       <div style="display:flex;margin-left:auto;margin-right:8px;min-width:${colWidth}px;justify-content:flex-end;">${scoreRow(false)}</div>
-      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w2}</span>
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:14px;font-weight:800;background:${w2>=winsNeeded?'#16a34a':winner&&w2<winsNeeded?'#f0f0f0':'#0b2a3c'};color:${w2>=winsNeeded?'#fff':winner&&w2<winsNeeded?'#bbb':'#fff'};">${w2}</span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
