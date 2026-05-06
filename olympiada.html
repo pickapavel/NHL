@@ -292,13 +292,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
   <div class="phase-content" id="phase-bracket">
     <div class="section-title"><span class="stl-icon">🕸</span> Pavouk turnaje</div>
 
-    <!-- 1. KVAL NAS -->
+<!-- 1. KVAL NAS -->
     <div class="bracket-phase-label">1. Kvalifikace nasazených — série na 2 vítězné</div>
     <div class="bracket-row br-4" id="bk-kv-nas"></div>
     <div class="bracket-flow">
       <div class="fi"><div class="dot-green"></div>Vítěz → Skupina o čtvrtfinále</div>
       <div class="fi"><div class="dot-red"></div>Poražený → Osmifinále</div>
     </div>
+    <button onclick="const b=document.getElementById('bk-kv-nas-rozpis');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'"
+      style="margin-bottom:16px;padding:10px 20px;font-size:13px;font-weight:700;color:#1a5276;background:white;border:2px solid #c8d8e8;border-radius:10px;cursor:pointer;">
+      📋 Rozpis zápasů ▼
+    </button>
+    <div id="bk-kv-nas-rozpis" style="display:none;" class="match-list"></div>
 
     <!-- 2. SKUPINA -->
     <div class="bracket-phase-label">2. Skupina o čtvrtfinále — každý s každým (V=3B, VOT/SN=2B, POT/SN=1B)</div>
@@ -788,8 +793,7 @@ async function loadSeason(seasonId, seasonName){
     const sid=stageMap[n]; if(!sid)return
     sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
   })
-  document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
-  buildSkupinaTabulka(phaseMatches["skupina"])
+  document.getElementById("bk-kv-nas-rozpis").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`  buildSkupinaTabulka(phaseMatches["skupina"])
   document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
   const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
   ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
