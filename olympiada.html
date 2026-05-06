@@ -564,10 +564,25 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
-      <a href="statistiky-zapasu.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Statistiky</a>
-      <a href="vsad-si.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#166534;background:#f0fdf4;text-decoration:none;">🎲 Vsaď si</a>
     </div>
+  <div style="margin-top:8px;">
+   <button onclick="const rid='rozpis-${stageName.replace(/[^a-z0-9]/gi,'')}';const b=document.getElementById(rid);const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'" style="width:100%;padding:10px;font-size:12px;font-weight:700;color:white;background:linear-gradient(135deg,#1a5276,#2f9ec9);border:none;border-radius:8px;cursor:pointer;">📋 Rozpis zápasů ▼</button>
+   <div id="rozpis-${stageName.replace(/[^a-z0-9]/gi,'')}" style="display:none;margin-top:8px;">
+    ${matches.map(m=>{
+      const home=teamsMap[m.home_team],away=teamsMap[m.away_team]
+      if(!home||!away) return ''
+      const played=isPlayed(m),hg=played?m.home_score:null,ag=played?m.away_score:null
+      const homeWin=played&&Number(hg)>Number(ag),awayWin=played&&Number(ag)>Number(hg)
+      const rt=played?getResultType(m):'',tag=rt&&rt!=='REG'?`<span class="result-tag">${rt}</span>`:''
+      return `<div class="match-row${played?' played':''}">
+        <div class="mr-round">${m.round}</div>
+        <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${played?(homeWin?' winner':' loser'):''}">${home.name}</span></div>
+        <div class="mr-score"><span class="score-badge${played?'':' empty'}">${played?`${hg} : ${ag}`:'– : –'}</span>${tag}</div>
+        <div class="mr-team away"><span class="mr-name${played?(awayWin?' winner':' loser'):''}">${away.name}</span><img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'"></div>
+        <div class="mr-btns">${played?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>
+      </div>`
+    }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'}
+   </div>
   </div>`
 }
 
