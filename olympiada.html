@@ -400,18 +400,17 @@ function buildMatchRow(m){
 function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
   const played=matches.filter(m=>isPlayed(m))
   const t1id=matches[0]?.home_team, t2id=matches[0]?.away_team
-  let w1=0,w2=0,t1gf=0,t1ga=0
+  let w1=0,w2=0
   played.forEach(m=>{
     const isT1Home=m.home_team===t1id
     const hg=Number(m.home_score),ag=Number(m.away_score)
-    if(isT1Home){t1gf+=hg;t1ga+=ag;if(hg>ag)w1++;else w2++}
-    else{t1gf+=ag;t1ga+=hg;if(ag>hg)w1++;else w2++}
+    if(isT1Home){if(hg>ag)w1++;else w2++}
+    else{if(ag>hg)w1++;else w2++}
   })
   const winner=w1>=winsNeeded?t1id:w2>=winsNeeded?t2id:null
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
   const stateText=played.length?`${w1} : ${w2}`:"—"
 
-  // Poslední zápas pro skóre
   const lastMatch=played[played.length-1]
   let t1score=null,t2score=null
   if(lastMatch){
@@ -419,6 +418,40 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     t1score=isT1Home?Number(lastMatch.home_score):Number(lastMatch.away_score)
     t2score=isT1Home?Number(lastMatch.away_score):Number(lastMatch.home_score)
   }
+  const t1won=lastMatch&&t1score>t2score
+  const t2won=lastMatch&&t2score>t1score
+
+  function scoreWinsHtml(score, wins, won){
+    if(score===null) return `
+      <span style="display:flex;gap:3px;align-items:center;margin-right:6px;">
+        <div class="gdot gdot-e"></div><div class="gdot gdot-e"></div>
+      </span>
+      <span style="font-size:13px;font-weight:800;background:#e8f0f8;color:#1a5276;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;">—</span>`
+    const scoreColor=won?'#16a34a':'#dc2626'
+    return `
+      <span style="font-size:18px;font-weight:800;color:${scoreColor};min-width:24px;text-align:right;margin-right:8px;">${score}</span>
+      <span style="font-size:13px;font-weight:800;background:#1a5276;color:white;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;">${wins}</span>`
+  }
+
+  return `
+  <div class="series-card">
+    <div class="series-card-header ${schClass}">
+      <span>${stageName}</span>
+      <span class="series-state">${stateText}</span>
+    </div>
+    <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
+      ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t1id?" tbd":""}">${t1}</span>
+      ${scoreWinsHtml(t1score, w1, t1won)}
+    </div>
+    <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
+      ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
+      <span class="st-name${!t2id?" tbd":""}">${t2}</span>
+      ${scoreWinsHtml(t2score, w2, t2won)}
+    </div>
+    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
+  </div>`
+}
 
   function scoreOrDots(score, won){
     if(score===null) return `<span style="display:flex;gap:3px;align-items:center;margin-right:6px;"><div class="gdot gdot-e"></div><div class="gdot gdot-e"></div></span>`
