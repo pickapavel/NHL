@@ -793,8 +793,9 @@ async function loadSeason(seasonId, seasonName){
     const sid=stageMap[n]; if(!sid)return
     sgKvNas.innerHTML+=buildSeriesCard(n,matchesByStage[sid]||[],"sch-kv-nas",2)
   })
-  document.getElementById("bk-kv-nas-rozpis").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`  buildSkupinaTabulka(phaseMatches["skupina"])
-  document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+document.getElementById("bk-kv-nas-rozpis").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  document.getElementById("ml-kv-nas").innerHTML=phaseMatches["kv-nas"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
+  buildSkupinaTabulka(phaseMatches["skupina"])  document.getElementById("ml-skupina").innerHTML=phaseMatches["skupina"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
   const sgKval=document.getElementById("sg-kval"); sgKval.innerHTML=""
   ;["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"].forEach(n=>{
     const sid=stageMap[n]; if(!sid)return
