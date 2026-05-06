@@ -536,13 +536,14 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     return h
   }
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
-  const stateText=played.length?`${w1} : ${w2}`:"—"
+ const stateText=played.length?`${w1} : ${w2}`:"—"
+  const lastPlayed=played[played.length-1]
+  const lastScore=lastPlayed?`${lastPlayed.home_team===t1id?lastPlayed.home_score:lastPlayed.away_score} : ${lastPlayed.home_team===t1id?lastPlayed.away_score:lastPlayed.home_score}`:null
   return `
   <div class="series-card">
     <div class="series-card-header ${schClass}">
       <span>${stageName}</span>
-      <span class="series-state">${stateText}</span>
-    </div>
+<span class="series-state">${stateText}${lastScore?` &nbsp;|&nbsp; <span style="font-size:10px;opacity:.8">Posl. ${lastScore}</span>`:''}</span>    </div>
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
