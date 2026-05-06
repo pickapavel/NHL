@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sázky – Olympiáda</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0b2a3c;--navy2:#1a5276;--gold:#f0c040;--green:#27ae60;
+  --bg:#f0f4f8;--white:#fff;--muted:#6b7a8d;--border:#e2e8f0;--text:#1a2a3c;
+  --radius:10px;--radius-lg:14px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.site-header{background:var(--navy);padding:16px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;border-bottom:2px solid rgba(240,192,64,.25)}
+.header-logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:.3px}
+.header-logo span{color:var(--gold)}
+.wrapper{max-width:1000px;margin:0 auto;padding:24px 20px 60px}
+.section-label-wrap{margin:28px 0 14px;display:flex;align-items:center;gap:0;}
+.section-label-text{background:var(--navy);color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 18px;border-radius:8px 0 0 8px;white-space:nowrap;}
+.section-label-line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy2),transparent);border-radius:0 2px 2px 0;}
+.serie-accordion{margin-bottom:14px;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(11,42,60,.06);}
+.serie-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--white);cursor:pointer;transition:background .15s;user-select:none;}
+.serie-header:hover{background:#f7fafc;}
+.serie-header.open{background:#f0f4f8;}
+.serie-header-left{display:flex;align-items:center;gap:12px;}
+.serie-logos{display:flex;align-items:center;gap:4px;}
+.serie-logo{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;border:1px solid var(--border);}
+.serie-title{font-size:14px;font-weight:700;color:var(--navy);}
+.serie-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+.serie-header-right{display:flex;align-items:center;gap:10px;}
+.serie-score-badge{font-size:12px;font-weight:700;background:#eef2f7;color:var(--navy);padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.serie-arrow{font-size:12px;color:var(--muted);transition:transform .2s;}
+.serie-header.open .serie-arrow{transform:rotate(180deg);}
+.serie-body{display:none;border-top:1px solid var(--border);background:var(--bg);}
+.serie-body.open{display:block;}
+.serie-tips-section{border-bottom:3px solid var(--border);}
+.serie-tips-title{font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;padding:10px 18px;background:linear-gradient(135deg,var(--navy),var(--navy2));}
+.serie-tips-players{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.serie-tips-player{padding:14px 16px;border-right:1px solid var(--border);background:var(--white);}
+.serie-tips-player:last-child{border-right:none;}
+.serie-tips-player-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.serie-tips-player-credit{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.tip-block{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #eef2f7;}
+.tip-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.tip-block-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.winner-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.winner-btn{padding:8px 6px;background:#eef2f7;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;transition:all .15s;}
+.winner-btn:hover{background:#e2e8f0;border-color:#b0c4d8;}
+.winner-btn.selected{background:var(--navy);border-color:var(--navy);color:#fff;}
+.winner-btn.selected .wb-odds{color:#7ab0cc;}
+.wb-name{font-size:11px;font-weight:700;display:block;line-height:1.3;}
+.wb-odds{font-size:11px;color:var(--muted);display:block;margin-top:2px;}
+.games-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.games-btn{padding:6px 12px;background:#eef2f7;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:var(--navy);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.games-btn:hover{background:#e2e8f0;border-color:#b0c4d8;}
+.games-btn.selected{background:var(--navy);border-color:var(--navy);color:#fff;}
+.games-btn.selected .gb-odds{color:#7ab0cc;}
+.gb-num{font-size:12px;font-weight:700;}
+.gb-odds{font-size:10px;color:var(--muted);}
+.tip-amount-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.tip-amount-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.tip-summary{font-size:12px;margin:6px 0 8px;min-height:18px;display:flex;justify-content:space-between;}
+.tip-summary .win-amount{font-weight:700;color:var(--green);}
+.tip-summary .odds-val{font-weight:700;color:var(--navy2);}
+.bet-input{width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;transition:border-color .15s}
+.bet-input:focus{outline:none;border-color:var(--navy2)}
+.bet-btn{background:var(--green);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background .15s;width:100%;padding:8px;}
+.bet-btn:hover{background:#219a52}
+.locked-badge{font-size:11px;font-weight:600;color:#27ae60;background:#eafaf1;border-radius:6px;padding:4px 10px;white-space:nowrap;display:inline-block;margin-bottom:6px;}
+.loading{padding:60px;text-align:center;color:var(--muted);font-size:14px;}
+.no-data{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:48px 24px;text-align:center;color:var(--muted);font-size:14px;}
+@media(max-width:600px){
+  .serie-tips-players{grid-template-columns:1fr;}
+  .serie-tips-player{border-right:none;border-top:1px solid var(--border);}
+  .serie-tips-player:first-child{border-top:none;}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js" defer></script>
+<script src="./menu.js" defer></script>
+
+<div class="site-header">
+  <div class="header-logo">🏅 <span>Sázky – Olympiáda</span></div>
+</div>
+
+<div class="wrapper">
+  <div id="mainContent"><div class="loading">Načítám...</div></div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase = createClient(
+  "https://qaocbodrflsaerxntfui.supabase.co",
+  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+)
+
+const OLYMPIADA_COMPETITION_ID = "c85830b0-612f-4390-88de-0b8775430460"
+const LOGOS = "./logos/"
+const START_RATING = 1000
+const K_FORM = 120
+const PLAYOFF_MARGIN = 1.10
+const MULTIPLIER = 2.0
+
+const SERIE_PHASES = [
+  { label:"🔵 Kvalifikace nasazených", stages:["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"], winsNeeded:2 },
+  { label:"🟣 Kvalifikace", stages:["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"], winsNeeded:2 },
+]
+
+let teamsMap={}, players={}, specialBets=[], allPlayedMatches=[], formRatings={}, stageMap={}
+const winnerState={}, gamesState={}
+
+function calculateFormRatings(matches){
+  const ratings={}, fr={}
+  Object.keys(teamsMap).forEach(id=>{ratings[id]=START_RATING; fr[id]=START_RATING})
+  const formHistory={}
+  matches.forEach(m=>{
+    const h=m.home_team, a=m.away_team
+    if(!fr[h]||!fr[a]) return
+    const hg=Number(m.home_score), ag=Number(m.away_score)
+    const sH=hg>ag?1:0, sA=ag>hg?1:0
+    function upd(tid, oid, score){
+      const cur=fr[tid], opp=fr[oid]
+      const exp=1/(1+Math.pow(10,(opp-cur)/400))
+      const ch=K_FORM*(score-exp)
+      if(!formHistory[tid]) formHistory[tid]=[]
+      formHistory[tid].push(ch)
+      if(formHistory[tid].length>5) formHistory[tid].shift()
+      fr[tid]=Math.round(START_RATING+formHistory[tid].reduce((a,b)=>a+Math.round(b),0))
+    }
+    upd(h,a,sH); upd(a,h,sA)
+    const rH=ratings[h]||1000, rA=ratings[a]||1000
+    ratings[h]=Math.round(rH+K_FORM*(sH-(1/(1+Math.pow(10,(rA-rH)/400)))))
+    ratings[a]=Math.round(rA+K_FORM*(sA-(1/(1+Math.pow(10,(rH-rA)/400)))))
+  })
+  return { elo:ratings, forma:fr }
+}
+
+function calcSeriesOdds(homeId, awayId){
+  const hElo=formRatings.elo?.[homeId]||1000
+  const aElo=formRatings.elo?.[awayId]||1000
+  const hStr=Math.pow(10, hElo/400)
+  const aStr=Math.pow(10, aElo/400)
+  const probH=hStr/(hStr+aStr)
+  const probA=1-probH
+  return {
+    home: Math.round((1/probH)*PLAYOFF_MARGIN*MULTIPLIER*100)/100,
+    away: Math.round((1/probA)*PLAYOFF_MARGIN*MULTIPLIER*100)/100,
+    probHome: Math.round(probH*100),
+    probAway: Math.round(probA*100),
+  }
+}
+
+function calcGamesOdds(homeId, awayId, winsNeeded){
+  const hElo=formRatings.elo?.[homeId]||1000
+  const aElo=formRatings.elo?.[awayId]||1000
+  const hStr=Math.pow(10, hElo/400)
+  const aStr=Math.pow(10, aElo/400)
+  const probH=hStr/(hStr+aStr), probA=1-probH
+  const maxGames=winsNeeded*2-1
+  function binom(n,r){ if(r>n) return 0; let res=1; for(let i=0;i<r;i++) res=res*(n-i)/(i+1); return Math.round(res) }
+  function seriesProb(k){
+    if(k<winsNeeded||k>maxGames) return 0
+    const hLosses=k-winsNeeded, aLosses=k-winsNeeded
+    let p=0
+    p+=binom(k-1,winsNeeded-1)*Math.pow(probH,winsNeeded)*Math.pow(probA,hLosses)
+    if(hLosses!==aLosses||true){
+      p+=binom(k-1,winsNeeded-1)*Math.pow(probA,winsNeeded)*Math.pow(probH,aLosses)
+    }
+    return p
+  }
+  const probs={}, odds={}
+  let total=0
+  for(let k=winsNeeded;k<=maxGames;k++){ probs[k]=seriesProb(k); total+=probs[k] }
+  if(total===0) return {}
+  for(let k=winsNeeded;k<=maxGames;k++){
+    if(!probs[k]) continue
+    odds[k]=Math.round((1.12/(probs[k]/total))*100)/100
+  }
+  return odds
+}
+
+function getSerieWinnerBet(playerId, stageId){ return specialBets.find(b=>b.player_id===playerId&&b.type===`serie_winner_${stageId}`) }
+function getSerieGamesBet(playerId, stageId){ return specialBets.find(b=>b.player_id===playerId&&b.type===`serie_games_${stageId}`) }
+
+window.toggleSerie=function(id){
+  const body=document.getElementById(`serie-body-${id}`)
+  const header=document.getElementById(`serie-header-${id}`)
+  if(!body||!header) return
+  const isOpen=body.classList.contains("open")
+  body.classList.toggle("open",!isOpen)
+  header.classList.toggle("open",!isOpen)
+}
+
+window.serieSelectWinner=function(stageId, playerKey, teamId){
+  const key=`sw_${stageId}_${playerKey}`
+  winnerState[key]=winnerState[key]===teamId?null:teamId
+  document.querySelectorAll(`.winner-btn[data-stage="${stageId}"][data-player="${playerKey}"]`).forEach(btn=>{
+    btn.classList.toggle("selected", btn.dataset.team===winnerState[key])
+  })
+  updateWinnerSummary(stageId, playerKey)
+}
+
+window.updateWinnerAmount=function(stageId, playerKey){ updateWinnerSummary(stageId, playerKey) }
+
+function updateWinnerSummary(stageId, playerKey){
+  const sel=winnerState[`sw_${stageId}_${playerKey}`]
+  const odds=winnerState[`sw_odds_${stageId}_${playerKey}`]||{}
+  const summaryEl=document.getElementById(`winner_summary_${stageId}_${playerKey}`)
+  const amountEl=document.getElementById(`winner_amount_${stageId}_${playerKey}`)
+  if(!summaryEl||!amountEl) return
+  const amount=Number(amountEl.value)
+  if(!sel){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber tým</span>'; return }
+  const o=odds[sel]||1
+  summaryEl.innerHTML=amount
+    ?`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*o)} Kč</span>`
+    :`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
+}
+
+window.placeWinnerBet=async function(stageId, playerKey){
+  const sel=winnerState[`sw_${stageId}_${playerKey}`]
+  const odds=winnerState[`sw_odds_${stageId}_${playerKey}`]||{}
+  const player=players[playerKey==="kubele"?"Kubele":"Pici"]
+  const amount=Number(document.getElementById(`winner_amount_${stageId}_${playerKey}`)?.value||0)
+  if(!sel) return alert("Vyber tým")
+  if(!amount||amount<=0) return alert("Zadej částku")
+  if(player.credit<amount) return alert("Nedostatek kreditu")
+  const o=odds[sel]||1
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({
+    player_id:player.id, type:`serie_winner_${stageId}`,
+    target_id:sel, odds:o, amount, potential_win:amount*o, status:"pending"
+  }).select().single()
+  const team=teamsMap[sel]
+  await supabase.from("credit_history").insert({
+    player_id:player.id, type:"bet",
+    description:`Sázka na postup v sérii — ${team?.name||sel}`,
+    amount:-amount, credit_before:player.credit, credit_after:newCredit,
+    bet_id:betData?.id||null, source:"bets_special"
+  })
+  load()
+}
+
+window.serieSelectGames=function(stageId, playerKey, games){
+  const key=`sg_${stageId}_${playerKey}`
+  gamesState[key]=gamesState[key]==games?null:games
+  document.querySelectorAll(`.games-btn[data-stage="${stageId}"][data-player="${playerKey}"]`).forEach(btn=>{
+    btn.classList.toggle("selected", Number(btn.dataset.games)===gamesState[key])
+  })
+  updateGamesSummary(stageId, playerKey)
+}
+
+window.updateGamesAmount=function(stageId, playerKey){ updateGamesSummary(stageId, playerKey) }
+
+function updateGamesSummary(stageId, playerKey){
+  const sel=gamesState[`sg_${stageId}_${playerKey}`]
+  const odds=gamesState[`sg_odds_${stageId}_${playerKey}`]||{}
+  const summaryEl=document.getElementById(`games_summary_${stageId}_${playerKey}`)
+  const amountEl=document.getElementById(`games_amount_${stageId}_${playerKey}`)
+  if(!summaryEl||!amountEl) return
+  const amount=Number(amountEl.value)
+  if(!sel){ summaryEl.innerHTML='<span style="color:#aaa;">Vyber počet zápasů</span>'; return }
+  const o=odds[sel]||1
+  summaryEl.innerHTML=amount
+    ?`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span class="win-amount">Výhra: ${Math.round(amount*o)} Kč</span>`
+    :`<span class="odds-val">Kurz: ${o.toFixed(2)}</span><span style="color:#aaa;">Zadej částku</span>`
+}
+
+window.placeGamesBet=async function(stageId, playerKey){
+  const sel=gamesState[`sg_${stageId}_${playerKey}`]
+  const odds=gamesState[`sg_odds_${stageId}_${playerKey}`]||{}
+  const player=players[playerKey==="kubele"?"Kubele":"Pici"]
+  const amount=Number(document.getElementById(`games_amount_${stageId}_${playerKey}`)?.value||0)
+  if(!sel) return alert("Vyber počet zápasů")
+  if(!amount||amount<=0) return alert("Zadej částku")
+  if(player.credit<amount) return alert("Nedostatek kreditu")
+  const o=odds[sel]||1
+  const newCredit=player.credit-amount
+  await supabase.from("players").update({credit:newCredit}).eq("id",player.id)
+  const{data:betData}=await supabase.from("bets_special").insert({
+    player_id:player.id, type:`serie_games_${stageId}`,
+    target_id:stageId, tip_key:String(sel), odds:o, amount, potential_win:amount*o, status:"pending"
+  }).select().single()
+  await supabase.from("credit_history").insert({
+    player_id:player.id, type:"bet",
+    description:`Sázka na počet zápasů v sérii — ${sel} zápasů`,
+    amount:-amount, credit_before:player.credit, credit_after:newCredit,
+    bet_id:betData?.id||null, source:"bets_special"
+  })
+  load()
+}
+
+function renderSeriePlayerTips(stageId, playerKey, player, home, away, seriesOdds, gamesOdds, winsNeeded){
+  if(!player) return ""
+  const kubeName=playerKey==="kubele"?"Kubele":"Pici"
+  const existingWinner=getSerieWinnerBet(player.id, stageId)
+  const existingGames=getSerieGamesBet(player.id, stageId)
+
+  let winnerBlock=""
+  if(existingWinner){
+    const team=teamsMap[existingWinner.target_id]
+    winnerBlock=`<div class="tip-block">
+      <div class="tip-block-label">Kdo postoupí?</div>
+      <span class="locked-badge">✓ ${team?.name||"?"} · kurz ${existingWinner.odds} · ${existingWinner.amount} Kč → ${Math.round(existingWinner.potential_win)} Kč</span>
+    </div>`
+  } else {
+    winnerBlock=`<div class="tip-block">
+      <div class="tip-block-label">Kdo postoupí?</div>
+      <div class="winner-btns">
+        <div class="winner-btn" data-stage="${stageId}" data-player="${playerKey}" data-team="${home.id}"
+          onclick="serieSelectWinner('${stageId}','${playerKey}','${home.id}')">
+          <span class="wb-name">${home.name}</span>
+          <span class="wb-odds">${seriesOdds.home.toFixed(2)} · ${seriesOdds.probHome}%</span>
+        </div>
+        <div class="winner-btn" data-stage="${stageId}" data-player="${playerKey}" data-team="${away.id}"
+          onclick="serieSelectWinner('${stageId}','${playerKey}','${away.id}')">
+          <span class="wb-name">${away.name}</span>
+          <span class="wb-odds">${seriesOdds.away.toFixed(2)} · ${seriesOdds.probAway}%</span>
+        </div>
+      </div>
+      <div class="tip-amount-row">
+        <span class="tip-amount-label">Částka:</span>
+        <input class="bet-input" id="winner_amount_${stageId}_${playerKey}" type="number" min="1" placeholder="Kč"
+          oninput="updateWinnerAmount('${stageId}','${playerKey}')">
+      </div>
+      <div class="tip-summary" id="winner_summary_${stageId}_${playerKey}"><span style="color:#aaa;">Vyber tým</span></div>
+      <button class="bet-btn" onclick="placeWinnerBet('${stageId}','${playerKey}')">🎲 Vsadit — postup</button>
+    </div>`
+  }
+
+  let gamesBlock=""
+  if(existingGames){
+    gamesBlock=`<div class="tip-block">
+      <div class="tip-block-label">Na kolik zápasů?</div>
+      <span class="locked-badge">✓ ${existingGames.tip_key} zápasů · kurz ${existingGames.odds} · ${existingGames.amount} Kč → ${Math.round(existingGames.potential_win)} Kč</span>
+    </div>`
+  } else {
+    const gamesBtnsHtml=Object.entries(gamesOdds).map(([k,o])=>`
+      <button class="games-btn" data-stage="${stageId}" data-player="${playerKey}" data-games="${k}"
+        onclick="serieSelectGames('${stageId}','${playerKey}',${k})">
+        <span class="gb-num">${k} zápasů</span>
+        <span class="gb-odds">${o.toFixed(2)}</span>
+      </button>`).join("")
+    gamesBlock=`<div class="tip-block">
+      <div class="tip-block-label">Na kolik zápasů?</div>
+      <div class="games-btns">${gamesBtnsHtml||'<span style="color:#aaa;font-size:12px;">Nelze vypočítat</span>'}</div>
+      <div class="tip-amount-row">
+        <span class="tip-amount-label">Částka:</span>
+        <input class="bet-input" id="games_amount_${stageId}_${playerKey}" type="number" min="1" placeholder="Kč"
+          oninput="updateGamesAmount('${stageId}','${playerKey}')">
+      </div>
+      <div class="tip-summary" id="games_summary_${stageId}_${playerKey}"><span style="color:#aaa;">Vyber počet zápasů</span></div>
+      <button class="bet-btn" onclick="placeGamesBet('${stageId}','${playerKey}')">🎲 Vsadit — počet zápasů</button>
+    </div>`
+  }
+
+  return `<div class="serie-tips-player">
+    <div class="serie-tips-player-name">${kubeName}</div>
+    <div class="serie-tips-player-credit">💰 ${Math.round(player.credit)} Kč</div>
+    ${winnerBlock}
+    ${gamesBlock}
+  </div>`
+}
+
+function renderPhase(phase, matchesByStage){
+  let html=`<div class="section-label-wrap">
+    <div class="section-label-text">${phase.label}</div>
+    <div class="section-label-line"></div>
+  </div>`
+
+  phase.stages.forEach(stageName=>{
+    const sid=stageMap[stageName]
+    if(!sid) return
+    const matches=matchesByStage[sid]||[]
+    if(!matches.length) return
+
+    const firstMatch=matches[0]
+    const home=teamsMap[firstMatch.home_team]
+    const away=teamsMap[firstMatch.away_team]
+    if(!home||!away) return
+
+    const winsNeeded=phase.winsNeeded
+    const seriesOdds=calcSeriesOdds(home.id, away.id)
+    const gamesOdds=calcGamesOdds(home.id, away.id, winsNeeded)
+
+    ;["kubele","pici"].forEach(pk=>{
+      winnerState[`sw_odds_${sid}_${pk}`]={[home.id]:seriesOdds.home,[away.id]:seriesOdds.away}
+      gamesState[`sg_odds_${sid}_${pk}`]=gamesOdds
+    })
+
+    let wHome=0, wAway=0
+    matches.forEach(m=>{
+      if(m.home_score==null) return
+      if(Number(m.home_score)>Number(m.away_score)) wHome++
+      else wAway++
+    })
+    const playedCount=matches.filter(m=>m.home_score!=null).length
+    const scoreStr=playedCount>0?`${wHome} : ${wAway}`:"Nezačalo"
+
+    const kubele=players["Kubele"]
+    const pici=players["Pici"]
+
+    html+=`<div class="serie-accordion">
+      <div class="serie-header" id="serie-header-${sid}" onclick="toggleSerie('${sid}')">
+        <div class="serie-header-left">
+          <div class="serie-logos">
+            ${home.logo?`<img class="serie-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'">`:''}
+            ${away.logo?`<img class="serie-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">`:''}
+          </div>
+          <div>
+            <div class="serie-title">${home.name} vs ${away.name}</div>
+            <div class="serie-subtitle">Na ${winsNeeded} vítězné · ${playedCount} odehráno</div>
+          </div>
+        </div>
+        <div class="serie-header-right">
+          <span class="serie-score-badge">Série: ${scoreStr}</span>
+          <span class="serie-arrow">▼</span>
+        </div>
+      </div>
+      <div class="serie-body" id="serie-body-${sid}">
+        <div class="serie-tips-section">
+          <div class="serie-tips-title">🎲 Tipy na sérii</div>
+          <div class="serie-tips-players">
+            ${renderSeriePlayerTips(sid,"kubele",kubele,home,away,seriesOdds,gamesOdds,winsNeeded)}
+            ${renderSeriePlayerTips(sid,"pici",  pici,  home,away,seriesOdds,gamesOdds,winsNeeded)}
+          </div>
+        </div>
+      </div>
+    </div>`
+  })
+
+  return html
+}
+
+async function load(){
+  const{data:teams}=await supabase.from("teams").select("*")
+  ;(teams||[]).forEach(t=>{ teamsMap[t.id]=t })
+
+  const{data:seasons}=await supabase.from("seasons").select("*")
+    .eq("competition_id",OLYMPIADA_COMPETITION_ID).order("created_at",{ascending:false})
+  const currentSeason=seasons?.[0]
+  if(!currentSeason){
+    document.getElementById("mainContent").innerHTML='<div class="no-data">Žádná olympijská sezóna.</div>'
+    return
+  }
+
+  const{data:stages}=await supabase.from("stages").select("*").eq("season_id",currentSeason.id)
+  stageMap={}
+  ;(stages||[]).forEach(s=>{ stageMap[s.name]=s.id })
+
+  const allStageIds=(stages||[]).map(s=>s.id)
+  const{data:matches}=allStageIds.length
+    ? await supabase.from("matches").select("*").in("stage_id",allStageIds).order("round",{ascending:true})
+    : {data:[]}
+
+  const matchesByStage={}
+  ;(matches||[]).forEach(m=>{
+    if(!matchesByStage[m.stage_id]) matchesByStage[m.stage_id]=[]
+    matchesByStage[m.stage_id].push(m)
+  })
+
+  const playedMatches=(matches||[]).filter(m=>m.home_score!=null)
+  formRatings=calculateFormRatings(playedMatches)
+
+  const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
+  ;(p||[]).forEach(pl=>players[pl.name]=pl)
+
+  const{data:sb}=await supabase.from("bets_special").select("*").eq("status","pending")
+  specialBets=sb||[]
+
+  let html=""
+  SERIE_PHASES.forEach(phase=>{
+    html+=renderPhase(phase, matchesByStage)
+  })
+
+  if(!html) html='<div class="no-data">Žádné série k zobrazení.</div>'
+  document.getElementById("mainContent").innerHTML=html
+}
+
+load()
+</script>
+</body>
+</html>
