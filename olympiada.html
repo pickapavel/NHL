@@ -453,35 +453,7 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
   </div>`
 }
 
-  function scoreOrDots(score, won){
-    if(score===null) return `<span style="display:flex;gap:3px;align-items:center;margin-right:6px;"><div class="gdot gdot-e"></div><div class="gdot gdot-e"></div></span>`
-    const color=won?'#16a34a':'#dc2626'
-    return `<span style="font-size:18px;font-weight:800;color:${color};min-width:28px;text-align:right;margin-right:6px;">${score}</span>`
-  }
-
-  const t1won=lastMatch&&t1score>t2score
-  const t2won=lastMatch&&t2score>t1score
-
-  return `
-  <div class="series-card">
-    <div class="series-card-header ${schClass}">
-      <span>${stageName}</span>
-      <span class="series-state">${stateText}</span>
-    </div>
-    <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
-      ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      ${scoreOrDots(t1score, t1won)}
-    </div>
-    <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
-      ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      ${scoreOrDots(t2score, t2won)}
-    </div>
-    ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
-  </div>`
-}
-
+ 
 function buildRozpisBtn(stageName, matches){
   const rid='rozpis-'+stageName.replace(/[^a-z0-9]/gi,'')
   const rowsHtml=matches.map(m=>{
