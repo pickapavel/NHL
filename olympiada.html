@@ -539,15 +539,17 @@ const lastMatch=played[played.length-1]||null
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
 <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      <div style="display:flex;gap:3px;align-items:center;margin-left:auto;margin-right:8px;">
+   <div style="display:flex;gap:3px;align-items:center;margin-left:auto;margin-right:8px;min-width:${played.length*22}px;justify-content:flex-end;">
         ${played.map(m=>{
           const isT1Home=m.home_team===t1id
           const t1g=isT1Home?Number(m.home_score):Number(m.away_score)
           const t2g=isT1Home?Number(m.away_score):Number(m.home_score)
-          const t1won=t1g>t2g
-          return `<span style="font-size:12px;font-weight:800;color:${t1won?'#16a34a':'#dc2626'};">${t1g}</span>`
-        }).join('<span style="color:#ddd;font-size:10px;margin:0 1px;">·</span>')}
+          const t2won=t2g>t1g
+          return `<span style="font-size:12px;font-weight:800;color:${t2won?'#16a34a':'#dc2626'};width:20px;text-align:center;">${t2g}</span>`
+        }).join('')}
       </div>
+      <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w2}</span>
+      <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}" style="width:20px;text-align:center;">${w1}</span>
       <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
