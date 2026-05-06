@@ -546,13 +546,32 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      <div class="game-dots">${dots(w1,w2,winsNeeded)}</div>
+ <div style="display:flex;gap:4px;align-items:center;margin-right:4px;">
+        ${played.map(m=>{
+          const isT1Home=m.home_team===t1id
+          const hg=Number(m.home_score),ag=Number(m.away_score)
+          const t1g=isT1Home?hg:ag, t2g=isT1Home?ag:hg
+          const t1won=t1g>t2g
+          return `<span style="font-size:11px;font-weight:800;padding:2px 6px;border-radius:5px;background:${t1won?'#dcfce7':'#fee2e2'};color:${t1won?'#166534':'#991b1b'};">${t1g}:${t2g}</span>`
+        }).join('')}
+      </div>
       <span class="st-wins${w1>=winsNeeded?" w":winner&&w1<winsNeeded?" l":""}">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
-      <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      <div class="game-dots">${dots(w2,w1,winsNeeded)}</div>
+      <span class="st-name${!t2id?" tbd":""}">
+        ${t2}
+        ${t2id&&teamsMap[t2id]?.rating_overall?`<span style="font-size:9px;font-weight:700;color:#7ab0cc;margin-left:4px;">⭐${teamsMap[t2id].rating_overall}</span>`:''}
+      </span>
+      <div style="display:flex;gap:4px;align-items:center;margin-right:4px;">
+        ${played.map(m=>{
+          const isT1Home=m.home_team===t1id
+          const hg=Number(m.home_score),ag=Number(m.away_score)
+          const t1g=isT1Home?hg:ag, t2g=isT1Home?ag:hg
+          const t2won=t2g>t1g
+          return `<span style="font-size:11px;font-weight:800;padding:2px 6px;border-radius:5px;background:${t2won?'#dcfce7':'#fee2e2'};color:${t2won?'#166534':'#991b1b'};">${t2g}:${t1g}</span>`
+        }).join('')}
+      </div>
       <span class="st-wins${w2>=winsNeeded?" w":winner&&w2<winsNeeded?" l":""}">${w2}</span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
