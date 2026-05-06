@@ -553,9 +553,12 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:14px;font-weight:800;background:${w2>=winsNeeded?'#16a34a':winner&&w2<winsNeeded?'#f0f0f0':'#0b2a3c'};color:${w2>=winsNeeded?'#fff':winner&&w2<winsNeeded?'#bbb':'#fff'};">${w2}</span>
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;">
-      <a href="statistiky-zapasu.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Statistiky</a>
-      <a href="vsad-si.html?id=${matches[0]?.id||''}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;font-size:12px;font-weight:700;color:#166534;background:#f0fdf4;text-decoration:none;">🎲 Vsaď si</a>
+   <div style="border-top:1px solid #eef0f3;">
+      ${matches.map((m,i)=>`
+        <div style="display:grid;grid-template-columns:1fr 1fr;${i>0?'border-top:1px solid #eef0f3;':''}">
+          <a href="statistiky-zapasu.html?id=${m.id}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;font-size:11px;font-weight:700;color:#1a5276;background:#f7fbff;text-decoration:none;border-right:1px solid #eef0f3;">📊 Zápas ${i+1}</a>
+          <a href="vsad-si.html?id=${m.id}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;font-size:11px;font-weight:700;color:#166534;background:#f0fdf4;text-decoration:none;">🎲 Vsaď si</a>
+        </div>`).join('')}
     </div>
   </div>`
 }
