@@ -554,8 +554,7 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     </div>
 ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
  <div style="border-top:1px solid #eef0f3;">
-<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▼')?'📋 Rozpis zápasů ▲':'📋 Rozpis zápasů ▼'" style="width:100%;padding:9px;font-size:12px;font-weight:700;color:#1a5276;background:#f7fbff;border:none;cursor:pointer;">📋 Rozpis zápasů ▼</button>      <div style="display:none;border-top:1px solid #eef0f3;">
-        ${matches.map((m,i)=>{
+<a href="vsad-si.html?id=${matches[0]?.id||''}" style="display:block;width:100%;padding:9px;font-size:12px;font-weight:700;color:#166634;background:#f0fdf4;text-align:center;text-decoration:none;border-top:1px solid #eef0f3;">🎲 Vsaď si</a>        ${matches.map((m,i)=>{
           const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
           const played=isPlayed(m)
           const hg=played?m.home_score:null, ag=played?m.away_score:null
