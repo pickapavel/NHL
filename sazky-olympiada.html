@@ -391,14 +391,18 @@ function renderPhase(phase, matchesByStage){
       gamesState[`sg_odds_${sid}_${pk}`]=gamesOdds
     })
 
-    let wHome=0, wAway=0
-    matches.forEach(m=>{
-      if(m.home_score==null) return
-      if(Number(m.home_score)>Number(m.away_score)) wHome++
-      else wAway++
-    })
-    const playedCount=matches.filter(m=>m.home_score!=null).length
-    const scoreStr=playedCount>0?`${wHome} : ${wAway}`:"Nezačalo"
+let wHome=0, wAway=0
+const homeTeamId=home.id, awayTeamId=away.id
+matches.forEach(m=>{
+  if(m.home_score==null) return
+  const hg=Number(m.home_score), ag=Number(m.away_score)
+  const matchHomeWon=hg>ag
+  const matchHomeIsSerieHome=m.home_team===homeTeamId
+  if(matchHomeIsSerieHome ? matchHomeWon : !matchHomeWon) wHome++
+  else wAway++
+})
+const playedCount=matches.filter(m=>m.home_score!=null).length
+const scoreStr=playedCount>0?`${wHome} : ${wAway}`:"Nezačalo"
 
     const kubele=players["Kubele"]
     const pici=players["Pici"]
