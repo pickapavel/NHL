@@ -47,9 +47,11 @@ h1{margin-bottom:5px;}
 .nav-tab{padding:8px 18px;border-radius:20px;border:2px solid #c8d8e8;background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#1a3a5c;transition:all .15s;}
 .nav-tab:hover{background:#dce8f5;}
 .nav-tab.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
+.nav-tab.olympiada.active{background:#b8860b;border-color:#b8860b;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 .subsection-title{font-size:16px;font-weight:700;color:#1a5276;margin:20px 0 10px;padding:8px 12px;background:#e8f4fd;border-radius:8px;border-left:3px solid #2f9ec9;}
+.subsection-title.gold{color:#7a5200;background:#fff8e1;border-left-color:#f0c040;}
 @media(max-width:600px){
  .betRow{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0;}
  .betHeader{display:none;}
@@ -65,55 +67,67 @@ h1{margin-bottom:5px;}
  <h1>Admin – Vyhodnocení sázek</h1>
  <p class="subtitle">Vyhodnocuj pending sázky a uzavírej kategorie či jednotlivé týmy pro další tipování.</p>
  <div class="lock-info">🔒 Uzavřená kategorie nebo tým = hráči na ni nemohou vsadit. Stav se sdílí v reálném čase se stránkou sázek.</div>
-
+ 
  <div class="nav-tabs">
   <div class="nav-tab active" onclick="switchTab('zakladni',this)">📋 Základní část</div>
   <div class="nav-tab" onclick="switchTab('playoff',this)">🏆 Playoff</div>
+  <div class="nav-tab olympiada" onclick="switchTab('olympiada',this)">🏅 Olympiáda</div>
  </div>
-
+ 
  <div class="tab-content active" id="tab-zakladni">
   <div id="app-zakladni">Načítám...</div>
  </div>
  <div class="tab-content" id="tab-playoff">
   <div id="app-playoff">Načítám...</div>
  </div>
+ <div class="tab-content" id="tab-olympiada">
+  <div id="app-olympiada">Načítám...</div>
+ </div>
 </div>
 <div class="toast" id="toast"></div>
-
+ 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
+ 
 const supabase = createClient(
  "https://qaocbodrflsaerxntfui.supabase.co",
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
-
+ 
+// Stage ID patřící olympiádě
+const OLYMPIADA_STAGE_IDS = new Set([
+ '223e7e0c-f166-4e1e-94b8-93e46e731e3d',
+ '03462937-68d8-4f07-b78b-502c05f53784',
+ 'a366340d-761a-49bb-8101-e3cf9d6c7eac',
+ '5027012c-27fd-4470-a3ad-80c97fcbccbd',
+])
+ 
 let bets=[], players={}, teams={}, stages={}, locks={}
-
+ 
 window.switchTab = function(tab, el){
  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'))
  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'))
  el.classList.add('active')
  document.getElementById('tab-'+tab).classList.add('active')
 }
-
+ 
 function catKey(type){ return `cat:${type}` }
 function teamKey(type, teamId){ return `team:${type}:${teamId}` }
 function isCatLocked(type){ return !!locks[catKey(type)] }
 function isTeamLocked(type, teamId){ return !!locks[teamKey(type, teamId)] }
 function isLocked(type, teamId){ return isCatLocked(type) || isTeamLocked(type, teamId) }
-
+ 
 async function loadLocks(){
  const { data } = await supabase.from("bet_locks").select("*")
  locks = {}
  ;(data||[]).forEach(row => { if(row.locked) locks[row.id] = true })
 }
-
+ 
 async function setLock(key, value){
  await supabase.from("bet_locks").upsert({ id: key, locked: value, updated_at: new Date().toISOString() })
  locks[key] = value
 }
-
+ 
 window.toggleCategoryLock = async function(type){
  const key = catKey(type)
  const next = !isCatLocked(type)
@@ -121,7 +135,7 @@ window.toggleCategoryLock = async function(type){
  render()
  showToast(next ? "🔒 Kategorie uzavřena pro tipování" : "🔓 Kategorie otevřena pro tipování")
 }
-
+ 
 window.toggleTeamLock = async function(type, teamId){
  const key = teamKey(type, teamId)
  const next = !isTeamLocked(type, teamId)
@@ -129,31 +143,42 @@ window.toggleTeamLock = async function(type, teamId){
  render()
  showToast(next ? "🔒 Tým uzavřen pro tipování" : "🔓 Tým otevřen pro tipování")
 }
-
+ 
 async function load(){
  document.getElementById("app-zakladni").innerHTML = "Načítám..."
  document.getElementById("app-playoff").innerHTML = "Načítám..."
+ document.getElementById("app-olympiada").innerHTML = "Načítám..."
  await loadLocks()
-
+ 
  const { data: p } = await supabase.from("players").select("*")
  ;(p||[]).forEach(pl => players[pl.id] = pl)
-
+ 
  const { data: t } = await supabase.from("teams").select("*")
  ;(t||[]).forEach(tm => teams[tm.id] = tm)
-
+ 
  const { data: st } = await supabase.from("stages").select("id,name,season_id")
  ;(st||[]).forEach(s => stages[s.id] = s)
-
+ 
  const { data: b } = await supabase.from("bets_special").select("*").order("created_at",{ascending:false})
  bets = b || []
-
+ 
  render()
 }
-
+ 
 function getPlayerName(id){ return players[id]?.name||id }
 function getTeamName(id){ return teams[id]?.name||id }
 function getStageName(stageId){ return stages[stageId]?.name||stageId }
-
+ 
+// Vrátí true pokud stage patří olympiádě
+function isOlympiadaStage(stageId){ return OLYMPIADA_STAGE_IDS.has(stageId) }
+ 
+// Extrahuje stageId z typu sázky (serie_winner_XXX nebo serie_games_XXX)
+function extractStageId(type){
+ if(type?.startsWith("serie_winner_")) return type.replace("serie_winner_","")
+ if(type?.startsWith("serie_games_")) return type.replace("serie_games_","")
+ return null
+}
+ 
 function getTypLabel(type){
  if(type==="winner_regular_season")    return "Vítěz základní části"
  if(type==="nonwinner_regular_season") return "Nevítěz základní části"
@@ -172,25 +197,25 @@ function getTypLabel(type){
  if(type?.startsWith("goals_")){ return `${type.split("_")[1]}+ gólů` }
  return type
 }
-
+ 
 window.resolve = async function(betId, result){
  document.querySelectorAll(`[data-bet-id="${betId}"]`).forEach(btn => btn.disabled = true)
-
+ 
  const bet = bets.find(b => b.id === betId)
  if(!bet) return
-
+ 
  const { error: betError } = await supabase
   .from("bets_special")
   .update({ status: result === "won" ? "won" : "lost" })
   .eq("id", betId)
-
+ 
  if(betError){ showToast("❌ Chyba při ukládání statusu!"); load(); return }
-
+ 
  const { data: freshPlayer, error: playerError } = await supabase
   .from("players").select("credit").eq("id", bet.player_id).single()
-
+ 
  if(playerError || !freshPlayer){ showToast("❌ Chyba při načítání hráče!"); load(); return }
-
+ 
  if(result === "won"){
   const newCredit = freshPlayer.credit + bet.potential_win
   const { error: creditError } = await supabase
@@ -218,17 +243,17 @@ window.resolve = async function(betId, result){
    source: "bets_special"
   })
  }
-
+ 
  showToast(result === "won" ? "✅ Výhra připsána!" : "❌ Sázka označena jako prohra.")
  load()
 }
-
+ 
 function showToast(msg){
  const t=document.getElementById("toast")
  t.innerText=msg; t.classList.add("show")
  setTimeout(()=>t.classList.remove("show"),2500)
 }
-
+ 
 function renderBetRows(betList){
  if(!betList.length) return `<div class="empty">Žádné sázky.</div>`
  let html = `<div class="betRow betHeader">
@@ -236,8 +261,7 @@ function renderBetRows(betList){
  </div>`
  betList.forEach(b=>{
   const statusBadge=`<span class="badge badge-${b.status}">${b.status==="pending"?"Čeká":b.status==="won"?"Výhra":"Prohra"}</span>`
-  
-let tipLabel = '—'
+  let tipLabel = '—'
   if(b.type?.startsWith("serie_games_")){
    const stageId = b.type.replace("serie_games_","")
    const stageName = getStageName(stageId)
@@ -247,7 +271,6 @@ let tipLabel = '—'
   } else {
    tipLabel = b.target_id ? getTeamName(b.target_id) : (b.tip_key||'—')
   }
-  
   const akce=b.status==="pending"
    ?`<button class="btnWon" data-bet-id="${b.id}" onclick="resolve('${b.id}','won')">Výhra</button>
      <button class="btnLost" data-bet-id="${b.id}" onclick="resolve('${b.id}','lost')">Prohra</button>`
@@ -263,7 +286,7 @@ let tipLabel = '—'
  })
  return html
 }
-
+ 
 function renderSection(title, type, filteredBets){
  const catLocked = isCatLocked(type)
  let html = `<div class="section">
@@ -273,26 +296,26 @@ function renderSection(title, type, filteredBets){
     ${catLocked?"🔒 Uzavřeno — klikni pro otevření":"🔓 Otevřeno — klikni pro uzavření"}
    </button>
   </div>`
-
+ 
  if(filteredBets.length===0){
   html+=`<div class="card"><div class="empty">Žádné sázky.</div></div></div>`
   return html
  }
-
+ 
  const byTeam={}
  filteredBets.forEach(b=>{
   const key=b.target_id||"unknown"
   if(!byTeam[key]) byTeam[key]=[]
   byTeam[key].push(b)
  })
-
+ 
  Object.entries(byTeam).forEach(([teamId,teamBets])=>{
   const teamLocked=isLocked(type,teamId)
   const teamOnlyLocked=isTeamLocked(type,teamId)
   const teamLockLabel=catLocked
    ?"🔒 Uzavřeno (celá kategorie)"
    :teamOnlyLocked?"🔒 Uzavřeno — klikni pro otevření":"🔓 Otevřeno — klikni pro uzavření"
-
+ 
   html+=`<div class="card">
    <div class="cardHeader">
     <span>🏒 ${getTeamName(teamId)}</span>
@@ -305,7 +328,7 @@ function renderSection(title, type, filteredBets){
    <div class="betRow betHeader">
     <div>Hráč</div><div>Typ</div><div>Vsazeno</div><div>Možná výhra</div><div>Status</div><div>Akce</div>
    </div>`
-
+ 
   teamBets.forEach(b=>{
    const statusBadge=`<span class="badge badge-${b.status}">${b.status==="pending"?"Čeká":b.status==="won"?"Výhra":"Prohra"}</span>`
    const akce=b.status==="pending"
@@ -323,11 +346,11 @@ function renderSection(title, type, filteredBets){
   })
   html+=`</div>`
  })
-
+ 
  html+=`</div>`
  return html
 }
-
+ 
 function renderSerieSection(title, type, filteredBets){
  if(!filteredBets.length) return ''
  const catLocked = isCatLocked(type)
@@ -341,7 +364,7 @@ function renderSerieSection(title, type, filteredBets){
   <div class="card">${renderBetRows(filteredBets)}</div>
  </div>`
 }
-
+ 
 function render(){
  // TAB 1 — Základní část
  const winner    = bets.filter(b=>b.type==="winner_regular_season")
@@ -353,42 +376,78 @@ function render(){
   renderSection("Nevítěz základní části","nonwinner_regular_season",nonwinner)+
   renderSection("Poslední celek základní části","last_regular_season",last)+
   renderSection("Počet vstřelených gólů","goals_regular_season",goals)
-
- // TAB 2 — Playoff
+ 
+ // TAB 2 — Playoff (jen non-olympijské série)
  const winnerOverall = bets.filter(b=>b.type==="winner_playoff_overall")
  const secondOverall = bets.filter(b=>b.type==="second_playoff_overall")
  const thirdOverall  = bets.filter(b=>b.type==="third_playoff_overall")
- const serieWinnerTypes = [...new Set(bets.filter(b=>b.type?.startsWith("serie_winner_")).map(b=>b.type))]
- const serieGamesTypes  = [...new Set(bets.filter(b=>b.type?.startsWith("serie_games_")).map(b=>b.type))]
-
+ 
+ // Serie sázky — rozdělíme na playoff a olympiádu podle stageId
+ const serieWinnerTypes = [...new Set(
+  bets.filter(b=>b.type?.startsWith("serie_winner_")).map(b=>b.type)
+ )]
+ const serieGamesTypes = [...new Set(
+  bets.filter(b=>b.type?.startsWith("serie_games_")).map(b=>b.type)
+ )]
+ 
+ const playoffSerieWinnerTypes = serieWinnerTypes.filter(t=>!isOlympiadaStage(extractStageId(t)))
+ const playoffSerieGamesTypes  = serieGamesTypes.filter(t=>!isOlympiadaStage(extractStageId(t)))
+ const olympiadaSerieWinnerTypes = serieWinnerTypes.filter(t=>isOlympiadaStage(extractStageId(t)))
+ const olympiadaSerieGamesTypes  = serieGamesTypes.filter(t=>isOlympiadaStage(extractStageId(t)))
+ 
  let playoffHtml = ''
  playoffHtml += renderSection("🏆 Vítěz playoff","winner_playoff_overall",winnerOverall)
  playoffHtml += renderSection("🥈 Finalista (2. místo)","second_playoff_overall",secondOverall)
  playoffHtml += renderSection("🥉 3. místo","third_playoff_overall",thirdOverall)
-
- if(serieWinnerTypes.length){
+ 
+ if(playoffSerieWinnerTypes.length){
   playoffHtml += `<div class="subsection-title">⚔️ Vítězové sérií</div>`
-  serieWinnerTypes.forEach(type=>{
+  playoffSerieWinnerTypes.forEach(type=>{
    const stageId = type.replace("serie_winner_","")
    playoffHtml += renderSerieSection(`Vítěz série — ${getStageName(stageId)}`, type, bets.filter(b=>b.type===type))
   })
  }
-
- if(serieGamesTypes.length){
+ 
+ if(playoffSerieGamesTypes.length){
   playoffHtml += `<div class="subsection-title">🎯 Počty zápasů sérií</div>`
-  serieGamesTypes.forEach(type=>{
+  playoffSerieGamesTypes.forEach(type=>{
    const stageId = type.replace("serie_games_","")
    playoffHtml += renderSerieSection(`Počet zápasů — ${getStageName(stageId)}`, type, bets.filter(b=>b.type===type))
   })
  }
-
- if(!winnerOverall.length&&!secondOverall.length&&!thirdOverall.length&&!serieWinnerTypes.length&&!serieGamesTypes.length){
+ 
+ if(!winnerOverall.length&&!secondOverall.length&&!thirdOverall.length&&!playoffSerieWinnerTypes.length&&!playoffSerieGamesTypes.length){
   playoffHtml = `<div class="card"><div class="empty">Žádné playoff sázky.</div></div>`
  }
-
+ 
  document.getElementById("app-playoff").innerHTML = playoffHtml
+ 
+ // TAB 3 — Olympiáda
+ let olympiadaHtml = ''
+ 
+ if(olympiadaSerieWinnerTypes.length){
+  olympiadaHtml += `<div class="subsection-title gold">🥇 Vítězové kvalifikačních sérií</div>`
+  olympiadaSerieWinnerTypes.forEach(type=>{
+   const stageId = type.replace("serie_winner_","")
+   olympiadaHtml += renderSerieSection(`Vítěz — ${getStageName(stageId)}`, type, bets.filter(b=>b.type===type))
+  })
+ }
+ 
+ if(olympiadaSerieGamesTypes.length){
+  olympiadaHtml += `<div class="subsection-title gold">🎯 Počty zápasů kvalifikačních sérií</div>`
+  olympiadaSerieGamesTypes.forEach(type=>{
+   const stageId = type.replace("serie_games_","")
+   olympiadaHtml += renderSerieSection(`Počet zápasů — ${getStageName(stageId)}`, type, bets.filter(b=>b.type===type))
+  })
+ }
+ 
+ if(!olympiadaHtml){
+  olympiadaHtml = `<div class="card"><div class="empty">Žádné olympijské sázky.</div></div>`
+ }
+ 
+ document.getElementById("app-olympiada").innerHTML = olympiadaHtml
 }
-
+ 
 load()
 </script>
 </body>
