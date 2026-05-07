@@ -441,19 +441,16 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     </div>`
   }).join('')
 
-  // Pro scoreWinsHtml stačí jen wins
-  const t1score = null, t2score = null, t1won = false, t2won = false
-
-  function scoreWinsHtml(score, wins, won){
-    if(score===null) return `
-      <span style="display:flex;gap:3px;align-items:center;margin-right:6px;">
-        <div class="gdot gdot-e"></div><div class="gdot gdot-e"></div>
-      </span>
-      <span style="font-size:13px;font-weight:800;background:#e8f0f8;color:#1a5276;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;">—</span>`
-    const scoreColor=won?'#16a34a':'#dc2626'
- return `
-      <span style="font-size:13px;font-weight:700;color:${scoreColor};min-width:24px;text-align:right;margin-right:8px;">${score}</span>
-      <span style="font-size:13px;font-weight:800;background:#1a5276;color:white;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;">${wins}</span>`
+function miniScores(teamId) {
+    if (!played.length) return '<span style="color:#ccc;font-size:11px;margin-left:auto;">—</span>'
+    return '<span style="display:flex;gap:4px;align-items:center;margin-left:auto;">' +
+      played.map(m => {
+        const isHome = m.home_team === teamId
+        const my = isHome ? Number(m.home_score) : Number(m.away_score)
+        const op = isHome ? Number(m.away_score) : Number(m.home_score)
+        const won = my > op
+        return `<span style="font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:${won?'#dcfce7':'#fee2e2'};color:${won?'#16a34a':'#dc2626'};">${my}:${op}</span>`
+      }).join('') + '</span>'
   }
 
   return `
@@ -465,14 +462,15 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
     <div class="series-team ${winner===t1id?"winner":winner&&winner!==t1id?"loser":""}">
       ${t1id?logoHtml(t1id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t1id?" tbd":""}">${t1}</span>
-      ${scoreWinsHtml(t1score, w1, t1won)}
+      ${miniScores(t1id)}
+      <span style="font-size:13px;font-weight:800;background:#1a5276;color:#fff;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;margin-left:6px;">${w1}</span>
     </div>
     <div class="series-team ${winner===t2id?"winner":winner&&winner!==t2id?"loser":""}">
       ${t2id?logoHtml(t2id):'<div class="st-logo-ph">?</div>'}
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
-      ${scoreWinsHtml(t2score, w2, t2won)}
+      ${miniScores(t2id)}
+      <span style="font-size:13px;font-weight:800;background:#1a5276;color:#fff;padding:2px 8px;border-radius:6px;min-width:24px;text-align:center;margin-left:6px;">${w2}</span>
     </div>
-    ${played.length ? `<div style="background:#f7f9fb;border-top:1px solid #eee;">${matchResultsHtml}</div>` : ''}
     ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
 <a href="sazky-olympiada.html?faze=${schClass.replace('sch-','')}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#27ae60;border-top:1px solid #219a52;text-decoration:none;">🎲 Vsaď si na sérii</a>
   </div>`
