@@ -105,8 +105,8 @@ const PLAYOFF_MARGIN = 1.10
 const MULTIPLIER = 2.0
 
 const SERIE_PHASES = [
-  { label:"🔵 Kvalifikace nasazených", stages:["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"], winsNeeded:2 },
-  { label:"🟣 Kvalifikace", stages:["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"], winsNeeded:2 },
+  { faze:"kv-nas", label:"🔵 Kvalifikace nasazených", stages:["Kvalifikace nasazených - č. 1","Kvalifikace nasazených - č. 2","Kvalifikace nasazených - č. 3","Kvalifikace nasazených - č. 4"], winsNeeded:2 },
+  { faze:"kval",   label:"🟣 Kvalifikace", stages:["Kvalifikace - č. 1","Kvalifikace - č. 2","Kvalifikace - č. 3","Kvalifikace - č. 4","Kvalifikace - č. 5","Kvalifikace - č. 6"], winsNeeded:2 },
 ]
 
 let teamsMap={}, players={}, specialBets=[], allPlayedMatches=[], formRatings={}, stageMap={}
@@ -471,8 +471,13 @@ async function load(){
   const{data:sb}=await supabase.from("bets_special").select("*").eq("status","pending")
   specialBets=sb||[]
 
+const fazeParam=new URLSearchParams(window.location.search).get("faze")
+  const visiblePhases=fazeParam
+    ? SERIE_PHASES.filter(p=>p.faze===fazeParam)
+    : SERIE_PHASES
+
   let html=""
-  SERIE_PHASES.forEach(phase=>{
+  visiblePhases.forEach(phase=>{
     html+=renderPhase(phase, matchesByStage)
   })
 
