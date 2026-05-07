@@ -426,15 +426,23 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
   const t1=t1id?teamName(t1id):"?", t2=t2id?teamName(t2id):"?"
   const stateText=played.length?`${w1} : ${w2}`:"—"
 
-  const lastMatch=played[played.length-1]
-  let t1score=null,t2score=null
-  if(lastMatch){
-    const isT1Home=lastMatch.home_team===t1id
-    t1score=isT1Home?Number(lastMatch.home_score):Number(lastMatch.away_score)
-    t2score=isT1Home?Number(lastMatch.away_score):Number(lastMatch.home_score)
-  }
-  const t1won=lastMatch&&t1score>t2score
-  const t2won=lastMatch&&t2score>t1score
+// Výsledky všech odehraných zápasů
+  const matchResultsHtml = played.map(m => {
+    const isT1Home = m.home_team === t1id
+    const ms1 = isT1Home ? Number(m.home_score) : Number(m.away_score)
+    const ms2 = isT1Home ? Number(m.away_score) : Number(m.home_score)
+    const t1won_m = ms1 > ms2
+    const rt = getResultType(m)
+    const tag = rt && rt !== 'REG' ? ` <span style="font-size:9px;background:#2f9ec9;color:white;padding:1px 4px;border-radius:3px;">${rt}</span>` : ''
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 12px;font-size:12px;border-top:1px solid #f0f0f0;">
+      <span style="font-weight:${t1won_m?'700':'400'};color:${t1won_m?'#16a34a':'#aaa'};">${t1}</span>
+      <span style="font-weight:700;background:#0b2a3c;color:white;padding:2px 8px;border-radius:5px;font-size:11px;">${ms1} : ${ms2}${tag}</span>
+      <span style="font-weight:${!t1won_m?'700':'400'};color:${!t1won_m?'#16a34a':'#aaa'};">${t2}</span>
+    </div>`
+  }).join('')
+
+  // Pro scoreWinsHtml stačí jen wins
+  const t1score = null, t2score = null, t1won = false, t2won = false
 
   function scoreWinsHtml(score, wins, won){
     if(score===null) return `
@@ -464,9 +472,9 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       <span class="st-name${!t2id?" tbd":""}">${t2}</span>
       ${scoreWinsHtml(t2score, w2, t2won)}
     </div>
+    ${played.length ? `<div style="background:#f7f9fb;border-top:1px solid #eee;">${matchResultsHtml}</div>` : ''}
     ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
 <a href="sazky-olympiada.html?faze=${schClass.replace('sch-','')}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#27ae60;border-top:1px solid #219a52;text-decoration:none;">🎲 Vsaď si na sérii</a>
-  </div>`
 }
 
 function buildRozpisBtn(stageName, matches){
