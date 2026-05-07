@@ -133,6 +133,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
 .rozpis-grid{display:grid;gap:10px;margin-bottom:16px;}
 .rozpis-btn{width:100%;padding:10px;font-size:12px;font-weight:700;color:white;background:linear-gradient(135deg,#1a5276,#2f9ec9);border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .rozpis-btn:hover{background:linear-gradient(135deg,#0b2a3c,#1a5276);}
+.pair-filter-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:#f0f4f8;border-radius:8px;border:1px solid #dde6ef;}
+.pair-filter-btn{padding:5px 12px;border-radius:20px;border:2px solid #c8d8e8;background:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;color:#2a6496;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.pair-filter-btn:hover{border-color:#2f9ec9;background:#e8f4fc;}
+.pair-filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.pair-filter-btn.active-all{background:#2f9ec9;color:#fff;border-color:#2f9ec9;}
+  
 @media(max-width:900px){
   .br-4{grid-template-columns:repeat(2,1fr);}
   .br-6{grid-template-columns:repeat(3,1fr);}
@@ -465,13 +471,23 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
  
 function buildRozpisBtn(stageName, matches){
   const rid='rozpis-'+stageName.replace(/[^a-z0-9]/gi,'')
+  const pairs=[],seenPairs=new Set()
+  matches.forEach(m=>{
+    const key=[m.home_team,m.away_team].sort().join('|')
+    if(!seenPairs.has(key)){seenPairs.add(key);pairs.push({t1:m.home_team,t2:m.away_team,key})}
+  })
+  const pairBtnsHtml=pairs.map(pair=>`
+    <button class="pair-filter-btn" data-pair="${pair.key}" onclick="filterRozpisPair('${rid}','${pair.key}',this)">
+      ${logoHtml(pair.t1,16)} ${teamName(pair.t1)} <span style="color:#aaa;font-weight:400">vs</span> ${logoHtml(pair.t2,16)} ${teamName(pair.t2)}
+    </button>`).join('')
   const rowsHtml=matches.map(m=>{
     const home=teamsMap[m.home_team],away=teamsMap[m.away_team]
     if(!home||!away) return ''
     const p=isPlayed(m),hg=p?m.home_score:null,ag=p?m.away_score:null
     const homeWin=p&&Number(hg)>Number(ag),awayWin=p&&Number(ag)>Number(hg)
     const rt=p?getResultType(m):'',tag=rt&&rt!=='REG'?`<span class="result-tag">${rt}</span>`:''
-    return `<div class="match-row${p?' played':''}">
+    const pairKey=[m.home_team,m.away_team].sort().join('|')
+    return `<div class="match-row${p?' played':''}" data-pair="${pairKey}">
       <div class="mr-round">${m.round}</div>
       <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${p?(homeWin?' winner':' loser'):''}">${home.name}</span></div>
       <div class="mr-score"><span class="score-badge${p?'':' empty'}">${p?`${hg} : ${ag}`:'– : –'}</span>${tag}</div>
@@ -481,7 +497,22 @@ function buildRozpisBtn(stageName, matches){
   }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'
   return `<div>
     <button class="rozpis-btn" onclick="const b=document.getElementById('${rid}');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'">📋 Rozpis zápasů ▼</button>
-<div id="${rid}" style="display:none;margin-top:8px;flex-direction:column;gap:8px;">${rowsHtml}</div>  </div>`
+    <div id="${rid}" style="display:none;margin-top:8px;">
+      ${pairs.length>1?`<div class="pair-filter-btns">
+        <button class="pair-filter-btn active-all" data-pair="all" onclick="filterRozpisPair('${rid}','all',this)">Všechny zápasy</button>
+        ${pairBtnsHtml}
+      </div>`:''}
+      <div style="display:flex;flex-direction:column;gap:8px;">${rowsHtml}</div>
+    </div>
+  </div>`
+}
+
+function filterRozpisPair(rid,pairKey,btn){
+  document.querySelectorAll(`#${rid} .pair-filter-btn`).forEach(b=>b.classList.remove('active','active-all'))
+  btn.classList.add(pairKey==='all'?'active-all':'active')
+  document.querySelectorAll(`#${rid} .match-row`).forEach(row=>{
+    row.style.display=(pairKey==='all'||row.dataset.pair===pairKey)?'':'none'
+  })
 }
 
 function buildSingleMatchCard(stageName, match, schClass, note){
