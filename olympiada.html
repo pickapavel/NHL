@@ -370,7 +370,8 @@ function logoHtml(teamId,size=26){
   return `<img class="st-logo" style="width:${size}px;height:${size}px" src="${LOGOS}${t.logo}" onerror="this.outerHTML='<div class=st-logo-ph>?</div>'">`
 }
 function teamName(id){return teamsMap[id]?.name||"?"}
-function isPlayed(m){return m.home_score!=null}function getWinner(m){if(!isPlayed(m))return null;return m.home_score>m.away_score?m.home_team:m.away_team}
+function isPlayed(m){return m.home_score!=null&&m.played}
+function getWinner(m){if(!isPlayed(m))return null;return m.home_score>m.away_score?m.home_team:m.away_team}
 function getResultType(m){
   let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
   const isSN=s&&(s[20]==="1"||s[20]==="2")
