@@ -465,7 +465,9 @@ function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
       ${scoreWinsHtml(t2score, w2, t2won)}
     </div>
     ${note?`<div style="font-size:10px;color:#7ab0cc;padding:5px 12px;background:#f7f9fb;border-top:1px solid #eee;">${note}</div>`:""}
-<a href="sazky-olympiada.html?faze=${schClass.replace('sch-','')}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#27ae60;border-top:1px solid #219a52;text-decoration:none;">🎲 Vsaď si na sérii</a>}
+<a href="sazky-olympiada.html?faze=${schClass.replace('sch-','')}" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#27ae60;border-top:1px solid #219a52;text-decoration:none;">🎲 Vsaď si na sérii</a>
+  </div>`
+}
 
 function buildRozpisBtn(stageName, matches){
   const rid='rozpis-'+stageName.replace(/[^a-z0-9]/gi,'')
