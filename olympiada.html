@@ -497,8 +497,7 @@ function buildRozpisBtn(stageName, matches){
       <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${p?(homeWin?' winner':' loser'):''}">${home.name}</span></div>
       <div class="mr-score"><span class="score-badge${p?'':' empty'}">${p?`${hg} : ${ag}`:'– : –'}</span>${tag}</div>
       <div class="mr-team away"><span class="mr-name${p?(awayWin?' winner':' loser'):''}">${away.name}</span><img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'"></div>
-      <div class="mr-btns">${p?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>
-    </div>`
+<div class="mr-btns">${p?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a><a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Sázky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>    </div>`
   }).join('')||'<div class="no-data">Zatím žádné zápasy.</div>'
   return `<div>
     <button class="rozpis-btn" onclick="const b=document.getElementById('${rid}');const open=b.style.display!=='none';b.style.display=open?'none':'block';this.textContent=open?'📋 Rozpis zápasů ▼':'📋 Rozpis zápasů ▲'">📋 Rozpis zápasů ▼</button>
