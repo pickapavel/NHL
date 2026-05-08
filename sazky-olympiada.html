@@ -300,11 +300,17 @@ function renderSeriePlayerTips(stageId, playerKey, player, home, away, seriesOdd
   const existingGames=getSerieGamesBet(player.id, stageId)
 
   let winnerBlock=""
-  if(existingWinner){
+if(existingWinner){
     const team=teamsMap[existingWinner.target_id]
+    const wResultHtml=existingWinner.status==="won"
+      ?`<span style="color:#16a34a;font-weight:800;">🎉 Výhra ${Math.round(existingWinner.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingWinner.potential_win-existingWinner.amount)} Kč)</span></span>`
+      :existingWinner.status==="lost"
+      ?`<span style="color:#dc2626;font-weight:700;">❌ Prohra (${existingWinner.amount} Kč)</span>`
+      :`<span class="locked-badge">✓ ${team?.name||"?"} · kurz ${existingWinner.odds} · ${existingWinner.amount} Kč → možná výhra ${Math.round(existingWinner.potential_win)} Kč</span>`
     winnerBlock=`<div class="tip-block">
       <div class="tip-block-label">Kdo postoupí?</div>
-      <span class="locked-badge">✓ ${team?.name||"?"} · kurz ${existingWinner.odds} · ${existingWinner.amount} Kč → ${Math.round(existingWinner.potential_win)} Kč</span>
+      <div style="font-size:12px;color:#555;margin-bottom:5px;">Tip: <b>${team?.name||"?"}</b> · kurz ${existingWinner.odds}</div>
+      ${wResultHtml}
     </div>`
   } else {
     winnerBlock=`<div class="tip-block">
@@ -332,12 +338,18 @@ function renderSeriePlayerTips(stageId, playerKey, player, home, away, seriesOdd
   }
 
   let gamesBlock=""
-  if(existingGames){
+ if(existingGames){
+    const gResultHtml=existingGames.status==="won"
+      ?`<span style="color:#16a34a;font-weight:800;">🎉 Výhra ${Math.round(existingGames.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingGames.potential_win-existingGames.amount)} Kč)</span></span>`
+      :existingGames.status==="lost"
+      ?`<span style="color:#dc2626;font-weight:700;">❌ Prohra (${existingGames.amount} Kč)</span>`
+      :`<span class="locked-badge">✓ ${existingGames.tip_key} zápasů · kurz ${existingGames.odds} · ${existingGames.amount} Kč → možná výhra ${Math.round(existingGames.potential_win)} Kč</span>`
     gamesBlock=`<div class="tip-block">
       <div class="tip-block-label">Na kolik zápasů?</div>
-      <span class="locked-badge">✓ ${existingGames.tip_key} zápasů · kurz ${existingGames.odds} · ${existingGames.amount} Kč → ${Math.round(existingGames.potential_win)} Kč</span>
+      <div style="font-size:12px;color:#555;margin-bottom:5px;">Tip: <b>${existingGames.tip_key} zápasů</b> · kurz ${existingGames.odds}</div>
+      ${gResultHtml}
     </div>`
-  } else {
+  }} else {
     const gamesBtnsHtml=Object.entries(gamesOdds).map(([k,o])=>`
       <button class="games-btn" data-stage="${stageId}" data-player="${playerKey}" data-games="${k}"
         onclick="serieSelectGames('${stageId}','${playerKey}',${k})">
@@ -472,7 +484,7 @@ async function load(){
   const{data:p}=await supabase.from("players").select("*").in("name",["Kubele","Pici"])
   ;(p||[]).forEach(pl=>players[pl.name]=pl)
 
-  const{data:sb}=await supabase.from("bets_special").select("*").eq("status","pending")
+const{data:sb}=await supabase.from("bets_special").select("*").in("status",["pending","won","lost"])
   specialBets=sb||[]
 
 const fazeParam=new URLSearchParams(window.location.search).get("faze")
