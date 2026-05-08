@@ -473,9 +473,8 @@ async function load(){
     : {data:[]}
 
   const matchesByStage={}
-  ;(matches||[]).forEach(m=>{
-    if(!matches} else {
-  ByStage[m.stage_id]) matchesByStage[m.stage_id]=[]
+;(matches||[]).forEach(m=>{
+    if(!matchesByStage[m.stage_id]) matchesByStage[m.stage_id]=[]
     matchesByStage[m.stage_id].push(m)
   })
 
