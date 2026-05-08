@@ -408,8 +408,7 @@ function buildMatchRow(m){
     <div class="mr-team"><img class="mr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'"><span class="mr-name${played?(homeWin?" winner":" loser"):""}">${home.name}</span></div>
     <div class="mr-score"><span class="score-badge${played?"":" empty"}">${played?`${hg} : ${ag}`:"– : –"}</span>${tag}</div>
     <div class="mr-team away"><span class="mr-name${played?(awayWin?" winner":" loser"):""}">${away.name}</span><img class="mr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'"></div>
-    <div class="mr-btns">${played?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>
-  </div>`
+<div class="mr-btns">${played?`<a class="mr-btn btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a><a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Sázky</a>`:`<a class="mr-btn btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>`}</div>  </div>`
 }
 
 function buildSeriesCard(stageName, matches, schClass, winsNeeded, note){
