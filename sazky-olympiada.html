@@ -300,19 +300,34 @@ function renderSeriePlayerTips(stageId, playerKey, player, home, away, seriesOdd
   const existingGames=getSerieGamesBet(player.id, stageId)
 
   let winnerBlock=""
-if(existingWinner){
+ if(existingWinner){
     const team=teamsMap[existingWinner.target_id]
-    const wResultHtml=existingWinner.status==="won"
-      ?`<span style="color:#16a34a;font-weight:800;">🎉 Výhra ${Math.round(existingWinner.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingWinner.potential_win-existingWinner.amount)} Kč)</span></span>`
+    const resultHtml=existingWinner.status==="won"
+      ?`<div style="color:#16a34a;font-weight:800;font-size:13px;">🎉 Výhra ${Math.round(existingWinner.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingWinner.potential_win-existingWinner.amount)} Kč)</span></div>`
       :existingWinner.status==="lost"
-      ?`<span style="color:#dc2626;font-weight:700;">❌ Prohra (${existingWinner.amount} Kč)</span>`
-      :`<span class="locked-badge">✓ ${team?.name||"?"} · kurz ${existingWinner.odds} · ${existingWinner.amount} Kč → možná výhra ${Math.round(existingWinner.potential_win)} Kč</span>`
+      ?`<div style="color:#dc2626;font-weight:700;font-size:12px;">❌ Prohra (${existingWinner.amount} Kč)</div>`
+      :`<div style="color:#16a34a;font-weight:700;font-size:12px;">Možná výhra: ${Math.round(existingWinner.potential_win)} Kč</div>`
     winnerBlock=`<div class="tip-block">
       <div class="tip-block-label">Kdo postoupí?</div>
-      <div style="font-size:12px;color:#555;margin-bottom:5px;">Tip: <b>${team?.name||"?"}</b> · kurz ${existingWinner.odds}</div>
-      ${wResultHtml}
+      <div class="winner-btns">
+        <div class="winner-btn${existingWinner.target_id===home.id?' selected':''}" style="pointer-events:none;">
+          <span class="wb-name">${home.name}</span>
+          <span class="wb-odds">${seriesOdds.home.toFixed(2)}</span>
+        </div>
+        <div class="winner-btn${existingWinner.target_id===away.id?' selected':''}" style="pointer-events:none;">
+          <span class="wb-name">${away.name}</span>
+          <span class="wb-odds">${seriesOdds.away.toFixed(2)}</span>
+        </div>
+      </div>
+      <div class="tip-amount-row">
+        <span class="tip-amount-label">Částka:</span>
+        <input class="bet-input" value="${existingWinner.amount}" disabled style="background:#f0f4f8;color:#555;">
+      </div>
+      <div class="tip-summary" style="margin:6px 0 8px;">${resultHtml}</div>
+      <button class="bet-btn" disabled style="background:#ccc;cursor:default;">🎲 Vsadit — postup</button>
     </div>`
-  } else {
+  }
+  else {
     winnerBlock=`<div class="tip-block">
       <div class="tip-block-label">Kdo postoupí?</div>
       <div class="winner-btns">
@@ -338,18 +353,29 @@ if(existingWinner){
   }
 
   let gamesBlock=""
- if(existingGames){
+  if(existingGames){
     const gResultHtml=existingGames.status==="won"
-      ?`<span style="color:#16a34a;font-weight:800;">🎉 Výhra ${Math.round(existingGames.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingGames.potential_win-existingGames.amount)} Kč)</span></span>`
+      ?`<div style="color:#16a34a;font-weight:800;font-size:13px;">🎉 Výhra ${Math.round(existingGames.potential_win)} Kč! <span style="font-size:11px;font-weight:600;">(zisk +${Math.round(existingGames.potential_win-existingGames.amount)} Kč)</span></div>`
       :existingGames.status==="lost"
-      ?`<span style="color:#dc2626;font-weight:700;">❌ Prohra (${existingGames.amount} Kč)</span>`
-      :`<span class="locked-badge">✓ ${existingGames.tip_key} zápasů · kurz ${existingGames.odds} · ${existingGames.amount} Kč → možná výhra ${Math.round(existingGames.potential_win)} Kč</span>`
+      ?`<div style="color:#dc2626;font-weight:700;font-size:12px;">❌ Prohra (${existingGames.amount} Kč)</div>`
+      :`<div style="color:#16a34a;font-weight:700;font-size:12px;">Možná výhra: ${Math.round(existingGames.potential_win)} Kč</div>`
+    const gamesBtnsHtml=Object.entries(gamesOdds).map(([k,o])=>`
+      <button class="games-btn${String(k)===String(existingGames.tip_key)?' selected':''}" style="pointer-events:none;">
+        <span class="gb-num">${k} zápasů</span>
+        <span class="gb-odds">${o.toFixed(2)}</span>
+      </button>`).join("")
     gamesBlock=`<div class="tip-block">
       <div class="tip-block-label">Na kolik zápasů?</div>
-      <div style="font-size:12px;color:#555;margin-bottom:5px;">Tip: <b>${existingGames.tip_key} zápasů</b> · kurz ${existingGames.odds}</div>
-      ${gResultHtml}
+      <div class="games-btns">${gamesBtnsHtml}</div>
+      <div class="tip-amount-row">
+        <span class="tip-amount-label">Částka:</span>
+        <input class="bet-input" value="${existingGames.amount}" disabled style="background:#f0f4f8;color:#555;">
+      </div>
+      <div class="tip-summary" style="margin:6px 0 8px;">${gResultHtml}</div>
+      <button class="bet-btn" disabled style="background:#ccc;cursor:default;">🎲 Vsadit — počet zápasů</button>
     </div>`
-  } else {
+  }
+ else {
     const gamesBtnsHtml=Object.entries(gamesOdds).map(([k,o])=>`
       <button class="games-btn" data-stage="${stageId}" data-player="${playerKey}" data-games="${k}"
         onclick="serieSelectGames('${stageId}','${playerKey}',${k})">
