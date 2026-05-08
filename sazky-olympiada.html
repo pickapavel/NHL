@@ -349,7 +349,7 @@ if(existingWinner){
       <div style="font-size:12px;color:#555;margin-bottom:5px;">Tip: <b>${existingGames.tip_key} zápasů</b> · kurz ${existingGames.odds}</div>
       ${gResultHtml}
     </div>`
-  }} else {
+  } else {
     const gamesBtnsHtml=Object.entries(gamesOdds).map(([k,o])=>`
       <button class="games-btn" data-stage="${stageId}" data-player="${playerKey}" data-games="${k}"
         onclick="serieSelectGames('${stageId}','${playerKey}',${k})">
@@ -474,7 +474,8 @@ async function load(){
 
   const matchesByStage={}
   ;(matches||[]).forEach(m=>{
-    if(!matchesByStage[m.stage_id]) matchesByStage[m.stage_id]=[]
+    if(!matches}} else {
+  ByStage[m.stage_id]) matchesByStage[m.stage_id]=[]
     matchesByStage[m.stage_id].push(m)
   })
 
