@@ -183,6 +183,8 @@ tbody tr:nth-child(even) td.td-highlight{background:#fff3cc;}
 <div class="nav-tabs">
  <div class="nav-tab active" onclick="switchTab('players',this)">👤 Hráčské statistiky</div>
  <div class="nav-tab" onclick="switchTab('teams',this)">🏒 Týmové statistiky</div>
+ <div class="nav-tab" id="nav-h2h" onclick="switchTab('teams',this);openH2HFromNav()">🏒🏒 Vzájemné zápasy</div>
+ <div class="nav-tab" onclick="switchTab('teams',this);setTeamsComp('h2h',document.querySelector('.sub-tab:last-child'))">🏒🏒 Vzájemné zápasy</div>
  <div class="nav-tab" onclick="switchTab('records',this)">🏆 Rekordy</div>
  <div class="nav-tab" onclick="switchTab('betting',this)">🎲 Statistiky tipování</div>
  <div class="nav-tab" onclick="switchTab('manager',this)">🏆 Manažerské statistiky</div>
@@ -1133,6 +1135,15 @@ function renderManager(){
   </div>`
 
  content.innerHTML=filterHtml+mgrCardsHtml+vsHtml+rekordsHtml+matchesHtml
+}
+
+function openH2HFromNav(){
+  teamsCompFilter='h2h'; teamsStageFilter='all'; teamsSelectedSeason=null
+  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'))
+  const h2hBtn=document.querySelector('.sub-tab:last-child')
+  if(h2hBtn) h2hBtn.classList.add('active')
+  document.getElementById('teamsSubTabs2').style.display='none'
+  renderH2H()
 }
 
 init()
