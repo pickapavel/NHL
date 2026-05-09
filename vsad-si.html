@@ -79,7 +79,10 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .bet-btn{width:100%;padding:11px;border:none;border-radius:9px;background:#27ae60;color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:background .15s;}
 .bet-btn:hover{background:#219a52;}
 .bet-btn:disabled{background:#ccc;cursor:default;}
-
+.quick-amounts{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.quick-btn{padding:5px 9px;border:1.5px solid #c8d8e8;border-radius:7px;background:#f0f4f8;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#1a5276;cursor:pointer;transition:all .15s;}
+.quick-btn:hover{background:#dce8f5;border-color:#2f9ec9;}
+.quick-btn.active-q{background:#0b2a3c;color:#fff;border-color:#0b2a3c;}
 .bet-result-won{color:#16a34a;font-weight:800;font-size:13px;}
 .bet-result-lost{color:#dc2626;font-weight:700;font-size:12px;}
 
@@ -966,7 +969,42 @@ await loadExistingBets(match)
   }
 }
 
-load()
+function addQuickAmountBtns(){
+  const AMOUNTS=[50,100,200,500,1000,2000,5000,10000,20000,50000]
+  const configs=[
+    {inputId:'amount_kubele',    cb:()=>updateResultSummary('kubele')},
+    {inputId:'amount_pici',      cb:()=>updateResultSummary('pici')},
+    {inputId:'amount_total_kubele', cb:()=>updateGoalsSummary('total','kubele')},
+    {inputId:'amount_total_pici',   cb:()=>updateGoalsSummary('total','pici')},
+    {inputId:'amount_home_kubele',  cb:()=>updateGoalsSummary('home','kubele')},
+    {inputId:'amount_home_pici',    cb:()=>updateGoalsSummary('home','pici')},
+    {inputId:'amount_away_kubele',  cb:()=>updateGoalsSummary('away','kubele')},
+    {inputId:'amount_away_pici',    cb:()=>updateGoalsSummary('away','pici')},
+    {inputId:'amount_diff_kubele',  cb:()=>updateGoalsSummary('diff','kubele')},
+    {inputId:'amount_diff_pici',    cb:()=>updateGoalsSummary('diff','pici')},
+  ]
+  configs.forEach(({inputId,cb})=>{
+    const input=document.getElementById(inputId)
+    if(!input) return
+    const wrap=document.createElement('div')
+    wrap.className='quick-amounts'
+    AMOUNTS.forEach(a=>{
+      const btn=document.createElement('button')
+      btn.className='quick-btn'
+      btn.textContent=a>=1000?(a/1000)+'k':a
+      btn.onclick=()=>{
+        wrap.querySelectorAll('.quick-btn').forEach(b=>b.classList.remove('active-q'))
+        btn.classList.add('active-q')
+        input.value=a
+        cb()
+      }
+      wrap.appendChild(btn)
+    })
+    input.parentNode.insertBefore(wrap,input)
+  })
+}
+
+load().then(()=>addQuickAmountBtns())
 </script>
 </body>
 </html>
