@@ -689,14 +689,15 @@ function renderH2HOverview(allMatches, hId, aId, teamMap){
     div.className="odd-btn"
     div.dataset.type=type
     div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>`
-    div.onclick=()=>{
+  div.onclick=()=>{
       const selected=state[playerKey].result.selected
       if(selected.includes(type)){
-        state[playerKey].result.selected=selected.filter(t=>t!==type)
+        state[playerKey].result.selected=[]
         div.classList.remove("active")
       } else {
-        if(selected.length>=2) return
-        selected.push(type); div.classList.add("active")
+        cont.querySelectorAll(".odd-btn").forEach(b=>b.classList.remove("active"))
+        state[playerKey].result.selected=[type]
+        div.classList.add("active")
       }
       updateResultSummary(playerKey)
     }
