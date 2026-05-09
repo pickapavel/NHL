@@ -723,7 +723,12 @@ function renderH2H(){
  const t1=h2hCurrentT1, t2=h2hCurrentT2
  const teamById={}; allTeamsDb.forEach(t=>{ teamById[t.id]=t })
  const t1obj=teamById[t1], t2obj=teamById[t2]
- const matches=allMatches.filter(m=>m.home_score!=null&&((m.home_team===t1&&m.away_team===t2)||(m.home_team===t2&&m.away_team===t1))).sort((a,b)=>{ const sa=allSeasons.findIndex(s=>s.id===a.season_id),sb=allSeasons.findIndex(s=>s.id===b.season_id); return sa!==sb?sa-sb:Number(a.round)-Number(b.round) })
+ const normName=name=>(name||'').replace(/\s*\(.\)\s*$/,'').trim().toLowerCase()
+ const t1norm=normName(t1obj?.name), t2norm=normName(t2obj?.name)
+ const t1ids=new Set(allTeamsDb.filter(t=>normName(t.name)===t1norm&&t1norm).map(t=>t.id))
+ const t2ids=new Set(allTeamsDb.filter(t=>normName(t.name)===t2norm&&t2norm).map(t=>t.id))
+ t1ids.add(t1); t2ids.add(t2)
+ const matches=allMatches.filter(m=>m.home_score!=null&&((t1ids.has(m.home_team)&&t2ids.has(m.away_team))||(t2ids.has(m.home_team)&&t1ids.has(m.away_team)))).sort((a,b)=>{ const sa=allSeasons.findIndex(s=>s.id===a.season_id),sb=allSeasons.findIndex(s=>s.id===b.season_id); return sa!==sb?sa-sb:Number(a.round)-Number(b.round) })
  let t1w=0,t2w=0,draws=0,t1g=0,t2g=0,t1wReg=0,t2wReg=0,t1wOT=0,t2wOT=0,t1wSN=0,t2wSN=0
  const scoreFreq={}, seasonStats={}
  matches.forEach(m=>{
