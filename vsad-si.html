@@ -991,8 +991,9 @@ function addQuickAmountBtns(){
     AMOUNTS.forEach(a=>{
       const btn=document.createElement('button')
       btn.className='quick-btn'
-      btn.textContent=a>=1000?(a/1000).toLocaleString('cs-CZ')+'k':a      btn.onclick=()=>{
-        wrap.querySelectorAll('.quick-btn').forEach(b=>b.classList.remove('active-q'))
+btn.textContent=a>=1000?(a/1000).toLocaleString('cs-CZ')+'k':a
+      btn.onclick=()=>{
+      wrap.querySelectorAll('.quick-btn').forEach(b=>b.classList.remove('active-q'))
         btn.classList.add('active-q')
         input.value=a
         cb()
