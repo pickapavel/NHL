@@ -453,8 +453,8 @@ function buildAggregated(){
  const map={}
  filtered.forEach(r=>{
 const normName=(r.player_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
-  const key=r.player_id?`${r.player_id}_${r.team_abbr||''}`:normName+`_${r.team_abbr||''}`
-if(!map[key]) map[key]={player_id:r.player_id,player_name:r.player_name,team_abbr:r.team_abbr,is_goalie:r.is_goalie||false,gp:0,goals:0,assists:0,points:0,plus_minus:0,ppg:0,shg:0,shots:0,pim:0,hits:0,toi_sec:0,goalie_sa:0,goalie_ga:0,gw:0,gl:0,points_per_game:0}
+const key=r.player_id?String(r.player_id):(normName+`_${r.team_abbr||''}`)
+  if(!map[key]) map[key]={player_id:r.player_id,player_name:r.player_name,team_abbr:r.team_abbr,is_goalie:r.is_goalie||false,gp:0,goals:0,assists:0,points:0,plus_minus:0,ppg:0,shg:0,shots:0,pim:0,hits:0,toi_sec:0,goalie_sa:0,goalie_ga:0,gw:0,gl:0,points_per_game:0}
   const p=map[key]
   p.gp++; p.goals+=r.goals||0; p.assists+=r.assists||0; p.points+=r.points||0
   p.plus_minus+=r.plus_minus||0; p.ppg+=r.ppg||0; p.shg+=r.shg||0
