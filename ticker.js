@@ -113,28 +113,14 @@ style.textContent = `
 }
 
 .t-logo {
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
   flex-shrink: 0;
 }
-.t-logo.t-logo-club {
-  background: white;
-  border-radius: 5px;
-}
-.t-logo.t-logo-national {
-  background: transparent;
-  border-radius: 50%;
-}
-
-.t-team-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
 .t-team-name {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: #c8e0f0;
   white-space: nowrap;
   overflow: hidden;
@@ -146,37 +132,36 @@ style.textContent = `
 .t-score-badge {
   background: #0d2f44;
   border: 1px solid rgba(255,255,255,.15);
-  border-radius: 4px;
-  min-width: 26px;
-  height: 22px;
+  border-radius: 5px;
+  min-width: 34px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: white;
   flex-shrink: 0;
-  padding: 0 5px;
+  padding: 0 8px;
   font-family: Arial, sans-serif;
 }
 .t-score-badge.empty {
   color: #4a7a99;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 400;
 }
-
 .t-bottom {
   display: flex;
-  gap: 4px;
-  margin-top: 5px;
+  gap: 5px;
+  margin-top: 6px;
 }
 .t-odd {
   background: #1a5276;
   color: #ffd166;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 4px 6px;
+  border-radius: 5px;
   flex: 1;
   text-align: center;
   font-family: Arial, sans-serif;
@@ -184,10 +169,10 @@ style.textContent = `
 .t-stats-btn {
   background: #1a5276;
   color: #a8d4ee;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 5px;
   text-align: center;
   font-family: Arial, sans-serif;
   width: 100%;
@@ -196,14 +181,14 @@ style.textContent = `
 .t-bets-col {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 6px;
 }
 .t-bet {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 5px;
   text-align: left;
   font-family: Arial, sans-serif;
   white-space: nowrap;
