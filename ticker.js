@@ -33,13 +33,11 @@ async function sbFetch(table, select, params){
   return res.json()
 }
 
-// Zjisti jestli je tým klubový (extraliga) nebo reprezentační
 function isClubTeam(team, compMap){
   if(!team.competition_id) return true
   const comp = compMap[team.competition_id]
   if(!comp) return true
   const name = (comp.name || '').toLowerCase()
-  // Reprezentační soutěže nemají slovo "extraliga" v názvu
   return name.includes('extraliga') || name.includes('liga')
 }
 
@@ -49,7 +47,7 @@ style.textContent = `
   background: #0a2233;
   display: flex;
   align-items: center;
-  height: 110px;
+  height: 130px;
   overflow: hidden;
   user-select: none;
   border-bottom: 3px solid #163a52;
@@ -101,7 +99,7 @@ style.textContent = `
   gap: 4px;
   transition: background .15s;
   box-sizing: border-box;
-  min-width: 190px;
+  min-width: 220px;
 }
 .t-box:hover { background: rgba(255,255,255,.05); }
 
@@ -195,6 +193,26 @@ style.textContent = `
   width: 100%;
   letter-spacing: .03em;
 }
+.t-bets-row {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+.t-bet {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 5px;
+  border-radius: 4px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-bet.won  { background: #14532d; color: #4ade80; }
+.t-bet.lost { background: #450a0a; color: #f87171; }
+.t-bet.pending { background: #1a3a52; color: #7ab0cc; }
 
 .t-separator {
   display: flex;
@@ -284,11 +302,13 @@ function logoClass(team, compMap){
 
 async function loadTicker(){
   try {
-    const [teams, seasons, matches, competitions] = await Promise.all([
+    const [teams, seasons, matches, competitions, betsRaw, playersRaw] = await Promise.all([
       sbFetch('teams', '*'),
       sbFetch('seasons', '*', 'order=created_at.asc'),
       sbFetch('matches', 'id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
       sbFetch('competitions', '*'),
+      sbFetch('bets', 'match_id,player_id,tip,amount,potential_win,status'),
+      sbFetch('players', 'id,name'),
     ])
 
     const track = document.getElementById('ticker-track')
@@ -298,7 +318,7 @@ async function loadTicker(){
 
     let currentPx = 0
     const SCROLL_STEP = 2
-    let boxWidth = 192
+    let boxWidth = 222
 
     function getMaxPx(){ return Math.max(0, track.scrollWidth - trackWrap.offsetWidth) }
     function updateButtons(){
@@ -341,6 +361,14 @@ async function loadTicker(){
     const allMatches = matches || []
     const allSeasons = seasons || []
 
+    // Sázky — indexované podle match_id
+    const betsByMatch = {}
+    ;(betsRaw||[]).forEach(b => {
+      if(!betsByMatch[b.match_id]) betsByMatch[b.match_id] = []
+      betsByMatch[b.match_id].push(b)
+    })
+    const playersList = playersRaw || []
+
     const seasonsByComp = {}
     allSeasons.forEach(s => {
       if(!seasonsByComp[s.competition_id]) seasonsByComp[s.competition_id] = []
@@ -354,6 +382,7 @@ async function loadTicker(){
     })
     const activeSeasonIds = new Set(activeSeasons.map(s => s.id))
 
+    // Pouze poslední odehraný zápas
     const played = allMatches
       .filter(m => m.played === true && m.home_score != null && activeSeasonIds.has(m.season_id))
       .sort((a,b) => {
@@ -362,7 +391,7 @@ async function loadTicker(){
         if(!b.played_at) return -1
         return new Date(a.played_at) - new Date(b.played_at)
       })
-      .slice(-100)
+      .slice(-1)
 
     const upcomingBySeason = {}
     activeSeasons.forEach(season => {
@@ -375,32 +404,68 @@ async function loadTicker(){
 
     track.innerHTML = ''
 
-    played.forEach((m, i) => {
+    // Pomocná funkce pro čitelný label tipu
+    function getTipLabel(tip, homeSN, awaySN) {
+      const map = {
+        "1":        `Výhra ${homeSN}`,
+        "2":        `Výhra ${awaySN}`,
+        "0":        "Remíza",
+        "11":       `Neprohra ${homeSN}`,
+        "22":       `Neprohra ${awaySN}`,
+        "no_draw":  "Nebude remíza",
+        "vdr_home": `Do rozh. ${homeSN}`,
+        "vdr_away": `Do rozh. ${awaySN}`,
+      }
+      return tip.split(",").map(t => map[t] || t).join(" + ")
+    }
+
+    // Poslední odehraný zápas s tipy
+    played.forEach((m) => {
       const home = teamMap[m.home_team]
       const away = teamMap[m.away_team]
       if(!home || !away) return
+
+      const homeSN = getShortName(home)
+      const awaySN = getShortName(away)
+      const matchBets = betsByMatch[m.id] || []
+
+      function betHtml(playerName) {
+        const player = playersList.find(p => p.name === playerName)
+        if(!player) return `<span class="t-bet pending">${playerName}: —</span>`
+        const bet = matchBets.find(b => b.player_id === player.id)
+        if(!bet) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
+        if(bet.status === 'won')
+          return `<span class="t-bet won">${playerName} ✅ +${Math.round(bet.potential_win - bet.amount)} Kč</span>`
+        if(bet.status === 'lost')
+          return `<span class="t-bet lost">${playerName} ❌ -${Math.round(bet.amount)} Kč</span>`
+        const label = getTipLabel(bet.tip, homeSN, awaySN)
+        return `<span class="t-bet pending">${playerName}: ${label}</span>`
+      }
+
       const box = document.createElement('div')
       box.className = 't-box'
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
         <div class="t-team-row">
           <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${getShortName(home)}</span>
+          <span class="t-team-name">${homeSN}</span>
           <span class="t-score-badge">${m.home_score}</span>
         </div>
         <div class="t-team-row">
           <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${getShortName(away)}</span>
+          <span class="t-team-name">${awaySN}</span>
           <span class="t-score-badge">${m.away_score}</span>
         </div>
-        <div class="t-bottom">
-          <span class="t-stats-btn">📊 Statistiky</span>
+        <div class="t-bets-row">
+          ${betHtml('Kubele')}
+          ${betHtml('Pici')}
         </div>
       `
       track.appendChild(box)
       addDivider(track)
     })
 
+    // Nadcházející zápasy
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
       const compName = comp ? comp.name : season.name
