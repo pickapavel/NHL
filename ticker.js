@@ -193,22 +193,20 @@ style.textContent = `
   width: 100%;
   letter-spacing: .03em;
 }
-.t-bets-row {
+.t-bets-col {
   display: flex;
-  gap: 5px;
-  margin-top: 5px;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
 }
 .t-bet {
-  flex: 1;
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 5px;
+  padding: 2px 7px;
   border-radius: 4px;
-  text-align: center;
+  text-align: left;
   font-family: Arial, sans-serif;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .t-bet.won  { background: #14532d; color: #4ade80; }
 .t-bet.lost { background: #450a0a; color: #f87171; }
@@ -419,52 +417,6 @@ async function loadTicker(){
       return tip.split(",").map(t => map[t] || t).join(" + ")
     }
 
-    // Poslední odehraný zápas s tipy
-    played.forEach((m) => {
-      const home = teamMap[m.home_team]
-      const away = teamMap[m.away_team]
-      if(!home || !away) return
-
-      const homeSN = getShortName(home)
-      const awaySN = getShortName(away)
-      const matchBets = betsByMatch[m.id] || []
-
-      function betHtml(playerName) {
-        const player = playersList.find(p => p.name === playerName)
-        if(!player) return `<span class="t-bet pending">${playerName}: —</span>`
-        const bet = matchBets.find(b => b.player_id === player.id)
-        if(!bet) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
-        if(bet.status === 'won')
-          return `<span class="t-bet won">${playerName} ✅ +${Math.round(bet.potential_win - bet.amount)} Kč</span>`
-        if(bet.status === 'lost')
-          return `<span class="t-bet lost">${playerName} ❌ -${Math.round(bet.amount)} Kč</span>`
-        const label = getTipLabel(bet.tip, homeSN, awaySN)
-        return `<span class="t-bet pending">${playerName}: ${label}</span>`
-      }
-
-      const box = document.createElement('div')
-      box.className = 't-box'
-      box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
-      box.innerHTML = `
-        <div class="t-team-row">
-          <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${homeSN}</span>
-          <span class="t-score-badge">${m.home_score}</span>
-        </div>
-        <div class="t-team-row">
-          <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
-          <span class="t-team-name">${awaySN}</span>
-          <span class="t-score-badge">${m.away_score}</span>
-        </div>
-        <div class="t-bets-row">
-          ${betHtml('Kubele')}
-          ${betHtml('Pici')}
-        </div>
-      `
-      track.appendChild(box)
-      addDivider(track)
-    })
-
     // Nadcházející zápasy
     Object.values(upcomingBySeason).forEach(({ season, matches }) => {
       const comp = compMap[season.competition_id]
@@ -506,6 +458,52 @@ async function loadTicker(){
         track.appendChild(box)
         if(i < matches.length - 1) addDivider(track)
       })
+    })
+
+    // Poslední odehraný zápas s tipy — úplně napravo
+    played.forEach((m) => {
+      const home = teamMap[m.home_team]
+      const away = teamMap[m.away_team]
+      if(!home || !away) return
+
+      const homeSN = getShortName(home)
+      const awaySN = getShortName(away)
+      const matchBets = betsByMatch[m.id] || []
+
+      function betHtml(playerName) {
+        const player = playersList.find(p => p.name === playerName)
+        if(!player) return `<span class="t-bet pending">${playerName}: —</span>`
+        const bet = matchBets.find(b => b.player_id === player.id)
+        if(!bet) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
+        if(bet.status === 'won')
+          return `<span class="t-bet won">${playerName}: +${Math.round(bet.potential_win - bet.amount).toLocaleString('cs-CZ')} Kč</span>`
+        if(bet.status === 'lost')
+          return `<span class="t-bet lost">${playerName}: -${Math.round(bet.amount).toLocaleString('cs-CZ')} Kč</span>`
+        const label = getTipLabel(bet.tip, homeSN, awaySN)
+        return `<span class="t-bet pending">${playerName}: ${label}</span>`
+      }
+
+      addDivider(track)
+      const box = document.createElement('div')
+      box.className = 't-box'
+      box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
+      box.innerHTML = `
+        <div class="t-team-row">
+          <img class="t-logo ${logoClass(home, compMap)}" src="./logos/${home.logo}" onerror="this.style.display='none'">
+          <span class="t-team-name">${homeSN}</span>
+          <span class="t-score-badge">${m.home_score}</span>
+        </div>
+        <div class="t-team-row">
+          <img class="t-logo ${logoClass(away, compMap)}" src="./logos/${away.logo}" onerror="this.style.display='none'">
+          <span class="t-team-name">${awaySN}</span>
+          <span class="t-score-badge">${m.away_score}</span>
+        </div>
+        <div class="t-bets-col">
+          ${betHtml('Kubele')}
+          ${betHtml('Pici')}
+        </div>
+      `
+      track.appendChild(box)
     })
 
     const firstBox = track.querySelector('.t-box')
