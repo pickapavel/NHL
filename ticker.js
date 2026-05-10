@@ -93,10 +93,10 @@ style.textContent = `
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  padding: 8px 14px;
+  padding: 10px 14px;
   cursor: pointer;
   flex-shrink: 0;
-  gap: 4px;
+  gap: 6px;
   transition: background .15s;
   box-sizing: border-box;
   min-width: 220px;
@@ -113,8 +113,8 @@ style.textContent = `
 }
 
 .t-logo {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -133,8 +133,8 @@ style.textContent = `
   gap: 7px;
 }
 .t-team-name {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: #c8e0f0;
   white-space: nowrap;
   overflow: hidden;
@@ -146,18 +146,23 @@ style.textContent = `
 .t-score-badge {
   background: #0d2f44;
   border: 1px solid rgba(255,255,255,.15);
-  border-radius: 4px;
-  min-width: 26px;
-  height: 22px;
+  border-radius: 5px;
+  min-width: 32px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: white;
   flex-shrink: 0;
-  padding: 0 5px;
+  padding: 0 7px;
   font-family: Arial, sans-serif;
+}
+.t-score-badge.empty {
+  color: #4a7a99;
+  font-size: 16px;
+  font-weight: 400;
 }
 .t-score-badge.empty {
   color: #4a7a99;
@@ -167,15 +172,15 @@ style.textContent = `
 
 .t-bottom {
   display: flex;
-  gap: 4px;
-  margin-top: 5px;
+  gap: 5px;
+  margin-top: 2px;
 }
 .t-odd {
   background: #1a5276;
   color: #ffd166;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 2px 4px;
+  padding: 5px 4px;
   border-radius: 4px;
   flex: 1;
   text-align: center;
@@ -196,13 +201,13 @@ style.textContent = `
 .t-bets-col {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 2px;
 }
 .t-bet {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 4px 9px;
   border-radius: 4px;
   text-align: left;
   font-family: Arial, sans-serif;
