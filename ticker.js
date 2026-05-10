@@ -201,13 +201,13 @@ style.textContent = `
 .t-bets-col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 2px;
+  margin-top: 0;
 }
 .t-bet {
   font-size: 12px;
   font-weight: 700;
-  padding: 4px 9px;
+  padding: 2px 9px;
   border-radius: 4px;
   text-align: left;
   font-family: Arial, sans-serif;
