@@ -644,7 +644,7 @@ async function buildSkupinaSazkyPanel(teamIds){
 return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;flex-wrap:wrap;">
         ${resultHtml}</div>`
     }
- return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;flex-wrap:wrap;">
+return `<div id="skup-row-${stateKey}" style="display:flex;align-items:center;gap:6px;padding:5px 0;flex-wrap:wrap;">
       <button class="skup-opt-btn" data-tid="${teamId}" data-val="yes" data-odds="${o.yes}" data-pk="${pk}" onclick="selectSkupTeamOpt(this)"
         style="padding:4px 8px;border-radius:5px;border:2px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
         ✅ Postoupí ${o.yes}
@@ -685,13 +685,13 @@ const kubeleCredit=players['Kubele']?Math.round(players['Kubele'].credit).toLoca
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;">
-            <span>👤 Kubele</span><span style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${kubeleCredit}</span>
+<span>👤 Kubele</span><span id="skup-credit-kubele" style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${kubeleCredit}</span>
           </div>
           ${ids.map(tid=>teamCard(tid,'Kubele')).join('')}
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;">
-            <span>👤 Pici</span><span style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${piciCredit}</span>
+<span>👤 Pici</span><span id="skup-credit-pici" style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${piciCredit}</span>
           </div>
           ${ids.map(tid=>teamCard(tid,'Pici')).join('')}
         </div>
@@ -730,11 +730,19 @@ const kubeleCredit=players['Kubele']?Math.round(players['Kubele'].credit).toLoca
       .eq('type','skupina_postup').eq('player_id',player.id)
       .like('tip_key',teamId+'_%').maybeSingle()
     if(ex){alert('Na tento tým už máš vsazeno!');return}
-    const tipKey=`${teamId}_${sel.val}`,potWin=amount*sel.odds,newCredit=player.credit-amount
+  const tipKey=`${teamId}_${sel.val}`,potWin=amount*sel.odds,newCredit=player.credit-amount
     await db.from('players').update({credit:newCredit}).eq('id',player.id)
     await db.from('bets_special').insert({player_id:player.id,type:'skupina_postup',tip_key:tipKey,odds:sel.odds,amount,potential_win:potWin,status:'pending'})
     await db.from('credit_history').insert({player_id:player.id,type:'bet',description:`Skupina: ${teamsMap[teamId]?.name} ${sel.val==='yes'?'postoupí':'nepostoupí'}`,amount:-amount,credit_before:player.credit,credit_after:newCredit,source:'bets_special'})
-    location.reload()
+
+    // Update UI bez refreshe
+    const rowEl=document.getElementById('skup-row-'+stateKey)
+    if(rowEl) rowEl.outerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;">
+      <span style="color:#1a5276;">${sel.val==='yes'?'✅ Postoupí':'❌ Nepostoupí'} · vsadil <b>${Math.round(amount).toLocaleString('cs-CZ')} Kč</b> · možná výhra <b>${Math.round(potWin).toLocaleString('cs-CZ')} Kč</b></span>
+    </div>`
+    player.credit=newCredit
+    const creditEl=document.getElementById('skup-credit-'+pk)
+    if(creditEl) creditEl.textContent='💰 '+Math.round(newCredit).toLocaleString('cs-CZ')+' Kč'
   }
 }
 
