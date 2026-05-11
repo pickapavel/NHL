@@ -591,26 +591,56 @@ function buildSkupinaTabulka(matches){
 async function buildSkupinaSazkyPanel(teamIds){
   const wrap=document.getElementById('skupina-sazky-wrap')
   if(!wrap) return
-  const ODDS=1.85
+
+  // Kurzy podle form ratingu — simulace všech 64 kombinací výsledků
+  function calcOdds(ids){
+    const wp={}
+    ids.forEach(i=>{wp[i]={};ids.forEach(j=>{
+      if(i===j)return
+      const ri=teamsMap[i]?.rating_form||1000,rj=teamsMap[j]?.rating_form||1000
+      wp[i][j]=1/(1+Math.pow(10,(rj-ri)/400))
+    })})
+    const matchups=[]
+    for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++)matchups.push([ids[a],ids[b]])
+    const adv={}; ids.forEach(id=>adv[id]=0)
+    for(let mask=0;mask<(1<<matchups.length);mask++){
+      let prob=1; const pts={}; ids.forEach(id=>pts[id]=0)
+      matchups.forEach(([a,b],idx)=>{
+        const aW=(mask>>idx)&1
+        if(aW){prob*=wp[a][b];pts[a]+=3}else{prob*=(1-wp[a][b]);pts[b]+=3}
+      })
+      const sorted=[...ids].sort((x,y)=>pts[y]-pts[x])
+      adv[sorted[0]]+=prob; adv[sorted[1]]+=prob
+    }
+    const MARGIN=1.10,result={}
+    ids.forEach(id=>{
+      const pA=Math.min(0.97,Math.max(0.03,adv[id])),pN=1-pA
+      result[id]={yes:Math.round(MARGIN/pA*100)/100,no:Math.round(MARGIN/pN*100)/100}
+    })
+    return result
+  }
+
+  const ids=[...teamIds]
+  const odds=calcOdds(ids)
   const {data:existingBets}=await db.from('bets_special').select('*').eq('type','skupina_postup')
   const {data:pData}=await db.from('players').select('*')
   const players={};(pData||[]).forEach(p=>players[p.name]=p)
-  const ids=[...teamIds]
   const panelId='skup-sazky-body'
 
   function teamRowsHtml(){
     return ids.map(tid=>{
       const t=teamsMap[tid]; if(!t) return ''
+      const o=odds[tid]
       return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;">
         ${logoHtml(tid,24)}
         <span style="flex:1;font-size:13px;font-weight:700;color:#1a2a3c;">${t.name}</span>
-        <button class="skup-opt-btn" data-tid="${tid}" data-val="yes" onclick="selectSkupOpt(this)"
-          style="padding:5px 10px;border-radius:6px;border:2px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
-          ✅ Postoupí<br><span style="font-weight:400;color:#666;">${ODDS}</span>
+        <button class="skup-opt-btn" data-tid="${tid}" data-val="yes" data-odds="${o.yes}" onclick="selectSkupOpt(this)"
+          style="padding:5px 10px;border-radius:6px;border:2px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;text-align:center;">
+          ✅ Postoupí<br><span style="font-weight:600;color:#16a34a;">${o.yes}</span>
         </button>
-        <button class="skup-opt-btn" data-tid="${tid}" data-val="no" onclick="selectSkupOpt(this)"
-          style="padding:5px 10px;border-radius:6px;border:2px solid #fecaca;background:#fff5f5;color:#dc2626;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
-          ❌ Nepostoupí<br><span style="font-weight:400;color:#666;">${ODDS}</span>
+        <button class="skup-opt-btn" data-tid="${tid}" data-val="no" data-odds="${o.no}" onclick="selectSkupOpt(this)"
+          style="padding:5px 10px;border-radius:6px;border:2px solid #fecaca;background:#fff5f5;color:#dc2626;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;text-align:center;">
+          ❌ Nepostoupí<br><span style="font-weight:600;color:#dc2626;">${o.no}</span>
         </button>
       </div>`
     }).join('')
@@ -620,9 +650,7 @@ async function buildSkupinaSazkyPanel(teamIds){
     const p=players[name]; if(!p) return ''
     const bet=(existingBets||[]).find(b=>b.player_id===p.id)
     if(bet){
-      const tid=bet.tip_key?.split('_')[0]
-      const isYes=bet.tip_key?.endsWith('_yes')
-      const t=teamsMap[tid]
+      const tid=bet.tip_key?.split('_')[0],isYes=bet.tip_key?.endsWith('_yes'),t=teamsMap[tid]
       const won=bet.status==='won',lost=bet.status==='lost'
       const statusHtml=won
         ?`<span style="color:#16a34a;font-weight:800;">🎉 +${Math.round(bet.potential_win-bet.amount).toLocaleString('cs-CZ')} Kč</span>`
@@ -633,11 +661,13 @@ async function buildSkupinaSazkyPanel(teamIds){
     }
     const pk=name.toLowerCase()
     return `<div style="background:#f7f9fb;border-radius:8px;padding:10px 14px;margin-top:6px;">
-      <div style="font-size:12px;font-weight:800;color:#0b2a3c;margin-bottom:6px;">${name}
+      <div style="font-size:12px;font-weight:800;color:#0b2a3c;margin-bottom:4px;">${name}
         <span id="skup-sel-${pk}" style="color:#aaa;font-weight:400;margin-left:6px;">— nevybráno</span>
       </div>
+      <div id="skup-summary-${pk}" style="font-size:12px;color:#aaa;margin-bottom:6px;">Vyber tip a zadej částku</div>
       <div style="display:flex;gap:8px;align-items:center;">
         <input id="skup-amt-${pk}" type="number" placeholder="Částka (Kč)" min="1"
+          oninput="updateSkupSummary('${pk}')"
           style="flex:1;padding:7px 10px;border:2px solid #dde6ef;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;">
         <button onclick="placeSkupBet('${name}')"
           style="padding:7px 16px;background:#27ae60;color:#fff;border:none;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">
@@ -653,7 +683,7 @@ async function buildSkupinaSazkyPanel(teamIds){
       🎲 Vsaď si na postupující / nepostupující ▼
     </button>
     <div id="${panelId}" style="display:none;margin-top:6px;background:#fff;border-radius:12px;border:1px solid #dde6ef;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-      <div style="font-size:12px;color:#6b7a8d;margin-bottom:10px;">Vyber tým a zda postoupí (1.–2. místo) nebo nepostoupí (3.–4. místo) ze skupiny. Kurz: ${ODDS}</div>
+      <div style="font-size:12px;color:#6b7a8d;margin-bottom:10px;">Kurzy jsou počítány podle form ratingu týmů.</div>
       <div>${teamRowsHtml()}</div>
       ${playerSection('Kubele')}
       ${playerSection('Pici')}
@@ -661,14 +691,28 @@ async function buildSkupinaSazkyPanel(teamIds){
   `
 
   window._skupSel=null
+
+  window.updateSkupSummary=function(pk){
+    const sel=window._skupSel
+    const sumEl=document.getElementById('skup-summary-'+pk)
+    if(!sumEl) return
+    const amount=Number(document.getElementById('skup-amt-'+pk)?.value)
+    if(!sel||!amount){sumEl.style.color='#aaa';sumEl.textContent='Vyber tip a zadej částku';return}
+    const win=Math.round(amount*sel.odds)
+    const profit=Math.round(amount*sel.odds-amount)
+    sumEl.style.color='#16a34a'
+    sumEl.innerHTML=`Kurz: <b>${sel.odds}</b> · Výhra: <b>${win.toLocaleString('cs-CZ')} Kč</b> · Zisk: <b>+${profit.toLocaleString('cs-CZ')} Kč</b>`
+  }
+
   window.selectSkupOpt=function(btn){
     document.querySelectorAll('.skup-opt-btn').forEach(b=>{b.style.outline='none';b.style.opacity='0.65'})
     btn.style.outline='3px solid #0b2a3c';btn.style.opacity='1'
-    window._skupSel={tid:btn.dataset.tid,val:btn.dataset.val}
+    window._skupSel={tid:btn.dataset.tid,val:btn.dataset.val,odds:Number(btn.dataset.odds)}
     const t=teamsMap[btn.dataset.tid],isYes=btn.dataset.val==='yes'
     ;['kubele','pici'].forEach(pk=>{
       const el=document.getElementById('skup-sel-'+pk)
-      if(el){el.textContent=`→ ${t?.name} ${isYes?'✅ Postoupí':'❌ Nepostoupí'} (kurz ${ODDS})`;el.style.color=isYes?'#16a34a':'#dc2626'}
+      if(el){el.textContent=`→ ${t?.name} ${isYes?'✅ Postoupí':'❌ Nepostoupí'}`;el.style.color=isYes?'#16a34a':'#dc2626'}
+      updateSkupSummary(pk)
     })
   }
 
@@ -683,11 +727,9 @@ async function buildSkupinaSazkyPanel(teamIds){
     if(player.credit<amount){alert('Nedostatek kreditu');return}
     const {data:ex}=await db.from('bets_special').select('id').eq('type','skupina_postup').eq('player_id',player.id).maybeSingle()
     if(ex){alert('Už máš vsazeno!');return}
-    const tipKey=`${sel.tid}_${sel.val}`
-    const potWin=amount*ODDS
-    const newCredit=player.credit-amount
+    const tipKey=`${sel.tid}_${sel.val}`,potWin=amount*sel.odds,newCredit=player.credit-amount
     await db.from('players').update({credit:newCredit}).eq('id',player.id)
-    await db.from('bets_special').insert({player_id:player.id,type:'skupina_postup',tip_key:tipKey,odds:ODDS,amount,potential_win:potWin,status:'pending'})
+    await db.from('bets_special').insert({player_id:player.id,type:'skupina_postup',tip_key:tipKey,odds:sel.odds,amount,potential_win:potWin,status:'pending'})
     await db.from('credit_history').insert({player_id:player.id,type:'bet',description:`Skupina: ${teamsMap[sel.tid]?.name} ${sel.val==='yes'?'postoupí':'nepostoupí'}`,amount:-amount,credit_before:player.credit,credit_after:newCredit,source:'bets_special'})
     location.reload()
   }
