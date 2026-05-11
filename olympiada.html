@@ -641,11 +641,10 @@ async function buildSkupinaSazkyPanel(teamIds){
         ?`<span style="color:#16a34a;font-weight:800;">🎉 Výhra +${Math.round(bet.potential_win-bet.amount).toLocaleString('cs-CZ')} Kč</span>`
         :lost?`<span style="color:#dc2626;font-weight:700;">❌ Prohra -${Math.round(bet.amount).toLocaleString('cs-CZ')} Kč</span>`
         :`<span style="color:#1a5276;font-size:12px;">${isYes?'✅ Postoupí':'❌ Nepostoupí'} · vsadil <b>${Math.round(bet.amount).toLocaleString('cs-CZ')} Kč</b> · možná výhra <b>${Math.round(bet.potential_win).toLocaleString('cs-CZ')} Kč</b></span>`
-      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;flex-wrap:wrap;">
-        <span style="font-weight:800;color:#0b2a3c;min-width:55px;">${playerName}:</span>${resultHtml}</div>`
+return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;flex-wrap:wrap;">
+        ${resultHtml}</div>`
     }
-    return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;flex-wrap:wrap;">
-      <span style="font-weight:800;color:#0b2a3c;font-size:12px;min-width:55px;">${playerName}:</span>
+ return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;flex-wrap:wrap;">
       <button class="skup-opt-btn" data-tid="${teamId}" data-val="yes" data-odds="${o.yes}" data-pk="${pk}" onclick="selectSkupTeamOpt(this)"
         style="padding:4px 8px;border-radius:5px;border:2px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
         ✅ Postoupí ${o.yes}
@@ -664,17 +663,16 @@ async function buildSkupinaSazkyPanel(teamIds){
     </div>`
   }
 
-  function teamCard(tid){
+function teamCard(tid, playerName){
     const t=teamsMap[tid];if(!t)return ''
     const o=odds[tid]
-    return `<div style="background:#f7f9fb;border-radius:10px;border:1px solid #dde6ef;padding:12px 14px;margin-bottom:8px;">
+    return `<div style="background:#f7f9fb;border-radius:10px;border:1px solid #dde6ef;padding:10px 12px;margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e8ecf0;">
-        ${logoHtml(tid,26)}
-        <span style="font-size:14px;font-weight:800;color:#0b2a3c;flex:1;">${t.name}</span>
-        <span style="font-size:11px;color:#6b7a8d;">Postoupí: <b style="color:#16a34a;">${o.yes}</b> · Nepostoupí: <b style="color:#dc2626;">${o.no}</b></span>
+        ${logoHtml(tid,22)}
+        <span style="font-size:13px;font-weight:800;color:#0b2a3c;flex:1;">${t.name}</span>
+        <span style="font-size:10px;color:#6b7a8d;white-space:nowrap;">✅ <b style="color:#16a34a;">${o.yes}</b> · ❌ <b style="color:#dc2626;">${o.no}</b></span>
       </div>
-      ${playerBetRow('Kubele',tid,o)}
-      ${playerBetRow('Pici',tid,o)}
+      ${playerBetRow(playerName,tid,o)}
     </div>`
   }
 
@@ -684,8 +682,17 @@ async function buildSkupinaSazkyPanel(teamIds){
       🎲 Vsaď si na postupující / nepostupující ▼
     </button>
     <div id="${panelId}" style="display:none;margin-top:6px;">
-      <div style="font-size:12px;color:#6b7a8d;margin-bottom:8px;padding:0 2px;">Kurzy počítány podle form ratingu. Každý hráč může vsadit na každý tým zvlášť.</div>
-      ${ids.map(teamCard).join('')}
+      <div style="font-size:12px;color:#6b7a8d;margin-bottom:10px;">Kurzy počítány podle form ratingu. Každý hráč může vsadit na každý tým zvlášť.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;text-align:center;">👤 Kubele</div>
+          ${ids.map(tid=>teamCard(tid,'Kubele')).join('')}
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;text-align:center;">👤 Pici</div>
+          ${ids.map(tid=>teamCard(tid,'Pici')).join('')}
+        </div>
+      </div>
     </div>
   `
 
