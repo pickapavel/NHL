@@ -676,20 +676,23 @@ function teamCard(tid, playerName){
     </div>`
   }
 
+const kubeleCredit=players['Kubele']?Math.round(players['Kubele'].credit).toLocaleString('cs-CZ')+' Kč':''
+  const piciCredit=players['Pici']?Math.round(players['Pici'].credit).toLocaleString('cs-CZ')+' Kč':''
+
   wrap.innerHTML=`
-    <button onclick="const b=document.getElementById('${panelId}');const o=b.style.display!=='none';b.style.display=o?'none':'block';this.innerHTML=o?'🎲 Vsaď si na postupující / nepostupující ▼':'🎲 Vsaď si na postupující / nepostupující ▲'"
-      style="width:100%;padding:10px;font-size:13px;font-weight:700;color:white;background:linear-gradient(135deg,#1e8449,#27ae60);border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;">
-      🎲 Vsaď si na postupující / nepostupující ▼
-    </button>
     <div id="${panelId}" style="display:none;margin-top:6px;">
       <div style="font-size:12px;color:#6b7a8d;margin-bottom:10px;">Kurzy počítány podle form ratingu. Každý hráč může vsadit na každý tým zvlášť.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;text-align:center;">👤 Kubele</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;">
+            <span>👤 Kubele</span><span style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${kubeleCredit}</span>
+          </div>
           ${ids.map(tid=>teamCard(tid,'Kubele')).join('')}
         </div>
         <div>
-          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;text-align:center;">👤 Pici</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;padding:8px 14px;background:#0b2a3c;border-radius:8px;">
+            <span>👤 Pici</span><span style="font-size:11px;color:#7ab0cc;font-weight:600;">💰 ${piciCredit}</span>
+          </div>
           ${ids.map(tid=>teamCard(tid,'Pici')).join('')}
         </div>
       </div>
@@ -774,10 +777,14 @@ const allKvNasMatches=kvNasNames.flatMap(n=>getMs(n))
         return `<tr><td>${i+1}</td><td class="td-l"><div class="team-cell-s">${badge}${logoHtml(tid,20)}<span class="tc-name">${team.name}</span></div></td><td><span class="pts-pill">${t.b}</span></td><td>${t.z}</td><td>${t.gf}:${t.ga}</td></tr>`
       }).join("")||`<tr><td colspan="5" style="text-align:center;padding:10px;color:#aaa;font-size:12px;">Zatím žádné zápasy</td></tr>`}</tbody>
     </table>
-    <div style="font-size:10px;color:#6b7a8d;padding:6px 10px;background:#f7f9fb;border-top:1px solid #eee;">
+<div style="font-size:10px;color:#6b7a8d;padding:6px 10px;background:#f7f9fb;border-top:1px solid #eee;">
       <span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;"><span class="postup-badge pb-direct"></span> → ČF přímo</span>
       <span style="display:inline-flex;align-items:center;gap:4px;"><span class="postup-badge pb-osm-badge"></span> → Osmifinále</span>
     </div>
+    <button onclick="const b=document.getElementById('skup-sazky-body');const o=b&&b.style.display!=='none';if(b)b.style.display=o?'none':'block';this.innerHTML=o?'🎲 Vsaď si na postupující / nepostupující ▼':'🎲 Vsaď si na postupující / nepostupující ▲'"
+      style="width:100%;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#27ae60;border:none;border-top:1px solid #219a52;cursor:pointer;font-family:'DM Sans',sans-serif;">
+      🎲 Vsaď si na postupující / nepostupující ▼
+    </button>
   </div>`
 
   document.getElementById("bk-skupina-btns").innerHTML=buildRozpisBtn('skupina-all', skupMatches)
