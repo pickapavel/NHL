@@ -305,12 +305,13 @@ function logoClass(team, compMap){
 
 async function loadTicker(){
   try {
-    const [teams, seasons, matches, competitions, betsRaw, playersRaw] = await Promise.all([
+ const [teams, seasons, matches, competitions, betsRaw, betsSpecialRaw, playersRaw] = await Promise.all([
       sbFetch('teams', '*'),
       sbFetch('seasons', '*', 'order=created_at.asc'),
       sbFetch('matches', 'id,season_id,home_team,away_team,home_score,away_score,played,played_at,round,result_type'),
       sbFetch('competitions', '*'),
       sbFetch('bets', 'match_id,player_id,tip,amount,potential_win,status'),
+      sbFetch('bets_special', 'match_id,player_id,tip_key,amount,potential_win,status'),
       sbFetch('players', 'id,name'),
     ])
 
@@ -365,8 +366,8 @@ async function loadTicker(){
     const allSeasons = seasons || []
 
     // Sázky — indexované podle match_id
-    const betsByMatch = {}
-    ;(betsRaw||[]).forEach(b => {
+   const betsByMatch = {}
+    ;[...(betsRaw||[]), ...(betsSpecialRaw||[])].forEach(b => {
       if(!betsByMatch[b.match_id]) betsByMatch[b.match_id] = []
       betsByMatch[b.match_id].push(b)
     })
@@ -475,17 +476,23 @@ async function loadTicker(){
       const awaySN = getShortName(away)
       const matchBets = betsByMatch[m.id] || []
 
-      function betHtml(playerName) {
+ function betHtml(playerName) {
         const player = playersList.find(p => p.name === playerName)
         if(!player) return `<span class="t-bet pending">${playerName}: —</span>`
-        const bet = matchBets.find(b => b.player_id === player.id)
-        if(!bet) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
-        if(bet.status === 'won')
-          return `<span class="t-bet won">${playerName}: +${Math.round(bet.potential_win - bet.amount).toLocaleString('cs-CZ')} Kč</span>`
-        if(bet.status === 'lost')
-          return `<span class="t-bet lost">${playerName}: -${Math.round(bet.amount).toLocaleString('cs-CZ')} Kč</span>`
-        const label = getTipLabel(bet.tip, homeSN, awaySN)
-        return `<span class="t-bet pending">${playerName}: ${label}</span>`
+        const playerBets = matchBets.filter(b => b.player_id === player.id)
+        if(!playerBets.length) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
+        const allSettled = playerBets.every(b => b.status === 'won' || b.status === 'lost')
+        if(allSettled) {
+          let net = 0
+          playerBets.forEach(b => {
+            if(b.status === 'won') net += Math.round(b.potential_win - b.amount)
+            else net -= Math.round(b.amount)
+          })
+          const cls = net >= 0 ? 'won' : 'lost'
+          const str = net >= 0 ? `+${net.toLocaleString('cs-CZ')}` : `${net.toLocaleString('cs-CZ')}`
+          return `<span class="t-bet ${cls}">${playerName}: ${str} Kč</span>`
+        }
+        return `<span class="t-bet pending">${playerName}: tipuje</span>`
       }
 
       addDivider(track)
