@@ -37,18 +37,13 @@ function secToToi(s) {
 async function main() {
   const now = new Date()
 
-  const [statsRaw, teamsRaw, seasonsRaw, stagesRaw, matchesRaw] = await Promise.all([
+const [statsRaw, teams, seasons, stages, matches] = await Promise.all([
     fetchAll('player_match_stats'),
-    supabase.from('teams').select('id,name,team_abbr,logo,team_type'),
-    supabase.from('seasons').select('id,name,competition_id'),
-    supabase.from('stages').select('id,season_id,name,parent_stage_id'),
-    supabase.from('matches').select('id,season_id,stage_id,home_team,away_team,home_score,away_score,result_type,stats'),
+    fetchAll('teams'),
+    fetchAll('seasons'),
+    fetchAll('stages'),
+    fetchAll('matches'),
   ])
-
-  const teams = teamsRaw.data || []
-  const seasons = seasonsRaw.data || []
-  const stages = stagesRaw.data || []
-  const matches = matchesRaw.data || []
   const stats = statsRaw || []
 
   const teamMap = {}
@@ -260,22 +255,19 @@ async function main() {
       </div>
       ${section('👤 Hráči — Pohár', playerTableHtml(poharPlayers))}
       ${section('🥅 Brankáři — Pohár', poharGoalies.length ? goalieTableHtml(poharGoalies) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
-      ${poharTeams.length ? section('🏒 Týmové statistiky — Pohár', teamTableHtml(poharTeams)) : ''}
-
+      ${section('🏒 Týmové statistiky — Pohár', poharTeams.length ? teamTableHtml(poharTeams) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
       <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:20px 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
         🌍 Mistrovství světa — statistiky
       </div>
       ${section('👤 Hráči — MS', playerTableHtml(reprePlayers.filter(p => enriched.some(r => r.compId === COMP_IDS.ms && r.player_name === p.name))))}
       ${section('🥅 Brankáři — MS', repreGoalies.length ? goalieTableHtml(repreGoalies.filter(g => enriched.some(r => r.compId === COMP_IDS.ms && r.player_name === g.name))) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
-      ${msTeams.length ? section('🏒 Týmové statistiky — MS', teamTableHtml(msTeams)) : ''}
-
+      ${section('🏒 Týmové statistiky — MS', msTeams.length ? teamTableHtml(msTeams) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
       <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:20px 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
         🏅 Olympiáda — statistiky
       </div>
       ${section('👤 Hráči — Olympiáda', playerTableHtml(enriched.filter(r => r.compId === COMP_IDS.olympiada) ? aggregatePlayers(enriched.filter(r => r.compId === COMP_IDS.olympiada)) : []))}
       ${section('🥅 Brankáři — Olympiáda', goalieTableHtml(aggregateGoalies(enriched.filter(r => r.compId === COMP_IDS.olympiada), matches)))}
-      ${olympiadaTeams.length ? section('🏒 Týmové statistiky — Olympiáda', teamTableHtml(olympiadaTeams)) : ''}
-
+      ${section('🏒 Týmové statistiky — Olympiáda', olympiadaTeams.length ? teamTableHtml(olympiadaTeams) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
       <div style="text-align:center;font-size:11px;color:#aaa;margin-top:16px;">
         Extraliga U dvou Blbounů · automatický email · statistiky
       </div>
