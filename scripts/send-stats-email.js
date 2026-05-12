@@ -258,8 +258,8 @@ function aggregateTeamsAll() {
   const allGoalies = aggregateGoalies(enriched, matches)
 
   const allTeamStats = aggregateTeamsAll()
-  const poharTeams = aggregateTeams(COMP_IDS.pohar)  const msTeams = aggregateTeams(COMP_IDS.ms)
-  const olympiadaTeams = aggregateTeams(COMP_IDS.olympiada)
+  const poharTeams = aggregateTeams(COMP_IDS.pohar)
+  const msTeams = aggregateTeams(COMP_IDS.ms)  const olympiadaTeams = aggregateTeams(COMP_IDS.olympiada)
 
   // Hráči jen z reprezentačních soutěží
   const reprePlayers = aggregatePlayers(enriched.filter(r => REPRE_COMP_IDS.has(r.compId)))
