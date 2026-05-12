@@ -13,7 +13,12 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-      - run: node scripts/send-email.js
+- run: node scripts/send-email.js
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_URL: https://qaocbodrflsaerxntfui.supabase.co
+          SUPABASE_KEY: sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU
+      - run: node scripts/send-stats-email.js
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SUPABASE_URL: https://qaocbodrflsaerxntfui.supabase.co
