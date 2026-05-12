@@ -576,8 +576,14 @@ function resolveTeamAbbr(matchId, rawAbbr){
   const homeBase = homeDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
   const awayBase = awayDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
 
-  if(raw === homeBase) return homeDbAbbr
+ if(raw === homeBase) return homeDbAbbr
   if(raw === awayBase) return awayDbAbbr
+
+  // Zkus anglickou zkratku (team_abbr_en)
+  const homeEn = (homeTeam.team_abbr_en||'').trim().toUpperCase()
+  const awayEn = (awayTeam.team_abbr_en||'').trim().toUpperCase()
+  if(homeEn && raw === homeEn) return homeDbAbbr
+  if(awayEn && raw === awayEn) return awayDbAbbr
 
   // Fallback — vrať původní zkratku
   return rawAbbr
