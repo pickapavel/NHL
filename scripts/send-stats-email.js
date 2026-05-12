@@ -144,6 +144,36 @@ const [statsRaw, teams, seasons, stages, matches] = await Promise.all([
     return Object.values(map).sort((a, b) => b.w - a.w || (b.gf - b.ga) - (a.gf - a.ga))
   }
 
+function aggregateTeamsAll() {
+    const map = {}
+    matches.filter(m => m.home_score != null).forEach(m => {
+      const homeTeam = teams.find(t => t.id === m.home_team)
+      const awayTeam = teams.find(t => t.id === m.away_team)
+      ;[[homeTeam, Number(m.home_score), Number(m.away_score)], [awayTeam, Number(m.away_score), Number(m.home_score)]].forEach(([team, tg, og]) => {
+        if (!team?.team_abbr) return
+        const abbr = team.team_abbr
+        if (!map[abbr]) map[abbr] = { team: abbr, gp: 0, gf: 0, ga: 0, w: 0, l: 0, vp: 0, pp: 0, vot: 0, pot: 0, vsn: 0, psn: 0, shots: 0, ppg: 0, shg: 0, hits: 0 }
+        const e = map[abbr]
+        e.gp++; e.gf += tg; e.ga += og
+        let st = null; try { st = m.stats ? JSON.parse(m.stats) : null } catch (err) {}
+        const isSN = st && (st[20] === '1' || st[20] === '2')
+        const isOT = st && !isSN && (st[9] === '11' || st[19] === '11')
+        const won = tg > og
+        if (won) { e.w++; if (isSN) e.vsn++; else if (isOT) e.vot++; else e.vp++ }
+        else { e.l++; if (isSN) e.psn++; else if (isOT) e.pot++; else e.pp++ }
+      })
+    })
+    stats.filter(r => !r.is_goalie).forEach(r => {
+      const abbr = r.team_abbr
+      if (!map[abbr]) return
+      map[abbr].shots += r.shots || 0
+      map[abbr].ppg += r.ppg || 0
+      map[abbr].shg += r.shg || 0
+      map[abbr].hits += r.hits || 0
+    })
+    return Object.values(map).sort((a, b) => b.w - a.w || (b.gf - b.ga) - (a.gf - a.ga))
+  }
+  
   // ── Renderovací pomocníci ───────────────────────────────────────
   const th = (label) => `<th style="padding:7px 8px;text-align:center;background:#0b2a3c;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;white-space:nowrap;">${label}</th>`
   const thL = (label) => `<th style="padding:7px 8px;text-align:left;background:#0b2a3c;color:#7ab0cc;font-size:11px;font-weight:700;text-transform:uppercase;">${label}</th>`
@@ -227,8 +257,8 @@ const [statsRaw, teams, seasons, stages, matches] = await Promise.all([
   const allPlayers = aggregatePlayers(enriched)
   const allGoalies = aggregateGoalies(enriched, matches)
 
-  const poharTeams = aggregateTeams(COMP_IDS.pohar)
-  const msTeams = aggregateTeams(COMP_IDS.ms)
+  const allTeamStats = aggregateTeamsAll()
+  const poharTeams = aggregateTeams(COMP_IDS.pohar)  const msTeams = aggregateTeams(COMP_IDS.ms)
   const olympiadaTeams = aggregateTeams(COMP_IDS.olympiada)
 
   // Hráči jen z reprezentačních soutěží
@@ -244,7 +274,12 @@ const [statsRaw, teams, seasons, stages, matches] = await Promise.all([
         <p style="color:#7ab0cc;margin:6px 0 0;font-size:13px;">Vygenerováno ${now.toLocaleDateString('cs-CZ')}</p>
       </div>
 
-      <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:0 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
+     <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:0 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
+        🏒 Týmové statistiky — všechny soutěže celkem
+      </div>
+      ${section('🏒 Všechny týmy', allTeamStats.length ? teamTableHtml(allTeamStats) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
+
+      <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:20px 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
         👤 Hráčské statistiky — celkové (všechny soutěže)
       </div>
       ${section('🏅 Top střelci a nahrávači', playerTableHtml(allPlayers, 50))}
