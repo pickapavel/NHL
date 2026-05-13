@@ -312,7 +312,7 @@ async function loadTicker(){
       sbFetch('competitions', '*'),
       sbFetch('bets', 'match_id,player_id,tip,amount,potential_win,status'),
       sbFetch('bets_special', 'match_id,player_id,tip_key,amount,potential_win,status'),
-      sbFetch('players', 'id,name'),
+      sbFetch('players', 'id,name,credit'),
     ])
 
     const track = document.getElementById('ticker-track')
@@ -476,11 +476,18 @@ async function loadTicker(){
       const awaySN = getShortName(away)
       const matchBets = betsByMatch[m.id] || []
 
- function betHtml(playerName) {
+ function creditHtml(playerName) {
         const player = playersList.find(p => p.name === playerName)
         if(!player) return `<span class="t-bet pending">${playerName}: —</span>`
+        const credit = Math.round(player.credit || 0).toLocaleString('cs-CZ')
+        return `<span class="t-bet pending" style="text-align:left;">${playerName}: ${credit} Kč</span>`
+      }
+
+      function betHtml(playerName) {
+        const player = playersList.find(p => p.name === playerName)
+        if(!player) return `<span class="t-bet pending">—</span>`
         const playerBets = matchBets.filter(b => b.player_id === player.id)
-        if(!playerBets.length) return `<span class="t-bet pending">${playerName}: bez tipu</span>`
+        if(!playerBets.length) return `<span class="t-bet pending">bez tipu</span>`
         const allSettled = playerBets.every(b => b.status === 'won' || b.status === 'lost')
         if(allSettled) {
           let net = 0
@@ -490,14 +497,15 @@ async function loadTicker(){
           })
           const cls = net >= 0 ? 'won' : 'lost'
           const str = net >= 0 ? `+${net.toLocaleString('cs-CZ')}` : `${net.toLocaleString('cs-CZ')}`
-          return `<span class="t-bet ${cls}">${playerName}: ${str} Kč</span>`
+          return `<span class="t-bet ${cls}">${str} Kč</span>`
         }
-        return `<span class="t-bet pending">${playerName}: tipuje</span>`
+        return `<span class="t-bet pending">tipuje</span>`
       }
 
       addDivider(track)
       const box = document.createElement('div')
       box.className = 't-box'
+      box.style.minWidth = '280px'
       box.onclick = () => { window.location.href = `statistiky-zapasu.html?id=${m.id}` }
       box.innerHTML = `
         <div class="t-team-row">
@@ -510,8 +518,10 @@ async function loadTicker(){
           <span class="t-team-name">${awaySN}</span>
           <span class="t-score-badge">${m.away_score}</span>
         </div>
-        <div class="t-bets-col">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:2px;">
+          ${creditHtml('Kubele')}
           ${betHtml('Kubele')}
+          ${creditHtml('Pici')}
           ${betHtml('Pici')}
         </div>
       `
