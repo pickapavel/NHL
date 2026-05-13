@@ -151,8 +151,10 @@ tr:hover td{background:#edf2f7;}
 .info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
 .season-number-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:4px 12px;border-radius:6px;}
 
-/* Pohár info box */
 .pohar-info{background:#fff8e1;border:1px solid #f0d060;border-radius:8px;padding:10px 14px;font-size:12px;color:#7a5200;margin-bottom:12px;}
+.standy-info{background:#e8f0fe;border:1px solid #4f86c6;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a3a6c;margin-bottom:12px;}
+
+.owner-group-label{font-size:11px;font-weight:700;color:#1a5276;text-transform:uppercase;letter-spacing:.08em;padding:10px 4px 4px;grid-column:1/-1;}
 
 .toi-dialog-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;}
 .toi-dialog-overlay.open{display:flex;}
@@ -244,7 +246,8 @@ tr:hover td{background:#edf2f7;}
   <div class="modal-section">
    <div class="modal-section-title">Kam zápasy přidat</div>
    <div class="modal-row"><label>Sezóna:</label><select id="m-season" onchange="onModalSeasonChange()"><option value="">-- Vyber sezónu --</option></select></div>
-<div class="modal-row"><label>Stage:</label><select id="m-stage" onchange="onModalStageChange()"><option value="">-- Vyber stage --</option></select></div>   <div class="modal-row" id="m-round-row" style="display:none;">
+   <div class="modal-row"><label>Stage:</label><select id="m-stage" onchange="onModalStageChange()"><option value="">-- Vyber stage --</option></select></div>
+   <div class="modal-row" id="m-round-row" style="display:none;">
     <label>Kolo pohár:</label>
     <input type="number" id="m-pohar-round" min="1" value="1" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;">
     <span style="font-size:11px;color:#888;margin-left:6px;" id="m-round-hint"></span>
@@ -265,8 +268,6 @@ tr:hover td{background:#edf2f7;}
  <div class="modal">
   <h2>🏒 Nová sezóna</h2>
   <p class="modal-sub">Průvodce vytvořením nové sezóny v databázi.</p>
-
-  <!-- Kroky wizardu — pohár má jen 3 kroky, ostatní 5 -->
   <div class="wizard-steps" id="wizardStepsBar"></div>
 
   <!-- Krok 1: Info -->
@@ -288,7 +289,7 @@ tr:hover td{background:#edf2f7;}
    <div class="modal-section">
     <div class="modal-section-title">Vyber týmy do sezóny</div>
     <div class="info-box" id="wp2-infobox">Klikni na tým pro výběr/zrušení výběru.</div>
-    <div class="select-all-bar">
+    <div class="select-all-bar" id="wp2-selectbar">
      <button class="btn-select-all" onclick="selectAllTeams()">☑ Vybrat vše</button>
      <button class="btn-deselect-all" onclick="deselectAllTeams()">☐ Zrušit vše</button>
     </div>
@@ -301,7 +302,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
-  <!-- Krok 3: Základní část (jen pro ne-pohár) -->
+  <!-- Krok 3: Základní část (jen pro ne-pohár a ne-standy) -->
   <div class="wizard-page" id="wp-3">
    <div class="modal-section">
     <div class="modal-section-title">Základní část — skupiny</div>
@@ -327,7 +328,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
-  <!-- Krok 4: Playoff (jen pro ne-pohár) -->
+  <!-- Krok 4: Playoff -->
   <div class="wizard-page" id="wp-4">
    <div class="modal-section">
     <div class="modal-section-title">Playoff struktura</div>
@@ -344,7 +345,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
-  <!-- Krok 5 / Pohár krok 3: Souhrn -->
+  <!-- Krok 5: Souhrn -->
   <div class="wizard-page" id="wp-5">
    <div class="modal-section">
     <div class="modal-section-title">Souhrn – co se vytvoří</div>
@@ -365,32 +366,14 @@ const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 const CURRENT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
 const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 const POHAR_COMPETITION_ID = "254d4b5e-cb32-4c44-8b00-3010f895359c"
+const STANDY_CUP_COMPETITION_ID = ""  // ← vlož ID po vytvoření soutěže "Standy Cup" v DB
+const PLAYER_IDS = {
+  kubele: "a5b84a2d-58e6-4bf6-877f-be814a993db6",
+  pici:   "38dd6159-1b85-4e87-9176-6a494597216f",
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-
- function filterTeamSelect(input, selectId, seasonId){
-  const q = input.value.toLowerCase()
-  const sel = document.getElementById(selectId)
-  if(!sel) return
-  const teams = getTeamsForSeason(seasonId)
-  const filtered = q ? teams.filter(t => t.name.toLowerCase().includes(q)) : teams
-  const prev = sel.value
-  sel.innerHTML = filtered.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
-  if(filtered.find(t=>t.id===prev)) sel.value = prev
-}
-
- function onModalStageChange(){
-  const isPohar = isPoharSeason(document.getElementById("m-season").value)
-  const isPlayoff = isPlayoffStageSelected()
-  document.querySelectorAll(".entry-round-wrap").forEach(el=>{
-    el.style.display = (isPohar||isPlayoff) ? "none" : "block"
-  })
-  document.querySelectorAll(".match-entry").forEach(entry=>{
-    const fields = entry.querySelector(".entry-fields")
-    if(fields) fields.style.gridTemplateColumns = (isPohar||isPlayoff) ? "1fr 1fr" : "1fr 1fr 80px"
-  })
-}
 
 const { createClient } = supabase
 const db = createClient(SUPABASE_URL, SUPABASE_KEY)
@@ -399,6 +382,7 @@ let teamsMap={}, filesMap={}, allTeams=[], allStages=[], allSeasons=[], allCompe
 let currentSeasonId="", currentStageId="", currentTeamFilter="", entryCount=0
 let nsSelectedTeams=new Set(), nsSelectedStructure="none", nsGroupCount=1
 let isPoharWizard = false
+let isStandyCupWizard = false
 
 const gamestatMap = {}
 const playerstatMap = {}
@@ -421,6 +405,29 @@ function toggleDropdown(matchId){
   const menu = document.getElementById(`dd-${matchId}`)
   document.querySelectorAll('.dropdown-menu.open').forEach(m => { if(m!==menu) m.classList.remove('open') })
   menu.classList.toggle('open')
+}
+
+function filterTeamSelect(input, selectId, seasonId){
+  const q = input.value.toLowerCase()
+  const sel = document.getElementById(selectId)
+  if(!sel) return
+  const teams = getTeamsForSeason(seasonId)
+  const filtered = q ? teams.filter(t => t.name.toLowerCase().includes(q)) : teams
+  const prev = sel.value
+  sel.innerHTML = filtered.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
+  if(filtered.find(t=>t.id===prev)) sel.value = prev
+}
+
+function onModalStageChange(){
+  const isPohar = isPoharSeason(document.getElementById("m-season").value)
+  const isPlayoff = isPlayoffStageSelected()
+  document.querySelectorAll(".entry-round-wrap").forEach(el=>{
+    el.style.display = (isPohar||isPlayoff) ? "none" : "block"
+  })
+  document.querySelectorAll(".match-entry").forEach(entry=>{
+    const fields = entry.querySelector(".entry-fields")
+    if(fields) fields.style.gridTemplateColumns = (isPohar||isPlayoff) ? "1fr 1fr" : "1fr 1fr 80px"
+  })
 }
 
 // =====================================================
@@ -507,7 +514,7 @@ function calcScoreFromGamestat(events, homeAbbr, awayAbbr) {
     const isHome = ev.team === homeAbbr
     const p = (ev.period || '').trim()
     if (p === 'Shootout' || p === 'SO') { hasSN = true; snWinnerIsHome = isHome }
-else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime' || /^[0-9]*ot$/i.test(p)) { hasOT = true; if (isHome) hg3++; else ag3++ }
+    else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime' || /^[0-9]*ot$/i.test(p)) { hasOT = true; if (isHome) hg3++; else ag3++ }
     else if (p === '1') { if (isHome) hg1++; else ag1++ }
     else if (p === '2') { if (isHome) hg2++; else ag2++ }
     else if (p === '3') { if (isHome) hg3++; else ag3++ }
@@ -555,39 +562,26 @@ function handleXlsFiles(e, matchId) {
   })
 }
 
- // Přeloží zkratku z gamestatu na správnou DB zkratku
-// Hledá match → home_team/away_team → teams.team_abbr
 function resolveTeamAbbr(matchId, rawAbbr){
-  // Najdi zápas v allMatches
   const match = allMatches.find(m => m.id === matchId)
   if(!match) return rawAbbr
-
   const homeTeam = teamsMap[match.home_team]
   const awayTeam = teamsMap[match.away_team]
-
   if(!homeTeam || !awayTeam) return rawAbbr
-
   const homeDbAbbr = homeTeam.team_abbr || ''
   const awayDbAbbr = awayTeam.team_abbr || ''
-
-  // Porovnej rawAbbr s DB zkratkami — vezmi základ bez suffixu
-  // např. rawAbbr = "SPA", homeDbAbbr = "SPA (P)" → match
   const raw = rawAbbr.trim().toUpperCase()
   const homeBase = homeDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
   const awayBase = awayDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
-
- if(raw === homeBase) return homeDbAbbr
+  if(raw === homeBase) return homeDbAbbr
   if(raw === awayBase) return awayDbAbbr
-
-  // Zkus anglickou zkratku (team_abbr_en)
   const homeEn = (homeTeam.team_abbr_en||'').trim().toUpperCase()
   const awayEn = (awayTeam.team_abbr_en||'').trim().toUpperCase()
   if(homeEn && raw === homeEn) return homeDbAbbr
   if(awayEn && raw === awayEn) return awayDbAbbr
-
-  // Fallback — vrať původní zkratku
   return rawAbbr
 }
+
 async function savePlayerStats(matchId, gamestatRows, playerstatRows){
   await db.from('match_events').delete().eq('match_id', matchId)
   await db.from('player_match_stats').delete().eq('match_id', matchId)
@@ -614,7 +608,8 @@ async function savePlayerStats(matchId, gamestatRows, playerstatRows){
       const playerId = (r['Player ID']||r['player_id']) && !isNaN(Number(r['Player ID']||r['player_id'])) ? Number(r['Player ID']||r['player_id']) : null
       return {
         match_id: matchId, player_id: playerId, player_name: r['Player Name']||r['player_name']||'',
-team_abbr: resolveTeamAbbr(matchId, r['Team']||r['team_abbr']||''), pos, toi: r['Time']||r['toi']||'00:00',        goals: isGoalie ? 0 : Number(r['Goal']||r['goals'])||0,
+        team_abbr: resolveTeamAbbr(matchId, r['Team']||r['team_abbr']||''), pos, toi: r['Time']||r['toi']||'00:00',
+        goals: isGoalie ? 0 : Number(r['Goal']||r['goals'])||0,
         assists: Number(r['Asst']||r['assists'])||0,
         points: isGoalie ? 0 : (Number(r['Goal']||r['goals'])||0)+(Number(r['Asst']||r['assists'])||0),
         plus_minus: isGoalie ? 0 : Number(r['+/-']||r['plus_minus'])||0,
@@ -698,20 +693,14 @@ async function recalculateAllRatings(){
       sorted.forEach((teamId,i)=>newPositionMap[teamId]=i+1)
     }
   }
-for(const team of teams){
+  for(const team of teams){
     const newPos=newPositionMap[team.id]||0, oldPos=team.table_position||0
-
     const updateData={
       rating_overall: eloRatings[team.id]||R_START,
       rating_form:    formRatings[team.id]||R_START,
       table_position: newPos,
     }
-
-    // Kopíruj staré pořadí do _prev POUZE pokud se pořadí skutečně změnilo
-    if(oldPos>0 && oldPos!==newPos){
-      updateData.table_position_prev=oldPos
-    }
-
+    if(oldPos>0 && oldPos!==newPos){ updateData.table_position_prev=oldPos }
     await db.from("teams").update(updateData).eq("id",team.id)
   }
 }
@@ -875,19 +864,19 @@ function render(matches, matchesWithPlayers){
 }
 
 // =====================================================
-// MODAL PŘIDAT ZÁPASY — detekce pohár sezóny
+// MODAL PŘIDAT ZÁPASY
 // =====================================================
-
- function getTeamsForSeason(seasonId){
+function getTeamsForSeason(seasonId){
   const season = allSeasons.find(s => s.id === seasonId)
   const compId = season?.competition_id || ""
   return allTeams.filter(t => {
     if(compId === EXTRALIGA_COMPETITION_ID) return t.in_extraliga
-    if(compId === POHAR_COMPETITION_ID)     return t.in_extraliga || t.in_reprezentace || t.in_olympiada
-    // Reprezentace, MS, Olympiáda, Exhibice
+    if(compId === POHAR_COMPETITION_ID) return t.in_extraliga || t.in_reprezentace || t.in_olympiada
+    if(STANDY_CUP_COMPETITION_ID && compId === STANDY_CUP_COMPETITION_ID) return t.owner_id === PLAYER_IDS.kubele || t.owner_id === PLAYER_IDS.pici
     return t.in_reprezentace || t.in_olympiada
   })
 }
+
 function isPoharSeason(seasonId){
   const season = allSeasons.find(s=>s.id===seasonId)
   return season?.competition_id === POHAR_COMPETITION_ID
@@ -902,7 +891,7 @@ async function openModal(){
   addEntry()
   document.getElementById("modalOverlay").classList.add("open")
 }
- 
+
 function closeModal(){ document.getElementById("modalOverlay").classList.remove("open") }
 
 async function onModalSeasonChange(){
@@ -910,27 +899,20 @@ async function onModalSeasonChange(){
   const stageSel = document.getElementById("m-stage")
   stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
   if(!seasonId){ _poharMatchCount = 0; return }
-
-  // Načti počet zápasů pro vybranou sezónu
   const {data:pm} = await db.from("matches").select("round").eq("season_id", seasonId).order("round", {ascending:false}).limit(1)
   _poharMatchCount = pm?.[0]?.round || 0
   const seasonStages=allStages.filter(s=>s.season_id===seasonId)
   seasonStages.forEach(s=>{ const o=document.createElement("option"); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
   if(currentStageId){ const f=seasonStages.find(s=>s.id===currentStageId); if(f) stageSel.value=currentStageId }
   else{ const z=seasonStages.find(s=>!s.parent_stage_id&&s.order===1)||seasonStages[0]; if(z) stageSel.value=z.id }
-
-  // Pohárové kolo — zobraz/skryj pole a aktualizuj nápovědu
   const isPohar = isPoharSeason(seasonId)
   const roundRow = document.getElementById("m-round-row")
   roundRow.style.display = isPohar ? "flex" : "none"
   if(isPohar) updatePoharRoundHint()
-
-  // Skryj/zobraz kolo v jednotlivých entries
-const isPlayoffStage = isPlayoffStageSelected()
+  const isPlayoffStage = isPlayoffStageSelected()
   document.querySelectorAll(".entry-round-wrap").forEach(el=>{
     el.style.display = (isPohar||isPlayoffStage) ? "none" : "block"
   })
- // Přegeneruj týmy ve všech existujících entries po změně sezóny
   const refiltered = getTeamsForSeason(seasonId)
   const reOpts = refiltered.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
   document.querySelectorAll(".match-entry").forEach(entry => {
@@ -945,7 +927,6 @@ const isPlayoffStage = isPlayoffStageSelected()
 function isPlayoffStageSelected(){
   const stageId = document.getElementById("m-stage")?.value
   if(!stageId) {
-    // Fallback — zkus stage z hlavního filtru
     const mainStageId = document.getElementById("stageFilter")?.value
     const mainStage = allStages.find(s=>s.id===mainStageId)
     if(!mainStage) return false
@@ -957,7 +938,7 @@ function isPlayoffStageSelected(){
   const playoffNames = ["Čtvrtfinále","Semifinále","Finále","O 3. místo","Playoff","Baráž"]
   return playoffNames.some(n=>stage.name.includes(n))
 }
- 
+
 function updatePoharRoundHint(){
   const nextRound = (_poharMatchCount || 0) + 1
   document.getElementById("m-pohar-round").value = nextRound
@@ -973,7 +954,6 @@ function addEntry(){
   const filteredTeams = getTeamsForSeason(seasonId)
   const teamOptions = filteredTeams.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")
   const isPlayoffStage = isPlayoffStageSelected()
-
   let nextRound = 1
   if(isPohar && seasonId){
     const existingEntries = cont.querySelectorAll(".match-entry").length
@@ -982,7 +962,6 @@ function addEntry(){
     const maxRound = allMatches.length ? Math.max(...allMatches.map(m=>Number(m.round)||0)) : 0
     nextRound = maxRound + cont.querySelectorAll(".match-entry").length + 1
   }
-
   const div=document.createElement("div"); div.className="match-entry"; div.id=`entry-${id}`
   div.innerHTML=`
    <div class="match-entry-header"><span class="match-entry-num">Zápas ${id}</span><button class="btn-remove-entry" onclick="removeEntry(${id})">✕ Odebrat</button></div>
@@ -1014,10 +993,7 @@ async function saveAllMatches(){
   const stageId=document.getElementById("m-stage").value
   if(!seasonId){ alert("Vyber sezónu!"); return }
   if(!stageId){ alert("Vyber stage!"); return }
-
   const isPohar = isPoharSeason(seasonId)
-  const poharRound = isPohar ? (parseInt(document.getElementById("m-pohar-round").value)||1) : null
-
   const entries=document.querySelectorAll(".match-entry")
   const toInsert=[]; let valid=true; let entryIdx=0
   entries.forEach(entry=>{
@@ -1025,8 +1001,7 @@ async function saveAllMatches(){
     const homeId=document.getElementById(`e-home-${id}`)?.value
     const awayId=document.getElementById(`e-away-${id}`)?.value
     if(homeId===awayId){ alert(`Zápas ${id}: stejný tým!`); valid=false; return }
-    // Pro pohár: všechny zápasy v tomto přidání dostanou stejné kolo (jedno kolo = jedna fáze pavouka)
- const isPlayoff = isPlayoffStageSelected()
+    const isPlayoff = isPlayoffStageSelected()
     const round = (isPohar||isPlayoff)
       ? (_poharMatchCount + entryIdx + 1)
       : Number(document.getElementById(`e-round-${id}`)?.value)
@@ -1090,8 +1065,6 @@ function checkSingleTip(match, tip){
 
 function isWinningBet(match,tip){ return tip.includes(",")?tip.split(",").every(t=>checkSingleTip(match,t)):checkSingleTip(match,tip) }
 
-
-
 function checkGoalsBet(match, type, tipKey){
   const hg=Number(match.home_score), ag=Number(match.away_score)
   const total=hg+ag, diff=hg-ag
@@ -1123,10 +1096,9 @@ function checkGoalsBet(match, type, tipKey){
 }
 
 async function evaluateBets(match){
-  // Výsledkové sázky
   const {data:bets}=await db.from("bets").select("*").eq("match_id",match.id)
-if(bets){
-for(const bet of bets){
+  if(bets){
+    for(const bet of bets){
       if(bet.status !== "pending") continue
       const win=isWinningBet(match,bet.tip)
       await db.from("bets").update({status:win?"won":"lost"}).eq("id",bet.id)
@@ -1135,37 +1107,16 @@ for(const bet of bets){
         if(win){
           const newCredit=Number(player.credit)+Number(bet.potential_win)
           await db.from("players").update({credit:newCredit}).eq("id",player.id)
-          await db.from("credit_history").insert({
-            player_id:bet.player_id,
-            type:"won",
-            description:`Výhra sázky na zápas — tip: ${bet.tip}`,
-            amount:Number(bet.potential_win),
-            credit_before:Number(player.credit),
-            credit_after:newCredit,
-            bet_id:bet.id,
-            source:"bets"
-          })
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"won",description:`Výhra sázky na zápas — tip: ${bet.tip}`,amount:Number(bet.potential_win),credit_before:Number(player.credit),credit_after:newCredit,bet_id:bet.id,source:"bets"})
         } else {
-          await db.from("credit_history").insert({
-            player_id:bet.player_id,
-            type:"lost",
-            description:`Prohra sázky na zápas — tip: ${bet.tip}`,
-            amount:0,
-            credit_before:Number(player.credit),
-            credit_after:Number(player.credit),
-            bet_id:bet.id,
-            source:"bets"
-          })
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"lost",description:`Prohra sázky na zápas — tip: ${bet.tip}`,amount:0,credit_before:Number(player.credit),credit_after:Number(player.credit),bet_id:bet.id,source:"bets"})
         }
       }
     }
   }
-  // Gólové sázky
-  const {data:goalsBets}=await db.from("bets_special").select("*")
-    .eq("match_id",match.id)
-    .like("type","match_goals_%")
-if(goalsBets){
-for(const bet of goalsBets){
+  const {data:goalsBets}=await db.from("bets_special").select("*").eq("match_id",match.id).like("type","match_goals_%")
+  if(goalsBets){
+    for(const bet of goalsBets){
       if(bet.status !== "pending") continue
       const win=checkGoalsBet(match, bet.type, bet.tip_key)
       await db.from("bets_special").update({status:win?"won":"lost"}).eq("id",bet.id)
@@ -1174,79 +1125,42 @@ for(const bet of goalsBets){
         if(win){
           const newCredit=Number(player.credit)+Number(bet.potential_win)
           await db.from("players").update({credit:newCredit}).eq("id",player.id)
-          await db.from("credit_history").insert({
-            player_id:bet.player_id,
-            type:"won",
-            description:`Výhra sázky na góly — tip: ${bet.tip_key}`,
-            amount:Number(bet.potential_win),
-            credit_before:Number(player.credit),
-            credit_after:newCredit,
-            bet_id:bet.id,
-            source:"bets_special"
-          })
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"won",description:`Výhra sázky na góly — tip: ${bet.tip_key}`,amount:Number(bet.potential_win),credit_before:Number(player.credit),credit_after:newCredit,bet_id:bet.id,source:"bets_special"})
         } else {
-          await db.from("credit_history").insert({
-            player_id:bet.player_id,
-            type:"lost",
-            description:`Prohra sázky na góly — tip: ${bet.tip_key}`,
-            amount:0,
-            credit_before:Number(player.credit),
-            credit_after:Number(player.credit),
-            bet_id:bet.id,
-            source:"bets_special"
-          })
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"lost",description:`Prohra sázky na góly — tip: ${bet.tip_key}`,amount:0,credit_before:Number(player.credit),credit_after:Number(player.credit),bet_id:bet.id,source:"bets_special"})
         }
       }
     }
   }
 }
 
-
-
 async function revertBets(matchId){
-  // Výsledkové sázky
   const {data:bets}=await db.from("bets").select("*").eq("match_id",matchId)
   for(const bet of bets||[]){
     if(bet.status==="won"){
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
-        // Odečti výhru a vrať vsazenou částku (trigger NEvrací amount při update, jen při delete)
         const newCredit=Number(player.credit)-Number(bet.potential_win)+Number(bet.amount)
         await db.from("players").update({credit:newCredit}).eq("id",player.id)
-        await db.from("credit_history").insert({
-          player_id:bet.player_id,
-          type:"adjustment",
-          description:"Smazání výsledku — odečtení výhry, vrácení sázky",
-          amount:Number(bet.amount)-Number(bet.potential_win),
-          credit_before:Number(player.credit),
-          credit_after:newCredit,
-        })
+        await db.from("credit_history").insert({player_id:bet.player_id,type:"adjustment",description:"Smazání výsledku — odečtení výhry, vrácení sázky",amount:Number(bet.amount)-Number(bet.potential_win),credit_before:Number(player.credit),credit_after:newCredit})
       }
     }
     await db.from("bets").update({status:"pending"}).eq("id",bet.id)
   }
-  // Gólové sázky
-  const {data:goalsBets}=await db.from("bets_special").select("*")
-    .eq("match_id",matchId).like("type","match_goals_%")
+  const {data:goalsBets}=await db.from("bets_special").select("*").eq("match_id",matchId).like("type","match_goals_%")
   for(const bet of goalsBets||[]){
     if(bet.status==="won"){
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
         const newCredit=Number(player.credit)-Number(bet.potential_win)+Number(bet.amount)
         await db.from("players").update({credit:newCredit}).eq("id",player.id)
-        await db.from("credit_history").insert({
-          player_id:bet.player_id,
-          type:"adjustment",
-          description:"Smazání výsledku — odečtení výhry, vrácení sázky na góly",
-          amount:Number(bet.amount)-Number(bet.potential_win),
-          credit_before:Number(player.credit),
-          credit_after:newCredit,
-        })
+        await db.from("credit_history").insert({player_id:bet.player_id,type:"adjustment",description:"Smazání výsledku — odečtení výhry, vrácení sázky na góly",amount:Number(bet.amount)-Number(bet.potential_win),credit_before:Number(player.credit),credit_after:newCredit})
       }
     }
     await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
   }
 }
+
 async function clearResult(matchId){
   if(!confirm("Smazat výsledek? Zápas zůstane v rozpisu.")) return
   await revertBets(matchId)
@@ -1347,11 +1261,12 @@ async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEv
 // =====================================================
 // WIZARD — Nová sezóna
 // =====================================================
+function isShortWizard(){ return isPoharWizard || isStandyCupWizard }
 
 function renderWizardSteps(){
   const bar = document.getElementById("wizardStepsBar")
   bar.innerHTML = ""
-  const steps = isPoharWizard
+  const steps = isShortWizard()
     ? ["1. Info", "2. Týmy", "3. Souhrn"]
     : ["1. Info", "2. Týmy", "3. Základní část", "4. Playoff", "5. Souhrn"]
   steps.forEach((label, i) => {
@@ -1364,7 +1279,6 @@ function renderWizardSteps(){
 }
 
 function updateWizardStepIndicators(currentStep){
-  const totalSteps = isPoharWizard ? 3 : 5
   for(let i=1; i<=5; i++){
     const el = document.getElementById(`ws-${i}`)
     if(!el) continue
@@ -1375,7 +1289,8 @@ function updateWizardStepIndicators(currentStep){
 }
 
 function openNewSeasonModal(){
-  nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1; isPoharWizard=false
+  nsSelectedTeams=new Set(); nsSelectedStructure="none"; nsGroupCount=1
+  isPoharWizard=false; isStandyCupWizard=false
   renderWizardSteps()
   updateTeamsCount(); selectStructure("none")
   document.getElementById("ns-name").value=""
@@ -1390,11 +1305,12 @@ async function onNsCompetitionChange(){
   const compId = document.getElementById("ns-competition").value
   if (!compId) {
     document.getElementById("ns-season-number").textContent = "— vyber nejdřív soutěž"
-    isPoharWizard = false
+    isPoharWizard = false; isStandyCupWizard = false
     renderWizardSteps()
     return
   }
   isPoharWizard = (compId === POHAR_COMPETITION_ID)
+  isStandyCupWizard = !!(STANDY_CUP_COMPETITION_ID && compId === STANDY_CUP_COMPETITION_ID)
   renderWizardSteps()
   updateWizardStepIndicators(1)
 
@@ -1402,12 +1318,14 @@ async function onNsCompetitionChange(){
   const num = (existing||[]).length + 1
   document.getElementById("ns-season-number").innerHTML = `<span class="season-number-badge">${num}. sezóna</span>`
 
-  // Filtruj týmy podle soutěže
+  // Filtruj týmy
   let filteredTeams
   if(compId === POHAR_COMPETITION_ID){
     filteredTeams = allTeams.filter(t => t.in_extraliga || t.in_reprezentace || t.in_olympiada)
   } else if(compId === EXTRALIGA_COMPETITION_ID){
     filteredTeams = allTeams.filter(t => t.in_extraliga)
+  } else if(isStandyCupWizard){
+    filteredTeams = allTeams.filter(t => t.owner_id === PLAYER_IDS.kubele || t.owner_id === PLAYER_IDS.pici)
   } else {
     filteredTeams = allTeams.filter(t => t.in_reprezentace || t.in_olympiada)
   }
@@ -1416,18 +1334,44 @@ async function onNsCompetitionChange(){
   nsSelectedTeams = new Set()
   const grid = document.getElementById("ns-teams-grid")
   grid.innerHTML = ""
-  filteredTeams.forEach(t => {
-    const div = document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
-    div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
-    grid.appendChild(div)
-  })
+
+  if(isStandyCupWizard){
+    // Zobraz týmy rozdělené podle hráče
+    const kubeleTeams = filteredTeams.filter(t => t.owner_id === PLAYER_IDS.kubele)
+    const piciTeams   = filteredTeams.filter(t => t.owner_id === PLAYER_IDS.pici)
+    function renderOwnerGroup(label, teams){
+      const h = document.createElement("div")
+      h.className = "owner-group-label"
+      h.textContent = label
+      grid.appendChild(h)
+      teams.forEach(t => {
+        const div = document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
+        div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
+        grid.appendChild(div)
+      })
+    }
+    renderOwnerGroup("🔵 Kubeleho týmy", kubeleTeams)
+    renderOwnerGroup("🟣 Piciho týmy", piciTeams)
+    // Skryj select all/deselect all pro Standy Cup
+    document.getElementById("wp2-selectbar").style.display = "none"
+  } else {
+    filteredTeams.forEach(t => {
+      const div = document.createElement("div"); div.className="team-check"; div.id=`tc-${t.id}`; div.onclick=()=>toggleTeam(t.id)
+      div.innerHTML=`<img class="team-check-logo" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="team-check-name">${t.name}</span><div class="team-check-box" id="tcb-${t.id}"></div>`
+      grid.appendChild(div)
+    })
+    document.getElementById("wp2-selectbar").style.display = "flex"
+  }
   updateTeamsCount()
 
-  // Aktualizuj info box na kroku 2
+  // Info box
   const infoBox = document.getElementById("wp2-infobox")
   if(isPoharWizard){
     infoBox.className = "pohar-info"
     infoBox.innerHTML = "🏆 <b>Pohár</b> — vyber všechny účastníky (kluby i reprezentace). Kola se generují automaticky."
+  } else if(isStandyCupWizard){
+    infoBox.className = "standy-info"
+    infoBox.innerHTML = "🏒 <b>Standy Cup</b> — vyber týmy z každé strany. Každý tým musí porazit všechny soupeřovy týmy."
   } else {
     infoBox.className = "info-box"
     infoBox.textContent = "Klikni na tým pro výběr/zrušení výběru."
@@ -1435,13 +1379,10 @@ async function onNsCompetitionChange(){
 }
 
 function wizardGoTo(step){
-  // Pohár přeskakuje kroky 3 a 4
-  const visiblePages = isPoharWizard ? [1,2,5] : [1,2,3,4,5]
   for(let i=1;i<=5;i++){
     document.getElementById(`wp-${i}`).classList.toggle("active", i===step)
   }
-  // Spočítej vizuální číslo kroku pro indikátor
-  const visualStep = isPoharWizard
+  const visualStep = isShortWizard()
     ? ([1,2,5].indexOf(step)+1)
     : step
   updateWizardStepIndicators(visualStep)
@@ -1454,8 +1395,7 @@ function wizardNext(current){
     wizardGoTo(2)
   } else if(current===2){
     if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
-    if(isPoharWizard){
-      // Pohár — přeskočit na souhrn
+    if(isShortWizard()){
       buildSummary(); wizardGoTo(5)
     } else {
       wizardGoTo(3)
@@ -1475,8 +1415,7 @@ function wizardPrev(current){
 }
 
 function wizardPrevSummary(){
-  // Z souhrnu zpět
-  if(isPoharWizard) wizardGoTo(2)
+  if(isShortWizard()) wizardGoTo(2)
   else wizardGoTo(4)
 }
 
@@ -1514,9 +1453,11 @@ function selectStructure(val){
   ;["none","final","sf","qf"].forEach(v=>document.getElementById(`struct-${v}`).classList.toggle("selected",v===val))
 }
 
-function getStagesForStructure(groupCount, playoffStructure, isPohar){
+function getStagesForStructure(groupCount, playoffStructure, isPohar, isStandyCup){
+  if(isStandyCup){
+    return [{name:"Dobývání", order:1, parent:null}]
+  }
   if(isPohar){
-    // Pohár má jen jednu stage
     return [{name:"Pohár", order:1, parent:null}]
   }
   const stages = []
@@ -1556,23 +1497,26 @@ function buildSummary(){
   const compId=document.getElementById("ns-competition").value
   const name=document.getElementById("ns-name").value.trim()
   const comp=allCompetitions.find(c=>c.id===compId)
-  const stages=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard)
+  const stages=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard, isStandyCupWizard)
   const teams=[...nsSelectedTeams].map(id=>teamsMap[id]?.name).filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'))
   const structLabels={none:"Žádný",final:"Finále + O 3. místo",sf:"SF + Finále + O 3. místo",qf:"ČF + SF + Finále + O 3. místo"}
 
   let structureRow = ""
-  if(isPoharWizard){
+  if(isStandyCupWizard){
+    const kT=[...nsSelectedTeams].filter(id=>teamsMap[id]?.owner_id===PLAYER_IDS.kubele).map(id=>teamsMap[id]?.name).join(', ')
+    const pT=[...nsSelectedTeams].filter(id=>teamsMap[id]?.owner_id===PLAYER_IDS.pici).map(id=>teamsMap[id]?.name).join(', ')
+    structureRow=`
+      <tr><td style="padding:6px 0;color:#666;">🔵 Kubele:</td><td style="font-weight:700;">${kT||'—'}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">🟣 Pici:</td><td style="font-weight:700;">${pT||'—'}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Formát:</td><td style="font-weight:700;">Standy Cup — poraz všechny soupeřovy týmy</td></tr>`
+  } else if(isPoharWizard){
     const n = nsSelectedTeams.size
     const phases = []
-    let tymu = n
-    let kolo = 1
+    let tymu = n, kolo = 1
     while(tymu >= 2){
       const zapasu = Math.floor(tymu / 2)
-      const koloOd = kolo
-      const koloDo = kolo + zapasu - 1
-      phases.push(`Fáze ${phases.length+1}: ${zapasu} zápasů → kola <b>${koloOd}–${koloDo}</b> (${tymu} týmů)`)
-      kolo += zapasu
-      tymu = zapasu  // vítězové postupují
+      phases.push(`Fáze ${phases.length+1}: ${zapasu} zápasů → kola <b>${kolo}–${kolo+zapasu-1}</b> (${tymu} týmů)`)
+      kolo += zapasu; tymu = zapasu
     }
     structureRow = `<tr><td style="padding:6px 0;color:#666;vertical-align:top;">Struktura pavouka:</td><td style="font-weight:700;line-height:1.8;">${phases.join("<br>")}</td></tr>
     <tr><td style="padding:6px 0;color:#666;">Celkem zápasů:</td><td style="font-weight:700;">${kolo-1}</td></tr>`
@@ -1602,7 +1546,7 @@ async function createSeason(){
   const {data:season,error:e1}=await db.from("seasons").insert({name:fullName,competition_id:compId}).select().single()
   if(e1){ alert("❌ "+e1.message); return }
   const seasonId=season.id
-  const stageDefs=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard)
+  const stageDefs=getStagesForStructure(nsGroupCount, nsSelectedStructure, isPoharWizard, isStandyCupWizard)
   const stageIdMap={}
   for(const s of stageDefs){
     const parentId=s.parent?stageIdMap[s.parent]:null
