@@ -325,6 +325,7 @@ body::before{
   <div class="matches-section" id="matchesList"><div class="loading">Načítám...</div></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // KONFIGURACE — vyplň po vytvoření sezóny
@@ -609,6 +610,5 @@ const { data: matches } = await db.from('matches')
 
 load()
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </body>
 </html>
