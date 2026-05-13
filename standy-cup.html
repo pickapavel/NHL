@@ -393,8 +393,7 @@ async function load() {
 
 const { data: matches } = await db.from('matches')
     .select('id,home_team,away_team,home_score,away_score,played,result_type,round,played_at')
-    .in('home_team', allTeamIds)
-    .in('away_team', allTeamIds)
+    .eq('season_id', standySeason.id)
     .not('home_score', 'is', null)
     .order('played_at', { ascending: true })
 
