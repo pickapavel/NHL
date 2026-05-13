@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dobývání — Extraliga U dvou Blbounů</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0b1f2e;
+  --navy2:#0f2d42;
+  --blue:#1a5276;
+  --gold:#f0c040;
+  --gold2:#d4a017;
+  --kubele:#2563eb;
+  --kubele-light:#dbeafe;
+  --pici:#9333ea;
+  --pici-light:#f3e8ff;
+  --green:#16a34a;
+  --green-light:#dcfce7;
+  --red:#dc2626;
+  --red-light:#fee2e2;
+  --gray:#64748b;
+  --bg:#0d1b26;
+  --card:#122233;
+  --card2:#162840;
+  --border:rgba(255,255,255,.08);
+  --text:#e2eaf2;
+  --muted:#7ab0cc;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* BG pattern */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(37,99,235,.08) 0%,transparent 50%),
+             radial-gradient(ellipse at 80% 80%,rgba(147,51,234,.08) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+.wrapper{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative;z-index:1;}
+
+/* HEADER */
+.hero{
+  padding:40px 20px 32px;
+  text-align:center;
+  position:relative;
+}
+.hero-eyebrow{
+  font-family:'Oswald',sans-serif;
+  font-size:11px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:12px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';display:block;width:30px;height:1px;background:var(--gold);opacity:.5;
+}
+.hero-title{
+  font-family:'Oswald',sans-serif;
+  font-size:clamp(36px,6vw,64px);
+  font-weight:700;
+  color:#fff;
+  line-height:1;
+  letter-spacing:-.5px;
+  margin-bottom:8px;
+}
+.hero-title span{color:var(--gold);}
+.hero-sub{font-size:14px;color:var(--muted);margin-bottom:32px;}
+
+/* WINNER BANNER */
+.winner-banner{
+  background:linear-gradient(135deg,#78350f,#92400e,#d97706);
+  border:2px solid var(--gold);
+  border-radius:16px;
+  padding:20px 28px;
+  text-align:center;
+  margin-bottom:32px;
+  display:none;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,192,64,.4)}50%{box-shadow:0 0 0 12px rgba(240,192,64,0)}}
+.winner-banner.show{display:block;}
+.winner-banner-icon{font-size:40px;margin-bottom:8px;}
+.winner-banner-title{font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;color:#fff;}
+.winner-banner-sub{font-size:14px;color:#fde68a;margin-top:4px;}
+
+/* PROGRESS OVERVIEW */
+.overview-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:32px;
+}
+.overview-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+}
+.overview-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.overview-card.kubele::before{background:linear-gradient(90deg,var(--kubele),#60a5fa);}
+.overview-card.pici::before{background:linear-gradient(90deg,var(--pici),#c084fc);}
+.overview-card-title{
+  font-family:'Oswald',sans-serif;
+  font-size:13px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.oc-kubele{color:#60a5fa;}
+.oc-pici{color:#c084fc;}
+.team-progress-list{display:flex;flex-direction:column;gap:10px;}
+.team-progress-item{display:flex;align-items:center;gap:10px;}
+.tp-logo{width:28px;height:28px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;border:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.tp-logo-ph{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.1);flex-shrink:0;}
+.tp-name{font-size:13px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tp-bar-wrap{width:80px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.tp-bar{height:100%;border-radius:3px;transition:width .6s ease;}
+.tp-bar.kubele{background:linear-gradient(90deg,var(--kubele),#60a5fa);}
+.tp-bar.pici{background:linear-gradient(90deg,var(--pici),#c084fc);}
+.tp-count{font-size:12px;font-weight:800;flex-shrink:0;min-width:28px;text-align:right;}
+.tp-done{font-size:14px;flex-shrink:0;}
+
+/* CONQUEST MATRIX */
+.section-header{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:20px;
+}
+.section-label{
+  font-family:'Oswald',sans-serif;
+  font-size:18px;font-weight:600;
+  letter-spacing:.05em;
+}
+.section-label.kubele{color:#60a5fa;}
+.section-label.pici{color:#c084fc;}
+.section-line{flex:1;height:1px;background:var(--border);}
+.section-desc{font-size:12px;color:var(--muted);margin-bottom:16px;}
+
+.conquest-table-wrap{overflow-x:auto;margin-bottom:40px;}
+.conquest-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:4px;
+}
+.conquest-table th{
+  padding:8px 10px;
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.conquest-table th.th-attacker{
+  text-align:left;
+  width:180px;
+  padding-left:0;
+}
+.conquest-table th.th-defender{
+  text-align:center;
+  min-width:110px;
+}
+.conquest-table .td-attacker{
+  padding:6px 8px 6px 0;
+  vertical-align:middle;
+}
+.attacker-cell{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 12px;
+}
+.ac-logo{width:26px;height:26px;object-fit:contain;background:#fff;border-radius:5px;padding:2px;flex-shrink:0;}
+.ac-logo-ph{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,.1);flex-shrink:0;}
+.ac-name{font-size:12px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ac-prog{font-size:11px;font-weight:800;white-space:nowrap;flex-shrink:0;}
+.ac-prog.kubele{color:#60a5fa;}
+.ac-prog.pici{color:#c084fc;}
+.ac-prog.done{color:var(--gold);}
+
+.match-cell{
+  vertical-align:middle;
+  padding:3px;
+}
+.cell-inner{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 6px;
+  text-align:center;
+  min-width:100px;
+  cursor:default;
+  transition:all .15s;
+  position:relative;
+  overflow:hidden;
+}
+.cell-inner:hover{border-color:rgba(255,255,255,.2);}
+.cell-inner.conquered{
+  background:rgba(22,163,74,.12);
+  border-color:rgba(22,163,74,.4);
+}
+.cell-inner.pending{
+  background:var(--card);
+}
+.cell-inner.no-match{
+  background:rgba(255,255,255,.02);
+  border-color:rgba(255,255,255,.04);
+}
+.cell-icon{font-size:18px;display:block;margin-bottom:3px;}
+.cell-record{font-size:11px;font-weight:700;color:var(--muted);}
+.cell-record span.w{color:#4ade80;}
+.cell-record span.l{color:#f87171;}
+.cell-progress-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  height:3px;
+  background:rgba(22,163,74,.6);
+  border-radius:0 0 10px 10px;
+  transition:width .4s;
+}
+
+/* MATCH LIST */
+.matches-section{margin-bottom:32px;}
+.match-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 14px;
+  margin-bottom:6px;
+  font-size:12px;
+}
+.mi-teams{flex:1;display:flex;align-items:center;gap:8px;}
+.mi-team{font-weight:600;}
+.mi-score{
+  background:rgba(255,255,255,.08);
+  padding:3px 10px;
+  border-radius:6px;
+  font-weight:800;
+  font-size:13px;
+}
+.mi-score.home-win{background:rgba(22,163,74,.2);color:#4ade80;}
+.mi-score.away-win{background:rgba(248,113,113,.2);color:#f87171;}
+.mi-tag{font-size:10px;font-weight:700;background:rgba(47,158,201,.3);color:#7ab0cc;padding:2px 6px;border-radius:4px;}
+.mi-conquered{
+  font-size:10px;font-weight:700;
+  background:rgba(22,163,74,.2);color:#4ade80;
+  padding:2px 8px;border-radius:4px;
+}
+
+.loading{padding:60px;text-align:center;color:var(--muted);font-size:14px;}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+
+@media(max-width:700px){
+  .overview-grid{grid-template-columns:1fr;}
+  .conquest-table th.th-defender{min-width:80px;}
+  .cell-inner{min-width:75px;}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js" defer></script>
+<script src="./menu.js" defer></script>
+
+<div class="wrapper">
+  <div class="hero">
+    <div class="hero-eyebrow">Extraliga U dvou Blbounů</div>
+    <div class="hero-title">⚔️ <span>Dobývání</span></div>
+    <div class="hero-sub">Každý tým musí porazit všechny soupeřovy týmy. Kdo první — vyhrává.</div>
+  </div>
+
+  <div class="winner-banner" id="winnerBanner">
+    <div class="winner-banner-icon">🏆</div>
+    <div class="winner-banner-title" id="winnerName">—</div>
+    <div class="winner-banner-sub" id="winnerSub">—</div>
+  </div>
+
+  <!-- PŘEHLED POSTUPU -->
+  <div class="overview-grid" id="overviewGrid">
+    <div class="overview-card kubele">
+      <div class="overview-card-title oc-kubele">🔵 Kubeleho týmy</div>
+      <div class="team-progress-list" id="kubeleProgressList"><div class="loading">Načítám...</div></div>
+    </div>
+    <div class="overview-card pici">
+      <div class="overview-card-title oc-pici">🟣 Piciho týmy</div>
+      <div class="team-progress-list" id="piciProgressList"><div class="loading">Načítám...</div></div>
+    </div>
+  </div>
+
+  <!-- MATICE KUBELE ÚTOČÍ -->
+  <div class="section-header">
+    <div class="section-label kubele">🔵 Kubeleho týmy dobývají</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="section-desc">Kubeleho týmy musí porazit každý z Piciho týmů alespoň jednou.</div>
+  <div class="conquest-table-wrap">
+    <table class="conquest-table" id="kubeleMatrix"><tr><td class="loading">Načítám...</td></tr></table>
+  </div>
+
+  <!-- MATICE PICI ÚTOČÍ -->
+  <div class="section-header">
+    <div class="section-label pici">🟣 Piciho týmy dobývají</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="section-desc">Piciho týmy musí porazit každý z Kubeleho týmů alespoň jednou.</div>
+  <div class="conquest-table-wrap">
+    <table class="conquest-table" id="piciMatrix"><tr><td class="loading">Načítám...</td></tr></table>
+  </div>
+
+  <!-- VÝPIS ZÁPASŮ -->
+  <div class="section-header">
+    <div class="section-label" style="color:var(--gold);">📋 Odehrané zápasy</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="matches-section" id="matchesList"><div class="loading">Načítám...</div></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// KONFIGURACE — vyplň po vytvoření sezóny
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+const LOGOS = "./logos/"
+
+// Sezóna se detekuje automaticky — není potřeba nic vyplňovat
+
+// ID hráčů
+const PLAYER_IDS = {
+  kubele: "a5b84a2d-58e6-4bf6-877f-be814a993db6",
+  pici:   "38dd6159-1b85-4e87-9176-6a494597216f",
+}
+// ═══════════════════════════════════════════════════
+
+const { createClient } = supabase
+const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+function logoEl(logo, size=26) {
+  if(!logo) return `<div class="ac-logo-ph" style="width:${size}px;height:${size}px;"></div>`
+  return `<img class="ac-logo" src="${LOGOS}${logo}" style="width:${size}px;height:${size}px;" onerror="this.outerHTML='<div class=ac-logo-ph style=width:${size}px;height:${size}px;></div>'">`
+}
+
+async function load() {
+  // Načti týmy obou hráčů
+  const { data: teams } = await db.from('teams').select('id,name,logo,short_name,owner_id,team_abbr')
+    .in('owner_id', [PLAYER_IDS.kubele, PLAYER_IDS.pici])
+
+  const kubeleTeams = (teams||[]).filter(t => t.owner_id === PLAYER_IDS.kubele)
+  const piciTeams   = (teams||[]).filter(t => t.owner_id === PLAYER_IDS.pici)
+
+  if(!kubeleTeams.length || !piciTeams.length) {
+    document.getElementById('kubeleProgressList').innerHTML = '<div class="empty">Žádné týmy.</div>'
+    document.getElementById('piciProgressList').innerHTML = '<div class="empty">Žádné týmy.</div>'
+    return
+  }
+
+  const allTeamIds = (teams||[]).map(t => t.id)
+  const teamMap = {}
+  ;(teams||[]).forEach(t => { teamMap[t.id] = t })
+
+const { data: matches } = await db.from('matches')
+    .select('id,home_team,away_team,home_score,away_score,played,result_type,round,played_at')
+    .in('home_team', allTeamIds)
+    .in('away_team', allTeamIds)
+    .not('home_score', 'is', null)
+    .order('played_at', { ascending: true })
+
+  // ── Výpočet bilancí ──────────────────────────────
+  // conquered[attackerId][defenderId] = true pokud attacker porazil defendera alespoň jednou
+  // record[t1][t2] = { w, l } z pohledu t1
+  const conquered = {}, record = {}
+  ;(teams||[]).forEach(t => {
+    conquered[t.id] = {}
+    record[t.id] = {}
+    ;(teams||[]).forEach(t2 => {
+      if(t.id !== t2.id) {
+        conquered[t.id][t2.id] = false
+        record[t.id][t2.id] = { w: 0, l: 0 }
+      }
+    })
+  })
+
+  ;(matches||[]).forEach(m => {
+    const hg = Number(m.home_score), ag = Number(m.away_score)
+    const homeWon = hg > ag, awayWon = ag > hg
+    if(homeWon) {
+      conquered[m.home_team][m.away_team] = true
+      record[m.home_team][m.away_team].w++
+      record[m.away_team][m.home_team].l++
+    } else if(awayWon) {
+      conquered[m.away_team][m.home_team] = true
+      record[m.away_team][m.home_team].w++
+      record[m.home_team][m.away_team].l++
+    }
+  })
+
+  // ── Postup každého týmu ──────────────────────────
+  // Kubeleho týmy dobývají Piciho týmy a naopak
+  function progress(attackers, defenders) {
+    return attackers.map(a => ({
+      team: a,
+      conquered: defenders.filter(d => conquered[a.id][d.id]).length,
+      total: defenders.length,
+      done: defenders.every(d => conquered[a.id][d.id])
+    }))
+  }
+
+  const kubeleProgress = progress(kubeleTeams, piciTeams)
+  const piciProgress   = progress(piciTeams, kubeleTeams)
+
+  // ── Vítěz ─────────────────────────────────────────
+  // Hledáme kdo jako první dokončil (based na datu posledního potřebného zápasu)
+  function findWinner(attackers, defenders) {
+    const winners = [...attackers.filter(a => defenders.every(d => conquered[a.id][d.id]))]
+    if(!winners.length) return null
+    // Najdi kdo to dokončil nejdřív
+    let earliest = null, winnerTeam = null
+    winners.forEach(a => {
+      const lastMatch = [...(matches||[])].reverse().find(m =>
+        (m.home_team === a.id || m.away_team === a.id) &&
+        defenders.some(d => (m.home_team === d.id || m.away_team === d.id)) &&
+        ((m.home_team === a.id && Number(m.home_score) > Number(m.away_score)) ||
+         (m.away_team === a.id && Number(m.away_score) > Number(m.home_score)))
+      )
+      if(lastMatch && (!earliest || new Date(lastMatch.played_at) < new Date(earliest))) {
+        earliest = lastMatch.played_at
+        winnerTeam = a
+      }
+    })
+    return winnerTeam
+  }
+
+  const kubeleWinner = findWinner(kubeleTeams, piciTeams)
+  const piciWinner   = findWinner(piciTeams, kubeleTeams)
+  const overallWinner = kubeleWinner || piciWinner
+
+  if(overallWinner) {
+    const banner = document.getElementById('winnerBanner')
+    const owner = kubeleWinner ? 'Kubele' : 'Pici'
+    banner.classList.add('show')
+    document.getElementById('winnerName').textContent = `🏆 ${overallWinner.name} vyhráli celou soutěž!`
+    document.getElementById('winnerSub').textContent = `Jako první porazili všechny soupeřovy týmy! Gratulujeme ${owner}!`
+  }
+
+  // ── Render progress lists ─────────────────────────
+  function renderProgressList(progressArr, side, defenders) {
+    return progressArr.map(p => {
+      const pct = p.total > 0 ? (p.conquered / p.total * 100) : 0
+      const isDone = p.conquered === p.total
+      return `<div class="team-progress-item">
+        ${logoEl(p.team.logo, 28)}
+        <span class="tp-name">${p.team.name}</span>
+        <div class="tp-bar-wrap">
+          <div class="tp-bar ${side}" style="width:${pct}%"></div>
+        </div>
+        <span class="tp-count" style="color:${isDone?'var(--gold)':side==='kubele'?'#60a5fa':'#c084fc'}">${p.conquered}/${p.total}</span>
+        <span class="tp-done">${isDone ? '🏆' : ''}</span>
+      </div>`
+    }).join('')
+  }
+
+  document.getElementById('kubeleProgressList').innerHTML = renderProgressList(kubeleProgress, 'kubele', piciTeams)
+  document.getElementById('piciProgressList').innerHTML   = renderProgressList(piciProgress, 'pici', kubeleTeams)
+
+  // ── Render conquest matrix ────────────────────────
+  function renderMatrix(attackers, defenders, side, progressArr) {
+    const progressMap = {}
+    progressArr.forEach(p => { progressMap[p.team.id] = p })
+
+    const headerCells = defenders.map(d =>
+      `<th class="th-defender">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          ${logoEl(d.logo, 22)}
+          <span style="font-size:10px;font-weight:700;color:var(--muted);">${d.short_name||d.name.split(' ').pop()}</span>
+        </div>
+      </th>`
+    ).join('')
+
+    const rows = attackers.map(a => {
+      const p = progressMap[a.id]
+      const pct = p.total > 0 ? (p.conquered / p.total * 100) : 0
+      const isDone = p.conquered === p.total
+
+      const cells = defenders.map(d => {
+        const isConq = conquered[a.id][d.id]
+        const rec = record[a.id][d.id]
+        const hasPlayed = rec.w > 0 || rec.l > 0
+
+        if(!hasPlayed) {
+          return `<td class="match-cell">
+            <div class="cell-inner no-match">
+              <span class="cell-icon" style="opacity:.3">🏒</span>
+              <div class="cell-record" style="opacity:.3">—</div>
+            </div>
+          </td>`
+        }
+
+        if(isConq) {
+          return `<td class="match-cell">
+            <div class="cell-inner conquered">
+              <span class="cell-icon">✅</span>
+              <div class="cell-record"><span class="w">${rec.w}V</span> <span class="l">${rec.l}P</span></div>
+              <div class="cell-progress-bar"></div>
+            </div>
+          </td>`
+        }
+
+        return `<td class="match-cell">
+          <div class="cell-inner pending">
+            <span class="cell-icon">❌</span>
+            <div class="cell-record"><span class="w">${rec.w}V</span> <span class="l">${rec.l}P</span></div>
+          </div>
+        </td>`
+      }).join('')
+
+      const progColor = isDone ? 'var(--gold)' : side === 'kubele' ? '#60a5fa' : '#c084fc'
+      const progText = isDone ? `🏆 ${p.conquered}/${p.total}` : `${p.conquered}/${p.total}`
+
+      return `<tr>
+        <td class="td-attacker">
+          <div class="attacker-cell">
+            ${logoEl(a.logo, 26)}
+            <span class="ac-name">${a.name}</span>
+            <span class="ac-prog ${isDone?'done':side}" style="color:${progColor}">${progText}</span>
+          </div>
+        </td>
+        ${cells}
+      </tr>`
+    }).join('')
+
+    return `<table class="conquest-table">
+      <thead>
+        <tr>
+          <th class="th-attacker">Útočí na →</th>
+          ${headerCells}
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`
+  }
+
+  document.getElementById('kubeleMatrix').outerHTML = renderMatrix(kubeleTeams, piciTeams, 'kubele', kubeleProgress)
+  document.getElementById('piciMatrix').outerHTML   = renderMatrix(piciTeams, kubeleTeams, 'pici', piciProgress)
+
+  // ── Výpis zápasů ─────────────────────────────────
+  const matchesEl = document.getElementById('matchesList')
+  if(!matches || !matches.length) {
+    matchesEl.innerHTML = '<div class="empty">Zatím žádné zápasy.</div>'
+    return
+  }
+
+  const kubeleIds = new Set(kubeleTeams.map(t => t.id))
+  const piciIds   = new Set(piciTeams.map(t => t.id))
+
+  // Zjisti pro každý zápas jestli to byl "první výhra" (conquest moment)
+  const firstConquest = {}  // attackerId_defenderId = matchId
+  const tempConq = {}
+  ;(teams||[]).forEach(t => { tempConq[t.id] = {} })
+
+  ;(matches||[]).forEach(m => {
+    const hg = Number(m.home_score), ag = Number(m.away_score)
+    const homeWon = hg > ag, awayWon = ag > hg
+    let winner = null, loser = null
+    if(homeWon) { winner = m.home_team; loser = m.away_team }
+    else if(awayWon) { winner = m.away_team; loser = m.home_team }
+    if(winner && loser && !tempConq[winner][loser]) {
+      tempConq[winner][loser] = true
+      firstConquest[`${winner}_${loser}`] = m.id
+    }
+  })
+
+  matchesEl.innerHTML = [...(matches||[])].reverse().map(m => {
+    const home = teamMap[m.home_team], away = teamMap[m.away_team]
+    if(!home || !away) return ''
+    const hg = Number(m.home_score), ag = Number(m.away_score)
+    const homeWon = hg > ag, awayWon = ag > hg
+    const scoreClass = homeWon ? 'home-win' : awayWon ? 'away-win' : ''
+    const suffix = m.result_type && m.result_type !== 'REG' ? m.result_type : ''
+
+    const winner = homeWon ? m.home_team : awayWon ? m.away_team : null
+    const loser = homeWon ? m.away_team : awayWon ? m.home_team : null
+    const isFirstConquest = winner && loser && firstConquest[`${winner}_${loser}`] === m.id
+    const conquestBadge = isFirstConquest ? `<span class="mi-conquered">🏴 Nové dobytí!</span>` : ''
+
+    const attackerSide = winner && kubeleIds.has(winner) ? 'Kubele' : winner && piciIds.has(winner) ? 'Pici' : ''
+
+    return `<div class="match-item">
+      <div class="mi-teams">
+        ${logoEl(home.logo, 20)}
+        <span class="mi-team">${home.name}</span>
+        <span class="mi-score ${scoreClass}">${hg} : ${ag}${suffix?' ('+suffix+')':''}</span>
+        <span class="mi-team">${away.name}</span>
+        ${logoEl(away.logo, 20)}
+      </div>
+      ${conquestBadge}
+    </div>`
+  }).join('') || '<div class="empty">Zatím žádné zápasy.</div>'
+}
+
+load()
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</body>
+</html>
