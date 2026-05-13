@@ -333,6 +333,7 @@ body::before{
 const SUPABASE_URL = "https://qaocbodrflsaerxntfui.supabase.co"
 const SUPABASE_KEY = "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 const LOGOS = "./logos/"
+const STANDY_CUP_COMPETITION_ID = "bea8bc13-4746-47a3-add4-5f057ee73936"  // ← vlož ID soutěže Standy Cup
 
 // Sezóna se detekuje automaticky — není potřeba nic vyplňovat
 
@@ -353,8 +354,29 @@ function logoEl(logo, size=26) {
 
 async function load() {
   // Načti týmy obou hráčů
+ // Najdi nejnovější sezónu Standy Cupu
+  const { data: standySeason } = await db.from('seasons').select('id,name')
+    .eq('competition_id', STANDY_CUP_COMPETITION_ID)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!standySeason) {
+    document.getElementById('kubeleProgressList').innerHTML = '<div class="empty">Žádná aktivní sezóna Standy Cupu.</div>'
+    document.getElementById('piciProgressList').innerHTML = '<div class="empty">Žádná aktivní sezóna Standy Cupu.</div>'
+    document.getElementById('kubeleMatrix').outerHTML = '<div class="empty">Nejprve vytvoř sezónu Standy Cupu v zápisy.html.</div>'
+    document.getElementById('piciMatrix').outerHTML = '<div class="empty"></div>'
+    document.getElementById('matchesList').innerHTML = ''
+    return
+  }
+
+  // Načti jen týmy vybrané pro tuto sezónu
+  const { data: seasonTeamsData } = await db.from('season_teams').select('team_id')
+    .eq('season_id', standySeason.id)
+  const seasonTeamIds = new Set((seasonTeamsData || []).map(r => r.team_id))
+
   const { data: teams } = await db.from('teams').select('id,name,logo,short_name,owner_id,team_abbr')
-    .in('owner_id', [PLAYER_IDS.kubele, PLAYER_IDS.pici])
+    .in('id', [...seasonTeamIds])
 
   const kubeleTeams = (teams||[]).filter(t => t.owner_id === PLAYER_IDS.kubele)
   const piciTeams   = (teams||[]).filter(t => t.owner_id === PLAYER_IDS.pici)
