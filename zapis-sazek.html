@@ -268,6 +268,10 @@ function renderBetRows(betList){
    tipLabel = b.tip_key ? `${stageName} — ${b.tip_key} zápasů` : stageName
   } else if(b.type?.startsWith("serie_winner_")){
    tipLabel = b.target_id ? getTeamName(b.target_id) : '—'
+ } else if(b.type === 'skupina_postup') {
+   const isYes = b.tip_key?.endsWith('_yes')
+   const teamId = b.tip_key?.replace(/_yes$|_no$/, '')
+   tipLabel = `${getTeamName(teamId)} — ${isYes ? '✅ Postoupí' : '❌ Nepostoupí'}`
   } else {
    tipLabel = b.target_id ? getTeamName(b.target_id) : (b.tip_key||'—')
   }
@@ -441,6 +445,12 @@ function render(){
   })
  }
  
+const skupinaPostupBets = bets.filter(b => b.type === 'skupina_postup')
+ if(skupinaPostupBets.length) {
+  olympiadaHtml += `<div class="subsection-title gold">📊 Postup ze skupiny</div>`
+  olympiadaHtml += `<div class="section"><div class="card">${renderBetRows(skupinaPostupBets)}</div></div>`
+ }
+
  if(!olympiadaHtml){
   olympiadaHtml = `<div class="card"><div class="empty">Žádné olympijské sázky.</div></div>`
  }
