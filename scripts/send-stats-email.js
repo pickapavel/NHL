@@ -3,8 +3,12 @@ const ws = require('ws')
 global.WebSocket = ws
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
 
-const COMP_IDS = {
-  extraliga: '5cc76adb-b3e0-404b-9095-7dd4a41edb4e',
+const PLAYER_IDS = {
+  kubele: 'a5b84a2d-58e6-4bf6-877f-be814a993db6',
+  pici:   '38dd6159-1b85-4e87-9176-6a494597216f',
+}
+
+const COMP_IDS = {  extraliga: '5cc76adb-b3e0-404b-9095-7dd4a41edb4e',
   ms:        'f0375c91-5b76-475e-afab-3d867b6b02d1',
   olympiada: 'c85830b0-612f-4390-88de-0b8775430460',
   pohar:     '254d4b5e-cb32-4c44-8b00-3010f895359c',
@@ -34,8 +38,69 @@ function secToToi(s) {
   return `${m}:${ss.toString().padStart(2, '0')}`
 }
 
-async function main() {
-  const now = new Date()
+function calcManagerStats(ownerId, allMatches, teams, stats) {
+  const ownerTeamIds = new Set(teams.filter(t => t.owner_id === ownerId).map(t => t.id))
+  const ownerTeamAbbrs = new Set(teams.filter(t => ownerTeamIds.has(t.id)).map(t => t.team_abbr).filter(Boolean))
+  const playedMatches = allMatches.filter(m => m.home_score != null && (ownerTeamIds.has(m.home_team) || ownerTeamIds.has(m.away_team)))
+  let gp=0, w=0, l=0, wReg=0, lReg=0, wOT=0, lOT=0, wSN=0, lSN=0
+  let gf=0, ga=0, shots=0, hits=0, ppg=0, shg=0
+  let homeW=0, homeL=0, awayW=0, awayL=0
+  let biggestWin=null, biggestWinDiff=0, biggestLoss=null, biggestLossDiff=0
+  let mostGoalsMatch=null, mostGoalsTotal=0
+  let longestWinStreak=0, longestLoseStreak=0, curWin=0, curLose=0
+  let shutouts=0
+
+  playedMatches.forEach(m => {
+    const isHome = ownerTeamIds.has(m.home_team)
+    const tg = isHome ? Number(m.home_score) : Number(m.away_score)
+    const og = isHome ? Number(m.away_score) : Number(m.home_score)
+    let st = null; try { st = m.stats ? JSON.parse(m.stats) : null } catch(e) {}
+    const isSN = st && (st[20]==='1'||st[20]==='2')
+    const isOT = st && !isSN && (st[9]==='11'||st[19]==='11')
+    const won = tg > og, lost = tg < og
+    gp++; gf += tg; ga += og
+    const total = tg + og
+    if(total > mostGoalsTotal){ mostGoalsTotal = total; mostGoalsMatch = m }
+    if(won){
+      w++; if(isSN) wSN++; else if(isOT) wOT++; else wReg++
+      if(isHome) homeW++; else awayW++
+      curWin++; curLose = 0
+      if(curWin > longestWinStreak) longestWinStreak = curWin
+      if(tg-og > biggestWinDiff){ biggestWinDiff = tg-og; biggestWin = m }
+    } else if(lost){
+      l++; if(isSN) lSN++; else if(isOT) lOT++; else lReg++
+      if(isHome) homeL++; else awayL++
+      curLose++; curWin = 0
+      if(curLose > longestLoseStreak) longestLoseStreak = curLose
+      if(og-tg > biggestLossDiff){ biggestLossDiff = og-tg; biggestLoss = m }
+    } else { curWin = 0; curLose = 0 }
+    if(og === 0) shutouts++
+    stats.filter(r => r.match_id === m.id && ownerTeamAbbrs.has(r.team_abbr) && !r.is_goalie).forEach(r => {
+      shots += r.shots||0; hits += r.hits||0; ppg += r.ppg||0; shg += r.shg||0
+    })
+  })
+
+  const winPct = gp > 0 ? Math.round(w/gp*100) : 0
+  const avgGf = gp > 0 ? (gf/gp).toFixed(2) : '0'
+  const avgGa = gp > 0 ? (ga/gp).toFixed(2) : '0'
+
+  function fmtMatch(m) {
+    const homeTeam = teams.find(t => t.id === m.home_team)
+    const awayTeam = teams.find(t => t.id === m.away_team)
+    const suffix = m.result_type && m.result_type !== 'REG' ? ` (${m.result_type})` : ''
+    return `${homeTeam?.name||'?'} ${m.home_score}:${m.away_score}${suffix} ${awayTeam?.name||'?'}`
+  }
+
+  return { gp, w, l, wReg, lReg, wOT, lOT, wSN, lSN, gf, ga, shots, hits, ppg, shg,
+    homeW, homeL, awayW, awayL, shutouts, longestWinStreak, longestLoseStreak,
+    winPct, avgGf, avgGa, mostGoalsTotal,
+    biggestWinStr: biggestWin ? fmtMatch(biggestWin) : '—',
+    biggestLossStr: biggestLoss ? fmtMatch(biggestLoss) : '—',
+    mostGoalsStr: mostGoalsMatch ? fmtMatch(mostGoalsMatch) : '—',
+  }
+}
+
+async function main() {  const now = new Date()
 
 const [statsRaw, teams, seasons, stages, matches] = await Promise.all([
     fetchAll('player_match_stats'),
@@ -253,7 +318,26 @@ function aggregateTeamsAll() {
       </div>`
   }
 
-  // ── Sestavení emailu ─────────────────────────────────────────────
+ // ── Sestavení emailu ─────────────────────────────────────────────
+  const k = calcManagerStats(PLAYER_IDS.kubele, matches, teams, stats)
+  const p = calcManagerStats(PLAYER_IDS.pici, matches, teams, stats)
+
+  function mgrRow(label, kVal, pVal) {
+    return `<tr style="border-bottom:1px solid #f0f0f0;">
+      <td style="padding:7px 10px;text-align:right;font-weight:800;color:#0b5394;">${kVal}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:11px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.05em;">${label}</td>
+      <td style="padding:7px 10px;text-align:left;font-weight:800;color:#7c1a5a;">${pVal}</td>
+    </tr>`
+  }
+
+  function mgrRecord(label, val, color='#f7f9fb') {
+    return val === '—' ? '' : `
+      <div style="padding:8px 12px;background:${color};border-radius:8px;margin-bottom:6px;">
+        <div style="font-size:10px;font-weight:700;color:#7ab0cc;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">${label}</div>
+        <div style="font-size:12px;font-weight:700;color:#0b2a3c;">${val}</div>
+      </div>`
+  }
+
   const allPlayers = aggregatePlayers(enriched)
   const allGoalies = aggregateGoalies(enriched, matches)
 
@@ -302,7 +386,51 @@ function aggregateTeamsAll() {
       </div>
       ${section('👤 Hráči — Olympiáda', playerTableHtml(enriched.filter(r => r.compId === COMP_IDS.olympiada) ? aggregatePlayers(enriched.filter(r => r.compId === COMP_IDS.olympiada)) : []))}
       ${section('🥅 Brankáři — Olympiáda', goalieTableHtml(aggregateGoalies(enriched.filter(r => r.compId === COMP_IDS.olympiada), matches)))}
-      ${section('🏒 Týmové statistiky — Olympiáda', olympiadaTeams.length ? teamTableHtml(olympiadaTeams) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
+    ${section('🏒 Týmové statistiky — Olympiáda', olympiadaTeams.length ? teamTableHtml(olympiadaTeams) : '<div style="color:#aaa;padding:10px;">Žádné záznamy.</div>')}
+
+      <div style="font-size:14px;font-weight:800;color:#0b2a3c;margin:20px 0 10px;padding:10px 14px;background:#e8f4fd;border-radius:8px;border-left:4px solid #2f9ec9;">
+        🏆 Manažerské statistiky
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #e0ecf8;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="padding:8px 10px;text-align:right;background:#0b5394;color:white;border-radius:8px 0 0 0;">🔵 Kubele</th>
+              <th style="padding:8px 10px;text-align:center;background:#0b2a3c;color:#7ab0cc;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Statistika</th>
+              <th style="padding:8px 10px;text-align:left;background:#7c1a5a;color:white;border-radius:0 8px 0 0;">🟣 Pici</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mgrRow('Zápasy', k.gp, p.gp)}
+            ${mgrRow('Výhry', `${k.w} (${k.wReg}+${k.wOT}OT+${k.wSN}SN)`, `${p.w} (${p.wReg}+${p.wOT}OT+${p.wSN}SN)`)}
+            ${mgrRow('Prohry', `${k.l} (${k.lReg}+${k.lOT}OT+${k.lSN}SN)`, `${p.l} (${p.lReg}+${p.lOT}OT+${p.lSN}SN)`)}
+            ${mgrRow('Úspěšnost', `${k.winPct}%`, `${p.winPct}%`)}
+            ${mgrRow('Skóre', `${k.gf}:${k.ga}`, `${p.gf}:${p.ga}`)}
+            ${mgrRow('Průměr G/Z', `${k.avgGf} / ${k.avgGa}`, `${p.avgGf} / ${p.avgGa}`)}
+            ${mgrRow('Domácí V–P', `${k.homeW}–${k.homeL}`, `${p.homeW}–${p.homeL}`)}
+            ${mgrRow('Venkovní V–P', `${k.awayW}–${k.awayL}`, `${p.awayW}–${p.awayL}`)}
+            ${mgrRow('Čistá konta', k.shutouts, p.shutouts)}
+            ${mgrRow('Nejd. série výher', k.longestWinStreak, p.longestWinStreak)}
+            ${mgrRow('Střely', k.shots, p.shots)}
+            ${mgrRow('PP góly', k.ppg, p.ppg)}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:white;border-radius:12px;padding:14px;border:1px solid #e0ecf8;border-top:3px solid #0b5394;">
+          <div style="font-size:12px;font-weight:800;color:#0b5394;margin-bottom:10px;">🔵 Kubele — Rekordy</div>
+          ${mgrRecord('🏆 Nejvyšší výhra', k.biggestWinStr, '#f0fdf4')}
+          ${mgrRecord('💔 Nejvyšší prohra', k.biggestLossStr, '#fef2f2')}
+          ${mgrRecord(`⚽ Nejvíce gólů (${k.mostGoalsTotal})`, k.mostGoalsStr, '#fff8e0')}
+        </div>
+        <div style="background:white;border-radius:12px;padding:14px;border:1px solid #e0ecf8;border-top:3px solid #7c1a5a;">
+          <div style="font-size:12px;font-weight:800;color:#7c1a5a;margin-bottom:10px;">🟣 Pici — Rekordy</div>
+          ${mgrRecord('🏆 Nejvyšší výhra', p.biggestWinStr, '#f0fdf4')}
+          ${mgrRecord('💔 Nejvyšší prohra', p.biggestLossStr, '#fef2f2')}
+          ${mgrRecord(`⚽ Nejvíce gólů (${p.mostGoalsTotal})`, p.mostGoalsStr, '#fff8e0')}
+        </div>
+      </div>
+
       <div style="text-align:center;font-size:11px;color:#aaa;margin-top:16px;">
         Extraliga U dvou Blbounů · automatický email · statistiky
       </div>
