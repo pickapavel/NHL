@@ -817,8 +817,63 @@ document.getElementById("amount_pici").oninput=()=>{ updateResultSummary("pici")
   })
 })
 
-async function loadExistingBets(match){
-  const{data:bets}=await supabase.from("bets").select("*").eq("match_id",matchId)
+function buildPlayerSummaryFromBets(playerKey, resultBets, goalsBets, match) {
+  const myResult = resultBets.find(b => b.player_id === players[playerKey]?.id)
+  const myGoals  = goalsBets.filter(b => b.player_id === players[playerKey]?.id)
+  const allBets  = [...(myResult ? [myResult] : []), ...myGoals]
+  if(!allBets.length) return
+
+  const labels = { 'match_goals_total':'Góly celkem', 'match_goals_home':'Góly dom.', 'match_goals_away':'Góly hostů', 'match_goals_diff':'Rozdíl gólů' }
+  let totalBet=0, totalWin=0
+  const rows = allBets.map(bet => {
+    const label = bet.tip ? 'Výsledek' : (labels[bet.type]||bet.type)
+    const amount = Number(bet.amount)
+    const potWin = Math.round(Number(bet.potential_win))
+    totalBet += amount
+    let statusHtml
+    if(match.played) {
+      if(bet.status==='won'){ totalWin+=potWin; statusHtml=`<span style="font-weight:800;color:#16a34a;">🎉 +${potWin} Kč</span>` }
+      else if(bet.status==='lost'){ statusHtml=`<span style="font-weight:700;color:#dc2626;">❌ prohra</span>` }
+      else { totalWin+=potWin; statusHtml=`<span style="font-weight:700;color:#f59e0b;">⏳ čeká</span>` }
+    } else {
+      totalWin+=potWin
+      statusHtml=`<span style="font-weight:800;color:#16a34a;">${potWin} Kč</span>`
+    }
+    return `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f0f0;">
+      <span style="color:#666;">${label}</span>
+      <span><span style="font-weight:700;color:#0b2a3c;">${amount} Kč</span> → ${statusHtml}</span>
+    </div>`
+  })
+
+  const profit = totalWin - totalBet
+  const profitColor = profit >= 0 ? '#16a34a' : '#dc2626'
+  const footer = match.played
+    ? `<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;">
+        <span style="font-weight:700;color:#0b2a3c;">Celkem vsazeno:</span>
+        <span style="font-weight:800;color:#0b2a3c;">${totalBet} Kč</span>
+       </div>
+       <div style="display:flex;justify-content:space-between;">
+        <span style="font-weight:700;color:${profitColor};">${profit>=0?'Celková výhra:':'Celková prohra:'}</span>
+        <span style="font-weight:800;color:${profitColor};">${profit>=0?'+':''}${profit} Kč</span>
+       </div>`
+    : `<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;">
+        <span style="font-weight:700;color:#0b2a3c;">Celkem vsazeno:</span>
+        <span style="font-weight:800;color:#0b2a3c;">${totalBet} Kč</span>
+       </div>
+       <div style="display:flex;justify-content:space-between;">
+        <span style="font-weight:700;color:#16a34a;">Možná výhra:</span>
+        <span style="font-weight:800;color:#16a34a;">${totalWin} Kč</span>
+       </div>
+       <div style="display:flex;justify-content:space-between;">
+        <span style="font-weight:700;color:#15803d;">Možný zisk:</span>
+        <span style="font-weight:800;color:#15803d;">+${profit} Kč</span>
+       </div>`
+
+  document.getElementById(`player-summary-${playerKey}`).style.display='block'
+  document.getElementById(`player-summary-${playerKey}-body`).innerHTML = rows.join('') + footer
+}
+
+async function loadExistingBets(match){  const{data:bets}=await supabase.from("bets").select("*").eq("match_id",matchId)
 const{data:goalsBets}=await supabase.from("bets_special").select("*")
     .eq("match_id",matchId).in("type",["match_goals_total","match_goals_home","match_goals_away","match_goals_diff"])
 
@@ -868,9 +923,12 @@ summaryEl.innerHTML = won
     const accBody=document.getElementById(`acc-body-${category}`)
     const accHeader=document.querySelector(`#acc-${category} .accordion-header`)
     if(accBody&&!accBody.classList.contains("open")){ accBody.classList.add("open"); accHeader?.classList.add("open") }
-    const betBtns=document.querySelectorAll(`#acc-body-${category} .bet-btn`)
+ const betBtns=document.querySelectorAll(`#acc-body-${category} .bet-btn`)
     betBtns.forEach(b=>{ if(b.closest(".bet-card")?.querySelector(`#goals_${category}_${playerKey}`)) b.disabled=true })
   })
+
+  buildPlayerSummaryFromBets('kubele', bets||[], goalsBets||[], match)
+  buildPlayerSummaryFromBets('pici',   bets||[], goalsBets||[], match)
 }
 
 window.placeBet = async function(playerKey, category) {
