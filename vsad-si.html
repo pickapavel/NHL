@@ -722,8 +722,8 @@ function renderH2HOverview(allMatches, hId, aId, teamMap){  const h2h=allMatches
     div.className="odd-btn"
     div.dataset.type=type
 const prob=h2hProbs[type]
-    const probStr=prob!==undefined?`<span class="odd-prob">${prob}% hist.</span>`:''
-div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>${probStr}`
+const probStr=prob!==undefined?`<span class="odd-prob">${prob}%</span>`:''
+    div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>${probStr}`
     div.onclick=()=>{      const selected=state[playerKey].result.selected
       if(selected.includes(type)){
         state[playerKey].result.selected=[]
