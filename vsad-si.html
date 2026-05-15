@@ -58,6 +58,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .odd-type{font-size:11px;font-weight:800;display:block;line-height:1.3;}
 .odd-val{font-size:10px;font-weight:600;color:#666;display:block;margin-top:3px;}
 .odd-btn.active .odd-val{color:#7ab0cc;}
+.odd-prob{font-size:9px;font-weight:700;color:#9ab;display:block;margin-top:2px;}
+.odd-btn.active .odd-prob{color:#7ab0cc;}
 
 /* Góly grid — 2 sloupce nebo víc */
 .goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px;}
@@ -355,7 +357,7 @@ let state = {
   pici:  { result:{selected:[]}, total:{selected:null}, home:{selected:null}, away:{selected:null}, diff:{selected:null} }
 }
 let homeName="", awayName="", homeShortName="", awayShortName=""
-let homeId="", awayId=""
+let h2hProbs={}let homeId="", awayId=""
 let matchData=null
 
 window.toggleAcc=function(id){
@@ -617,8 +619,36 @@ function renderRow(m){
   cont.appendChild(wrapper)
 }
 
-function renderH2HOverview(allMatches, hId, aId, teamMap){
+function calcH2HProbs(allMatches, hId, aId){
   const h2h=allMatches.filter(m=>
+    (m.home_team===hId&&m.away_team===aId)||(m.home_team===aId&&m.away_team===hId)
+  )
+  if(!h2h.length) return {}
+  const total=h2h.length
+  const c={"1":0,"0":0,"2":0,"11":0,"no_draw":0,"22":0,"vdr_home":0,"vdr_away":0}
+  h2h.forEach(m=>{
+    const hg=Number(m.home_score),ag=Number(m.away_score)
+    let st=null;try{st=m.stats?JSON.parse(m.stats):null}catch(e){}
+    const isSN=st&&(st[20]==='1'||st[20]==='2')
+    const isOT=st&&!isSN&&(st[9]==='11'||st[19]==='11')
+    const isOTorSN=isSN||isOT
+    const hWon=(m.home_team===hId&&hg>ag)||(m.away_team===hId&&ag>hg)
+    const aWon=(m.home_team===aId&&hg>ag)||(m.away_team===aId&&ag>hg)
+    if(hWon&&!isOTorSN) c["1"]++
+    if(isOTorSN) c["0"]++
+    if(aWon&&!isOTorSN) c["2"]++
+    if(!(aWon&&!isOTorSN)) c["11"]++
+    if(!isOTorSN) c["no_draw"]++
+    if(!(hWon&&!isOTorSN)) c["22"]++
+    if(hWon) c["vdr_home"]++
+    if(aWon) c["vdr_away"]++
+  })
+  const probs={}
+  Object.keys(c).forEach(k=>{ probs[k]=Math.round(c[k]/total*100) })
+  return probs
+}
+
+function renderH2HOverview(allMatches, hId, aId, teamMap){  const h2h=allMatches.filter(m=>
     (m.home_team===hId&&m.away_team===aId)||(m.home_team===aId&&m.away_team===hId)
   )
   const el=document.getElementById("h2hOverview")
@@ -691,8 +721,9 @@ function renderH2HOverview(allMatches, hId, aId, teamMap){
     if(!o){ div.className="odd-btn placeholder"; cont.appendChild(div); return }
     div.className="odd-btn"
     div.dataset.type=type
-    div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>`
-  div.onclick=()=>{
+const prob=h2hProbs[type]
+    const probStr=prob!==undefined?`<span class="odd-prob">${prob}% hist.</span>`:''
+    div.innerHTML=`<span class="odd-type">${label}</span><span class="odd-val">${o.toFixed(2)}</span>${probStr}`  div.onclick=()=>{
       const selected=state[playerKey].result.selected
       if(selected.includes(type)){
         state[playerKey].result.selected=[]
@@ -925,6 +956,7 @@ if(allMatches&&allMatches.length){
   }
 
   // Výsledek — rating odds
+ h2hProbs=calcH2HProbs(allMatches||[], home.id, away.id)
   oddsGlobal=calculateOdds(home.rating_form||1000, away.rating_form||1000)
   renderOdds("kubele")
   renderOdds("pici")
