@@ -82,8 +82,8 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 .back-btn:hover{background:#0b2a3c;}
 
 /* Mřížka skóre po třetinách */
-.score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px;max-height:280px;overflow-y:auto;padding-right:2px;}
-.score-cell{padding:5px 2px;text-align:center;border-radius:6px;border:2px solid #e0ecf8;background:#f0f4f8;cursor:pointer;font-size:11px;font-weight:800;color:#0b2a3c;transition:all .15s;font-family:'Inter',sans-serif;}
+.score-grid{display:grid;gap:4px;margin-bottom:14px;}
+  .score-cell{padding:5px 2px;text-align:center;border-radius:6px;border:2px solid #e0ecf8;background:#f0f4f8;cursor:pointer;font-size:11px;font-weight:800;color:#0b2a3c;transition:all .15s;font-family:'Inter',sans-serif;}
 .score-cell:hover{border-color:#2f9ec9;background:#dce8f5;}
 .score-cell.active{background:#0b2a3c;color:white;border-color:#0b2a3c;}
 .period-info{font-size:11px;color:#888;background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-bottom:12px;}
@@ -465,9 +465,9 @@ function calcPeriodOdds(homeRating, awayRating, homeScore, awayScore, periodsLef
   const MARGIN=1.10, HOME_ADV=80, homeAdj=homeRating+HOME_ADV
   let pHomeElo=1/(1+Math.pow(10,(awayRating-homeAdj)/400))
   let pAwayElo=1-pHomeElo
-  const scoreWeight=periodsLeft===2?0.42:0.65
+  const scoreWeight=periodsLeft===2?0.58:0.78
   const diff=homeScore-awayScore
-  const scoreFactor=2/(1+Math.exp(-diff*0.5))-1
+  const scoreFactor=2/(1+Math.exp(-diff*0.9))-1
   let pHome=pHomeElo*(1-scoreWeight)+(0.5+scoreFactor*0.5)*scoreWeight
   let pAway=pAwayElo*(1-scoreWeight)+(0.5-scoreFactor*0.5)*scoreWeight
   pHome=Math.max(0.03,Math.min(0.95,pHome))
@@ -483,11 +483,11 @@ function calcPeriodOdds(homeRating, awayRating, homeScore, awayScore, periodsLef
 }
 
 // ── Mřížka skóre ──
-function buildScoreGrid(containerId, period, playerKey){
+function buildScoreGrid(containerId, period, playerKey, maxG){
   const cont=document.getElementById(containerId)
   if(!cont) return
   cont.innerHTML=''
-  const maxG=8
+  cont.style.gridTemplateColumns=`repeat(${maxG+1},1fr)`
   for(let h=0;h<=maxG;h++){
     for(let a=0;a<=maxG;a++){
       const key=`${h}:${a}`
@@ -843,7 +843,7 @@ async function loadExistingBets(match){
     const periodsLeft=period==='p1'?2:1
     const [hs,as]=scoreStr.split(':').map(Number)
     periodOdds[playerKey][period]=calcPeriodOdds(homeRatingGlobal,awayRatingGlobal,hs,as,periodsLeft)
-    buildScoreGrid(`score-grid-${period}-${playerKey}`,period,playerKey)
+    buildScoreGrid(`score-grid-${period}-${playerKey}`,period,playerKey,period==='p1'?5:8)
     renderPeriodOdds(period,playerKey,periodOdds[playerKey][period])
     const cont=document.getElementById(`odds_${period}_${playerKey}`)
     if(cont) cont.querySelectorAll('.odd-btn').forEach(btn=>{ if(btn.dataset.type===tipKey){ btn.classList.add('active'); btn.style.pointerEvents='none' } })
@@ -966,8 +966,8 @@ async function load(){
 
   // Mřížky skóre pro třetiny
   ;["kubele","pici"].forEach(pk=>{
-    buildScoreGrid(`score-grid-p1-${pk}`,'p1',pk)
-    buildScoreGrid(`score-grid-p2-${pk}`,'p2',pk)
+    buildScoreGrid(`score-grid-p1-${pk}`,'p1',pk,5)
+    buildScoreGrid(`score-grid-p2-${pk}`,'p2',pk,8)
     renderPeriodOdds('p1',pk,null)
     renderPeriodOdds('p2',pk,null)
   })
