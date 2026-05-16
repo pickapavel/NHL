@@ -1114,8 +1114,34 @@ async function evaluateBets(match){
       }
     }
   }
-  const {data:goalsBets}=await db.from("bets_special").select("*").eq("match_id",match.id).like("type","match_goals_%")
-  if(goalsBets){
+// Sázky po třetinách
+  const {data:periodBets}=await db.from("bets_special").select("*")
+    .eq("match_id",match.id)
+    .in("type",["period_p1_result","period_p2_result"])
+  if(periodBets){
+    for(const bet of periodBets){
+      if(bet.status !== "pending") continue
+      const tipType = bet.tip_key.split('|')[1]
+      const win = checkSingleTip(match, tipType)
+      await db.from("bets_special").update({status:win?"won":"lost"}).eq("id",bet.id)
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        if(win){
+          const newCredit=Number(player.credit)+Number(bet.potential_win)
+          await db.from("players").update({credit:newCredit}).eq("id",player.id)
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"won",description:`Výhra sázky po třetině — tip: ${tipType}`,amount:Number(bet.potential_win),credit_before:Number(player.credit),credit_after:newCredit,bet_id:bet.id,source:"bets_special"})
+        } else {
+          await db.from("credit_history").insert({player_id:bet.player_id,type:"lost",description:`Prohra sázky po třetině — tip: ${tipType}`,amount:0,credit_before:Number(player.credit),credit_after:Number(player.credit),bet_id:bet.id,source:"bets_special"})
+        }
+      }
+    }
+  }
+
+  // Gólové sázky
+  const {data:goalsBets}=await db.from("bets_special").select("*")
+    .eq("match_id",match.id)
+    .like("type","match_goals_%")
+ if(goalsBets){
     for(const bet of goalsBets){
       if(bet.status !== "pending") continue
       const win=checkGoalsBet(match, bet.type, bet.tip_key)
@@ -1147,8 +1173,22 @@ async function revertBets(matchId){
     }
     await db.from("bets").update({status:"pending"}).eq("id",bet.id)
   }
-  const {data:goalsBets}=await db.from("bets_special").select("*").eq("match_id",matchId).like("type","match_goals_%")
-  for(const bet of goalsBets||[]){
+const {data:periodBetsR}=await db.from("bets_special").select("*")
+    .eq("match_id",matchId).in("type",["period_p1_result","period_p2_result"])
+  for(const bet of periodBetsR||[]){
+    if(bet.status==="won"){
+      const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
+      if(player){
+        const newCredit=Number(player.credit)-Number(bet.potential_win)+Number(bet.amount)
+        await db.from("players").update({credit:newCredit}).eq("id",player.id)
+      }
+    }
+    await db.from("bets_special").update({status:"pending"}).eq("id",bet.id)
+  }
+
+  const {data:goalsBets}=await db.from("bets_special").select("*")
+    .eq("match_id",matchId).like("type","match_goals_%")
+ for(const bet of goalsBets||[]){
     if(bet.status==="won"){
       const {data:player}=await db.from("players").select("*").eq("id",bet.player_id).single()
       if(player){
