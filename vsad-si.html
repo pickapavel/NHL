@@ -465,9 +465,9 @@ function calcPeriodOdds(homeRating, awayRating, homeScore, awayScore, periodsLef
   const MARGIN=1.10, HOME_ADV=80, homeAdj=homeRating+HOME_ADV
   let pHomeElo=1/(1+Math.pow(10,(awayRating-homeAdj)/400))
   let pAwayElo=1-pHomeElo
-  const scoreWeight=periodsLeft===2?0.58:0.78
+  const scoreWeight=periodsLeft===2?0.72:0.88
   const diff=homeScore-awayScore
-  const scoreFactor=2/(1+Math.exp(-diff*0.9))-1
+  const scoreFactor=2/(1+Math.exp(-diff*1.4))-1
   let pHome=pHomeElo*(1-scoreWeight)+(0.5+scoreFactor*0.5)*scoreWeight
   let pAway=pAwayElo*(1-scoreWeight)+(0.5-scoreFactor*0.5)*scoreWeight
   pHome=Math.max(0.03,Math.min(0.95,pHome))
