@@ -711,12 +711,16 @@ function buildPlayerSummaryFromBets(playerKey, resultBets, goalsBets, periodBets
     const category=bet.type?.replace('match_goals_','')
     return (category&&goalsOdds[category]?.[bet.tip_key]?.label)||bet.tip_key||'—'
   }
-  let totalBet=0, totalWon=0
-  allBets.forEach(b=>{ totalBet+=Number(b.amount); if(b.status==='won') totalWon+=Math.round(Number(b.potential_win)) })
+let totalBet=0, totalWon=0, totalPotential=0
+  allBets.forEach(b=>{
+    totalBet+=Number(b.amount)
+    totalPotential+=Math.round(Number(b.potential_win))
+    if(b.status==='won') totalWon+=Math.round(Number(b.potential_win))
+  })
   const player=players[playerKey]
   const creditBefore=player.credit+totalBet-totalWon
   const creditAfter=player.credit
-  const profit=totalWon-totalBet
+  const profit=match.played?(totalWon-totalBet):(totalPotential-totalBet)
   const isKubele=playerKey==='kubele'
   const accentColor=isKubele?'#0b5394':'#7c1a5a'
   const emoji=isKubele?'🔵':'🟣'
