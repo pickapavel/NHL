@@ -429,7 +429,7 @@ const GOAL_RE=/GOAL|PPG|SHG|ENG/i
  allLastSecEvents=allLastMinEvents.filter(ev=>ev.time>='19:59')
 
 const teamAbbrs=[...new Set(rawStats.map(p=>p.team_abbr).filter(Boolean))].sort()
- const sel=document.getElementById('teamFilterPlayers') sel.innerHTML='<option value="">Všechny týmy</option>'
+ const sel=document.getElementById('teamFilterPlayers')
  teamAbbrs.forEach(abbr=>{ const o=document.createElement('option'); o.value=abbr; o.textContent=teamName(abbr); sel.appendChild(o) })
  const PARDUBICE_K='90766e63-3eac-45e7-b1c3-6d8ef07e7a6d'
  const LITVINOV_P='5c9713b0-43e9-40f3-85af-fcc2cf84b7d2'
@@ -847,8 +847,9 @@ const players=Object.values(map).filter(p=>p.gp>0).map(p=>({
   last_sec_goals:allLastSecEvents.filter(ev=>ev.player_name===p.name).length,
  }))
 const pg=Object.values(pgMap)
- const profileUrl=(p)=>{ const param=p.player_id?`id=${p.player_id}`:`name=${encodeURIComponent(p.name)}`; return `hrac-profil.html?${param}` } function top3(arr,field,label,icon){
-  const sorted=[...arr].filter(p=>p[field]>0).sort((a,b)=>b[field]-a[field]).slice(0,3)
+const pg=Object.values(pgMap)
+ const profileUrl=(p)=>{ const param=p.player_id?`id=${p.player_id}`:`name=${encodeURIComponent(p.name)}`; return `hrac-profil.html?${param}` }
+ const sorted=[...arr].filter(p=>p[field]>0).sort((a,b)=>b[field]-a[field]).slice(0,3)
   if(!sorted.length) return ''
   return `<div class="section-title">${icon} ${label}</div><div class="table-wrap" style="margin-bottom:20px;"><table><thead><tr><th class="th-left">#</th><th class="th-left">Hráč</th><th>Tým</th><th>${label}</th></tr></thead><tbody>${sorted.map((p,i)=>`<tr class="${i===0?'rank-1':i===1?'rank-2':'rank-3'}"><td class="td-rank td-left">${i===0?'🥇':i===1?'🥈':'🥉'}</td><td class="td-name td-left"><a class="player-link" href="${profileUrl(p)}">${p.name}</a></td><td><div class="team-cell">${logoImg(p.team)}<span class="team-badge">${p.team||'—'}</span></div></td><td class="td-highlight">${p[field]}</td></tr>`).join('')}</tbody></table></div>`
  }
