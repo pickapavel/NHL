@@ -428,8 +428,8 @@ const GOAL_RE=/GOAL|PPG|SHG|ENG/i
  )
  allLastSecEvents=allLastMinEvents.filter(ev=>ev.time>='19:59')
 
- const teamAbbrs=[...new Set(rawStats.map(p=>p.team_abbr).filter(Boolean))].sort() const sel=document.getElementById('teamFilterPlayers')
- sel.innerHTML='<option value="">Všechny týmy</option>'
+const teamAbbrs=[...new Set(rawStats.map(p=>p.team_abbr).filter(Boolean))].sort()
+ const sel=document.getElementById('teamFilterPlayers') sel.innerHTML='<option value="">Všechny týmy</option>'
  teamAbbrs.forEach(abbr=>{ const o=document.createElement('option'); o.value=abbr; o.textContent=teamName(abbr); sel.appendChild(o) })
  const PARDUBICE_K='90766e63-3eac-45e7-b1c3-6d8ef07e7a6d'
  const LITVINOV_P='5c9713b0-43e9-40f3-85af-fcc2cf84b7d2'
@@ -540,8 +540,8 @@ function renderLegend(isGoalieView){
  if(isGoalieView){
   leg.innerHTML=`<div class="legend-title">Legenda — Brankáři</div><div class="legend-grid"><div class="legend-item"><span class="legend-key">Z</span><span>Odehrané zápasy</span></div><div class="legend-item"><span class="legend-key">Zákroky</span><span>Počet zákroků</span></div><div class="legend-item"><span class="legend-key">GA</span><span>Inkasované góly</span></div><div class="legend-item"><span class="legend-key">GAA</span><span>Průměr inkasovaných gólů na zápas</span></div><div class="legend-item"><span class="legend-key">SV%</span><span>Procento úspěšnosti zákroků</span></div><div class="legend-item"><span class="legend-key">V</span><span>Výhry</span></div><div class="legend-item"><span class="legend-key">P</span><span>Prohry</span></div><div class="legend-item"><span class="legend-key">TM</span><span>Trestné minuty</span></div>
 <div class="legend-item"><span class="legend-key">TOI/Z</span><span>Průměrný čas na ledě za zápas</span></div><div class="legend-item"><span class="legend-key">⏱G</span><span>Góly v poslední minutě 3. třetiny (čas 19:xx)</span></div><div class="legend-item"><span class="legend-key">⚡G</span><span>Góly v poslední vteřině (čas 19:59+)</span></div></div>`
- } else {
-leg.innerHTML=`<div class="legend-title">Legenda — Hráči</div><div class="legend-grid"><div class="legend-item"><span class="legend-key">Z</span><span>Odehrané zápasy</span></div>
+} else {
+  leg.innerHTML=`<div class="legend-title">Legenda — Hráči</div><div class="legend-grid"><div class="legend-item"><span class="legend-key">Z</span><span>Odehrané zápasy</span></div><div class="legend-item"><span class="legend-key">G</span><span>Góly</span></div><div class="legend-item"><span class="legend-key">A</span><span>Asistence</span></div><div class="legend-item"><span class="legend-key">B/Z</span><span>Body na zápas (průměr)</span></div><div class="legend-item"><span class="legend-key">+/-</span><span>Rozdíl gólů při pobytu na ledě</span></div><div class="legend-item"><span class="legend-key">PP</span><span>Přesilovkové góly</span></div><div class="legend-item"><span class="legend-key">SHG</span><span>Góly v oslabení</span></div><div class="legend-item"><span class="legend-key">ST</span><span>Střely na bránu</span></div><div class="legend-item"><span class="legend-key">TM</span><span>Trestné minuty</span></div><div class="legend-item"><span class="legend-key">HIT</span><span>Hity / souboje</span></div><div class="legend-item"><span class="legend-key">TOI/Z</span><span>Průměrný čas na ledě za zápas</span></div><div class="legend-item"><span class="legend-key">⏱G</span><span>Góly v poslední minutě 3. třetiny (čas 19:xx)</span></div><div class="legend-item"><span class="legend-key">⚡G</span><span>Góly v poslední vteřině (čas 19:59+)</span></div></div>`
  }
 }
 
@@ -846,8 +846,8 @@ const players=Object.values(map).filter(p=>p.gp>0).map(p=>({
   last_min_goals:allLastMinEvents.filter(ev=>ev.player_name===p.name).length,
   last_sec_goals:allLastSecEvents.filter(ev=>ev.player_name===p.name).length,
  }))
- const pg=Object.values(pgMap) const profileUrl=(p)=>{ const param=p.player_id?`id=${p.player_id}`:`name=${encodeURIComponent(p.name)}`; return `hrac-profil.html?${param}` }
- function top3(arr,field,label,icon){
+const pg=Object.values(pgMap)
+ const profileUrl=(p)=>{ const param=p.player_id?`id=${p.player_id}`:`name=${encodeURIComponent(p.name)}`; return `hrac-profil.html?${param}` } function top3(arr,field,label,icon){
   const sorted=[...arr].filter(p=>p[field]>0).sort((a,b)=>b[field]-a[field]).slice(0,3)
   if(!sorted.length) return ''
   return `<div class="section-title">${icon} ${label}</div><div class="table-wrap" style="margin-bottom:20px;"><table><thead><tr><th class="th-left">#</th><th class="th-left">Hráč</th><th>Tým</th><th>${label}</th></tr></thead><tbody>${sorted.map((p,i)=>`<tr class="${i===0?'rank-1':i===1?'rank-2':'rank-3'}"><td class="td-rank td-left">${i===0?'🥇':i===1?'🥈':'🥉'}</td><td class="td-name td-left"><a class="player-link" href="${profileUrl(p)}">${p.name}</a></td><td><div class="team-cell">${logoImg(p.team)}<span class="team-badge">${p.team||'—'}</span></div></td><td class="td-highlight">${p[field]}</td></tr>`).join('')}</tbody></table></div>`
