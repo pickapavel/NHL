@@ -140,14 +140,12 @@ body{font-family:'Inter',sans-serif;background:#eef2f7;min-height:100vh;}
 </div>
 
 <!-- Souhrn hráče -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
-  <div id="player-summary-kubele" style="background:white;border-radius:12px;border:1px solid #c8d8e8;padding:12px 16px;box-shadow:0 2px 8px rgba(26,58,92,.07);display:none;">
-    <div style="font-size:11px;font-weight:800;color:#0b2a3c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">🔵 Kubele — souhrn sázek</div>
-    <div id="player-summary-kubele-body" style="font-size:12px;color:#666;"></div>
+<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+  <div id="player-summary-kubele" style="background:white;border-radius:14px;border:1px solid #c8d8e8;box-shadow:0 2px 10px rgba(26,58,92,.1);display:none;overflow:hidden;">
+    <div id="player-summary-kubele-body"></div>
   </div>
-  <div id="player-summary-pici" style="background:white;border-radius:12px;border:1px solid #c8d8e8;padding:12px 16px;box-shadow:0 2px 8px rgba(26,58,92,.07);display:none;">
-    <div style="font-size:11px;font-weight:800;color:#0b2a3c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">🟣 Pici — souhrn sázek</div>
-    <div id="player-summary-pici-body" style="font-size:12px;color:#666;"></div>
+  <div id="player-summary-pici" style="background:white;border-radius:14px;border:1px solid #c8d8e8;box-shadow:0 2px 10px rgba(26,58,92,.1);display:none;overflow:hidden;">
+    <div id="player-summary-pici-body"></div>
   </div>
 </div>
 
@@ -692,34 +690,91 @@ function buildPlayerSummaryFromBets(playerKey, resultBets, goalsBets, periodBets
   const myResult=resultBets.find(b=>b.player_id===players[playerKey]?.id)
   const myGoals=goalsBets.filter(b=>b.player_id===players[playerKey]?.id)
   const myPeriod=periodBets.filter(b=>b.player_id===players[playerKey]?.id)
-  const allBets=[...(myResult?[{...myResult,_label:'Výsledek'}]:[]),...myPeriod.map(b=>({...b,_label:b.type==='period_p1_result'?'Po 1. třetině':'Po 2. třetině'})),...myGoals]
+  const catLabels={match_goals_total:'Góly celkem',match_goals_home:'Góly domácích',match_goals_away:'Góly hostů',match_goals_diff:'Rozdíl gólů'}
+  const allBets=[
+    ...(myResult?[{...myResult,_category:'Výsledek'}]:[]),
+    ...myPeriod.map(b=>({...b,_category:b.type==='period_p1_result'?'Po 1. třetině':'Po 2. třetině'})),
+    ...myGoals.map(b=>({...b,_category:catLabels[b.type]||b.type}))
+  ]
   if(!allBets.length) return
-  const labels={'match_goals_total':'Góly celkem','match_goals_home':'Góly dom.','match_goals_away':'Góly hostů','match_goals_diff':'Rozdíl gólů'}
-  let totalBet=0, totalWin=0
+  const tipMap={
+    '1':`Výhra ${homeShortName}`,'2':`Výhra ${awayShortName}`,'0':'OT / nájezdy',
+    '11':`Neprohra ${homeShortName}`,'22':`Neprohra ${awayShortName}`,'no_draw':'Nebude OT/SN',
+    'vdr_home':`Výhra do rozh. ${homeShortName}`,'vdr_away':`Výhra do rozh. ${awayShortName}`,
+  }
+  function getTipDesc(bet){
+    if(bet.tip) return bet.tip.split(',').map(t=>tipMap[t]||t).join(' + ')
+    if(bet.type==='period_p1_result'||bet.type==='period_p2_result'){
+      const [score,tipType]=bet.tip_key.split('|')
+      return `Skóre ${score} → ${tipMap[tipType]||tipType}`
+    }
+    const category=bet.type?.replace('match_goals_','')
+    return (category&&goalsOdds[category]?.[bet.tip_key]?.label)||bet.tip_key||'—'
+  }
+  let totalBet=0, totalWon=0
+  allBets.forEach(b=>{ totalBet+=Number(b.amount); if(b.status==='won') totalWon+=Math.round(Number(b.potential_win)) })
+  const player=players[playerKey]
+  const creditBefore=player.credit+totalBet-totalWon
+  const creditAfter=player.credit
+  const profit=totalWon-totalBet
+  const isKubele=playerKey==='kubele'
+  const accentColor=isKubele?'#0b5394':'#7c1a5a'
+  const emoji=isKubele?'🔵':'🟣'
+  const name=isKubele?'Kubele':'Pici'
+  const fmt=n=>Math.round(n).toLocaleString('cs-CZ')
   const rows=allBets.map(bet=>{
-    const label=bet._label||(bet.tip?'Výsledek':(labels[bet.type]||bet.type))
-    const amount=Number(bet.amount), potWin=Math.round(Number(bet.potential_win))
-    totalBet+=amount
+    const amount=Number(bet.amount),potWin=Math.round(Number(bet.potential_win)),betProfit=potWin-amount,odds=Number(bet.odds)
+    const tipDesc=getTipDesc(bet)
     let statusHtml
     if(match.played){
-      if(bet.status==='won'){ totalWin+=potWin; statusHtml=`<span style="font-weight:800;color:#16a34a;">🎉 +${potWin} Kč</span>` }
-      else if(bet.status==='lost'){ statusHtml=`<span style="font-weight:700;color:#dc2626;">❌ prohra</span>` }
-      else { totalWin+=potWin; statusHtml=`<span style="font-weight:700;color:#f59e0b;">⏳ čeká</span>` }
-    } else { totalWin+=potWin; statusHtml=`<span style="font-weight:800;color:#16a34a;">${potWin} Kč</span>` }
-    return `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f0f0;">
-      <span style="color:#666;">${label}</span>
-      <span><span style="font-weight:700;color:#0b2a3c;">${amount} Kč</span> → ${statusHtml}</span>
+      if(bet.status==='won') statusHtml=`<div style="font-size:15px;font-weight:800;color:#16a34a;line-height:1.2;">🎉 +${fmt(betProfit)} Kč</div><div style="font-size:10px;color:#16a34a;font-weight:600;">výhra ${fmt(potWin)} Kč</div>`
+      else if(bet.status==='lost') statusHtml=`<div style="font-size:15px;font-weight:800;color:#dc2626;line-height:1.2;">❌ −${fmt(amount)} Kč</div><div style="font-size:10px;color:#dc2626;font-weight:600;">prohra</div>`
+      else statusHtml=`<div style="font-size:13px;font-weight:700;color:#f59e0b;">⏳ čeká</div><div style="font-size:10px;color:#f59e0b;">${fmt(potWin)} Kč</div>`
+    } else {
+      statusHtml=`<div style="font-size:15px;font-weight:800;color:#16a34a;line-height:1.2;">${fmt(potWin)} Kč</div><div style="font-size:10px;color:#16a34a;font-weight:600;">možná výhra</div>`
+    }
+    return `<div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #f0f4f8;">
+      <div style="background:#f0f4f8;border-radius:8px;padding:5px 10px;text-align:center;min-width:80px;">
+        <div style="font-size:10px;font-weight:700;color:${accentColor};text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;">${bet._category}</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#0b2a3c;margin-bottom:4px;">${tipDesc}</div>
+        <div style="font-size:11px;color:#999;">Vsazeno: <b style="color:#1a5276;">${fmt(amount)} Kč</b> &nbsp;·&nbsp; Kurz: <b style="color:#1a5276;">${odds.toFixed(2)}</b> &nbsp;·&nbsp; Potenciál: <b style="color:#1a5276;">${fmt(potWin)} Kč</b> &nbsp;·&nbsp; Zisk: <b style="color:#1a5276;">${betProfit>=0?'+':''}${fmt(betProfit)} Kč</b></div>
+      </div>
+      <div style="text-align:right;">${statusHtml}</div>
     </div>`
-  })
-  const profit=totalWin-totalBet, profitColor=profit>=0?'#16a34a':'#dc2626'
-  const footer=match.played
-    ?`<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;"><span style="font-weight:700;color:#0b2a3c;">Celkem vsazeno:</span><span style="font-weight:800;color:#0b2a3c;">${totalBet} Kč</span></div>
-       <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:${profitColor};">${profit>=0?'Celková výhra:':'Celková prohra:'}</span><span style="font-weight:800;color:${profitColor};">${profit>=0?'+':''}${profit} Kč</span></div>`
-    :`<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;"><span style="font-weight:700;color:#0b2a3c;">Celkem vsazeno:</span><span style="font-weight:800;color:#0b2a3c;">${totalBet} Kč</span></div>
-       <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:#16a34a;">Možná výhra:</span><span style="font-weight:800;color:#16a34a;">${totalWin} Kč</span></div>
-       <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;color:#15803d;">Možný zisk:</span><span style="font-weight:800;color:#15803d;">+${profit} Kč</span></div>`
+  }).join('')
+  const profitColor=profit>=0?'#16a34a':'#dc2626'
+  const profitLabel=match.played?(profit>=0?'Celková výhra':'Celková ztráta'):'Možný zisk'
+  const profitText=(profit>=0?'+':'')+fmt(profit)+' Kč'
+  const html=`
+    <div style="background:${accentColor};padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:white;">${emoji} ${name} — Souhrn sázek</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">${allBets.length} ${allBets.length===1?'sázka':allBets.length<5?'sázky':'sázek'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em;font-weight:700;">Kredit před vsazením</div>
+        <div style="font-size:17px;font-weight:800;color:white;">${fmt(creditBefore)} Kč</div>
+      </div>
+    </div>
+    ${rows}
+    <div style="background:#f7f9fc;padding:14px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:center;">
+      <div>
+        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:3px;">Celkem vsazeno</div>
+        <div style="font-size:17px;font-weight:800;color:#0b2a3c;">${fmt(totalBet)} Kč</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:3px;">${profitLabel}</div>
+        <div style="font-size:17px;font-weight:800;color:${profitColor};">${profitText}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:3px;">Kredit po vsazení</div>
+        <div style="font-size:17px;font-weight:800;color:#0b2a3c;">${fmt(creditAfter)} Kč</div>
+      </div>
+    </div>`
   document.getElementById(`player-summary-${playerKey}`).style.display='block'
-  document.getElementById(`player-summary-${playerKey}-body`).innerHTML=rows.join('')+footer
+  document.getElementById(`player-summary-${playerKey}-body`).innerHTML=html
 }
 
 function calcH2HProbs(allMatches, hId, aId){
