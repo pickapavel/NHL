@@ -13,6 +13,18 @@ body{font-family:Arial;background:#f2f2f2;margin:0;}
 h1{color:#0b2a3c;margin-bottom:4px;}
 .subtitle{color:#888;font-size:13px;margin-bottom:20px;}
 
+ .icon-nav{background:#f7f8fa;border:1px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:16px;}
+.inl-title{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;}
+.inl-items{display:flex;flex-wrap:wrap;gap:6px;}
+.ic-btn{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:10px;border:2px solid #e0e0e0;background:white;cursor:pointer;transition:all .15s;min-width:68px;max-width:110px;text-align:center;font-family:Arial;}
+.ic-btn:hover{border-color:#2f9ec9;background:#f0f8ff;}
+.ic-btn.sel{border-color:#0b2a3c;background:#0b2a3c;}
+.ic-em{font-size:20px;line-height:1;}
+.ic-tx{font-size:10px;font-weight:700;color:#444;line-height:1.3;word-break:break-word;}
+.ic-btn.sel .ic-tx{color:#fff;}
+.ic-img{width:26px;height:26px;object-fit:contain;border-radius:4px;background:white;}
+.ic-btn.sel .ic-img{background:rgba(255,255,255,.2);}
+ 
 .team-search{width:100%;padding:7px 10px;border-radius:8px;border:1px solid #ccc;font-size:13px;margin-bottom:4px;}
 .team-search:focus{outline:none;border-color:#2f9ec9;}
 .topBar{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
@@ -187,8 +199,25 @@ tr:hover td{background:#edf2f7;}
 </div>
 <p class="subtitle">Nahraj textový soubor pro zápis výsledku. Volitelně přidej gamestat a playerstat (XLS) pro automatický výpočet výsledku a hráčské statistiky.</p>
  
-<div class="filterBar">
- <label>Sezóna:</label>
+<div class="icon-nav" id="iconNav">
+  <div id="inl-comp">
+    <div class="inl-title">📁 Soutěž</div>
+    <div class="inl-items" id="ini-comp"></div>
+  </div>
+  <div id="inl-season" style="display:none;">
+    <div class="inl-title">📅 Sezóna</div>
+    <div class="inl-items" id="ini-season"></div>
+  </div>
+  <div id="inl-stage" style="display:none;">
+    <div class="inl-title">🏟 Stage</div>
+    <div class="inl-items" id="ini-stage"></div>
+  </div>
+  <div id="inl-team" style="display:none;">
+    <div class="inl-title">👕 Tým</div>
+    <div class="inl-items" id="ini-team"></div>
+  </div>
+</div>
+<div class="filterBar"> <label>Sezóna:</label>
  <select id="seasonFilter" onchange="onSeasonFilterChange()"><option value="">-- Načítám... --</option></select>
  <label>Stage:</label>
  <select id="stageFilter" onchange="loadMatches()"><option value="">-- Vyber stage --</option></select>
@@ -388,8 +417,8 @@ const gamestatMap = {}
 const playerstatMap = {}
 const teamstatMap = {}
 
-let _toiPendingMatchId = null
-let _toiPendingData = null
+let matchesWithPlayersGlobal = new Set()
+let _toiPendingMatchId = nulllet _toiPendingData = null
 let _toiHomeTeamName = ''
 let _toiAwayTeamName = ''
 
@@ -775,8 +804,9 @@ async function init(){
   nsComp.innerHTML='<option value="">-- Vyber soutěž --</option>'
   allCompetitions.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; nsComp.appendChild(o) })
   const found=allSeasons.find(s=>s.id===CURRENT_SEASON_ID)
-  document.getElementById("seasonFilter").value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
+ document.getElementById("seasonFilter").value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
   onSeasonFilterChange()
+  renderCompIcons()
 }
 
 function onSeasonFilterChange(){
@@ -798,6 +828,7 @@ async function loadMatches(){
   const matchIds=allMatches.map(m=>m.id)
   let matchesWithPlayers=new Set()
   if(matchIds.length){ const {data:pms}=await db.from('player_match_stats').select('match_id').in('match_id',matchIds); (pms||[]).forEach(r=>matchesWithPlayers.add(r.match_id)) }
+matchesWithPlayersGlobal = matchesWithPlayers
   updateTeamFilter(); applyTeamFilter(matchesWithPlayers)
 }
 
@@ -1605,6 +1636,98 @@ async function createSeason(){
   document.getElementById("seasonFilter").value=seasonId
   onSeasonFilterChange()
   alert(`✅ Sezóna "${fullName}" vytvořena!`)
+}
+
+ // =====================================================
+// ICON NAV
+// =====================================================
+const iconNavState = { compId:'', seasonId:'', stageId:'' }
+const COMP_EMOJI = {'extraliga':'🏒','mistrovství':'🌍','olympi':'🏅','pohár':'🏆','standy':'⚔️','exhibi':'🎭'}
+function getCompEmoji(n){ for(const [k,v] of Object.entries(COMP_EMOJI)) if(n.toLowerCase().includes(k)) return v; return '🏒' }
+function getStageEmoji(n){ n=n.toLowerCase(); if(n.includes('finále')&&!n.includes('semi')&&!n.includes('čtvrt')) return '🏆'; if(n.includes('semifinále')) return '⚔️'; if(n.includes('čtvrtfinále')) return '🥊'; if(n.includes('o 3')) return '🥉'; if(n.includes('playoff')) return '🔥'; if(n.includes('skupina')) return '👥'; if(n.includes('pohár')||n.includes('standy')||n.includes('dobývání')) return '🏆'; return '📋' }
+function showInl(id){ const el=document.getElementById(id); el.style.display='block'; el.style.borderTop='1px solid #e8e8e8'; el.style.marginTop='12px'; el.style.paddingTop='12px' }
+function hideInl(id){ document.getElementById(id).style.display='none' }
+
+function renderCompIcons(){
+  const cont=document.getElementById('ini-comp'); cont.innerHTML=''
+  allCompetitions.forEach(comp=>{
+    const btn=document.createElement('button')
+    btn.className='ic-btn'+(iconNavState.compId===comp.id?' sel':'')
+    btn.innerHTML=`<span class="ic-em">${getCompEmoji(comp.name)}</span><span class="ic-tx">${comp.name}</span>`
+    btn.onclick=()=>iconSelectComp(comp.id)
+    cont.appendChild(btn)
+  })
+}
+
+function iconSelectComp(compId){
+  iconNavState.compId=compId; iconNavState.seasonId=''; iconNavState.stageId=''
+  renderCompIcons()
+  const seasons=allSeasons.filter(s=>s.competition_id===compId).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+  const cont=document.getElementById('ini-season'); cont.innerHTML=''
+  seasons.forEach(s=>{
+    const btn=document.createElement('button'); btn.className='ic-btn'
+    const m=s.name.match(/(\d+)\.\s*sezóna/i)
+    const label=m?`${m[1]}. sezóna`:s.name
+    btn.innerHTML=`<span class="ic-em">📅</span><span class="ic-tx">${label}</span>`
+    btn.onclick=()=>iconSelectSeason(s.id, btn)
+    cont.appendChild(btn)
+  })
+  if(seasons.length) showInl('inl-season'); else hideInl('inl-season')
+  hideInl('inl-stage'); hideInl('inl-team')
+}
+
+function iconSelectSeason(seasonId, btn){
+  iconNavState.seasonId=seasonId; iconNavState.stageId=''
+  document.querySelectorAll('#ini-season .ic-btn').forEach(b=>b.classList.remove('sel'))
+  btn.classList.add('sel')
+  currentSeasonId=seasonId
+  document.getElementById('seasonFilter').value=seasonId
+  const stages=allStages.filter(s=>s.season_id===seasonId&&!s.parent_stage_id).sort((a,b)=>a.order-b.order)
+  const cont=document.getElementById('ini-stage'); cont.innerHTML=''
+  stages.forEach(s=>{
+    const btn2=document.createElement('button'); btn2.className='ic-btn'
+    btn2.innerHTML=`<span class="ic-em">${getStageEmoji(s.name)}</span><span class="ic-tx">${s.name}</span>`
+    btn2.onclick=()=>iconSelectStage(s.id, seasonId, btn2)
+    cont.appendChild(btn2)
+    allStages.filter(cs=>cs.parent_stage_id===s.id).sort((a,b)=>a.order-b.order).forEach(cs=>{
+      const cbtn=document.createElement('button'); cbtn.className='ic-btn'
+      cbtn.innerHTML=`<span class="ic-em">${getStageEmoji(cs.name)}</span><span class="ic-tx">${cs.name}</span>`
+      cbtn.onclick=()=>iconSelectStage(cs.id, seasonId, cbtn)
+      cont.appendChild(cbtn)
+    })
+  })
+  if(stages.length) showInl('inl-stage'); else hideInl('inl-stage')
+  hideInl('inl-team')
+}
+
+function iconSelectStage(stageId, seasonId, btn){
+  iconNavState.stageId=stageId
+  document.querySelectorAll('#ini-stage .ic-btn').forEach(b=>b.classList.remove('sel'))
+  btn.classList.add('sel')
+  const stageSel=document.getElementById('stageFilter')
+  stageSel.innerHTML='<option value="">-- Vyber stage --</option>'
+  allStages.filter(s=>s.season_id===seasonId).forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.parent_stage_id?`  └ ${s.name}`:s.name; stageSel.appendChild(o) })
+  stageSel.value=stageId
+  document.getElementById('seasonFilter').value=seasonId
+  document.getElementById('teamFilter').value=''; currentTeamFilter=''; currentSeasonId=seasonId
+  loadMatches().then(()=>renderTeamIcons())
+}
+
+function renderTeamIcons(){
+  const teamIds=new Set(); allMatches.forEach(m=>{ teamIds.add(m.home_team); teamIds.add(m.away_team) })
+  const cont=document.getElementById('ini-team'); cont.innerHTML=''
+  const allBtn=document.createElement('button'); allBtn.className='ic-btn sel'; allBtn.id='ib-all'
+  allBtn.innerHTML=`<span class="ic-em">👥</span><span class="ic-tx">Všechny</span>`
+  allBtn.onclick=()=>{ document.getElementById('teamFilter').value=''; applyTeamFilter(matchesWithPlayersGlobal); document.querySelectorAll('#ini-team .ic-btn').forEach(b=>b.classList.remove('sel')); allBtn.classList.add('sel') }
+  cont.appendChild(allBtn)
+  ;[...teamIds].map(id=>teamsMap[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'cs')).forEach(t=>{
+    const btn=document.createElement('button'); btn.className='ic-btn'
+    const shortName=t.name.replace(/\s*\([KP]\)\s*$/,'').trim()
+    btn.innerHTML=`<img class="ic-img" src="./logos/${t.logo}" onerror="this.style.display='none'"><span class="ic-tx">${shortName}</span>`
+    btn.onclick=()=>{ document.getElementById('teamFilter').value=t.id; applyTeamFilter(matchesWithPlayersGlobal); document.querySelectorAll('#ini-team .ic-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel') }
+    cont.appendChild(btn)
+  })
+  if(teamIds.size) showInl('inl-team'); else hideInl('inl-team')
 }
 
 init()
