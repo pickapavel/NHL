@@ -199,6 +199,19 @@ tr:hover td{background:#edf2f7;}
  <button class="btn-new-season" onclick="openNewSeasonModal()">🏒 Nová sezóna</button>
 </div>
 <p class="subtitle">Nahraj textový soubor pro zápis výsledku. Volitelně přidej gamestat a playerstat (XLS) pro automatický výpočet výsledku a hráčské statistiky.</p>
+
+<div id="featuredSection" style="display:none;margin-bottom:16px;">
+  <div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">🎯 Na řadě — připraveno k zápisu</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Kolo</th><th>Domácí</th><th>Hosté</th><th>Skóre</th>
+        <th>Textový soubor</th><th>Gamestat + Playerstat</th><th>Akce</th>
+      </tr>
+    </thead>
+    <tbody id="featuredTable"></tbody>
+  </table>
+</div>
  
 <div class="icon-nav" id="iconNav">
   <div id="inl-comp">
@@ -419,6 +432,7 @@ const playerstatMap = {}
 const teamstatMap = {}
 
 let matchesWithPlayersGlobal = new Set()
+ let featuredMatchesData = []
 let _toiPendingMatchId = null
 let _toiPendingData = null
 let _toiHomeTeamName = ''
@@ -594,8 +608,8 @@ function handleXlsFiles(e, matchId) {
 }
 
 function resolveTeamAbbr(matchId, rawAbbr){
-  const match = allMatches.find(m => m.id === matchId)
-  if(!match) return rawAbbr
+const match = allMatches.find(m => m.id === matchId) || featuredMatchesData.find(m => m.id === matchId)
+ if(!match) return rawAbbr
   const homeTeam = teamsMap[match.home_team]
   const awayTeam = teamsMap[match.away_team]
   if(!homeTeam || !awayTeam) return rawAbbr
@@ -809,6 +823,7 @@ async function init(){
  document.getElementById("seasonFilter").value=found?CURRENT_SEASON_ID:(allSeasons[0]?.id||"")
   onSeasonFilterChange()
   renderCompIcons()
+ renderFeaturedMatches()
 }
 
 function onSeasonFilterChange(){
@@ -1310,8 +1325,9 @@ async function saveMatch(matchId, homeTeamName, awayTeamName){
     await db.from("matches").update({ home_score:score.hg, away_score:score.ag, played:true, stats:JSON.stringify(lines), result_type:resultType, played_at:new Date().toISOString() }).eq("id",matchId)
     const {data:fullMatch} = await db.from("matches").select("*").eq("id",matchId).single()
     await evaluateBets(fullMatch); await recalculateAllRatings()
-    const gs=gamestatMap[matchId], ps=playerstatMap[matchId]
+ const gs=gamestatMap[matchId], ps=playerstatMap[matchId]
     if(gs||ps){ await savePlayerStats(matchId,gs,ps); alert("Uloženo ✅\nVčetně hráčských statistik 👤") } else { alert("Uloženo ✅") }
+    renderFeaturedMatches()
     loadMatches()
   } else {
     alert("Nahraj textový soubor nebo gamestat + playerstat XLS soubory.")
@@ -1328,6 +1344,7 @@ async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEv
   } else {
     alert(`Uloženo ✅\nVýsledek: ${hg}:${ag} (${resultType})`)
   }
+  renderFeaturedMatches()
   loadMatches()
 }
 
@@ -1732,6 +1749,50 @@ function renderTeamIcons(){
   if(teamIds.size) showInl('inl-team'); else hideInl('inl-team')
 }
 
+async function renderFeaturedMatches(){
+  featuredMatchesData = []
+  const rows = []
+  for(const comp of allCompetitions){
+    const latestSeason = allSeasons.filter(s=>s.competition_id===comp.id)
+      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]
+    if(!latestSeason) continue
+    const {data:match} = await db.from('matches').select('*')
+      .eq('season_id', latestSeason.id).is('home_score', null)
+      .order('round',{ascending:true}).limit(1).maybeSingle()
+    if(match) rows.push(match)
+  }
+  featuredMatchesData = rows
+  const sec = document.getElementById('featuredSection')
+  const tbody = document.getElementById('featuredTable')
+  if(!rows.length){ sec.style.display='none'; return }
+  sec.style.display='block'
+  tbody.innerHTML = ''
+  rows.forEach(m=>{
+    const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
+    if(!home||!away) return
+    tbody.innerHTML+=`
+    <tr>
+     <td><span class="round-badge">${m.round}</span></td>
+     <td><div class="team-cell"><img class="team-logo" src="./logos/${home.logo}"><span class="team-name">${home.name}</span></div></td>
+     <td><div class="team-cell"><img class="team-logo" src="./logos/${away.logo}"><span class="team-name">${away.name}</span></div></td>
+     <td><span class="score-badge empty">- : -</span></td>
+     <td>
+      <label class="file-label" id="label-${m.id}">📂 Textový soubor<input type="file" onchange="handleFile(event,'${m.id}')"></label>
+      <div class="file-name" id="fname-${m.id}"></div>
+     </td>
+     <td>
+      <label class="file-label xls-label" id="xlslabel-${m.id}">📊 Gamestat + Playerstat<input type="file" accept=".xls,.csv" multiple onchange="handleXlsFiles(event,'${m.id}')"></label>
+      <div class="file-name" id="xlsfname-${m.id}"></div>
+     </td>
+     <td>
+      <div class="btn-wrap">
+       <button class="btn btn-save" onclick="saveMatch('${m.id}','${home.name.replace(/'/g,"\\'")}','${away.name.replace(/'/g,"\\'")}')">✅ Uložit</button>
+      </div>
+     </td>
+    </tr>`
+  })
+}
+ 
 init()
 </script>
 </body>
