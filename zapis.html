@@ -1759,20 +1759,26 @@ async function renderFeaturedMatches(){
     const {data:match} = await db.from('matches').select('*')
       .eq('season_id', latestSeason.id).is('home_score', null)
       .order('round',{ascending:true}).limit(1).maybeSingle()
-    if(match) rows.push(match)
+    if(match) rows.push({match, comp})
   }
-  featuredMatchesData = rows
+  featuredMatchesData = rows.map(r=>r.match)
   const sec = document.getElementById('featuredSection')
   const tbody = document.getElementById('featuredTable')
   if(!rows.length){ sec.style.display='none'; return }
   sec.style.display='block'
   tbody.innerHTML = ''
-  rows.forEach(m=>{
+  rows.forEach(({match:m, comp})=>{
     const home=teamsMap[m.home_team], away=teamsMap[m.away_team]
     if(!home||!away) return
+    const stage=allStages.find(s=>s.id===m.stage_id)
+    const stageLabel=stage?stage.name:''
     tbody.innerHTML+=`
     <tr>
-     <td><span class="round-badge">${m.round}</span></td>
+     <td>
+      <span class="round-badge">${m.round}</span>
+      <div style="font-size:10px;color:#888;margin-top:4px;font-weight:700;">${getCompEmoji(comp.name)} ${comp.name}</div>
+      <div style="font-size:10px;color:#aaa;">${stageLabel}</div>
+     </td>
      <td><div class="team-cell"><img class="team-logo" src="./logos/${home.logo}"><span class="team-name">${home.name}</span></div></td>
      <td><div class="team-cell"><img class="team-logo" src="./logos/${away.logo}"><span class="team-name">${away.name}</span></div></td>
      <td><span class="score-badge empty">- : -</span></td>
