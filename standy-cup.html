@@ -266,7 +266,7 @@ function buildMatchLog(matches, ownerMap){
         <span class="mlr-name ${played?(homeWin?'win':'loss'):''}">${homeName}</span>
       </div>
       <div class="mlr-score-cell">
-        <span class="score-badge ${played?'',' empty'}">${played?`${hg} : ${ag}`:'– : –'}</span>${tag}
+<span class="score-badge ${played?'':'empty'}">${played?`${hg} : ${ag}`:'– : –'}</span>${tag}
       </div>
       <div class="mlr-team right">
         <img class="mlr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
@@ -340,9 +340,10 @@ async function init(){
   allSeasons=seasons||[]
   const sel=document.getElementById('seasonSel')
   sel.innerHTML=''
-  if(!allSeasons.length){
+if(!allSeasons.length){
     sel.innerHTML='<option>Žádné sezóny</option>'
-    document.getElementById('playersGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Žádné sezóny Standy Cup. Vytvořte novou v Zápisech.</div>'
+    document.getElementById('playersGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Žádné sezóny Standy Cup. Vytvořte novou v Zápisech zápasů.</div>'
+    document.getElementById('matchLog').innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:13px;">Žádné zápasy.</div>'
     return
   }
   allSeasons.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o)})
