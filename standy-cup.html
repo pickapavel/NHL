@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Standy Cup</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-height:100vh;}
+
+.sc-header{background:white;border-bottom:3px solid #e8ecf0;padding:22px 30px;}
+.sc-header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.sc-icon{font-size:40px;flex-shrink:0;}
+.sc-title{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:#0b2a3c;}
+.sc-title span{color:#e67e22;}
+.sc-sub{font-size:12px;color:#888;margin-top:3px;}
+.sc-season-sel{margin-left:auto;padding:8px 16px;border-radius:20px;border:2px solid #0b2a3c;background:#0b2a3c;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;outline:none;}
+
+.wrapper{max-width:1200px;margin:0 auto;padding:24px 20px 60px;}
+
+.winner-banner{background:linear-gradient(135deg,#f9d423,#f96540);border-radius:16px;padding:20px 28px;text-align:center;margin-bottom:20px;box-shadow:0 4px 20px rgba(249,101,64,.2);}
+.wb-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;color:#1a0a00;}
+.wb-sub{font-size:13px;color:#5a2000;margin-top:4px;}
+
+.progress-wrap{background:white;border-radius:14px;border:1px solid #e0e8f0;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;}
+.prog-side{flex:1;}
+.prog-side.right{text-align:right;}
+.prog-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.prog-bar-outer{height:10px;background:#e8ecf0;border-radius:10px;overflow:hidden;}
+.prog-bar-inner{height:100%;border-radius:10px;transition:width .5s;}
+.prog-bar-k{background:linear-gradient(90deg,#1565c0,#42a5f5);}
+.prog-bar-p{background:linear-gradient(90deg,#6a1b9a,#ab47bc);}
+.prog-count{font-size:13px;font-weight:700;color:#0b2a3c;margin-top:5px;}
+.prog-vs{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:#c8d4e0;flex-shrink:0;}
+
+.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;}
+
+.player-panel{background:white;border-radius:16px;border:2px solid #e0e8f0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.player-header{padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.ph-k{background:linear-gradient(135deg,#1565c0,#1976d2);}
+.ph-p{background:linear-gradient(135deg,#6a1b9a,#7b1fa2);}
+.ph-name{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:white;flex:1;}
+.ph-badge{font-size:11px;font-weight:700;background:rgba(255,255,255,.2);color:white;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.ph-badge.all-done{background:#27ae60;}
+
+.team-cards{padding:12px;display:flex;flex-direction:column;gap:10px;}
+
+.team-card{border-radius:12px;border:2px solid #e8ecf0;background:#f8fafc;padding:12px 14px;transition:all .25s;}
+.team-card.done{border-color:#22c55e;background:#f0fdf4;box-shadow:0 0 0 3px rgba(34,197,94,.12);}
+
+.tc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tc-logo{width:30px;height:30px;object-fit:contain;background:white;border-radius:7px;padding:3px;border:1px solid #e0e0e0;flex-shrink:0;}
+.tc-name{font-weight:700;font-size:13px;color:#1a2a3c;flex:1;line-height:1.3;}
+.tc-done{display:inline-flex;align-items:center;gap:4px;background:#22c55e;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+
+.tc-stats{display:flex;gap:14px;margin-bottom:10px;}
+.tc-stat{text-align:center;}
+.tc-stat-val{font-size:20px;font-weight:800;line-height:1;}
+.tc-stat-val.w{color:#16a34a;}
+.tc-stat-val.l{color:#dc2626;}
+.tc-stat-val.s{font-size:14px;color:#0b2a3c;}
+.tc-stat-lbl{font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+.tc-dots-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tdot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.tdot-w{background:#22c55e;}
+.tdot-l{background:#f87171;}
+.tc-streak{font-size:11px;font-weight:700;}
+.streak-ok{color:#16a34a;}
+.streak-no{color:#dc2626;}
+.streak-1{color:#f59e0b;}
+
+.section-label{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;color:#0b2a3c;margin:0 0 12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#e0e8f0,transparent);}
+
+.match-log{background:white;border-radius:16px;border:1px solid #e0e8f0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.ml-thead{display:grid;grid-template-columns:46px 1fr auto 1fr 90px;gap:8px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #e0e8f0;}
+.ml-thead span{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;}
+.ml-thead span.c{text-align:center;}
+.ml-thead span.r{text-align:right;}
+
+.mlr{display:grid;grid-template-columns:46px 1fr auto 1fr 90px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f4f8;transition:background .15s;}
+.mlr:hover{background:#f8fafc;}
+.mlr.played{background:#f0fdf4;}
+.mlr.played:hover{background:#e8f9ef;}
+.mlr-round{text-align:center;font-size:11px;font-weight:800;color:white;background:#0b2a3c;border-radius:20px;padding:3px 0;}
+.mlr-team{display:flex;align-items:center;gap:7px;}
+.mlr-team.right{flex-direction:row-reverse;text-align:right;}
+.mlr-logo{width:22px;height:22px;object-fit:contain;background:white;border-radius:5px;border:1px solid #e0e0e0;padding:2px;flex-shrink:0;}
+.mlr-name{font-weight:700;font-size:12px;color:#1a2a3c;}
+.mlr-name.win{color:#16a34a;}
+.mlr-name.loss{color:#aaa;}
+.mlr-score-cell{text-align:center;}
+.score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:800;font-size:13px;padding:4px 11px;border-radius:7px;min-width:58px;text-align:center;}
+.score-badge.empty{background:#e9ecef;color:#aaa;font-weight:400;font-size:12px;}
+.result-tag{display:inline-block;font-size:9px;font-weight:700;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;}
+.mlr-owners{display:flex;gap:4px;justify-content:flex-end;align-items:center;}
+.owner-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.ot-k{background:#dbeafe;color:#1565c0;}
+.ot-p{background:#f3e8fd;color:#6a1b9a;}
+
+@media(max-width:750px){
+  .players-grid{grid-template-columns:1fr;}
+  .ml-thead,.mlr{grid-template-columns:36px 1fr auto 1fr;}
+  .ml-thead span:last-child,.mlr-owners{display:none;}
+}
+</style>
+</head>
+<body>
+<script src="./ticker.js"></script>
+<script src="./menu.js"></script>
+
+<div class="sc-header">
+  <div class="sc-header-inner">
+    <div class="sc-icon">⚔️</div>
+    <div>
+      <div class="sc-title">Standy <span>Cup</span></div>
+      <div class="sc-sub">Kdo první ovládne každý svůj tým — 2 výhry v řadě</div>
+    </div>
+    <select class="sc-season-sel" id="seasonSel" onchange="onSeasonChange()"><option>Načítám...</option></select>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="winner-banner" id="winnerBanner" style="display:none;">
+    <div class="wb-title" id="winnerTitle">🏆 Vítěz!</div>
+    <div class="wb-sub" id="winnerSub"></div>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap" style="display:none;">
+    <div class="prog-side">
+      <div class="prog-label">🔵 Kubele</div>
+      <div class="prog-bar-outer"><div class="prog-bar-inner prog-bar-k" id="progBarK" style="width:0%"></div></div>
+      <div class="prog-count" id="progCountK">—</div>
+    </div>
+    <div class="prog-vs">VS</div>
+    <div class="prog-side right">
+      <div class="prog-label">🟣 Pici</div>
+      <div class="prog-bar-outer"><div class="prog-bar-inner prog-bar-p" id="progBarP" style="width:0%"></div></div>
+      <div class="prog-count" id="progCountP">—</div>
+    </div>
+  </div>
+
+  <div class="players-grid" id="playersGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Načítám...</div>
+  </div>
+
+  <div class="section-label">📋 Rozpis zápasů</div>
+  <div class="match-log">
+    <div class="ml-thead">
+      <span class="c">Kolo</span>
+      <span>Domácí</span>
+      <span class="c">Skóre</span>
+      <span class="r">Hosté</span>
+      <span class="r">Hráči</span>
+    </div>
+    <div id="matchLog"><div style="padding:30px;text-align:center;color:#aaa;font-size:13px;">Načítám...</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL="https://qaocbodrflsaerxntfui.supabase.co"
+const SUPABASE_KEY="sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
+const STANDY_COMPETITION_ID="bea8bc13-4746-47a3-add4-5f057ee73936"
+const PLAYER_IDS={kubele:"a5b84a2d-58e6-4bf6-877f-be814a993db6",pici:"38dd6159-1b85-4e87-9176-6a494597216f"}
+const LOGOS="./logos/"
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const {createClient}=supabase
+const db=createClient(SUPABASE_URL,SUPABASE_KEY)
+let teamsMap={}, allSeasons=[]
+
+function isPlayed(m){return m.home_score!=null}
+
+function getResultType(m){
+  let s=null;try{s=m.stats?JSON.parse(m.stats):null}catch(e){}
+  const isSN=s&&(s[20]==="1"||s[20]==="2")
+  const isOT=s&&!isSN&&(s[9]==="11"||s[19]==="11")
+  return isSN?"SN":isOT?"OT":"REG"
+}
+
+function getTeamStats(teamId, matches){
+  const tm=matches
+    .filter(m=>m.home_team===teamId||m.away_team===teamId)
+    .sort((a,b)=>a.round-b.round)
+  const played=tm.filter(m=>isPlayed(m))
+  let wins=0,losses=0,gf=0,ga=0
+  const results=[]
+  played.forEach(m=>{
+    const isHome=m.home_team===teamId
+    const my=isHome?Number(m.home_score):Number(m.away_score)
+    const op=isHome?Number(m.away_score):Number(m.home_score)
+    gf+=my;ga+=op
+    if(my>op){wins++;results.push('W')}else{losses++;results.push('L')}
+  })
+  const hasStreak=results.length>=2&&results[results.length-1]==='W'&&results[results.length-2]==='W'
+  return{wins,losses,gf,ga,results,hasStreak}
+}
+
+function buildTeamCard(teamId, stats){
+  const team=teamsMap[teamId];if(!team) return ''
+  const{wins,losses,gf,ga,results,hasStreak}=stats
+  const name=team.name.replace(/\s*\([KP]\)\s*$/,'').trim()
+
+  const dotsHtml=results.length
+    ?results.map(r=>`<div class="tdot ${r==='W'?'tdot-w':'tdot-l'}" title="${r==='W'?'Výhra':'Prohra'}"></div>`).join('')
+    :`<span style="font-size:11px;color:#bbb;font-style:italic;">zatím žádné zápasy</span>`
+
+  let streakHtml=''
+  if(hasStreak) streakHtml=`<span class="tc-streak streak-ok">✅ 2× v řadě!</span>`
+  else if(results.length===1&&results[0]==='W') streakHtml=`<span class="tc-streak streak-1">1 výhra…</span>`
+  else if(results.length>=2) streakHtml=`<span class="tc-streak streak-no">❌ řada přerušena</span>`
+
+  return `<div class="team-card ${hasStreak?'done':''}">
+    <div class="tc-header">
+      <img class="tc-logo" src="${LOGOS}${team.logo}" onerror="this.style.display='none'">
+      <span class="tc-name">${name}</span>
+      ${hasStreak?'<span class="tc-done">✅ Splněno!</span>':''}
+    </div>
+    <div class="tc-stats">
+      <div class="tc-stat"><div class="tc-stat-val w">${wins}</div><div class="tc-stat-lbl">Výhry</div></div>
+      <div class="tc-stat"><div class="tc-stat-val l">${losses}</div><div class="tc-stat-lbl">Prohry</div></div>
+      <div class="tc-stat"><div class="tc-stat-val s">${gf}:${ga}</div><div class="tc-stat-lbl">Skóre</div></div>
+    </div>
+    <div class="tc-dots-row">
+      ${dotsHtml}
+      ${streakHtml}
+    </div>
+  </div>`
+}
+
+function buildPlayerPanel(name, key, teams, matches){
+  const doneCnt=teams.filter(t=>getTeamStats(t.id,matches).hasStreak).length
+  const allDone=teams.length>0&&doneCnt===teams.length
+  const emoji=key==='kubele'?'🔵':'🟣'
+  const headerCls=key==='kubele'?'ph-k':'ph-p'
+  const cards=teams.map(t=>buildTeamCard(t.id,getTeamStats(t.id,matches))).join('')||'<div style="padding:16px;text-align:center;color:#aaa;font-size:13px;">Žádné týmy</div>'
+  return `<div class="player-panel">
+    <div class="player-header ${headerCls}">
+      <span style="font-size:22px;">${emoji}</span>
+      <span class="ph-name">${name}</span>
+      <span class="ph-badge ${allDone?'all-done':''}">${doneCnt}/${teams.length} splněno${allDone?' 🏆':''}</span>
+    </div>
+    <div class="team-cards">${cards}</div>
+  </div>`
+}
+
+function buildMatchLog(matches, ownerMap){
+  if(!matches.length) return '<div style="padding:30px;text-align:center;color:#aaa;font-size:13px;">Žádné zápasy</div>'
+  return matches.map(m=>{
+    const home=teamsMap[m.home_team],away=teamsMap[m.away_team]
+    if(!home||!away) return ''
+    const played=isPlayed(m)
+    const hg=played?m.home_score:null,ag=played?m.away_score:null
+    const homeWin=played&&Number(hg)>Number(ag),awayWin=played&&Number(ag)>Number(hg)
+    const rt=played?getResultType(m):'',tag=rt&&rt!=='REG'?`<span class="result-tag">${rt}</span>`:''
+    const homeName=home.name.replace(/\s*\([KP]\)\s*$/,'').trim()
+    const awayName=away.name.replace(/\s*\([KP]\)\s*$/,'').trim()
+    const hOwner=ownerMap[m.home_team]||'k',aOwner=ownerMap[m.away_team]||'p'
+    return `<div class="mlr ${played?'played':''}">
+      <div class="mlr-round">${m.round}</div>
+      <div class="mlr-team">
+        <img class="mlr-logo" src="${LOGOS}${home.logo}" onerror="this.style.display='none'">
+        <span class="mlr-name ${played?(homeWin?'win':'loss'):''}">${homeName}</span>
+      </div>
+      <div class="mlr-score-cell">
+        <span class="score-badge ${played?'',' empty'}">${played?`${hg} : ${ag}`:'– : –'}</span>${tag}
+      </div>
+      <div class="mlr-team right">
+        <img class="mlr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
+        <span class="mlr-name ${played?(awayWin?'win':'loss'):''}">${awayName}</span>
+      </div>
+      <div class="mlr-owners">
+        <span class="owner-tag ot-${hOwner}">${hOwner==='kubele'?'K':'P'}</span>
+        <span style="font-size:10px;color:#ccc;">vs</span>
+        <span class="owner-tag ot-${aOwner}">${aOwner==='kubele'?'K':'P'}</span>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function renderProgress(kTeams,pTeams,matches){
+  const kDone=kTeams.filter(t=>getTeamStats(t.id,matches).hasStreak).length
+  const pDone=pTeams.filter(t=>getTeamStats(t.id,matches).hasStreak).length
+  const kTotal=kTeams.length,pTotal=pTeams.length
+  if(!kTotal&&!pTotal) return
+  document.getElementById('progressWrap').style.display='flex'
+  document.getElementById('progBarK').style.width=kTotal?`${(kDone/kTotal)*100}%`:'0%'
+  document.getElementById('progBarP').style.width=pTotal?`${(pDone/pTotal)*100}%`:'0%'
+  document.getElementById('progCountK').textContent=`${kDone} / ${kTotal} týmů splněno`
+  document.getElementById('progCountP').textContent=`${pDone} / ${pTotal} týmů splněno`
+  const banner=document.getElementById('winnerBanner')
+  if(kDone===kTotal&&kTotal>0&&(!pTotal||kDone>pDone||pDone<pTotal)){
+    banner.style.display='block'
+    document.getElementById('winnerTitle').textContent='🏆 Kubele vyhrál Standy Cup!'
+    document.getElementById('winnerSub').textContent='Všechny jeho týmy mají 2 výhry v řadě za sebou!'
+  } else if(pDone===pTotal&&pTotal>0){
+    banner.style.display='block'
+    document.getElementById('winnerTitle').textContent='🏆 Pici vyhrál Standy Cup!'
+    document.getElementById('winnerSub').textContent='Všechny jeho týmy mají 2 výhry v řadě za sebou!'
+  } else {
+    banner.style.display='none'
+  }
+}
+
+async function loadSeason(seasonId){
+  document.getElementById('playersGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Načítám...</div>'
+  document.getElementById('matchLog').innerHTML='<div style="padding:30px;text-align:center;color:#aaa;font-size:13px;">Načítám...</div>'
+
+  const{data:seasonTeams}=await db.from('season_teams').select('team_id').eq('season_id',seasonId)
+  const teamIds=(seasonTeams||[]).map(st=>st.team_id)
+  const{data:matches}=await db.from('matches').select('*').eq('season_id',seasonId).order('round',{ascending:true})
+  const allMatches=matches||[]
+
+  const kTeams=teamIds.map(id=>teamsMap[id]).filter(t=>t&&t.owner_id===PLAYER_IDS.kubele)
+  const pTeams=teamIds.map(id=>teamsMap[id]).filter(t=>t&&t.owner_id===PLAYER_IDS.pici)
+  const ownerMap={}
+  kTeams.forEach(t=>ownerMap[t.id]='kubele')
+  pTeams.forEach(t=>ownerMap[t.id]='pici')
+
+  document.getElementById('playersGrid').innerHTML=
+    buildPlayerPanel('Kubele','kubele',kTeams,allMatches)+
+    buildPlayerPanel('Pici','pici',pTeams,allMatches)
+  document.getElementById('matchLog').innerHTML=buildMatchLog(allMatches,ownerMap)
+  renderProgress(kTeams,pTeams,allMatches)
+}
+
+function onSeasonChange(){
+  const v=document.getElementById('seasonSel').value
+  if(v) loadSeason(v)
+}
+
+async function init(){
+  const{data:teams}=await db.from('teams').select('*')
+  ;(teams||[]).forEach(t=>teamsMap[t.id]=t)
+  const{data:seasons}=await db.from('seasons').select('*')
+    .eq('competition_id',STANDY_COMPETITION_ID).order('created_at',{ascending:false})
+  allSeasons=seasons||[]
+  const sel=document.getElementById('seasonSel')
+  sel.innerHTML=''
+  if(!allSeasons.length){
+    sel.innerHTML='<option>Žádné sezóny</option>'
+    document.getElementById('playersGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;">Žádné sezóny Standy Cup. Vytvořte novou v Zápisech.</div>'
+    return
+  }
+  allSeasons.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o)})
+  loadSeason(allSeasons[0].id)
+}
+
+init()
+</script>
+</body>
+</html>
