@@ -38,8 +38,8 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-heigh
 
 .player-panel{background:white;border-radius:16px;border:2px solid #e0e8f0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);}
 .player-header{padding:14px 18px;display:flex;align-items:center;gap:12px;}
-.ph-k{background:linear-gradient(135deg,#1565c0,#1976d2);}
-.ph-p{background:linear-gradient(135deg,#6a1b9a,#7b1fa2);}
+.ph-k{background:linear-gradient(135deg,#c0392b,#e74c3c);}
+.ph-p{background:linear-gradient(135deg,#111,#2c2c2c);}
 .ph-name{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:white;flex:1;}
 .ph-badge{font-size:11px;font-weight:700;background:rgba(255,255,255,.2);color:white;padding:3px 10px;border-radius:20px;white-space:nowrap;}
 .ph-badge.all-done{background:#27ae60;}
@@ -59,9 +59,8 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-heigh
 .tc-stat-val{font-size:20px;font-weight:800;line-height:1;}
 .tc-stat-val.w{color:#16a34a;}
 .tc-stat-val.l{color:#dc2626;}
-.tc-stat-val.s{font-size:14px;color:#0b2a3c;}
+.tc-stat-val.s{font-size:20px;color:#0b2a3c;}
 .tc-stat-lbl{font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
-
 .tc-dots-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .tdot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
 .tdot-w{background:#22c55e;}
@@ -75,12 +74,10 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-heigh
 .section-label::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#e0e8f0,transparent);}
 
 .match-log{background:white;border-radius:16px;border:1px solid #e0e8f0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);}
-.ml-thead{display:grid;grid-template-columns:46px 1fr auto 1fr 90px;gap:8px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #e0e8f0;}
 .ml-thead span{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;}
 .ml-thead span.c{text-align:center;}
 .ml-thead span.r{text-align:right;}
 
-.mlr{display:grid;grid-template-columns:46px 1fr auto 1fr 90px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f4f8;transition:background .15s;}
 .mlr:hover{background:#f8fafc;}
 .mlr.played{background:#f0fdf4;}
 .mlr.played:hover{background:#e8f9ef;}
@@ -95,15 +92,19 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-heigh
 .score-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:800;font-size:13px;padding:4px 11px;border-radius:7px;min-width:58px;text-align:center;}
 .score-badge.empty{background:#e9ecef;color:#aaa;font-weight:400;font-size:12px;}
 .result-tag{display:inline-block;font-size:9px;font-weight:700;background:#2f9ec9;color:white;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;}
-.mlr-owners{display:flex;gap:4px;justify-content:flex-end;align-items:center;}
-.owner-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
-.ot-k{background:#dbeafe;color:#1565c0;}
-.ot-p{background:#f3e8fd;color:#6a1b9a;}
-
+.ml-thead{display:grid;grid-template-columns:46px 1fr auto 1fr 170px;gap:8px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #e0e8f0;}
+.mlr{display:grid;grid-template-columns:46px 1fr auto 1fr 170px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f4f8;transition:background .15s;}
+.mlr-btns{display:flex;gap:5px;justify-content:flex-end;}
+.mlr-btn{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;padding:6px 9px;text-decoration:none;white-space:nowrap;}
+.mlr-btn-bet{background:#27ae60;color:white;}
+.mlr-btn-bet:hover{background:#219a52;}
+.mlr-btn-stats{background:#1a5276;color:white;}
+.mlr-btn-stats:hover{background:#0b2a3c;}
+  
 @media(max-width:750px){
   .players-grid{grid-template-columns:1fr;}
   .ml-thead,.mlr{grid-template-columns:36px 1fr auto 1fr;}
-  .ml-thead span:last-child,.mlr-owners{display:none;}
+  .ml-thead span:last-child,.mlr-btns{display:none;}
 }
 </style>
 </head>
@@ -153,8 +154,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#1a2a3c;min-heigh
       <span>Domácí</span>
       <span class="c">Skóre</span>
       <span class="r">Hosté</span>
-      <span class="r">Hráči</span>
-    </div>
+<span class="r">Akce</span>    </div>
     <div id="matchLog"><div style="padding:30px;text-align:center;color:#aaa;font-size:13px;">Načítám...</div></div>
   </div>
 </div>
@@ -234,14 +234,16 @@ function buildTeamCard(teamId, stats){
 function buildPlayerPanel(name, key, teams, matches){
   const doneCnt=teams.filter(t=>getTeamStats(t.id,matches).hasStreak).length
   const allDone=teams.length>0&&doneCnt===teams.length
-  const emoji=key==='kubele'?'🔵':'🟣'
+ const emoji=key==='kubele'?'🔴':'⚫'
   const headerCls=key==='kubele'?'ph-k':'ph-p'
+  const nameColor=key==='pici'?'color:#f1c40f':'color:white'
+  const badgeStyle=key==='pici'?'background:rgba(241,196,15,.2);color:#f1c40f;':''
   const cards=teams.map(t=>buildTeamCard(t.id,getTeamStats(t.id,matches))).join('')||'<div style="padding:16px;text-align:center;color:#aaa;font-size:13px;">Žádné týmy</div>'
   return `<div class="player-panel">
     <div class="player-header ${headerCls}">
       <span style="font-size:22px;">${emoji}</span>
-      <span class="ph-name">${name}</span>
-      <span class="ph-badge ${allDone?'all-done':''}">${doneCnt}/${teams.length} splněno${allDone?' 🏆':''}</span>
+      <span class="ph-name" style="${nameColor}">${name}</span>
+      <span class="ph-badge ${allDone?'all-done':''}" style="${badgeStyle}">${doneCnt}/${teams.length} splněno${allDone?' 🏆':''}</span>
     </div>
     <div class="team-cards">${cards}</div>
   </div>`
@@ -272,10 +274,9 @@ function buildMatchLog(matches, ownerMap){
         <img class="mlr-logo" src="${LOGOS}${away.logo}" onerror="this.style.display='none'">
         <span class="mlr-name ${played?(awayWin?'win':'loss'):''}">${awayName}</span>
       </div>
-      <div class="mlr-owners">
-        <span class="owner-tag ot-${hOwner}">${hOwner==='kubele'?'K':'P'}</span>
-        <span style="font-size:10px;color:#ccc;">vs</span>
-        <span class="owner-tag ot-${aOwner}">${aOwner==='kubele'?'K':'P'}</span>
+      <div class="mlr-btns">
+        <a class="mlr-btn mlr-btn-bet" href="vsad-si.html?id=${m.id}">🎲 Vsaď si</a>
+        ${played?`<a class="mlr-btn mlr-btn-stats" href="statistiky-zapasu.html?id=${m.id}">📊 Statistiky</a>`:''}
       </div>
     </div>`
   }).join('')
