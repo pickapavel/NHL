@@ -159,9 +159,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
   .mr-team.away{flex-direction:row;display:flex;padding:8px 10px;border-bottom:1px solid #f0f0f0;}
   .mr-score{padding:8px 10px;text-align:center;border-bottom:1px solid #f0f0f0;}
   .score-badge{width:100%;font-size:13px;}
-.mr-btns{padding:8px 10px;display:flex;flex-direction:column;gap:7px;}
+.mr-btns{padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:7px;}
   .mr-btn{width:100%;justify-content:center;border-radius:8px;font-size:13px;padding:12px;letter-spacing:.02em;}
-  .pair-filter-btn{border-radius:8px;}
+  .pair-filter-btns{flex-direction:column;gap:6px;}
+  .pair-filter-btn{border-radius:8px;width:100%;justify-content:center;}
 }
 </style>
 </head>
