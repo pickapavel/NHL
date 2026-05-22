@@ -882,12 +882,17 @@ async function loadExistingBets(match){
     const category=bet.type.replace("match_goals_","")
     state[playerKey][category].selected=bet.tip_key
     const cont=document.getElementById(`goals_${category}_${playerKey}`)
-if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{ if(btn.dataset.key===bet.tip_key) btn.classList.add("active"); btn.style.pointerEvents="none"; btn.style.opacity=btn.dataset.key===bet.tip_key?"1":"0.45" })    document.getElementById(`amount_${category}_${playerKey}`).value=bet.amount
+if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{
+      if(btn.dataset.key===bet.tip_key) btn.classList.add("active")
+      btn.style.pointerEvents="none"
+      btn.style.opacity=btn.dataset.key===bet.tip_key?"1":"0.45"
+    })
+    document.getElementById(`amount_${category}_${playerKey}`).value=bet.amount
     document.getElementById(`amount_${category}_${playerKey}`).disabled=true
     const summaryEl=document.getElementById(`summary_${category}_${playerKey}`)
-    if(match.played){ const won=bet.status==="won"; summaryEl.innerHTML=won?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(zisk +${Math.round(bet.potential_win-bet.amount)} Kč)</span></span>`:`<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>` }
-    else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${bet.odds.toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
-    const accBody=document.getElementById(`acc-body-${category}`), accHeader=document.querySelector(`#acc-${category} .accordion-header`)
+    if(match.played){ const won=bet.status==="won"; summaryEl.innerHTML=won?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(kurz ${Number(bet.odds).toFixed(2)} · zisk +${Math.round(bet.potential_win-bet.amount)} Kč)</span></span>`:`<span class="bet-result-lost">❌ Prohra — kurz ${Number(bet.odds).toFixed(2)} (vsazeno ${bet.amount} Kč)</span>` }
+    else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${Number(bet.odds).toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
+    const btn=document.querySelector(`#odds_${playerKey}`).closest(".bet-card").querySelector(".bet-btn"); if(btn) btn.disabled=true
     if(accBody&&!accBody.classList.contains("open")){ accBody.classList.add("open"); accHeader?.classList.add("open") }
     document.querySelectorAll(`#acc-body-${category} .bet-btn`).forEach(b=>{ if(b.closest(".bet-card")?.querySelector(`#goals_${category}_${playerKey}`)) b.disabled=true })
   })
@@ -910,7 +915,7 @@ if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{ if(btn.dataset.key==
     document.getElementById(`amount_${period}_${playerKey}`).disabled=true
     const summaryEl=document.getElementById(`summary_${period}_${playerKey}`)
     if(match.played){ const won=bet.status==="won"; summaryEl.innerHTML=won?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(zisk +${Math.round(bet.potential_win-bet.amount)} Kč)</span></span>`:`<span class="bet-result-lost">❌ Prohra (${bet.amount} Kč)</span>` }
-    else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${bet.odds.toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
+  else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${Number(bet.odds).toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
     document.querySelectorAll(`#acc-body-${period} .bet-btn`).forEach(b=>b.disabled=true)
     const accBody=document.getElementById(`acc-body-${period}`), accHeader=document.querySelector(`#acc-${period} .accordion-header`)
     if(accBody&&!accBody.classList.contains("open")){ accBody.classList.add("open"); accHeader?.classList.add("open") }
