@@ -24,7 +24,7 @@
 
     .container{
       width:100%;
-      max-width:700px;
+      max-width:800px;
       background:#1f2937;
       padding:30px;
       border-radius:18px;
@@ -40,7 +40,6 @@
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:20px;
-      margin-bottom:25px;
     }
 
     .team-box{
@@ -51,8 +50,7 @@
 
     .team-box h2{
       margin-top:0;
-      margin-bottom:15px;
-      font-size:22px;
+      margin-bottom:20px;
     }
 
     label{
@@ -66,32 +64,19 @@
       padding:12px;
       border:none;
       border-radius:10px;
-      margin-bottom:15px;
+      margin-bottom:18px;
       font-size:16px;
     }
 
-    .stake-box{
-      margin-top:10px;
-      background:#374151;
-      padding:20px;
-      border-radius:12px;
-    }
-
     .results{
-      margin-top:25px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:20px;
-    }
-
-    .result-card{
+      margin-top:15px;
       background:#4b5563;
-      padding:20px;
-      border-radius:12px;
+      padding:15px;
+      border-radius:10px;
     }
 
-    .result-card h3{
-      margin-top:0;
+    .results p{
+      margin:10px 0;
     }
 
     .profit{
@@ -100,8 +85,7 @@
     }
 
     @media(max-width:700px){
-      .teams,
-      .results{
+      .teams{
         grid-template-columns:1fr;
       }
     }
@@ -110,11 +94,14 @@
 <body>
 
   <div class="container">
+
     <h1>Kalkulačka sázek</h1>
 
     <div class="teams">
 
+      <!-- Tým 1 -->
       <div class="team-box">
+
         <h2>Tým 1</h2>
 
         <label>Název týmu</label>
@@ -122,9 +109,29 @@
 
         <label>Kurz</label>
         <input type="number" id="team1Odds" step="0.01" placeholder="Např. 1.85">
+
+        <label>Vsazená částka</label>
+        <input type="number" id="team1Stake" placeholder="Např. 1000">
+
+        <div class="results">
+          <p><strong id="resultTeam1">Tým 1</strong></p>
+
+          <p>
+            Možná výhra:
+            <strong id="team1Win">0 Kč</strong>
+          </p>
+
+          <p>
+            Čistý zisk:
+            <span class="profit" id="team1Profit">0 Kč</span>
+          </p>
+        </div>
+
       </div>
 
+      <!-- Tým 2 -->
       <div class="team-box">
+
         <h2>Tým 2</h2>
 
         <label>Název týmu</label>
@@ -132,32 +139,28 @@
 
         <label>Kurz</label>
         <input type="number" id="team2Odds" step="0.01" placeholder="Např. 2.10">
+
+        <label>Vsazená částka</label>
+        <input type="number" id="team2Stake" placeholder="Např. 1000">
+
+        <div class="results">
+          <p><strong id="resultTeam2">Tým 2</strong></p>
+
+          <p>
+            Možná výhra:
+            <strong id="team2Win">0 Kč</strong>
+          </p>
+
+          <p>
+            Čistý zisk:
+            <span class="profit" id="team2Profit">0 Kč</span>
+          </p>
+        </div>
+
       </div>
 
     </div>
 
-    <div class="stake-box">
-      <label>Vsazená částka</label>
-      <input type="number" id="stake" placeholder="Např. 1000">
-    </div>
-
-    <div class="results">
-
-      <div class="result-card">
-        <h3 id="resultTeam1">Tým 1</h3>
-
-        <p>Možná výhra: <strong id="team1Win">0 Kč</strong></p>
-        <p>Čistý zisk: <span class="profit" id="team1Profit">0 Kč</span></p>
-      </div>
-
-      <div class="result-card">
-        <h3 id="resultTeam2">Tým 2</h3>
-
-        <p>Možná výhra: <strong id="team2Win">0 Kč</strong></p>
-        <p>Čistý zisk: <span class="profit" id="team2Profit">0 Kč</span></p>
-      </div>
-
-    </div>
   </div>
 
   <script>
@@ -168,34 +171,47 @@
     });
 
     function calculate() {
-      const team1Name = document.getElementById("team1Name").value || "Tým 1";
-      const team2Name = document.getElementById("team2Name").value || "Tým 2";
 
-      const team1Odds = parseFloat(document.getElementById("team1Odds").value) || 0;
-      const team2Odds = parseFloat(document.getElementById("team2Odds").value) || 0;
+      // TEAM 1
+      const team1Name =
+        document.getElementById("team1Name").value || "Tým 1";
 
-      const stake = parseFloat(document.getElementById("stake").value) || 0;
+      const team1Odds =
+        parseFloat(document.getElementById("team1Odds").value) || 0;
 
-      // Výpočty
-      const team1Win = stake * team1Odds;
-      const team2Win = stake * team2Odds;
+      const team1Stake =
+        parseFloat(document.getElementById("team1Stake").value) || 0;
 
-      const team1Profit = team1Win - stake;
-      const team2Profit = team2Win - stake;
+      const team1Win = team1Stake * team1Odds;
+      const team1Profit = team1Win - team1Stake;
 
-      // Zobrazení názvů
+      // TEAM 2
+      const team2Name =
+        document.getElementById("team2Name").value || "Tým 2";
+
+      const team2Odds =
+        parseFloat(document.getElementById("team2Odds").value) || 0;
+
+      const team2Stake =
+        parseFloat(document.getElementById("team2Stake").value) || 0;
+
+      const team2Win = team2Stake * team2Odds;
+      const team2Profit = team2Win - team2Stake;
+
+      // Výpis TEAM 1
       document.getElementById("resultTeam1").innerText = team1Name;
-      document.getElementById("resultTeam2").innerText = team2Name;
 
-      // Zobrazení výsledků
       document.getElementById("team1Win").innerText =
         team1Win.toFixed(2) + " Kč";
 
-      document.getElementById("team2Win").innerText =
-        team2Win.toFixed(2) + " Kč";
-
       document.getElementById("team1Profit").innerText =
         team1Profit.toFixed(2) + " Kč";
+
+      // Výpis TEAM 2
+      document.getElementById("resultTeam2").innerText = team2Name;
+
+      document.getElementById("team2Win").innerText =
+        team2Win.toFixed(2) + " Kč";
 
       document.getElementById("team2Profit").innerText =
         team2Profit.toFixed(2) + " Kč";
