@@ -874,8 +874,7 @@ async function loadExistingBets(match){
     const summaryEl=document.getElementById("summary_"+playerKey)
  if(match.played){ const won=bet.status==="won"; summaryEl.innerHTML=won?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(kurz ${Number(bet.odds).toFixed(2)} · zisk +${Math.round(bet.potential_win-bet.amount)} Kč)</span></span>`:`<span class="bet-result-lost">❌ Prohra — kurz ${Number(bet.odds).toFixed(2)} (vsazeno ${bet.amount} Kč)</span>` }
     else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${Number(bet.odds).toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
-    const accBody=document.getElementById(`acc-body-${category}`)
-  })
+   })
 
   ;(goalsBets||[]).forEach(bet=>{
     const playerKey=bet.player_id===players.kubele.id?"kubele":"pici"
@@ -892,7 +891,7 @@ if(cont) cont.querySelectorAll(".goals-btn").forEach(btn=>{
     const summaryEl=document.getElementById(`summary_${category}_${playerKey}`)
     if(match.played){ const won=bet.status==="won"; summaryEl.innerHTML=won?`<span class="bet-result-won">🎉 Výhra ${Math.round(bet.potential_win)} Kč! <span style="font-size:11px;color:#15803d;font-weight:600;">(kurz ${Number(bet.odds).toFixed(2)} · zisk +${Math.round(bet.potential_win-bet.amount)} Kč)</span></span>`:`<span class="bet-result-lost">❌ Prohra — kurz ${Number(bet.odds).toFixed(2)} (vsazeno ${bet.amount} Kč)</span>` }
     else{ summaryEl.innerHTML=`<span class="odds-val">Kurz: ${Number(bet.odds).toFixed(2)}</span><span class="win-amount">Možná výhra: ${Math.round(bet.potential_win)} Kč</span>` }
-    const btn=document.querySelector(`#odds_${playerKey}`).closest(".bet-card").querySelector(".bet-btn"); if(btn) btn.disabled=true
+const accBody=document.getElementById(`acc-body-${category}`), accHeader=document.querySelector(`#acc-${category} .accordion-header`)
     if(accBody&&!accBody.classList.contains("open")){ accBody.classList.add("open"); accHeader?.classList.add("open") }
     document.querySelectorAll(`#acc-body-${category} .bet-btn`).forEach(b=>{ if(b.closest(".bet-card")?.querySelector(`#goals_${category}_${playerKey}`)) b.disabled=true })
   })
