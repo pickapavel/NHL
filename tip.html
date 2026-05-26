@@ -26,7 +26,7 @@
 
     .container{
       width:100%;
-      max-width:1200px;
+      max-width:1300px;
       background:#1f2937;
       padding:30px;
       border-radius:18px;
@@ -93,7 +93,7 @@
       border-radius:12px;
     }
 
-    @media(max-width:900px){
+    @media(max-width:1000px){
 
       .grid{
         grid-template-columns:1fr;
@@ -112,7 +112,7 @@
 
     <div class="grid">
 
-      <!-- TÝM 1 -->
+      <!-- TEAM 1 -->
 
       <div class="box">
 
@@ -143,7 +143,7 @@
 
       </div>
 
-      <!-- TÝM 2 -->
+      <!-- TEAM 2 -->
 
       <div class="box">
 
@@ -151,6 +151,8 @@
 
         <label>Aktuální kurz týmu 2</label>
         <input type="number" id="team2Odds" step="0.01" placeholder="6.84">
+
+        <!-- DOPORUČENÁ SÁZKA -->
 
         <div class="result">
 
@@ -162,6 +164,32 @@
           <p>
             Když vyhraje tým 2:
             <span class="green" id="team2Result">0 Kč</span>
+          </p>
+
+        </div>
+
+        <!-- VLASTNÍ SÁZKA -->
+
+        <label style="margin-top:20px;">
+          Kolik skutečně vsadíš na tým 2
+        </label>
+
+        <input
+          type="number"
+          id="realTeam2Stake"
+          placeholder="Např. 200"
+        >
+
+        <div class="result">
+
+          <p>
+            Výhra z tvé sázky:
+            <strong id="realTeam2Win">0 Kč</strong>
+          </p>
+
+          <p>
+            Celkový výsledek:
+            <span class="red" id="realTeam2Profit">0 Kč</span>
           </p>
 
         </div>
@@ -269,7 +297,7 @@
     function calculate(){
 
       // =========================
-      // TÝM 1
+      // TEAM 1
       // =========================
 
       const team1Odds =
@@ -291,7 +319,7 @@
         team1Profit.toFixed(2) + " Kč";
 
       // =========================
-      // TÝM 2 ZÁCHRANA
+      // TEAM 2 DOPORUČENÍ
       // =========================
 
       const team2Odds =
@@ -319,14 +347,51 @@
         team2Profit.toFixed(2) + " Kč";
 
       // =========================
-      // REMÍZA
+      // TEAM 2 VLASTNÍ SÁZKA
+      // =========================
+
+      const realTeam2Stake =
+        parseFloat(document.getElementById("realTeam2Stake").value) || 0;
+
+      const realTeam2Return =
+        realTeam2Stake * team2Odds;
+
+      const totalWithRealTeam2 =
+        team1Stake + realTeam2Stake;
+
+      const realTeam2Profit =
+        realTeam2Return - totalWithRealTeam2;
+
+      document.getElementById("realTeam2Win").innerText =
+        realTeam2Return.toFixed(2) + " Kč";
+
+      const realTeam2ProfitElement =
+        document.getElementById("realTeam2Profit");
+
+      realTeam2ProfitElement.innerText =
+        realTeam2Profit.toFixed(2) + " Kč";
+
+      if(realTeam2Profit >= 0){
+
+        realTeam2ProfitElement.classList.remove("red");
+        realTeam2ProfitElement.classList.add("green");
+
+      }else{
+
+        realTeam2ProfitElement.classList.remove("green");
+        realTeam2ProfitElement.classList.add("red");
+
+      }
+
+      // =========================
+      // REMÍZA DOPORUČENÍ
       // =========================
 
       const drawOdds =
         parseFloat(document.getElementById("drawOdds").value) || 0;
 
       const totalLossToCover =
-        team1Stake + team2Needed;
+        team1Stake + realTeam2Stake;
 
       let drawNeeded = 0;
 
@@ -350,7 +415,7 @@
         drawProfit.toFixed(2) + " Kč";
 
       // =========================
-      // VLASTNÍ SÁZKA NA REMÍZU
+      // REMÍZA VLASTNÍ SÁZKA
       // =========================
 
       const realDrawStake =
@@ -360,7 +425,7 @@
         realDrawStake * drawOdds;
 
       const totalWithRealDraw =
-        team1Stake + team2Needed + realDrawStake;
+        team1Stake + realTeam2Stake + realDrawStake;
 
       const realDrawProfit =
         realDrawReturn - totalWithRealDraw;
@@ -391,20 +456,25 @@
       // =========================
 
       const totalInvested =
-        team1Stake + team2Needed + realDrawStake;
+        team1Stake +
+        realTeam2Stake +
+        realDrawStake;
 
       document.getElementById("totalInvested").innerText =
         totalInvested.toFixed(2) + " Kč";
 
-      // TÝM 1 VYHRAJE
+      // KDYŽ VYHRAJE TEAM 1
+
       const scenario1 =
         team1Win - totalInvested;
 
-      // TÝM 2 VYHRAJE
-      const scenario2 =
-        team2Return - totalInvested;
+      // KDYŽ VYHRAJE TEAM 2
 
-      // REMÍZA
+      const scenario2 =
+        realTeam2Return - totalInvested;
+
+      // KDYŽ BUDE REMÍZA
+
       const scenarioDraw =
         realDrawReturn - totalInvested;
 
