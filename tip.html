@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Kalkulačka sázek</title>
 
   <style>
+
     *{
       box-sizing:border-box;
-      font-family:Arial, sans-serif;
+      font-family:Arial,sans-serif;
     }
 
     body{
@@ -24,11 +26,10 @@
 
     .container{
       width:100%;
-      max-width:1000px;
+      max-width:900px;
       background:#1f2937;
       padding:30px;
       border-radius:18px;
-      box-shadow:0 0 25px rgba(0,0,0,0.4);
     }
 
     h1{
@@ -36,21 +37,16 @@
       margin-bottom:30px;
     }
 
-    .teams{
+    .grid{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:20px;
     }
 
-    .team-box{
+    .box{
       background:#374151;
       padding:20px;
       border-radius:12px;
-    }
-
-    .team-box h2{
-      margin-top:0;
-      margin-bottom:20px;
     }
 
     label{
@@ -68,46 +64,40 @@
       font-size:16px;
     }
 
-    .results{
+    .result{
       margin-top:15px;
       background:#4b5563;
       padding:15px;
       border-radius:10px;
     }
 
-    .results p{
-      margin:10px 0;
-      font-size:18px;
-    }
-
-    .profit{
+    .green{
       color:#22c55e;
       font-weight:bold;
     }
 
-    .loss{
+    .red{
       color:#ef4444;
       font-weight:bold;
     }
 
-    .hedge-box{
+    .hedge{
       margin-top:30px;
       background:#374151;
       padding:25px;
       border-radius:12px;
     }
 
-    .hedge-title{
-      margin-top:0;
-      margin-bottom:20px;
-    }
-
     @media(max-width:700px){
-      .teams{
+
+      .grid{
         grid-template-columns:1fr;
       }
+
     }
+
   </style>
+
 </head>
 <body>
 
@@ -115,10 +105,11 @@
 
     <h1>Kalkulačka sázek</h1>
 
-    <div class="teams">
+    <div class="grid">
 
-      <!-- Tým 1 -->
-      <div class="team-box">
+      <!-- TEAM 1 -->
+
+      <div class="box">
 
         <h2>Tým 1</h2>
 
@@ -126,14 +117,12 @@
         <input type="text" id="team1Name" placeholder="Např. Sparta">
 
         <label>Kurz</label>
-        <input type="number" id="team1Odds" step="0.01" placeholder="Např. 1.85">
+        <input type="number" id="team1Odds" step="0.01" placeholder="1.10">
 
         <label>Vsazená částka</label>
-        <input type="number" id="team1Stake" placeholder="Např. 1000">
+        <input type="number" id="team1Stake" placeholder="1000">
 
-        <div class="results">
-
-          <p><strong id="resultTeam1">Tým 1</strong></p>
+        <div class="result">
 
           <p>
             Možná výhra:
@@ -142,76 +131,38 @@
 
           <p>
             Čistý zisk:
-            <span class="profit" id="team1Profit">0 Kč</span>
+            <span class="green" id="team1Profit">0 Kč</span>
           </p>
 
         </div>
 
       </div>
 
-      <!-- Tým 2 -->
-      <div class="team-box">
+      <!-- TEAM 2 -->
 
-        <h2>Tým 2</h2>
+      <div class="box">
+
+        <h2>Tým 2 (LIVE záchrana)</h2>
 
         <label>Název týmu</label>
         <input type="text" id="team2Name" placeholder="Např. Slavia">
 
-        <label>Kurz</label>
-        <input type="number" id="team2Odds" step="0.01" placeholder="Např. 2.10">
+        <label>Aktuální LIVE kurz</label>
+        <input type="number" id="liveOdds" step="0.01" placeholder="3.50">
 
-        <label>Vsazená částka</label>
-        <input type="number" id="team2Stake" placeholder="Např. 1000">
-
-        <div class="results">
-
-          <p><strong id="resultTeam2">Tým 2</strong></p>
+        <div class="result">
 
           <p>
-            Možná výhra:
-            <strong id="team2Win">0 Kč</strong>
+            Potřebná záchranná sázka:
+            <strong id="neededBet">0 Kč</strong>
           </p>
 
           <p>
-            Čistý zisk:
-            <span class="profit" id="team2Profit">0 Kč</span>
+            Výsledek po dorovnání:
+            <span class="green" id="finalResult">0 Kč</span>
           </p>
 
         </div>
-
-      </div>
-
-    </div>
-
-    <!-- HEDGE SEKCE -->
-    <div class="hedge-box">
-
-      <h2 class="hedge-title">
-        Dorovnání sázky (aby ses dostal minimálně na nulu)
-      </h2>
-
-      <label>
-        Aktuální kurz soupeře
-      </label>
-
-      <input
-        type="number"
-        id="liveOdds"
-        step="0.01"
-        placeholder="Např. 3.20"
-      >
-
-      <div class="results">
-
-        <p>
-          Kolik vsadit:
-          <strong id="hedgeBet">0 Kč</strong>
-        </p>
-
-        <p>
-          Výsledek při výhře soupeře:
-          <span class="profit" id="hedgeResult">0 Kč</span>
-        </p>
 
       </div>
 
@@ -227,14 +178,9 @@
       input.addEventListener("input", calculate);
     });
 
-    function calculate() {
+    function calculate(){
 
-      // =========================
       // TEAM 1
-      // =========================
-
-      const team1Name =
-        document.getElementById("team1Name").value || "Tým 1";
 
       const team1Odds =
         parseFloat(document.getElementById("team1Odds").value) || 0;
@@ -242,97 +188,59 @@
       const team1Stake =
         parseFloat(document.getElementById("team1Stake").value) || 0;
 
-      const team1Win = team1Stake * team1Odds;
+      const possibleWin =
+        team1Stake * team1Odds;
 
-      const team1Profit = team1Win - team1Stake;
-
-      // =========================
-      // TEAM 2
-      // =========================
-
-      const team2Name =
-        document.getElementById("team2Name").value || "Tým 2";
-
-      const team2Odds =
-        parseFloat(document.getElementById("team2Odds").value) || 0;
-
-      const team2Stake =
-        parseFloat(document.getElementById("team2Stake").value) || 0;
-
-      const team2Win = team2Stake * team2Odds;
-
-      const team2Profit = team2Win - team2Stake;
-
-      // =========================
-      // VÝPIS TEAM 1
-      // =========================
-
-      document.getElementById("resultTeam1").innerText =
-        team1Name;
+      const possibleProfit =
+        possibleWin - team1Stake;
 
       document.getElementById("team1Win").innerText =
-        team1Win.toFixed(2) + " Kč";
+        possibleWin.toFixed(2) + " Kč";
 
       document.getElementById("team1Profit").innerText =
-        team1Profit.toFixed(2) + " Kč";
+        possibleProfit.toFixed(2) + " Kč";
 
-      // =========================
-      // VÝPIS TEAM 2
-      // =========================
-
-      document.getElementById("resultTeam2").innerText =
-        team2Name;
-
-      document.getElementById("team2Win").innerText =
-        team2Win.toFixed(2) + " Kč";
-
-      document.getElementById("team2Profit").innerText =
-        team2Profit.toFixed(2) + " Kč";
-
-      // =========================
-      // HEDGE / DOROVNÁNÍ
-      // =========================
+      // LIVE KURZ
 
       const liveOdds =
         parseFloat(document.getElementById("liveOdds").value) || 0;
 
-      let hedgeBet = 0;
+      let neededBet = 0;
 
-      // výpočet dorovnávací sázky
+      // hlavní správný výpočet
       if(liveOdds > 1){
 
-        hedgeBet = team1Win / liveOdds;
+        neededBet =
+          team1Stake / (liveOdds - 1);
 
       }
 
-      // kolik vrátí soupeř
-      const hedgeReturn =
-        hedgeBet * liveOdds;
+      // kolik vrátí live sázka
+      const liveReturn =
+        neededBet * liveOdds;
 
       // čistý výsledek
-      const hedgeProfit =
-        hedgeReturn - hedgeBet - team1Stake;
+      const finalProfit =
+        liveReturn - neededBet - team1Stake;
 
-      // výpis
-      document.getElementById("hedgeBet").innerText =
-        hedgeBet.toFixed(2) + " Kč";
+      document.getElementById("neededBet").innerText =
+        neededBet.toFixed(2) + " Kč";
 
-      const hedgeResult =
-        document.getElementById("hedgeResult");
+      const finalResult =
+        document.getElementById("finalResult");
 
-      hedgeResult.innerText =
-        hedgeProfit.toFixed(2) + " Kč";
+      finalResult.innerText =
+        finalProfit.toFixed(2) + " Kč";
 
-      // barva podle výsledku
-      if(hedgeProfit >= 0){
+      if(finalProfit >= 0){
 
-        hedgeResult.classList.remove("loss");
-        hedgeResult.classList.add("profit");
+        finalResult.classList.remove("red");
+        finalResult.classList.add("green");
 
       }else{
 
-        hedgeResult.classList.remove("profit");
-        hedgeResult.classList.add("loss");
+        finalResult.classList.remove("green");
+        finalResult.classList.add("red");
 
       }
 
