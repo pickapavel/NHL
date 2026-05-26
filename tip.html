@@ -24,7 +24,7 @@
 
     .container{
       width:100%;
-      max-width:800px;
+      max-width:1000px;
       background:#1f2937;
       padding:30px;
       border-radius:18px;
@@ -77,11 +77,29 @@
 
     .results p{
       margin:10px 0;
+      font-size:18px;
     }
 
     .profit{
       color:#22c55e;
       font-weight:bold;
+    }
+
+    .loss{
+      color:#ef4444;
+      font-weight:bold;
+    }
+
+    .hedge-box{
+      margin-top:30px;
+      background:#374151;
+      padding:25px;
+      border-radius:12px;
+    }
+
+    .hedge-title{
+      margin-top:0;
+      margin-bottom:20px;
     }
 
     @media(max-width:700px){
@@ -114,6 +132,7 @@
         <input type="number" id="team1Stake" placeholder="Např. 1000">
 
         <div class="results">
+
           <p><strong id="resultTeam1">Tým 1</strong></p>
 
           <p>
@@ -125,6 +144,7 @@
             Čistý zisk:
             <span class="profit" id="team1Profit">0 Kč</span>
           </p>
+
         </div>
 
       </div>
@@ -144,6 +164,7 @@
         <input type="number" id="team2Stake" placeholder="Např. 1000">
 
         <div class="results">
+
           <p><strong id="resultTeam2">Tým 2</strong></p>
 
           <p>
@@ -155,7 +176,42 @@
             Čistý zisk:
             <span class="profit" id="team2Profit">0 Kč</span>
           </p>
+
         </div>
+
+      </div>
+
+    </div>
+
+    <!-- HEDGE SEKCE -->
+    <div class="hedge-box">
+
+      <h2 class="hedge-title">
+        Dorovnání sázky (aby ses dostal minimálně na nulu)
+      </h2>
+
+      <label>
+        Aktuální kurz soupeře
+      </label>
+
+      <input
+        type="number"
+        id="liveOdds"
+        step="0.01"
+        placeholder="Např. 3.20"
+      >
+
+      <div class="results">
+
+        <p>
+          Kolik vsadit:
+          <strong id="hedgeBet">0 Kč</strong>
+        </p>
+
+        <p>
+          Výsledek při výhře soupeře:
+          <span class="profit" id="hedgeResult">0 Kč</span>
+        </p>
 
       </div>
 
@@ -164,6 +220,7 @@
   </div>
 
   <script>
+
     const inputs = document.querySelectorAll("input");
 
     inputs.forEach(input => {
@@ -172,7 +229,10 @@
 
     function calculate() {
 
+      // =========================
       // TEAM 1
+      // =========================
+
       const team1Name =
         document.getElementById("team1Name").value || "Tým 1";
 
@@ -183,9 +243,13 @@
         parseFloat(document.getElementById("team1Stake").value) || 0;
 
       const team1Win = team1Stake * team1Odds;
+
       const team1Profit = team1Win - team1Stake;
 
+      // =========================
       // TEAM 2
+      // =========================
+
       const team2Name =
         document.getElementById("team2Name").value || "Tým 2";
 
@@ -196,10 +260,15 @@
         parseFloat(document.getElementById("team2Stake").value) || 0;
 
       const team2Win = team2Stake * team2Odds;
+
       const team2Profit = team2Win - team2Stake;
 
-      // Výpis TEAM 1
-      document.getElementById("resultTeam1").innerText = team1Name;
+      // =========================
+      // VÝPIS TEAM 1
+      // =========================
+
+      document.getElementById("resultTeam1").innerText =
+        team1Name;
 
       document.getElementById("team1Win").innerText =
         team1Win.toFixed(2) + " Kč";
@@ -207,15 +276,68 @@
       document.getElementById("team1Profit").innerText =
         team1Profit.toFixed(2) + " Kč";
 
-      // Výpis TEAM 2
-      document.getElementById("resultTeam2").innerText = team2Name;
+      // =========================
+      // VÝPIS TEAM 2
+      // =========================
+
+      document.getElementById("resultTeam2").innerText =
+        team2Name;
 
       document.getElementById("team2Win").innerText =
         team2Win.toFixed(2) + " Kč";
 
       document.getElementById("team2Profit").innerText =
         team2Profit.toFixed(2) + " Kč";
+
+      // =========================
+      // HEDGE / DOROVNÁNÍ
+      // =========================
+
+      const liveOdds =
+        parseFloat(document.getElementById("liveOdds").value) || 0;
+
+      let hedgeBet = 0;
+
+      // výpočet dorovnávací sázky
+      if(liveOdds > 1){
+
+        hedgeBet = team1Win / liveOdds;
+
+      }
+
+      // kolik vrátí soupeř
+      const hedgeReturn =
+        hedgeBet * liveOdds;
+
+      // čistý výsledek
+      const hedgeProfit =
+        hedgeReturn - hedgeBet - team1Stake;
+
+      // výpis
+      document.getElementById("hedgeBet").innerText =
+        hedgeBet.toFixed(2) + " Kč";
+
+      const hedgeResult =
+        document.getElementById("hedgeResult");
+
+      hedgeResult.innerText =
+        hedgeProfit.toFixed(2) + " Kč";
+
+      // barva podle výsledku
+      if(hedgeProfit >= 0){
+
+        hedgeResult.classList.remove("loss");
+        hedgeResult.classList.add("profit");
+
+      }else{
+
+        hedgeResult.classList.remove("profit");
+        hedgeResult.classList.add("loss");
+
+      }
+
     }
+
   </script>
 
 </body>
