@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Kalkulačka dorovnání sázehk</title>
+  <title>Kalkulačka dorovnání sázek</title>
 
   <style>
 
@@ -26,7 +26,7 @@
 
     .container{
       width:100%;
-      max-width:1300px;
+      max-width:1400px;
       background:#1f2937;
       padding:30px;
       border-radius:18px;
@@ -93,7 +93,7 @@
       border-radius:12px;
     }
 
-    @media(max-width:1000px){
+    @media(max-width:1100px){
 
       .grid{
         grid-template-columns:1fr;
@@ -122,10 +122,10 @@
         <input type="text" id="team1Name" placeholder="Např. Sparta">
 
         <label>Původní kurz</label>
-        <input type="number" id="team1Odds" step="0.01" placeholder="1.38">
+        <input type="number" id="team1Odds" step="0.01" placeholder="1.33">
 
         <label>Vsazená částka</label>
-        <input type="number" id="team1Stake" placeholder="3000">
+        <input type="number" id="team1Stake" placeholder="2000">
 
         <div class="result">
 
@@ -150,9 +150,14 @@
         <h2>Tým 2 (LIVE záchrana)</h2>
 
         <label>Aktuální kurz týmu 2</label>
-        <input type="number" id="team2Odds" step="0.01" placeholder="6.84">
+        <input
+          type="number"
+          id="team2Odds"
+          step="0.01"
+          placeholder="3.66"
+        >
 
-        <!-- DOPORUČENÁ SÁZKA -->
+        <!-- DOPORUČENÁ -->
 
         <div class="result">
 
@@ -168,7 +173,7 @@
 
         </div>
 
-        <!-- VLASTNÍ SÁZKA -->
+        <!-- VLASTNÍ -->
 
         <label style="margin-top:20px;">
           Kolik skutečně vsadíš na tým 2
@@ -177,7 +182,7 @@
         <input
           type="number"
           id="realTeam2Stake"
-          placeholder="Např. 200"
+          placeholder="Např. 500"
         >
 
         <div class="result">
@@ -203,11 +208,12 @@
         <h2>Remíza</h2>
 
         <label>Kurz na remízu</label>
+
         <input
           type="number"
           id="drawOdds"
           step="0.01"
-          placeholder="5.75"
+          placeholder="17.10"
         >
 
         <!-- DOPORUČENÁ -->
@@ -319,7 +325,7 @@
         team1Profit.toFixed(2) + " Kč";
 
       // =========================
-      // TEAM 2 DOPORUČENÍ
+      // TEAM 2 DOPORUČENÁ
       // =========================
 
       const team2Odds =
@@ -334,17 +340,19 @@
 
       }
 
-      const team2Return =
+      const team2ReturnRecommended =
         team2Needed * team2Odds;
 
-      const team2Profit =
-        team2Return - team2Needed - team1Stake;
+      const team2ProfitRecommended =
+        team2ReturnRecommended -
+        team2Needed -
+        team1Stake;
 
       document.getElementById("team2Needed").innerText =
         team2Needed.toFixed(2) + " Kč";
 
       document.getElementById("team2Result").innerText =
-        team2Profit.toFixed(2) + " Kč";
+        team2ProfitRecommended.toFixed(2) + " Kč";
 
       // =========================
       // TEAM 2 VLASTNÍ SÁZKA
@@ -384,7 +392,7 @@
       }
 
       // =========================
-      // REMÍZA DOPORUČENÍ
+      // REMÍZA DOPORUČENÁ
       // =========================
 
       const drawOdds =
@@ -402,17 +410,19 @@
 
       }
 
-      const drawReturn =
+      const drawReturnRecommended =
         drawNeeded * drawOdds;
 
-      const drawProfit =
-        drawReturn - drawNeeded - totalLossToCover;
+      const drawProfitRecommended =
+        drawReturnRecommended -
+        drawNeeded -
+        totalLossToCover;
 
       document.getElementById("drawNeeded").innerText =
         drawNeeded.toFixed(2) + " Kč";
 
       document.getElementById("drawResult").innerText =
-        drawProfit.toFixed(2) + " Kč";
+        drawProfitRecommended.toFixed(2) + " Kč";
 
       // =========================
       // REMÍZA VLASTNÍ SÁZKA
@@ -425,7 +435,9 @@
         realDrawStake * drawOdds;
 
       const totalWithRealDraw =
-        team1Stake + realTeam2Stake + realDrawStake;
+        team1Stake +
+        realTeam2Stake +
+        realDrawStake;
 
       const realDrawProfit =
         realDrawReturn - totalWithRealDraw;
