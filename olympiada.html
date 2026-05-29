@@ -171,18 +171,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;colo
 <script src="./menu.js"></script>
 
 <div class="olympic-header">
-  <div class="olympic-header-inner">
-    <div class="olympic-rings">
+<div class="olympic-header-inner" style="flex-direction:column;align-items:stretch;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div class="olympic-title">Olympijský <span>turnaj</span></div>
+      <select id="seasonTabs" onchange="onSeasonSelect()" style="padding:7px 16px;border-radius:8px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;outline:none;"></select>
+    </div>
+    <div class="olympic-rings" style="margin-bottom:14px;">
       <div class="ring ring-b"></div><div class="ring ring-k"></div>
       <div class="ring ring-c"></div><div class="ring ring-r"></div><div class="ring ring-y"></div>
     </div>
-    <div class="olympic-title-wrap">
-      <div class="olympic-title">Olympijský <span>turnaj</span></div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;">
-        <div class="olympic-sub" id="headerSub">Načítám...</div>
-        <select id="seasonTabs" onchange="onSeasonSelect()" style="padding:7px 14px;border-radius:20px;border:2px solid rgba(240,192,64,.5);background:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#1a1a00;cursor:pointer;outline:none;"></select>
-      </div>
-    </div>
+    <div id="headerFlags" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
+    <div id="headerSub" style="display:none;"></div>
   </div>
 </div>
 
@@ -901,8 +900,10 @@ async function loadSeason(seasonId, seasonName){
   })
   document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
- buildBracket(stageMap,matchesByStage)
-  const _si=stageMap["Skupina o čtvrtfinále"]
+buildBracket(stageMap,matchesByStage)
+  const _flagIds=new Set();(matches||[]).forEach(m=>{_flagIds.add(m.home_team);_flagIds.add(m.away_team)})
+  const _flagsEl=document.getElementById('headerFlags')
+  if(_flagsEl) _flagsEl.innerHTML=[..._flagIds].filter(id=>teamsMap[id]?.logo).map(id=>`<img src="${LOGOS}${teamsMap[id].logo}" title="${teamsMap[id].name}" style="width:32px;height:32px;object-fit:contain;background:rgba(255,255,255,.1);border-radius:6px;padding:3px;border:1px solid rgba(255,255,255,.15);" onerror="this.style.display='none'">`).join('')  const _si=stageMap["Skupina o čtvrtfinále"]
   const _sm=matchesByStage[_si]||[]
   const _st=new Set();_sm.forEach(m=>{_st.add(m.home_team);_st.add(m.away_team)})
   await buildSkupinaSazkyPanel(_st)
