@@ -904,6 +904,8 @@ buildBracket(stageMap,matchesByStage)
  var _fIds=new Set();(matches||[]).forEach(function(m){_fIds.add(m.home_team);_fIds.add(m.away_team)})
   var _fEl=document.getElementById('headerFlags')
   if(_fEl){var _fHtml='';_fIds.forEach(function(id){if(teamsMap[id]&&teamsMap[id].logo)_fHtml+='<img src="'+LOGOS+teamsMap[id].logo+'" title="'+teamsMap[id].name+'" style="width:32px;height:32px;object-fit:contain;background:rgba(255,255,255,.1);border-radius:6px;padding:3px;border:1px solid rgba(255,255,255,.15);" onerror="this.style.display=\'none\'">'});_fEl.innerHTML=_fHtml}
+const _si=stageMap["Skupina o čtvrtfinále"]
+  const _sm=matchesByStage[_si]||[]
   const _st=new Set();_sm.forEach(m=>{_st.add(m.home_team);_st.add(m.away_team)})
   await buildSkupinaSazkyPanel(_st)
   buildPhaseNav()
