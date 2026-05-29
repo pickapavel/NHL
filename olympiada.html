@@ -901,10 +901,9 @@ async function loadSeason(seasonId, seasonName){
   document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
 buildBracket(stageMap,matchesByStage)
-  const _flagIds=new Set();(matches||[]).forEach(m=>{_flagIds.add(m.home_team);_flagIds.add(m.away_team)})
-  const _flagsEl=document.getElementById('headerFlags')
-  if(_flagsEl) _flagsEl.innerHTML=[..._flagIds].filter(id=>teamsMap[id]?.logo).map(id=>`<img src="${LOGOS}${teamsMap[id].logo}" title="${teamsMap[id].name}" style="width:32px;height:32px;object-fit:contain;background:rgba(255,255,255,.1);border-radius:6px;padding:3px;border:1px solid rgba(255,255,255,.15);" onerror="this.style.display='none'">`).join('')  const _si=stageMap["Skupina o čtvrtfinále"]
-  const _sm=matchesByStage[_si]||[]
+ var _fIds=new Set();(matches||[]).forEach(function(m){_fIds.add(m.home_team);_fIds.add(m.away_team)})
+  var _fEl=document.getElementById('headerFlags')
+  if(_fEl){var _fHtml='';_fIds.forEach(function(id){if(teamsMap[id]&&teamsMap[id].logo)_fHtml+='<img src="'+LOGOS+teamsMap[id].logo+'" title="'+teamsMap[id].name+'" style="width:32px;height:32px;object-fit:contain;background:rgba(255,255,255,.1);border-radius:6px;padding:3px;border:1px solid rgba(255,255,255,.15);" onerror="this.style.display=\'none\'">'});_fEl.innerHTML=_fHtml}
   const _st=new Set();_sm.forEach(m=>{_st.add(m.home_team);_st.add(m.away_team)})
   await buildSkupinaSazkyPanel(_st)
   buildPhaseNav()
