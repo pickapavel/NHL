@@ -202,9 +202,9 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-let currentSeasonId = null
+const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
 
-let currentSeasonId = DEFAULT_SEASON_ID
+let currentSeasonId = null
 let currentStageId  = null
 let currentMatchFilter = "all"
 let currentTeamFilter  = "all"
@@ -221,7 +221,8 @@ async function initSeasons(){
  ;(stages||[]).forEach(s=>zakladniStageMap[s.season_id]=s.id)
 
 currentSeasonId = seasons[seasons.length - 1].id
- const tabsEl=document.getElementById("seasonTabs") tabsEl.innerHTML=""
+ const tabsEl=document.getElementById("seasonTabs")
+ tabsEl.innerHTML=""
  seasons.forEach(s=>{
   const btn=document.createElement("button")
   btn.className="season-tab"+(s.id===currentSeasonId?" active":"")
@@ -236,8 +237,7 @@ currentSeasonId = seasons[seasons.length - 1].id
   }
   tabsEl.appendChild(btn)
  })
-currentSeasonId = seasons[seasons.length - 1].id
- currentStageId = zakladniStageMap[currentSeasonId] || null
+currentStageId = zakladniStageMap[currentSeasonId] || null
 }
 
 async function load(){
