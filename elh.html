@@ -202,8 +202,7 @@ const supabase = createClient(
  "sb_publishable_eIeO9MihyuQDuNHy60Ubrw_8ZuSKPFU"
 )
 
-const DEFAULT_SEASON_ID = "4b05b50e-cfde-4473-aebe-33495c85a989"
-const EXTRALIGA_COMPETITION_ID = "5cc76adb-b3e0-404b-9095-7dd4a41edb4e"
+let currentSeasonId = null
 
 let currentSeasonId = DEFAULT_SEASON_ID
 let currentStageId  = null
@@ -221,8 +220,8 @@ async function initSeasons(){
  const {data:stages}=await supabase.from("stages").select("id,season_id,name").in("season_id",seasons.map(s=>s.id)).eq("name","Základní část")
  ;(stages||[]).forEach(s=>zakladniStageMap[s.season_id]=s.id)
 
- const tabsEl=document.getElementById("seasonTabs")
- tabsEl.innerHTML=""
+currentSeasonId = seasons[seasons.length - 1].id
+ const tabsEl=document.getElementById("seasonTabs") tabsEl.innerHTML=""
  seasons.forEach(s=>{
   const btn=document.createElement("button")
   btn.className="season-tab"+(s.id===currentSeasonId?" active":"")
