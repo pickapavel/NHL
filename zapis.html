@@ -1449,23 +1449,27 @@ async function generateExtraligaMatches(seasonId, stageId){
   const piciHomeCount = {} // kolikrát už pici tým hraje doma
   piciTeams.forEach(pId => piciHomeCount[pId] = 0)
 
-// Vygeneruj všechny páry, zamíchej, pak střídej domácí: kubele, pici, kubele, pici...
-  const allPairs = []
+// Pro každý pici tým: přesně floor(m/2) zápasů doma, zbytek venku
+  // Pro každý kubele tým: přesně floor(n/2) zápasů doma, zbytek venku
+  // Řešení: pro každý pici tým zamíchej jeho kubele soupeře a první polovině dej pici doma
+  
+  const piciHomeAssigned = {} // piciHomeAssigned[pId] = Set of kId where pici is home
+  piciTeams.forEach(pId => {
+    const shuffledKubele = [...kubeleTeams].sort(() => Math.random() - 0.5)
+    const homeCap = Math.floor(m / 2)
+    piciHomeAssigned[pId] = new Set(shuffledKubele.slice(0, homeCap).map(k => k))
+  })
+
   kubeleTeams.forEach(kId => {
     piciTeams.forEach(pId => {
-      allPairs.push({kId, pId})
+      let kubeleIsHome
+      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
+        kubeleIsHome = !prevHomeMap[kId][pId]
+      } else {
+        kubeleIsHome = !piciHomeAssigned[pId].has(kId)
+      }
+      matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
     })
-  })
-  allPairs.sort(() => Math.random() - 0.5)
-
-  allPairs.forEach(({kId, pId}, idx) => {
-    let kubeleIsHome
-    if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
-      kubeleIsHome = !prevHomeMap[kId][pId]
-    } else {
-      kubeleIsHome = idx % 2 === 0
-    }
-    matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
   })
 
   for(let i = matches.length-1; i>0; i--){
