@@ -162,7 +162,9 @@ tr:hover td{background:#edf2f7;}
 .btn-create{background:#8b5cf6;color:white;}
 .btn-create:hover{background:#7c3aed;}
 .info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a5276;margin-bottom:12px;}
-.season-number-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:4px 12px;border-radius:6px;}
+input[type=radio]:checked ~ div > div:first-child { color:#0b2a3c; }
+label:has(input[type=radio]:checked)#ns-gen-label-random,
+label:has(input[type=radio]:checked)#ns-gen-label-flip { border-color:#0b2a3c !important; background:#e8f0f8 !important; }.season-number-badge{display:inline-block;background:#0b2a3c;color:white;font-weight:700;font-size:13px;padding:4px 12px;border-radius:6px;}
 
 .pohar-info{background:#fff8e1;border:1px solid #f0d060;border-radius:8px;padding:10px 14px;font-size:12px;color:#7a5200;margin-bottom:12px;}
 .standy-info{background:#e8f0fe;border:1px solid #4f86c6;border-radius:8px;padding:10px 14px;font-size:12px;color:#1a3a6c;margin-bottom:12px;}
@@ -345,7 +347,7 @@ tr:hover td{background:#edf2f7;}
    </div>
   </div>
 
-  <!-- Krok 3: Základní část (jen pro ne-pohár a ne-standy) -->
+<!-- Krok 3: Základní část (jen pro ne-pohár a ne-standy) -->
   <div class="wizard-page" id="wp-3">
    <div class="modal-section">
     <div class="modal-section-title">Základní část — skupiny</div>
@@ -364,6 +366,25 @@ tr:hover td{background:#edf2f7;}
       <option value="10">10 skupin</option>
      </select>
     </div>
+   </div>
+   <div class="modal-section" id="ns-extraliga-gen-section" style="display:none;">
+    <div class="modal-section-title">Generování zápasů — Extraliga</div>
+    <div class="info-box" style="margin-bottom:12px;">Každý tým Kubeleho hraje s každým týmem Piciho právě jeden zápas. Celkem <span id="ns-gen-match-count">—</span> zápasů.</div>
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;margin-bottom:8px;background:white;" id="ns-gen-label-random">
+     <input type="radio" name="ns-gen-mode" value="random" checked onchange="onGenModeChange()" style="margin-top:2px;flex-shrink:0;">
+     <div>
+      <div style="font-weight:700;font-size:13px;color:#1a2a3c;">🎲 Náhodné generování</div>
+      <div style="font-size:11px;color:#888;margin-top:3px;">Systém náhodně rozhodne, kdo hraje doma a kdo venku. Každý tým bude mít stejný počet domácích i venkovních zápasů.</div>
+     </div>
+    </label>
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;background:white;" id="ns-gen-label-flip">
+     <input type="radio" name="ns-gen-mode" value="flip" onchange="onGenModeChange()" style="margin-top:2px;flex-shrink:0;">
+     <div>
+      <div style="font-weight:700;font-size:13px;color:#1a2a3c;">🔄 Otočit z minulé sezóny</div>
+      <div style="font-size:11px;color:#888;margin-top:3px;">Systém se podívá na minulou sezónu a otočí domácí/hosté. Pokud se tým změnil (baráž), nový tým přebírá roli starého.</div>
+      <div style="font-size:11px;color:#e67e22;margin-top:4px;" id="ns-gen-flip-warning" style="display:none;"></div>
+     </div>
+    </label>
    </div>
    <div class="wizard-nav">
     <button class="btn-prev" onclick="wizardPrev(3)">← Zpět</button>
@@ -1353,6 +1374,107 @@ async function doSaveMatchFromXls(matchId, lines, hg, ag, resultType, gamestatEv
 // =====================================================
 function isShortWizard(){ return isPoharWizard || isStandyCupWizard }
 
+function onGenModeChange(){
+  const mode = document.querySelector('input[name="ns-gen-mode"]:checked')?.value
+  const warn = document.getElementById('ns-gen-flip-warning')
+  if(mode === 'flip') checkFlipWarning()
+  else if(warn) warn.style.display = 'none'
+}
+
+async function checkFlipWarning(){
+  const warn = document.getElementById('ns-gen-flip-warning')
+  if(!warn) return
+  const compId = document.getElementById('ns-competition').value
+  const {data:seasons} = await db.from('seasons').select('*').eq('competition_id', compId).order('created_at', {ascending:true})
+  if(!seasons || seasons.length < 1){ warn.textContent = '⚠️ Žádná předchozí sezóna — použije se náhodné generování.'; warn.style.display='block'; return }
+  const prevSeason = seasons[seasons.length - 1]
+  const {data:prevStage} = await db.from('stages').select('id').eq('season_id', prevSeason.id).eq('name','Základní část').maybeSingle()
+  if(!prevStage){ warn.textContent = '⚠️ Minulá sezóna nemá Základní část — použije se náhodné generování.'; warn.style.display='block'; return }
+  const {data:prevMatches} = await db.from('matches').select('home_team,away_team').eq('stage_id', prevStage.id)
+  if(!prevMatches || !prevMatches.length){ warn.textContent = '⚠️ Minulá sezóna nemá zápasy — použije se náhodné generování.'; warn.style.display='block'; return }
+  warn.style.display = 'none'
+}
+
+async function generateExtraligaMatches(seasonId, stageId){
+  const mode = document.querySelector('input[name="ns-gen-mode"]:checked')?.value || 'random'
+  const kubeleTeams = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
+  const piciTeams   = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
+
+  // Zjisti párování home/away z minulé sezóny pro flip mode
+  let prevHomeMap = {} // prevHomeMap[kubeleTeamId][piciTeamId] = true pokud kubele byl doma
+  if(mode === 'flip'){
+    const compId = document.getElementById('ns-competition').value
+    const {data:seasons} = await db.from('seasons').select('*').eq('competition_id', compId).order('created_at', {ascending:true})
+    const prevSeason = seasons && seasons.length >= 1 ? seasons[seasons.length - 1] : null
+    if(prevSeason){
+      const {data:prevStage} = await db.from('stages').select('id').eq('season_id', prevSeason.id).eq('name','Základní část').maybeSingle()
+      if(prevStage){
+        const {data:prevMatches} = await db.from('matches').select('home_team,away_team').eq('stage_id', prevStage.id)
+        // Zjisti týmy minulé sezóny
+        const {data:prevSeasonTeams} = await db.from('season_teams').select('team_id').eq('season_id', prevSeason.id)
+        const prevTeamIds = new Set((prevSeasonTeams||[]).map(t=>t.team_id))
+        // Pokud tým chybí v nové sezóně ale byl v minulé, najdi jeho "náhradu"
+        // Náhrada: nový tým, který v minulé sezóně nebyl, nahrazuje chybějícího
+        const prevKubele = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
+        const prevPici   = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
+        const newKubele  = kubeleTeams.filter(id => !prevTeamIds.has(id))
+        const newPici    = piciTeams.filter(id => !prevTeamIds.has(id))
+        const removedKubele = prevKubele.filter(id => !kubeleTeams.includes(id))
+        const removedPici   = prevPici.filter(id => !piciTeams.includes(id))
+        // Mapa: starý tým → nový tým (náhrada)
+        const replacementMap = {}
+        removedKubele.forEach((old, i) => { if(newKubele[i]) replacementMap[old] = newKubele[i] })
+        removedPici.forEach((old, i)   => { if(newPici[i])   replacementMap[old] = newPici[i] })
+        ;(prevMatches||[]).forEach(m => {
+          const home = replacementMap[m.home_team] || m.home_team
+          const away = replacementMap[m.away_team] || m.away_team
+          // Pokud home patří kubele a away patří pici
+          if(kubeleTeams.includes(home) && piciTeams.includes(away)){
+            if(!prevHomeMap[home]) prevHomeMap[home] = {}
+            prevHomeMap[home][away] = true
+          } else if(piciTeams.includes(home) && kubeleTeams.includes(away)){
+            if(!prevHomeMap[away]) prevHomeMap[away] = {}
+            prevHomeMap[away][home] = false
+          }
+        })
+      }
+    }
+  }
+
+  // Vygeneruj zápasy
+  const matches = []
+  // Pro náhodné: polovina kubele týmů hraje doma, polovina venku (pokud sudý počet)
+  // Pro každý pár kubele × pici urči kdo je doma
+  const kubeleHomeCounts = {}
+  kubeleTeams.forEach(id => kubeleHomeCounts[id] = 0)
+
+  kubeleTeams.forEach(kId => {
+    piciTeams.forEach(pId => {
+      let kubeleIsHome
+      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
+        // Otočit: pokud minule byl kubele doma, tentokrát bude venku
+        kubeleIsHome = !prevHomeMap[kId][pId]
+      } else {
+        // Náhodné: ale zajisti přibližně stejný počet domácích/venkovních
+        kubeleIsHome = kubeleHomeCounts[kId] < piciTeams.length / 2
+        if(kubeleHomeCounts[kId] === Math.floor(piciTeams.length / 2) && (piciTeams.length % 2 === 1)){
+          kubeleIsHome = Math.random() < 0.5
+        }
+      }
+      if(kubeleIsHome) kubeleHomeCounts[kId]++
+      matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
+    })
+  })
+
+  // Zamíchej pořadí a přiřaď kola
+  for(let i = matches.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [matches[i],matches[j]]=[matches[j],matches[i]] }
+  const toInsert = matches.map((m, i) => ({ home_team: m.home_team, away_team: m.away_team, round: i+1, season_id: seasonId, stage_id: stageId, played: false }))
+  if(toInsert.length){
+    const {error} = await db.from('matches').insert(toInsert)
+    if(error) throw new Error(error.message)
+  }
+  return toInsert.length
+}
 function renderWizardSteps(){
   const bar = document.getElementById("wizardStepsBar")
   bar.innerHTML = ""
@@ -1452,7 +1574,11 @@ async function onNsCompetitionChange(){
     })
     document.getElementById("wp2-selectbar").style.display = "flex"
   }
-  updateTeamsCount()
+updateTeamsCount()
+
+  // Zobraz/skryj sekci generování zápasů
+  const genSection = document.getElementById('ns-extraliga-gen-section')
+  if(genSection) genSection.style.display = (compId === EXTRALIGA_COMPETITION_ID) ? 'block' : 'none'
 
   // Info box
   const infoBox = document.getElementById("wp2-infobox")
@@ -1483,11 +1609,19 @@ function wizardNext(current){
     if(!document.getElementById("ns-competition").value){ alert("Vyber soutěž!"); return }
     if(!document.getElementById("ns-name").value.trim()){ alert("Zadej název!"); return }
     wizardGoTo(2)
-  } else if(current===2){
+} else if(current===2){
     if(nsSelectedTeams.size===0){ alert("Vyber alespoň jeden tým!"); return }
     if(isShortWizard()){
       buildSummary(); wizardGoTo(5)
     } else {
+      // Spočítej zápasy pro extraligu
+      const compId = document.getElementById('ns-competition').value
+      if(compId === EXTRALIGA_COMPETITION_ID){
+        const k = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele).length
+        const p = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici).length
+        const cnt = document.getElementById('ns-gen-match-count')
+        if(cnt) cnt.textContent = `${k * p}`
+      }
       wizardGoTo(3)
     }
   } else if(current===3){
@@ -1646,6 +1780,17 @@ async function createSeason(){
   }
   const teamInserts=[...nsSelectedTeams].map(teamId=>({season_id:seasonId,team_id:teamId}))
   if(teamInserts.length>0){ const {error:e3}=await db.from("season_teams").insert(teamInserts); if(e3){ alert("❌ "+e3.message); return } }
+// Generuj zápasy pro Extraligu
+  let genMsg = ''
+  if(compId === EXTRALIGA_COMPETITION_ID){
+    const zakladniStageId = stageIdMap['Základní část']
+    if(zakladniStageId){
+      try{
+        const count = await generateExtraligaMatches(seasonId, zakladniStageId)
+        genMsg = `\n🗓 Vygenerováno ${count} zápasů základní části.`
+      } catch(e){ genMsg = `\n⚠️ Zápasy se nepodařilo vygenerovat: ${e.message}` }
+    }
+  }
   const {data:newSeasons}=await db.from("seasons").select("*").order("created_at",{ascending:false})
   allSeasons=newSeasons||[]
   const {data:newStages}=await db.from("stages").select("*").order("order",{ascending:true})
@@ -1654,7 +1799,7 @@ async function createSeason(){
   closeNewSeasonModal()
   document.getElementById("seasonFilter").value=seasonId
   onSeasonFilterChange()
-  alert(`✅ Sezóna "${fullName}" vytvořena!`)
+  alert(`✅ Sezóna "${fullName}" vytvořena!${genMsg}`)
 }
 
  // =====================================================
