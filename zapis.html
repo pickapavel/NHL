@@ -1449,24 +1449,41 @@ async function generateExtraligaMatches(seasonId, stageId){
   const piciHomeCount = {} // kolikrát už pici tým hraje doma
   piciTeams.forEach(pId => piciHomeCount[pId] = 0)
 
-// Pro každý pici tým: přesně floor(m/2) zápasů doma, zbytek venku
-  // Pro každý kubele tým: přesně floor(n/2) zápasů doma, zbytek venku
-  // Řešení: pro každý pici tým zamíchej jeho kubele soupeře a první polovině dej pici doma
-  
-  const piciHomeAssigned = {} // piciHomeAssigned[pId] = Set of kId where pici is home
-  piciTeams.forEach(pId => {
-    const shuffledKubele = [...kubeleTeams].sort(() => Math.random() - 0.5)
-    const homeCap = Math.floor(m / 2)
-    piciHomeAssigned[pId] = new Set(shuffledKubele.slice(0, homeCap).map(k => k))
+// Přiřaď domácí/venku pomocí matice
+  // kubeleHome[i][j] = true znamená kubele tým i hraje doma proti pici týmu j
+  // Každý kubele tým i: přesně kubeleHomeCaps[i] zápasů doma
+  // Každý pici tým j: přesně piciAwayCaps[j] zápasů doma (= kubele venku)
+
+  const kubeleHomeCaps = kubeleTeams.map((_, i) => i % 2 === 0 ? Math.ceil(n / 2) : Math.floor(n / 2))
+  const piciAwayCaps = piciTeams.map((_, j) => j % 2 === 0 ? Math.ceil(m / 2) : Math.floor(m / 2))
+  // piciAwayCaps[j] = kolik zápasů pici tým j hraje venku = kolik kubele týmů hraje doma proti němu
+
+  // Sestavení matice pomocí náhodného přiřazení s backtracking-free greedy
+  const kubeleHomeMatrix = kubeleTeams.map(() => piciTeams.map(() => false))
+  const kubeleRemaining = [...kubeleHomeCaps]
+  const piciRemaining = [...piciAwayCaps]
+
+  // Náhodné pořadí přiřazení
+  const indices = []
+  kubeleTeams.forEach((_, ki) => piciTeams.forEach((_, pi) => indices.push({ki, pi})))
+  indices.sort(() => Math.random() - 0.5)
+
+  // Greedy: přiřaď kubele=doma pokud oba mají ještě kapacitu, jinak venku
+  indices.forEach(({ki, pi}) => {
+    if(kubeleRemaining[ki] > 0 && piciRemaining[pi] > 0){
+      kubeleHomeMatrix[ki][pi] = true
+      kubeleRemaining[ki]--
+      piciRemaining[pi]--
+    }
   })
 
-  kubeleTeams.forEach(kId => {
-    piciTeams.forEach(pId => {
+  kubeleTeams.forEach((kId, ki) => {
+    piciTeams.forEach((pId, pi) => {
       let kubeleIsHome
       if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
         kubeleIsHome = !prevHomeMap[kId][pId]
       } else {
-        kubeleIsHome = !piciHomeAssigned[pId].has(kId)
+        kubeleIsHome = kubeleHomeMatrix[ki][pi]
       }
       matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
     })
