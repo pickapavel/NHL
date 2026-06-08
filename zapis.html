@@ -1395,87 +1395,8 @@ async function checkFlipWarning(){
   warn.style.display = 'none'
 }
 
-async function generateExtraligaMatches(seasonId, stageId){
- const mode = document.querySelector('input[name="ns-gen-mode"]:checked')?.value || 'random'
-  const kubeleTeams = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
-  const piciTeams   = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
+async function generateExtraligaMatches(seasonId, stageId)
 
-  // prevHomeMap[kId][pId] = true znamená kubele byl doma v minulé sezóně
-  let prevHomeMap = {}
-
-  if(mode === 'flip'){
-    const compId = document.getElementById('ns-competition').value
-    const {data:seasons} = await db.from('seasons').select('*').eq('competition_id', compId).order('created_at', {ascending:true})
-    const prevSeason = seasons && seasons.length >= 1 ? seasons[seasons.length - 1] : null
-    if(prevSeason){
-      const {data:prevStage} = await db.from('stages').select('id').eq('season_id', prevSeason.id).eq('name','Základní část').maybeSingle()
-      if(prevStage){
-        const {data:prevMatches} = await db.from('matches').select('home_team,away_team').eq('stage_id', prevStage.id)
-        const {data:prevSeasonTeams} = await db.from('season_teams').select('team_id').eq('season_id', prevSeason.id)
-        const prevTeamIds = new Set((prevSeasonTeams||[]).map(t=>t.team_id))
-        const prevKubele = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
-        const prevPici   = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
-        const newKubele  = kubeleTeams.filter(id => !prevTeamIds.has(id))
-        const newPici    = piciTeams.filter(id => !prevTeamIds.has(id))
-        const removedKubele = prevKubele.filter(id => !kubeleTeams.includes(id))
-        const removedPici   = prevPici.filter(id => !piciTeams.includes(id))
-        const replacementMap = {}
-        removedKubele.forEach((old, i) => { if(newKubele[i]) replacementMap[old] = newKubele[i] })
-        removedPici.forEach((old, i)   => { if(newPici[i])   replacementMap[old] = newPici[i] })
-        ;(prevMatches||[]).forEach(m => {
-          const home = replacementMap[m.home_team] || m.home_team
-          const away = replacementMap[m.away_team] || m.away_team
-          if(kubeleTeams.includes(home) && piciTeams.includes(away)){
-            if(!prevHomeMap[home]) prevHomeMap[home] = {}
-            prevHomeMap[home][away] = true
-          } else if(piciTeams.includes(home) && kubeleTeams.includes(away)){
-            if(!prevHomeMap[away]) prevHomeMap[away] = {}
-            prevHomeMap[away][home] = false
-          }
-        })
-      }
-    }
-  }
-
-const matches = []
-  const n = piciTeams.length
-  const m = kubeleTeams.length
-
-  const piciHomeCap = {}
-  piciTeams.forEach(pId => {
-    piciHomeCap[pId] = Math.floor(m / 2) + (m % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
-  })
-  const piciHomeCount = {}
-  piciTeams.forEach(pId => piciHomeCount[pId] = 0)
-
-  kubeleTeams.forEach(kId => {
-    const homeCap = Math.floor(n / 2) + (n % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
-    const shuffledPici = [...piciTeams].sort(() => Math.random() - 0.5)
-    let kubeleHomeCount = 0
-    shuffledPici.forEach(pId => {
-      let kubeleIsHome
-      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
-        kubeleIsHome = !prevHomeMap[kId][pId]
-      } else {
-        const kubeleWantsHome = kubeleHomeCount < homeCap
-        const piciCanHost = piciHomeCoun
-
-  // Zamíchej pořadí kol
-  for(let i = matches.length-1; i>0; i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [matches[i], matches[j]] = [matches[j], matches[i]]
-  }
-
-  const toInsert = matches.map((m, i) => ({
-    home_team: m.home_team, away_team: m.away_team,
-    round: i+1, season_id: seasonId, stage_id: stageId, played: false
-  }))
-
-  if(toInsert.length){
-    const {error} = await db.from('matches').insert(toInsert)
-    if(error) throw new Error(error.message)
-  }
-  return toInsert.length
 }
  
 function renderWizardSteps(){
