@@ -1440,32 +1440,53 @@ async function generateExtraligaMatches(seasonId, stageId){
   const n = piciTeams.length
   const m = kubeleTeams.length
 
+ // Pro každý pici tým: kolik zápasů smí hrát DOMA (= kubele venku)
+  // Celkem m zápasů, z toho přibližně m/2 doma
   const piciHomeCap = {}
   piciTeams.forEach(pId => {
     piciHomeCap[pId] = Math.floor(m / 2) + (m % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
   })
-  const piciHomeCount = {}
+  const piciHomeCount = {} // kolikrát už pici tým hraje doma
   piciTeams.forEach(pId => piciHomeCount[pId] = 0)
 
+// Vygeneruj všechny páry najednou a pak rozděl domácí/venku spravedlivě
+  const allPairs = []
   kubeleTeams.forEach(kId => {
-    const homeCap = Math.floor(n / 2) + (n % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
-    const shuffledPici = [...piciTeams].sort(() => Math.random() - 0.5)
-    let kubeleHomeCount = 0
-    shuffledPici.forEach(pId => {
-      let kubeleIsHome
-      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
-        kubeleIsHome = !prevHomeMap[kId][pId]
-      } else {
-        const kubeleWantsHome = kubeleHomeCount < homeCap
-        const piciCanHost = piciHomeCount[pId] < piciHomeCap[pId]
-        if(kubeleWantsHome && !piciCanHost) kubeleIsHome = true
-        else if(!kubeleWantsHome && piciCanHost) kubeleIsHome = false
-        else kubeleIsHome = kubeleWantsHome
-      }
-      if(kubeleIsHome) kubeleHomeCount++
-      else piciHomeCount[pId]++
-      matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
+    piciTeams.forEach(pId => {
+      allPairs.push({kId, pId})
     })
+  })
+
+  // Pro flip mode: přiřaď podle minulé sezóny kde je info
+  // Pro random: zamíchej páry a přiřaď střídavě
+  const kubeleHomeCounts = {}
+  kubeleTeams.forEach(id => kubeleHomeCounts[id] = 0)
+  const piciHomeCounts = {}
+  piciTeams.forEach(id => piciHomeCounts[id] = 0)
+
+  // Zamíchej páry
+  allPairs.sort(() => Math.random() - 0.5)
+
+  allPairs.forEach(({kId, pId}) => {
+    let kubeleIsHome
+
+    if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
+      kubeleIsHome = !prevHomeMap[kId][pId]
+    } else {
+      // Kubele má ještě volné domácí sloty a pici tým nemá plné domácí sloty
+      const kubeleNeedsHome = kubeleHomeCounts[kId] < Math.ceil(n / 2)
+      const piciNeedsHome = piciHomeCounts[pId] < Math.ceil(m / 2)
+      const kubeleCanBeHome = kubeleHomeCounts[kId] < Math.ceil(n / 2)
+      const piciCanBeHome = piciHomeCounts[pId] < Math.ceil(m / 2)
+
+      if(kubeleCanBeHome && !piciCanBeHome) kubeleIsHome = true
+      else if(!kubeleCanBeHome && piciCanBeHome) kubeleIsHome = false
+      else kubeleIsHome = Math.random() < 0.5
+    }
+
+    if(kubeleIsHome) kubeleHomeCounts[kId]++
+    else piciHomeCounts[pId]++
+    matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
   })
 
   for(let i = matches.length-1; i>0; i--){
