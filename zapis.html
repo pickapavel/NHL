@@ -1400,8 +1400,9 @@ async function generateExtraligaMatches(seasonId, stageId){
   const kubeleTeams = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
   const piciTeams   = [...nsSelectedTeams].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
 
-  // Zjisti párování home/away z minulé sezóny pro flip mode
-  let prevHomeMap = {} // prevHomeMap[kubeleTeamId][piciTeamId] = true pokud kubele byl doma
+  // prevHomeMap[kId][pId] = true znamená kubele byl doma v minulé sezóně
+  let prevHomeMap = {}
+
   if(mode === 'flip'){
     const compId = document.getElementById('ns-competition').value
     const {data:seasons} = await db.from('seasons').select('*').eq('competition_id', compId).order('created_at', {ascending:true})
@@ -1410,25 +1411,20 @@ async function generateExtraligaMatches(seasonId, stageId){
       const {data:prevStage} = await db.from('stages').select('id').eq('season_id', prevSeason.id).eq('name','Základní část').maybeSingle()
       if(prevStage){
         const {data:prevMatches} = await db.from('matches').select('home_team,away_team').eq('stage_id', prevStage.id)
-        // Zjisti týmy minulé sezóny
         const {data:prevSeasonTeams} = await db.from('season_teams').select('team_id').eq('season_id', prevSeason.id)
         const prevTeamIds = new Set((prevSeasonTeams||[]).map(t=>t.team_id))
-        // Pokud tým chybí v nové sezóně ale byl v minulé, najdi jeho "náhradu"
-        // Náhrada: nový tým, který v minulé sezóně nebyl, nahrazuje chybějícího
         const prevKubele = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.kubele)
         const prevPici   = [...prevTeamIds].filter(id => teamsMap[id]?.owner_id === PLAYER_IDS.pici)
         const newKubele  = kubeleTeams.filter(id => !prevTeamIds.has(id))
         const newPici    = piciTeams.filter(id => !prevTeamIds.has(id))
         const removedKubele = prevKubele.filter(id => !kubeleTeams.includes(id))
         const removedPici   = prevPici.filter(id => !piciTeams.includes(id))
-        // Mapa: starý tým → nový tým (náhrada)
         const replacementMap = {}
         removedKubele.forEach((old, i) => { if(newKubele[i]) replacementMap[old] = newKubele[i] })
         removedPici.forEach((old, i)   => { if(newPici[i])   replacementMap[old] = newPici[i] })
         ;(prevMatches||[]).forEach(m => {
           const home = replacementMap[m.home_team] || m.home_team
           const away = replacementMap[m.away_team] || m.away_team
-          // Pokud home patří kubele a away patří pici
           if(kubeleTeams.includes(home) && piciTeams.includes(away)){
             if(!prevHomeMap[home]) prevHomeMap[home] = {}
             prevHomeMap[home][away] = true
@@ -1441,40 +1437,56 @@ async function generateExtraligaMatches(seasonId, stageId){
     }
   }
 
-  // Vygeneruj zápasy
+  // Vygeneruj zápasy se zaručeně vyrovnaným počtem domácích/venkovních pro každý tým
+  // Princip: vytvoř seznam všech párů, pak pro každý tým přiřaď přesně floor(n/2) domácích
+  // kde n = počet soupeřů (pici týmů)
   const matches = []
-  // Pro náhodné: polovina kubele týmů hraje doma, polovina venku (pokud sudý počet)
-  // Pro každý pár kubele × pici urči kdo je doma
-  const kubeleHomeCounts = {}
-  kubeleTeams.forEach(id => kubeleHomeCounts[id] = 0)
+  const n = piciTeams.length // počet soupeřů pro každý kubele tým
 
   kubeleTeams.forEach(kId => {
-    piciTeams.forEach(pId => {
-      let kubeleIsHome
-      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
-        // Otočit: pokud minule byl kubele doma, tentokrát bude venku
-        kubeleIsHome = !prevHomeMap[kId][pId]
-      } else {
-        // Náhodné: ale zajisti přibližně stejný počet domácích/venkovních
-        kubeleIsHome = kubeleHomeCounts[kId] < piciTeams.length / 2
-        if(kubeleHomeCounts[kId] === Math.floor(piciTeams.length / 2) && (piciTeams.length % 2 === 1)){
-          kubeleIsHome = Math.random() < 0.5
+    // Pro každý kubele tým: přesně floor(n/2) zápasů doma, zbytek venku
+    // Pokud n liché: náhodně rozhodne jestli floor nebo ceil doma
+    const homeCap = Math.floor(n / 2) + (n % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
+
+    if(mode === 'flip'){
+      // Flip: otočit z minulé sezóny
+      piciTeams.forEach(pId => {
+        let kubeleIsHome
+        if(prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
+          kubeleIsHome = !prevHomeMap[kId][pId] // otočit
+        } else {
+          kubeleIsHome = Math.random() < 0.5 // nový pár — náhodně
         }
-      }
-      if(kubeleIsHome) kubeleHomeCounts[kId]++
-      matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
-    })
+        matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
+      })
+    } else {
+      // Náhodné: zamíchej pici týmy, prvních homeCap bude kubele doma, zbytek venku
+      const shuffledPici = [...piciTeams].sort(() => Math.random() - 0.5)
+      shuffledPici.forEach((pId, idx) => {
+        const kubeleIsHome = idx < homeCap
+        matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
+      })
+    }
   })
 
-  // Zamíchej pořadí a přiřaď kola
-  for(let i = matches.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [matches[i],matches[j]]=[matches[j],matches[i]] }
-  const toInsert = matches.map((m, i) => ({ home_team: m.home_team, away_team: m.away_team, round: i+1, season_id: seasonId, stage_id: stageId, played: false }))
+  // Zamíchej pořadí kol
+  for(let i = matches.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [matches[i], matches[j]] = [matches[j], matches[i]]
+  }
+
+  const toInsert = matches.map((m, i) => ({
+    home_team: m.home_team, away_team: m.away_team,
+    round: i+1, season_id: seasonId, stage_id: stageId, played: false
+  }))
+
   if(toInsert.length){
     const {error} = await db.from('matches').insert(toInsert)
     if(error) throw new Error(error.message)
   }
   return toInsert.length
 }
+ 
 function renderWizardSteps(){
   const bar = document.getElementById("wizardStepsBar")
   bar.innerHTML = ""
