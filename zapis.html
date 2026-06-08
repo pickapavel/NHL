@@ -1449,43 +1449,22 @@ async function generateExtraligaMatches(seasonId, stageId){
   const piciHomeCount = {} // kolikrát už pici tým hraje doma
   piciTeams.forEach(pId => piciHomeCount[pId] = 0)
 
-// Vygeneruj všechny páry najednou a pak rozděl domácí/venku spravedlivě
+// Vygeneruj všechny páry, zamíchej, pak střídej domácí: kubele, pici, kubele, pici...
   const allPairs = []
   kubeleTeams.forEach(kId => {
     piciTeams.forEach(pId => {
       allPairs.push({kId, pId})
     })
   })
-
-  // Pro flip mode: přiřaď podle minulé sezóny kde je info
-  // Pro random: zamíchej páry a přiřaď střídavě
-  const kubeleHomeCounts = {}
-  kubeleTeams.forEach(id => kubeleHomeCounts[id] = 0)
-  const piciHomeCounts = {}
-  piciTeams.forEach(id => piciHomeCounts[id] = 0)
-
-  // Zamíchej páry
   allPairs.sort(() => Math.random() - 0.5)
 
-  allPairs.forEach(({kId, pId}) => {
+  allPairs.forEach(({kId, pId}, idx) => {
     let kubeleIsHome
-
     if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
       kubeleIsHome = !prevHomeMap[kId][pId]
     } else {
-      // Kubele má ještě volné domácí sloty a pici tým nemá plné domácí sloty
-      const kubeleNeedsHome = kubeleHomeCounts[kId] < Math.ceil(n / 2)
-      const piciNeedsHome = piciHomeCounts[pId] < Math.ceil(m / 2)
-      const kubeleCanBeHome = kubeleHomeCounts[kId] < Math.ceil(n / 2)
-      const piciCanBeHome = piciHomeCounts[pId] < Math.ceil(m / 2)
-
-      if(kubeleCanBeHome && !piciCanBeHome) kubeleIsHome = true
-      else if(!kubeleCanBeHome && piciCanBeHome) kubeleIsHome = false
-      else kubeleIsHome = Math.random() < 0.5
+      kubeleIsHome = idx % 2 === 0
     }
-
-    if(kubeleIsHome) kubeleHomeCounts[kId]++
-    else piciHomeCounts[pId]++
     matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
   })
 
