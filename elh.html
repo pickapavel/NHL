@@ -236,7 +236,8 @@ currentSeasonId = seasons[seasons.length - 1].id
   }
   tabsEl.appendChild(btn)
  })
- currentStageId=zakladniStageMap[currentSeasonId]||null
+currentSeasonId = seasons[seasons.length - 1].id
+ currentStageId = zakladniStageMap[currentSeasonId] || null
 }
 
 async function load(){
