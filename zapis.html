@@ -1441,25 +1441,39 @@ async function generateExtraligaMatches(seasonId, stageId){
   // Princip: vytvoř seznam všech párů, pak pro každý tým přiřaď přesně floor(n/2) domácích
   // kde n = počet soupeřů (pici týmů)
   const matches = []
-  const n = piciTeams.length // počet soupeřů pro každý kubele tým
+const matches = []
+  const n = piciTeams.length
+  const m = kubeleTeams.length
+
+  // Předem urči pro každý pici tým kolik zápasů smí hrát doma (přibližně m/2)
+  const piciHomeCap = {}
+  piciTeams.forEach(pId => {
+    piciHomeCap[pId] = Math.floor(m / 2) + (m % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
+  })
+  const piciHomeCount = {}
+  piciTeams.forEach(pId => piciHomeCount[pId] = 0)
 
   kubeleTeams.forEach(kId => {
-    // Pro každý kubele tým: přesně floor(n/2) zápasů doma, zbytek venku
-    // Pokud n liché: náhodně rozhodne jestli floor nebo ceil doma
     const homeCap = Math.floor(n / 2) + (n % 2 === 1 && Math.random() < 0.5 ? 1 : 0)
 
-    if(mode === 'flip'){
-      // Flip: otočit z minulé sezóny
-      piciTeams.forEach(pId => {
-        let kubeleIsHome
-        if(prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
-          kubeleIsHome = !prevHomeMap[kId][pId] // otočit
-        } else {
-          kubeleIsHome = Math.random() < 0.5 // nový pár — náhodně
-        }
-        matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
-      })
-    } else {
+const shuffledPici = [...piciTeams].sort(() => Math.random() - 0.5)
+    let kubeleHomeCount = 0
+    shuffledPici.forEach(pId => {
+      let kubeleIsHome
+      if(mode === 'flip' && prevHomeMap[kId] && prevHomeMap[kId][pId] !== undefined){
+        kubeleIsHome = !prevHomeMap[kId][pId]
+      } else {
+        // Kubele chce hrát doma pokud má ještě volný slot A pici má ještě volný slot pro hostování
+        const kubeleWantsHome = kubeleHomeCount < homeCap
+        const piciCanHost = piciHomeCount[pId] < piciHomeCap[pId]
+        if(kubeleWantsHome && !piciCanHost) kubeleIsHome = true   // pici už hraje doma příliš, kubele musí doma
+        else if(!kubeleWantsHome && piciCanHost) kubeleIsHome = false // kubele má dost domácích, pici hraje doma
+        else kubeleIsHome = kubeleWantsHome
+      }
+      if(kubeleIsHome) kubeleHomeCount++
+      else piciHomeCount[pId]++
+      matches.push({ home_team: kubeleIsHome ? kId : pId, away_team: kubeleIsHome ? pId : kId })
+    }) else {
       // Náhodné: zamíchej pici týmy, prvních homeCap bude kubele doma, zbytek venku
       const shuffledPici = [...piciTeams].sort(() => Math.random() - 0.5)
       shuffledPici.forEach((pId, idx) => {
