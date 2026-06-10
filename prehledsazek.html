@@ -391,10 +391,12 @@ window.deleteBet = async function(betId, source, playerId, amount, potentialWin,
  const table = source === "special" ? "bets_special" : "bets"
  await supabase.from(table).delete().eq("id", betId)
 
+ load()
+}
+
 window.openResetCredit = function(){
  const overlay = document.getElementById("resetCreditOverlay")
  overlay.style.display = "flex"
- // Předvyplň aktuální kredity
  const kubele = Object.values(players).find(p=>p.name==="Kubele")
  const pici   = Object.values(players).find(p=>p.name==="Pici")
  if(kubele) document.getElementById("resetKubele").value = Math.round(kubele.credit)
@@ -436,9 +438,6 @@ window.confirmResetCredit = async function(){
  closeResetCredit()
  alert("✅ Kredit nastaven!")
  load()
-}
-
-load()
 }
 
 function renderTable(bets){
