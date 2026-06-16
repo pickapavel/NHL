@@ -548,9 +548,10 @@ seriesKeys.forEach(k=>{
   }
  })
 
- Object.keys(SERIES).forEach(k=>renderSeries(k,SERIES[k]))
+Object.keys(SERIES).forEach(k=>renderSeries(k,SERIES[k]))
  renderResults(SERIES)
- renderChampion(SERIES)
+ const seasonData = allSeasons.find(s => s.id === seasonId)
+ renderChampion(SERIES, seasonData)
 }
 
 function resetSeries(){
@@ -684,9 +685,37 @@ function renderResults(SERIES){
  })
 }
 
-function renderChampion(SERIES){
- const champion=getWinner(SERIES.f)
- document.getElementById('champion-label').textContent=champion||'—'
+function renderChampion(SERIES, seasonData){
+ const champion = getWinner(SERIES.f)
+ const champEl = document.getElementById('champion-label')
+ const trophyWrap = document.querySelector('.trophy-wrap')
+
+ if(champion){
+   const team = Object.values(teamsMap).find(t=>t.name===champion)
+   const logo = team?.logo ? `<img src="${LOGOS}${team.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+   champEl.innerHTML = `${logo}${champion}`
+   return
+ }
+
+ // Manuálně nastavené pořadí
+ if(seasonData?.finished && (seasonData.winner_1st || seasonData.winner_2nd || seasonData.winner_3rd)){
+   const p1id = seasonData.winner_1st, p2id = seasonData.winner_2nd, p3id = seasonData.winner_3rd
+   const p1 = p1id ? teamsMap[p1id]?.name : null
+   const p2 = p2id ? teamsMap[p2id]?.name : null
+   const p3 = p3id ? teamsMap[p3id]?.name : null
+   const logo1 = p1id && teamsMap[p1id]?.logo ? `<img src="${LOGOS}${teamsMap[p1id].logo}" style="width:28px;height:28px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+   const logo2 = p2id && teamsMap[p2id]?.logo ? `<img src="${LOGOS}${teamsMap[p2id].logo}" style="width:24px;height:24px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+   const logo3 = p3id && teamsMap[p3id]?.logo ? `<img src="${LOGOS}${teamsMap[p3id].logo}" style="width:24px;height:24px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+   champEl.innerHTML = p1 ? `${logo1}${p1}` : '—'
+   if(trophyWrap){
+     trophyWrap.innerHTML += `
+       ${p2 ? `<div style="margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#888;">🥈 ${logo2}<b>${p2}</b></div>` : ''}
+       ${p3 ? `<div style="margin-top:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#888;">🥉 ${logo3}<b>${p3}</b></div>` : ''}`
+   }
+   return
+ }
+
+ champEl.textContent = '—'
 }
 
 init()
