@@ -199,6 +199,7 @@ label:has(input[type=radio]:checked)#ns-gen-label-flip { border-color:#0b2a3c !i
  <button class="btn-recalc" onclick="recalcBtn()">🔄 Přepočítat ratingy</button>
  <button class="btn-del-season" onclick="deleteSeason()">🗑 Smazat sezónu</button>
  <button class="btn-new-season" onclick="openNewSeasonModal()">🏒 Nová sezóna</button>
+ <button class="btn-end-season" onclick="openEndSeasonModal()" style="display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;padding:8px 16px;background:#c0392b;color:white;">🏁 Ukončit sezónu</button>
 </div>
 <p class="subtitle">Nahraj textový soubor pro zápis výsledku. Volitelně přidej gamestat a playerstat (XLS) pro automatický výpočet výsledku a hráčské statistiky.</p>
 
@@ -307,7 +308,37 @@ label:has(input[type=radio]:checked)#ns-gen-label-flip { border-color:#0b2a3c !i
   </div>
  </div>
 </div>
-
+<!-- MODAL UKONČIT SEZÓNU -->
+<div class="modal-overlay" id="endSeasonOverlay">
+ <div class="modal">
+  <h2>🏁 Ukončit sezónu</h2>
+  <p class="modal-sub">Zruší všechny neodehrané zápasy v aktuální sezóně. Odehrané zápasy zůstanou nedotčeny.</p>
+  <div class="modal-section">
+   <div class="modal-section-title">Sezóna k ukončení</div>
+   <div class="modal-row"><label>Sezóna:</label><select id="es-season"><option value="">-- Vyber sezónu --</option></select></div>
+  </div>
+  <div class="modal-section" id="es-podium-section" style="display:none;">
+   <div class="modal-section-title">🏆 Pořadí (volitelné)</div>
+   <div class="modal-row">
+    <label>🥇 1. místo:</label>
+    <select id="es-p1"><option value="">-- nevybráno --</option></select>
+   </div>
+   <div class="modal-row">
+    <label>🥈 2. místo:</label>
+    <select id="es-p2"><option value="">-- nevybráno --</option></select>
+   </div>
+   <div class="modal-row">
+    <label>🥉 3. místo:</label>
+    <select id="es-p3"><option value="">-- nevybráno --</option></select>
+   </div>
+  </div>
+  <div id="es-info" style="font-size:13px;color:#888;margin-bottom:12px;padding:10px 14px;background:#f7f8fa;border-radius:8px;border:1px solid #e0e0e0;display:none;"></div>
+  <div class="modal-btns">
+   <button class="btn-cancel" onclick="closeEndSeasonModal()">Zrušit</button>
+   <button class="btn-confirm" style="background:#c0392b;" onclick="confirmEndSeason()">🏁 Ukončit sezónu</button>
+  </div>
+ </div>
+</div>
 <!-- MODAL NOVÁ SEZÓNA -->
 <div class="modal-overlay" id="newSeasonOverlay">
  <div class="modal">
@@ -2022,6 +2053,108 @@ async function renderFeaturedMatches(){
      </td>
     </tr>`
   })
+}
+
+// =====================================================
+// UKONČENÍ SEZÓNY
+// =====================================================
+async function openEndSeasonModal(){
+  const sel = document.getElementById('es-season')
+  sel.innerHTML = '<option value="">-- Vyber sezónu --</option>'
+  allSeasons.forEach(s => {
+    const o = document.createElement('option')
+    o.value = s.id
+    o.textContent = s.name
+    sel.appendChild(o)
+  })
+  sel.value = currentSeasonId || ''
+  await onEsSeasonChange()
+  sel.onchange = onEsSeasonChange
+  document.getElementById('endSeasonOverlay').classList.add('open')
+}
+
+function closeEndSeasonModal(){
+  document.getElementById('endSeasonOverlay').classList.remove('open')
+}
+
+async function onEsSeasonChange(){
+  const seasonId = document.getElementById('es-season').value
+  const info = document.getElementById('es-info')
+  const podium = document.getElementById('es-podium-section')
+  if(!seasonId){ info.style.display='none'; podium.style.display='none'; return }
+
+  const {data:matches} = await db.from('matches').select('id,home_team,away_team,home_score').eq('season_id', seasonId)
+  const played = (matches||[]).filter(m => m.home_score !== null).length
+  const unplayed = (matches||[]).filter(m => m.home_score === null).length
+
+  info.style.display = 'block'
+  info.innerHTML = `Sezóna obsahuje <b>${played} odehraných</b> a <b style="color:#c0392b;">${unplayed} neodehraných</b> zápasů.<br>Neodehrané zápasy budou smazány.`
+
+  // Sestav seznam týmů v sezóně
+  const teamIds = new Set()
+  ;(matches||[]).forEach(m => { teamIds.add(m.home_team); teamIds.add(m.away_team) })
+  const teamOptions = '<option value="">-- nevybráno --</option>' +
+    [...teamIds].map(id => {
+      const t = teamsMap[id]
+      return t ? `<option value="${id}">${t.name}</option>` : ''
+    }).filter(Boolean).sort().join('')
+
+  document.getElementById('es-p1').innerHTML = teamOptions
+  document.getElementById('es-p2').innerHTML = teamOptions
+  document.getElementById('es-p3').innerHTML = teamOptions
+  podium.style.display = 'block'
+}
+
+async function confirmEndSeason(){
+  const seasonId = document.getElementById('es-season').value
+  if(!seasonId){ alert('Vyber sezónu!'); return }
+
+  const season = allSeasons.find(s => s.id === seasonId)
+  const p1 = document.getElementById('es-p1').value
+  const p2 = document.getElementById('es-p2').value
+  const p3 = document.getElementById('es-p3').value
+
+  if(!confirm(`Opravdu ukončit sezónu "${season?.name}"?\n\nVšechny neodehrané zápasy budou smazány. Tuto akci nelze vrátit.`)) return
+
+  // Najdi neodehrané zápasy
+  const {data:unplayed} = await db.from('matches').select('id').eq('season_id', seasonId).is('home_score', null)
+
+  // Smaž sázky na neodehrané zápasy a pak zápasy samotné
+  for(const m of unplayed||[]){
+    const {data:bets} = await db.from('bets').select('*').eq('match_id', m.id)
+    for(const bet of bets||[]){
+      if(bet.status === 'won'){
+        const {data:player} = await db.from('players').select('*').eq('id', bet.player_id).single()
+        if(player) await db.from('players').update({credit: Number(player.credit) - Number(bet.potential_win)}).eq('id', player.id)
+      }
+      if(bet.status !== 'pending'){
+        await db.from('players').update({credit: db.rpc}).catch(()=>{})
+      }
+    }
+    await db.from('bets').delete().eq('match_id', m.id)
+    await db.from('bets_special').delete().eq('match_id', m.id)
+    await db.from('match_events').delete().eq('match_id', m.id)
+    await db.from('player_match_stats').delete().eq('match_id', m.id)
+  }
+  if((unplayed||[]).length > 0){
+    await db.from('matches').delete().eq('season_id', seasonId).is('home_score', null)
+  }
+
+  // Ulož pořadí pokud bylo vybráno
+  if(p1 || p2 || p3){
+    const podiumData = {}
+    if(p1) podiumData.winner_1st = p1
+    if(p2) podiumData.winner_2nd = p2
+    if(p3) podiumData.winner_3rd = p3
+    await db.from('seasons').update(podiumData).eq('id', seasonId)
+  }
+
+  // Označ sezónu jako ukončenou
+  await db.from('seasons').update({ finished: true }).eq('id', seasonId)
+
+  closeEndSeasonModal()
+  loadMatches()
+  alert(`✅ Sezóna "${season?.name}" ukončena!\nSmazáno ${(unplayed||[]).length} neodehraných zápasů.`)
 }
  
 init()
