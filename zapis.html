@@ -629,8 +629,8 @@ function handleXlsFiles(e, matchId) {
 }
 
 function resolveTeamAbbr(matchId, rawAbbr){
-const match = allMatches.find(m => m.id === matchId) || featuredMatchesData.find(m => m.id === matchId)
- if(!match) return rawAbbr
+  const match = allMatches.find(m => m.id === matchId) || featuredMatchesData.find(m => m.id === matchId)
+  if(!match) return rawAbbr
   const homeTeam = teamsMap[match.home_team]
   const awayTeam = teamsMap[match.away_team]
   if(!homeTeam || !awayTeam) return rawAbbr
@@ -639,12 +639,18 @@ const match = allMatches.find(m => m.id === matchId) || featuredMatchesData.find
   const raw = rawAbbr.trim().toUpperCase()
   const homeBase = homeDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
   const awayBase = awayDbAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()
-  if(raw === homeBase) return homeDbAbbr
-  if(raw === awayBase) return awayDbAbbr
-  const homeEn = (homeTeam.team_abbr_en||'').trim().toUpperCase()
-  const awayEn = (awayTeam.team_abbr_en||'').trim().toUpperCase()
-  if(homeEn && raw === homeEn) return homeDbAbbr
-  if(awayEn && raw === awayEn) return awayDbAbbr
+  // Pokud jsou základy různé, matchuj normálně
+  if(homeBase !== awayBase){
+    if(raw === homeBase) return homeDbAbbr
+    if(raw === awayBase) return awayDbAbbr
+    const homeEn = (homeTeam.team_abbr_en||'').trim().toUpperCase()
+    const awayEn = (awayTeam.team_abbr_en||'').trim().toUpperCase()
+    if(homeEn && raw === homeEn) return homeDbAbbr
+    if(awayEn && raw === awayEn) return awayDbAbbr
+    return rawAbbr
+  }
+  // Základy jsou stejné (např. PCE vs PCE) — nelze rozlišit podle zkratky
+  // Vrátíme rawAbbr beze změny, řeší to calcScoreFromGamestat přes teamstat pozici
   return rawAbbr
 }
 
@@ -1325,8 +1331,25 @@ async function saveMatch(matchId, homeTeamName, awayTeamName){
     const events = gamestatMap[matchId]
     const tsData = teamstatMap[matchId] || null
     let homeAbbr = '', awayAbbr = ''
-    if (tsData) { const abbrs = detectTeamAbbrs(tsData); homeAbbr = abbrs.homeAbbr; awayAbbr = abbrs.awayAbbr }
-    else { const abbrs = [...new Set(events.map(e => e.team).filter(Boolean))]; homeAbbr = abbrs[0]||''; awayAbbr = abbrs[1]||'' }
+if (tsData) {
+      const abbrs = detectTeamAbbrs(tsData)
+      homeAbbr = abbrs.homeAbbr
+      awayAbbr = abbrs.awayAbbr
+      // Pokud jsou obě zkratky stejné, použij DB zkratky podle pozice home/away
+      const match = allMatches.find(m => m.id === matchId) || featuredMatchesData.find(m => m.id === matchId)
+      if(homeAbbr === awayAbbr && match){
+        const homeTeam = teamsMap[match.home_team]
+        const awayTeam = teamsMap[match.away_team]
+        if(homeTeam && awayTeam){
+          homeAbbr = homeTeam.team_abbr || homeAbbr
+          awayAbbr = awayTeam.team_abbr || awayAbbr
+        }
+      }
+    } else {
+      const abbrs = [...new Set(events.map(e => e.team).filter(Boolean))]
+      homeAbbr = abbrs[0]||''
+      awayAbbr = abbrs[1]||''
+    }
     if (!homeAbbr || !awayAbbr) { alert('❌ Nepodařilo se detekovat zkratky týmů.'); return }
     const { hgTotal, agTotal, resultType, lines } = calcScoreFromGamestat(events, homeAbbr, awayAbbr)
     if (tsData) {
