@@ -237,7 +237,7 @@ window.addEventListener('scroll',()=>{
 },{passive:true})
  
 function calcScore(s){
-  let ag=Number(s[6])+Number(s[7])+Number(s[8]),hg=Number(s[16])+Number(s[17])+Number(s[18])
+  let hg=Number(s[6])+Number(s[7])+Number(s[8]),ag=Number(s[16])+Number(s[17])+Number(s[18])
   if(s[9]==="11")hg++;if(s[19]==="11")ag++;if(s[20]==="1")hg++;if(s[20]==="2")ag++
   return {hg,ag}
 }
