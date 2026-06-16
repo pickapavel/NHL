@@ -2009,13 +2009,22 @@ async function renderFeaturedMatches(){
   featuredMatchesData = []
   const rows = []
   for(const comp of allCompetitions){
-    const latestSeason = allSeasons.filter(s=>s.competition_id===comp.id)
-      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]
-    if(!latestSeason) continue
-    const {data:match} = await db.from('matches').select('*')
-      .eq('season_id', latestSeason.id).is('home_score', null)
-      .order('round',{ascending:true}).limit(1).maybeSingle()
-    if(match) rows.push({match, comp})
+    // Vezmi nejnovější sezónu která NENÍ ukončená
+    const activeSeason = allSeasons
+      .filter(s => s.competition_id === comp.id && !s.finished)
+      .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0]
+    if(!activeSeason) continue
+
+    // Najdi nejnižší kolo s neodehranými zápasy
+    const {data:unplayedMatches} = await db.from('matches').select('*')
+      .eq('season_id', activeSeason.id).is('home_score', null)
+      .order('round', {ascending:true})
+    if(!unplayedMatches || !unplayedMatches.length) continue
+
+    // Vezmi všechny zápasy nejnižšího kola (může jich být víc)
+    const minRound = unplayedMatches[0].round
+    const nextRoundMatches = unplayedMatches.filter(m => m.round === minRound)
+    nextRoundMatches.forEach(match => rows.push({match, comp}))
   }
   featuredMatchesData = rows.map(r=>r.match)
   const sec = document.getElementById('featuredSection')
