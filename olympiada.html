@@ -912,11 +912,16 @@ buildBracket(stageMap,matchesByStage)
         const p1 = seasonData.winner_1st ? teamsMap[seasonData.winner_1st]?.name || '?' : null
         const p2 = seasonData.winner_2nd ? teamsMap[seasonData.winner_2nd]?.name || '?' : null
         const p3 = seasonData.winner_3rd ? teamsMap[seasonData.winner_3rd]?.name || '?' : null
-        document.getElementById('champion').textContent = p1 || '—'
+ document.getElementById('champion').textContent = p1 || '—'
+        const logoHtml1 = seasonData.winner_1st && teamsMap[seasonData.winner_1st]?.logo ? `<img src="${LOGOS}${teamsMap[seasonData.winner_1st].logo}" style="width:28px;height:28px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+        const logoHtml2 = seasonData.winner_2nd && teamsMap[seasonData.winner_2nd]?.logo ? `<img src="${LOGOS}${teamsMap[seasonData.winner_2nd].logo}" style="width:24px;height:24px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
+        const logoHtml3 = seasonData.winner_3rd && teamsMap[seasonData.winner_3rd]?.logo ? `<img src="${LOGOS}${teamsMap[seasonData.winner_3rd].logo}" style="width:24px;height:24px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : ''
         trophyWrap.innerHTML += `
-          <div style="margin-top:12px;font-size:11px;color:#7a5200;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Sezóna ukončena předčasně</div>
-          ${p2 ? `<div style="margin-top:8px;font-size:13px;color:#888;">🥈 2. místo: <b>${p2}</b></div>` : ''}
-          ${p3 ? `<div style="margin-top:4px;font-size:13px;color:#888;">🥉 3. místo: <b>${p3}</b></div>` : ''}`
+          ${p2 ? `<div style="margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#888;">🥈 ${logoHtml2}<b>${p2}</b></div>` : ''}
+          ${p3 ? `<div style="margin-top:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#888;">🥉 ${logoHtml3}<b>${p3}</b></div>` : ''}`
+        // Aktualizuj i jméno vítěze s logem
+        const champEl = document.getElementById('champion')
+        if(champEl) champEl.innerHTML = `${logoHtml1}${p1 || '—'}`
       }
     }
   }
