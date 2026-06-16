@@ -901,6 +901,25 @@ async function loadSeason(seasonId, seasonName){
   document.getElementById("ml-finale").innerHTML=phaseMatches["finale"].map(buildMatchRow).join("")||`<div class="no-data">Zatím žádné zápasy.</div>`
 
 buildBracket(stageMap,matchesByStage)
+  // Zobraz manuálně nastavené pořadí pokud sezóna byla ukončena bez dohrání
+  const seasonData = allSeasons.find(s => s.id === seasonId)
+  if(seasonData?.finished && (seasonData.winner_1st || seasonData.winner_2nd || seasonData.winner_3rd)) {
+    const finaleMatch = (matchesByStage[stageMap["Finále"]] || [])[0]
+    if(!finaleMatch || !isPlayed(finaleMatch)) {
+      // Přidej podium pod trofej
+      const trophyWrap = document.querySelector('.trophy-wrap')
+      if(trophyWrap) {
+        const p1 = seasonData.winner_1st ? teamsMap[seasonData.winner_1st]?.name || '?' : null
+        const p2 = seasonData.winner_2nd ? teamsMap[seasonData.winner_2nd]?.name || '?' : null
+        const p3 = seasonData.winner_3rd ? teamsMap[seasonData.winner_3rd]?.name || '?' : null
+        document.getElementById('champion').textContent = p1 || '—'
+        trophyWrap.innerHTML += `
+          <div style="margin-top:12px;font-size:11px;color:#7a5200;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Sezóna ukončena předčasně</div>
+          ${p2 ? `<div style="margin-top:8px;font-size:13px;color:#888;">🥈 2. místo: <b>${p2}</b></div>` : ''}
+          ${p3 ? `<div style="margin-top:4px;font-size:13px;color:#888;">🥉 3. místo: <b>${p3}</b></div>` : ''}`
+      }
+    }
+  }
  var _fIds=new Set();(matches||[]).forEach(function(m){_fIds.add(m.home_team);_fIds.add(m.away_team)})
   var _fEl=document.getElementById('headerFlags')
   if(_fEl){var _fHtml='';_fIds.forEach(function(id){if(teamsMap[id]&&teamsMap[id].logo)_fHtml+='<img src="'+LOGOS+teamsMap[id].logo+'" title="'+teamsMap[id].name+'" style="width:32px;height:32px;object-fit:contain;background:rgba(255,255,255,.1);border-radius:6px;padding:3px;border:1px solid rgba(255,255,255,.15);" onerror="this.style.display=\'none\'">'});_fEl.innerHTML=_fHtml}
