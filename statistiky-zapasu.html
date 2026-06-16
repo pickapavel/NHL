@@ -373,11 +373,8 @@ const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean)
   // Góly
   const goalEvents=(events||[]).filter(e=>e.type&&!e.type.toUpperCase().startsWith('PEN'))
     .sort((a,b)=>{if((a.period||0)!==(b.period||0))return(a.period||0)-(b.period||0);return(a.time||'').localeCompare(b.time||'')})
-  const allGoalAbbrs=[...new Set(goalEvents.map(e=>e.team_abbr).filter(Boolean))]
-  const resolvedHomeAbbr=homeAbbr||allGoalAbbrs[0]||''
-  const resolvedAwayAbbr=awayAbbr||allGoalAbbrs[1]||''
-  const homeGoals=goalEvents.filter(e=>e.team_abbr===resolvedHomeAbbr)
-  const awayGoals=goalEvents.filter(e=>e.team_abbr===resolvedAwayAbbr)
+const homeGoals=goalEvents.filter(e=>e.team_abbr===resolvedHome)
+  const awayGoals=goalEvents.filter(e=>e.team_abbr===resolvedAway)
  
   function renderGoalItem(e){
     const isPPG=e.type?.toUpperCase().includes('PPG'),isSHG=e.type?.toUpperCase().includes('SHG')
@@ -443,8 +440,7 @@ const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean)
         const {cls,icon,label}=getEventMeta(e.type)
         const scoreMatch=e.type?.match(/\((\d+:\d+)\)/),scoreStr=scoreMatch?scoreMatch[1]:''
         const isPen=e.type?.toUpperCase().startsWith('PEN')
-        const tLogo=e.team_abbr===homeAbbr?homeLogo:awayLogo
-        const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`:`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`
+const tLogo=e.team_abbr===resolvedHome?homeLogo:awayLogo        const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`:`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`
         html+=`<div class="event-row">
           <div class="event-time">${e.time||''}</div>
           <img class="event-team-logo" src="${tLogo}" onerror="this.style.display='none'">
