@@ -440,8 +440,8 @@ const homeGoals=goalEvents.filter(e=>e.team_abbr===resolvedHome)
         const {cls,icon,label}=getEventMeta(e.type)
         const scoreMatch=e.type?.match(/\((\d+:\d+)\)/),scoreStr=scoreMatch?scoreMatch[1]:''
         const isPen=e.type?.toUpperCase().startsWith('PEN')
-const tLogo=e.team_abbr===resolvedHome?homeLogo:awayLogo        const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`:`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`
-        html+=`<div class="event-row">
+const tLogo=e.team_abbr===resolvedHome?homeLogo:awayLogo
+        const detail=isPen?`${e.team_abbr||''} · Trest${e.note?` · ${e.note}`:''}`:`${e.team_abbr||''} · ${label}${e.note?` · Asistence: ${e.note}`:''}`        html+=`<div class="event-row">
           <div class="event-time">${e.time||''}</div>
           <img class="event-team-logo" src="${tLogo}" onerror="this.style.display='none'">
           <div class="event-icon ${cls}">${icon}</div>
