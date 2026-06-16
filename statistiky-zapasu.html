@@ -292,9 +292,9 @@ async function load(){
   let homePP={goals:0,attempts:0},awayPP={goals:0,attempts:0},homeShots=0,awayShots=0
   let savedStats=null
  
-  if(match.stats){
+if(match.stats){
     savedStats=JSON.parse(match.stats)
-    matchScore=calcScore(savedStats)
+    matchScore={hg:Number(match.home_score||0),ag:Number(match.away_score||0)}
     document.getElementById('score').textContent=`${matchScore.hg} : ${matchScore.ag}`
     if(match.result_type&&match.result_type!=='REG')
       document.getElementById('scoreTag').innerHTML=`<span class="score-tag">${match.result_type}</span>`
