@@ -333,9 +333,22 @@ const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean)
   const homeDbAbbr = home?.team_abbr || ''
   const awayDbAbbr = away?.team_abbr || ''
   let resolvedHome, resolvedAway
-  if(homeDbAbbr && awayDbAbbr && homeDbAbbr !== awayDbAbbr){
-    resolvedHome = allAbbrs.find(a=>a===homeDbAbbr) || allAbbrs.find(a=>matchAbbr(homeAbbr,a)) || homeAbbr || allAbbrs[0] || ''
-    resolvedAway = allAbbrs.find(a=>a===awayDbAbbr) || allAbbrs.find(a=>matchAbbr(awayAbbr,a)) || awayAbbr || allAbbrs[1] || ''
+if(homeDbAbbr && awayDbAbbr && homeDbAbbr !== awayDbAbbr){
+    // Zkus přesnou shodu, pak fallback na detekci podle gólů
+    const foundHome = allAbbrs.find(a=>a===homeDbAbbr) || allAbbrs.find(a=>matchAbbr(homeDbAbbr,a))
+    const foundAway = allAbbrs.find(a=>a===awayDbAbbr) || allAbbrs.find(a=>matchAbbr(awayDbAbbr,a))
+    if(foundHome && foundAway){
+      resolvedHome = foundHome
+      resolvedAway = foundAway
+    } else {
+      // Fallback — detekuj podle počtu gólů
+      const goalsByAbbr2 = {}
+      ;(playerStats||[]).filter(p=>!p.is_goalie).forEach(p=>{ goalsByAbbr2[p.team_abbr] = (goalsByAbbr2[p.team_abbr]||0) + (p.goals||0) })
+      const sortedByGoals = [...allAbbrs].sort((a,b)=>(goalsByAbbr2[b]||0)-(goalsByAbbr2[a]||0))
+      const hg = Number(match.home_score||0), ag = Number(match.away_score||0)
+      if(hg >= ag){ resolvedHome = sortedByGoals[0]||''; resolvedAway = sortedByGoals[1]||'' }
+      else { resolvedHome = sortedByGoals[1]||''; resolvedAway = sortedByGoals[0]||'' }
+    }
   } else {
     // Stejné zkratky nebo chybí — detekuj podle počtu gólů v player_match_stats
     const goalsByAbbr2 = {}
