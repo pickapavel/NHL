@@ -577,8 +577,15 @@ function calcScoreFromGamestat(events, homeAbbr, awayAbbr) {
     const t = ev.type || ''
     const isGoal = t.includes('GOAL') || t.includes('PPG') || t.includes('SHG') || t.includes('ENG')
     if (!isGoal) continue
-    const isHome = ev.team === homeAbbr
-    const p = (ev.period || '').trim()
+const evTeam = (ev.team || '').trim()
+    const homeBase = homeAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
+    const awayBase = awayAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
+    // Pokud jsou základy různé, matchuj podle základu nebo plné zkratky
+    // Pokud jsou základy stejné (PCE vs PCE), nelze rozlišit — všechny góly půjdou domácímu
+    const isHome = (homeBase !== awayBase)
+      ? (evTeam === homeBase || evTeam === homeAbbr)
+      : (evTeam === homeAbbr || evTeam === homeBase)
+   const p = (ev.period || '').trim()
     if (p === 'Shootout' || p === 'SO') { hasSN = true; snWinnerIsHome = isHome }
     else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime' || /^[0-9]*ot$/i.test(p)) { hasOT = true; if (isHome) hg3++; else ag3++ }
     else if (p === '1') { if (isHome) hg1++; else ag1++ }
