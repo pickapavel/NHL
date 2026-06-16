@@ -328,8 +328,23 @@ async function load(){
 const allAbbrs=[...new Set((playerStats||[]).map(p=>p.team_abbr).filter(Boolean))]
   function matchAbbr(short, full){ return full.replace(/\s*\([KP]\)\s*$/i,'').trim().toUpperCase()===short.trim().toUpperCase() }
   // Prioritně použij team_abbr z DB (přesná shoda), pak fallback na detekci z eventů
-  const resolvedHome=allAbbrs.find(a=>a===home?.team_abbr)||allAbbrs.find(a=>matchAbbr(homeAbbr,a))||homeAbbr||allAbbrs[0]||''
-  const resolvedAway=allAbbrs.find(a=>a===away?.team_abbr)||allAbbrs.find(a=>matchAbbr(awayAbbr,a))||awayAbbr||allAbbrs[1]||''
+// Preferuj přesnou shodu team_abbr z DB, pak fallback na detekci z eventů
+  // Pokud jsou obě team_abbr stejné (např. PCE (K) a PCE (P)), použij detekci z eventů
+  const homeDbAbbr = home?.team_abbr || ''
+  const awayDbAbbr = away?.team_abbr || ''
+  let resolvedHome, resolvedAway
+  if(homeDbAbbr && awayDbAbbr && homeDbAbbr !== awayDbAbbr){
+    resolvedHome = allAbbrs.find(a=>a===homeDbAbbr) || allAbbrs.find(a=>matchAbbr(homeAbbr,a)) || homeAbbr || allAbbrs[0] || ''
+    resolvedAway = allAbbrs.find(a=>a===awayDbAbbr) || allAbbrs.find(a=>matchAbbr(awayAbbr,a)) || awayAbbr || allAbbrs[1] || ''
+  } else {
+    // Stejné zkratky nebo chybí — detekuj podle počtu gólů v player_match_stats
+    const goalsByAbbr2 = {}
+    ;(playerStats||[]).filter(p=>!p.is_goalie).forEach(p=>{ goalsByAbbr2[p.team_abbr] = (goalsByAbbr2[p.team_abbr]||0) + (p.goals||0) })
+    const sortedByGoals = allAbbrs.sort((a,b)=>(goalsByAbbr2[b]||0)-(goalsByAbbr2[a]||0))
+    const hg = Number(match.home_score||0), ag = Number(match.away_score||0)
+    if(hg >= ag){ resolvedHome = sortedByGoals[0]||''; resolvedAway = sortedByGoals[1]||'' }
+    else { resolvedHome = sortedByGoals[1]||''; resolvedAway = sortedByGoals[0]||'' }
+  }
   console.log('DEBUG abbrs:', {homeAbbr, awayAbbr, resolvedHome, resolvedAway, allAbbrs, goaliesCount: (playerStats||[]).filter(p=>p.is_goalie).length})
  
   // Stats compare
