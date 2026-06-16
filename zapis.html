@@ -580,11 +580,14 @@ function calcScoreFromGamestat(events, homeAbbr, awayAbbr) {
 const evTeam = (ev.team || '').trim()
     const homeBase = homeAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
     const awayBase = awayAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
-    // Pokud jsou základy různé, matchuj podle základu nebo plné zkratky
-    // Pokud jsou základy stejné (PCE vs PCE), nelze rozlišit — všechny góly půjdou domácímu
-    const isHome = (homeBase !== awayBase)
-      ? (evTeam === homeBase || evTeam === homeAbbr)
-      : (evTeam === homeAbbr || evTeam === homeBase)
+    const sameBase = homeBase === awayBase
+    let isHome
+    if(!sameBase){
+      isHome = (evTeam === homeBase || evTeam === homeAbbr)
+    } else {
+      // Stejné zkratky — nelze rozlišit z gamestat, výsledek se vezme z teamstat
+      isHome = true // placeholder, výsledek stejně přijde z tsData['Goal']
+    }
    const p = (ev.period || '').trim()
     if (p === 'Shootout' || p === 'SO') { hasSN = true; snWinnerIsHome = isHome }
     else if (p === '4' || p.toLowerCase() === 'ot' || p.toLowerCase() === 'overtime' || /^[0-9]*ot$/i.test(p)) { hasOT = true; if (isHome) hg3++; else ag3++ }
@@ -1358,7 +1361,23 @@ if (tsData) {
       awayAbbr = abbrs[1]||''
     }
     if (!homeAbbr || !awayAbbr) { alert('❌ Nepodařilo se detekovat zkratky týmů.'); return }
-    const { hgTotal, agTotal, resultType, lines } = calcScoreFromGamestat(events, homeAbbr, awayAbbr)
+    let hgTotal, agTotal, resultType, lines
+    const homeBase2 = homeAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
+    const awayBase2 = awayAbbr.replace(/\s*\([KP]\)\s*$/i,'').trim()
+    if(tsData && homeBase2 === awayBase2){
+      // Stejné zkratky — vezmi skóre přímo z teamstat
+      hgTotal = Number((tsData['Goal']||{}).home||0)
+      agTotal = Number((tsData['Goal']||{}).away||0)
+      const calcResult = calcScoreFromGamestat(events, homeAbbr, awayAbbr)
+      resultType = calcResult.resultType
+      lines = calcResult.lines
+      lines[16] = String(hgTotal); lines[17] = '0'; lines[18] = '0'
+      lines[6]  = String(agTotal);  lines[7]  = '0'; lines[8]  = '0'
+    } else {
+      const calcResult = calcScoreFromGamestat(events, homeAbbr, awayAbbr)
+      hgTotal = calcResult.hgTotal; agTotal = calcResult.agTotal
+      resultType = calcResult.resultType; lines = calcResult.lines
+    }
     if (tsData) {
       lines[0]  = (tsData['Shot']||{}).away||'0'
       lines[10] = (tsData['Shot']||{}).home||'0'
